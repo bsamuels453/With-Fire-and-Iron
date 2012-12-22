@@ -1,0 +1,14 @@
+namespace Gondola{
+#if WINDOWS || XBOX
+    internal static class Program{
+        /// <summary>
+        ///   The main entry point for the application.
+        /// </summary>
+        static void Main(string[] args){
+            using (Gondola game = new Gondola()){
+                game.Run();
+            }
+        }
+    }
+#endif
+}
