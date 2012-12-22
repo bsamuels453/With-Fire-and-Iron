@@ -27,7 +27,7 @@ namespace Gondola.Draw{
             _spriteBatch.DrawString(
                 _font,
                 Str,
-                Position, 
+                Position,
                 Color.Black
                 );
         }

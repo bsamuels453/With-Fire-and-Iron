@@ -34,6 +34,7 @@ namespace Gondola.Draw{
             _maxObjects = maxObjects;
             _isSlotOccupied = new bool[maxObjects];
             UpdateBufferManually = false;
+            BufferRasterizer.Dispose();
         }
 
         public void UpdateBuffers(){

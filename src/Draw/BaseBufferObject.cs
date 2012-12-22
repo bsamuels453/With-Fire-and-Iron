@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -7,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    internal abstract class BaseBufferObject<T> : IDrawableBuffer{
+    internal abstract class BaseBufferObject<T> : IDrawableBuffer, IDisposable{
         protected readonly IndexBuffer Indexbuffer;
         protected readonly VertexBuffer Vertexbuffer;
         readonly int _numIndicies;
@@ -60,6 +61,11 @@ namespace Gondola.Draw{
 
         public void UpdateViewMatrix(Matrix viewMatrix){
             BufferEffect.Parameters["View"].SetValue(viewMatrix);
+        }
+
+        public void Dispose(){
+            Indexbuffer.Dispose();
+            Vertexbuffer.Dispose();
         }
     }
 }

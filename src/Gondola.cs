@@ -9,8 +9,8 @@ using Microsoft.Xna.Framework;
 
 namespace Gondola{
     public class Gondola : Game{
+        readonly GraphicsDeviceManager _graphics;
         GamestateManager _gamestateManager;
-        GraphicsDeviceManager _graphics;
 
         public Gondola(){
             Content.RootDirectory = "Content";
@@ -26,7 +26,7 @@ namespace Gondola{
             Gbl.ContentManager = Content;
             Gbl.ScreenSize = new Point(1200, 800);
 
-            var aspectRatio = Gbl.Device.Viewport.Bounds.Width / (float)Gbl.Device.Viewport.Bounds.Height;
+            var aspectRatio = Gbl.Device.Viewport.Bounds.Width/(float) Gbl.Device.Viewport.Bounds.Height;
             Gbl.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                 fieldOfView: 3.14f/4,
                 aspectRatio: aspectRatio,

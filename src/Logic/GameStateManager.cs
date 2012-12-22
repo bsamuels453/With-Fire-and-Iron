@@ -42,7 +42,7 @@ namespace Gondola.Logic{
         public void Update(){
             _inputHandler.Update();
             if (_currentState != null){
-                _currentState.Update(_inputHandler.CurrentControlState, 0);
+                _currentState.Update(_inputHandler.CurrentInputState, 0);
             }
         }
 

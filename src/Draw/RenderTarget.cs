@@ -1,23 +1,33 @@
 ﻿#region
 
 using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using System.Collections.Generic;
 
 #endregion
 
 namespace Gondola.Draw{
     internal class RenderTarget : IDisposable{
         static readonly DepthStencilState _universalDepthStencil;
+        static readonly SpriteBatch _cumulativeSpriteBatch;
+        static readonly List<RenderTarget> _renderTargets;
         public readonly Rectangle BoundingBox;
         public readonly SpriteBatch SpriteBatch;
-        public float Depth;
 
         readonly RenderTarget2D _targetCanvas;
+        public float Depth;
         public Vector2 Offset;
+
+        static RenderTarget(){
+            _cumulativeSpriteBatch = new SpriteBatch(Gbl.Device);
+            _renderTargets = new List<RenderTarget>();
+
+            _universalDepthStencil = new DepthStencilState();
+            _universalDepthStencil.DepthBufferEnable = true;
+            _universalDepthStencil.DepthBufferWriteEnable = true;
+        }
 
         public RenderTarget(int x, int y, int width, int height, float depth = 1){
             SpriteBatch = new SpriteBatch(Gbl.Device);
@@ -52,6 +62,16 @@ namespace Gondola.Draw{
             _renderTargets.Add(this);
         }
 
+        #region IDisposable Members
+
+        public void Dispose(){
+            _renderTargets.Remove(this);
+            SpriteBatch.Dispose();
+            _targetCanvas.Dispose();
+        }
+
+        #endregion
+
         public void Bind(){
             Gbl.Device.SetRenderTarget(_targetCanvas);
             Gbl.Device.Clear(Color.CornflowerBlue);
@@ -68,22 +88,6 @@ namespace Gondola.Draw{
         public void Unbind(){
             SpriteBatch.End();
             Gbl.Device.SetRenderTarget(null);
-        }
-
-        public void Dispose(){
-            _renderTargets.Remove(this);
-        }
-
-        static readonly SpriteBatch _cumulativeSpriteBatch;
-        static readonly List<RenderTarget> _renderTargets;
-
-        static RenderTarget(){
-            _cumulativeSpriteBatch = new SpriteBatch(Gbl.Device);
-            _renderTargets = new List<RenderTarget>();
-
-            _universalDepthStencil = new DepthStencilState();
-            _universalDepthStencil.DepthBufferEnable = true;
-            _universalDepthStencil.DepthBufferWriteEnable = true;
         }
 
         public static void BeginDraw(){

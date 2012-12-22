@@ -23,7 +23,6 @@ namespace Gondola.Logic{
             var sr = new StreamReader("Raw/ContentReferences.json");
             ContentStrLookup = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
             sr.Close();
-
         }
     }
 }

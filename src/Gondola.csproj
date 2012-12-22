@@ -129,6 +129,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Gondola.cs" />
+    <Compile Include="UI\Button.cs" />
+    <Compile Include="UI\Components\DraggableComponent.cs" />
+    <Compile Include="UI\Components\FadeComponent.cs" />
+    <Compile Include="UI\Components\HighlightComponent.cs" />
+    <Compile Include="UI\Components\PanelComponent.cs" />
+    <Compile Include="UI\IUIComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Game.ico" />

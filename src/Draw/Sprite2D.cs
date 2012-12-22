@@ -47,7 +47,7 @@ namespace Gondola.Draw{
         public void Draw(){
             if (IsEnabled){
                 _destRect.X = X;
-                _destRect.Y = Y; 
+                _destRect.Y = Y;
                 _destRect.Width = Width;
                 _destRect.Height = Height;
                 _spriteBatch.Draw(
