@@ -1,0 +1,12 @@
+{
+  "Components": {
+	"FadeComponent": {
+      "DefaultState": "Faded"
+    }
+  },
+  "Color": "0,0,0,255",
+  "Depth": "Medium",
+  "V1": "0,0",
+  "V2": "0,0",
+  "Identifier": 0
+}

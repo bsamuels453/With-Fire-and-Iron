@@ -1,0 +1,26 @@
+{
+  "Components": {
+	"HighlightComponent_HoverMask":{
+      "HighlightTexture": "ButtonHighlightTex",
+	  "HighlightTrigger": "MouseEntryExit",
+	  "HighlightTexOpacity": 0.3
+	},
+	"HighlightComponent_ClickEffect":{
+      "HighlightTexture": "black",
+	  "HighlightTrigger": "MousePressRelease",
+	  "HighlightTexOpacity": 0.7
+	},
+	"HighlightComponent_ClickHoldEffect":{
+      "HighlightTexture": "black",
+	  "HighlightTrigger": "None",
+	  "HighlightTexOpacity": 0.7
+	}
+  },
+  "Depth": "High",
+  "Width": 45,
+  "Height": 45,
+  "Identifier": 0,
+  "SpriteTexRepeatX": 1,
+  "SpriteTexRepeatY": 1,
+  "TextureName": "UnboundButtonIcon"
+}
