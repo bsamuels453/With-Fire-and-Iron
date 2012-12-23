@@ -61,17 +61,17 @@ namespace Gondola.UI{
         }
 
         //xxxx setting these position variables after construction wont update highlight masks
-        public float X{
-            get { return _boundingBox.X; }
+        public int X{
+            get { return (int)_boundingBox.X; }
             set{
                 _boundingBox.X = value;
                 _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
-                _sprite.X = (int) value;
+                _sprite.X =  value;
             }
         }
 
-        public float Y{
-            get { return _boundingBox.Y; }
+        public int Y {
+            get { return (int)_boundingBox.Y; }
             set{
                 _boundingBox.Y = value;
                 _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;
@@ -128,14 +128,14 @@ namespace Gondola.UI{
         #region ctor
 
         //xxx why are these position coordinates all floats?
-        public Button(RenderTarget target, float x, float y, float width, float height, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
+        public Button(RenderTarget target, int x, int y, int width, int height, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
             RenderTarget = target;
             _identifier = identifier;
             _isEnabled = true;
 
             _centPosition = new Vector2();
             _boundingBox = new FloatingRectangle(x, y, width, height);
-            _sprite = new Sprite2D(target, textureName, (int) x, (int) y, (int) width, (int) height, 1, spriteTexRepeatX, spriteTexRepeatY);
+            _sprite = new Sprite2D(target, textureName,  x,  y,  width,  height, 1, spriteTexRepeatX, spriteTexRepeatY);
 
             _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
             _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;
@@ -350,7 +350,6 @@ namespace Gondola.UI{
             string str;
             using (var sr = new StreamReader("Raw/Templates/" + template)){
                 str = sr.ReadToEnd();
-                sr.Close();
             }
             JObject obj = JObject.Parse(str);
 
@@ -411,10 +410,10 @@ namespace Gondola.UI{
 
             return new Button(
                 RenderTarget,
-                (float) X,
-                (float) Y,
-                (float) Width,
-                (float) Height,
+                (int)X,
+                (int)Y,
+                (int)Width,
+                (int)Height,
                 TextureName,
                 spriteTexRepeatX,
                 spriteTexRepeatY,
