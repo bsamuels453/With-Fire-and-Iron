@@ -59,7 +59,6 @@ namespace Gondola.UI{
             }
         }
 
-        //xxx fix loops
         public void Update(ref InputState state, double timeDelta){
             if (IsEnabled){
                 if (ContainsMouse && !ContainedMousePrevisly)
@@ -84,69 +83,6 @@ namespace Gondola.UI{
                         component.Update(state, timeDelta);
                     }
                 }
-                /*
-                if (state.AllowLeftButtonInterpretation){
-                    if (state.LeftButtonChange){
-                        foreach (var @event in _iEventDispatcher.OnLeftButtonClick){
-                            @event.OnLeftButtonClick(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation)
-                                break;
-                        }
-                    }
-                }
-                if (state.AllowLeftButtonInterpretation){
-                    if (state.LeftButtonState == ButtonState.Pressed){
-                        foreach (var @event in _iEventDispatcher.OnLeftButtonPress){
-                            @event.OnLeftButtonPress(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation)
-                                break;
-                        }
-                    }
-                }
-                if (state.AllowLeftButtonInterpretation){
-                    if (state.LeftButtonState == ButtonState.Released){
-                        foreach (var @event in _iEventDispatcher.OnLeftButtonRelease){
-                            @event.OnLeftButtonRelease(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation)
-                                break;
-                        }
-                    }
-                }
-                if (state.AllowMouseMovementInterpretation){
-                    foreach (var @event in _iEventDispatcher.OnMouseMovement){
-                        @event.OnMouseMovement(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                        if (!state.AllowMouseMovementInterpretation)
-                            break;
-                    }
-                }
-                if (state.AllowMouseMovementInterpretation){
-                    if (BoundingBox.Contains(state.MousePos.X, state.MousePos.Y) && !ContainsMouse){
-                        ContainsMouse = true;
-                        foreach (var @event in _iEventDispatcher.OnMouseEntry){
-                            @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowMouseMovementInterpretation)
-                                break;
-                        }
-                    }
-                }
-                if (state.AllowMouseMovementInterpretation){
-                    if (!BoundingBox.Contains(state.MousePos.X, state.MousePos.Y) && ContainsMouse){
-                        ContainsMouse = false;
-                        foreach (var @event in _iEventDispatcher.OnMouseExit){
-                            @event.OnMouseExit(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowMouseMovementInterpretation)
-                                break;
-                        }
-                    }
-                }
-                if (state.AllowKeyboardInterpretation){
-                    foreach (var @event in _iEventDispatcher.OnKeyboardEvent){
-                        @event.OnKeyboardEvent(ref state.AllowKeyboardInterpretation, state.KeyboardState);
-                        if (!state.AllowKeyboardInterpretation)
-                            break;
-                    }
-                }
-                */
                 //now dispatch the external delegates
                 if (state.AllowLeftButtonInterpretation){
                     if (BoundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
