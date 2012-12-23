@@ -1,0 +1,15 @@
+{
+	"DirtTexture" :        "Dirt",
+	"GrassTexture" :       "Grass",
+	"RockTexture" :        "Rock",
+	"IceTexture" :         "Ice",
+	"TreeTexture" :        "Trees",
+	"TreeTexNormalMap" :   "TreeNormals",
+	"RockTexNormalMap" :   "RockNormals",
+	
+	"AmbientColor":        "0,0,0,1",
+	"AmbientIntensity":    0.1,
+	"TexScaleFactor":      32,
+	"DiffuseIntensity":    0.9,
+	"DiffuseDirection":    "1, 1, 0",
+}

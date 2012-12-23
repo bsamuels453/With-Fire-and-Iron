@@ -1,0 +1,11 @@
+{
+	"BlockWidthInMeters":  10,
+	"ChunkWidthInBlocks":  128,
+	"WorldWidthInChunks":  4,
+	
+	"Lacunarity":          1.8,
+	"Gain":                0.5,
+	"Octaves":             6,
+	"HScale":              0.005,
+	"VScale":              1200
+}
