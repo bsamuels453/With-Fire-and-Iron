@@ -11,5 +11,5 @@
 	"AmbientIntensity":    0.1,
 	"TexScaleFactor":      32,
 	"DiffuseIntensity":    0.9,
-	"DiffuseDirection":    "1, 1, 0",
+	"DiffuseDirection":    "1, 1, 0"
 }
