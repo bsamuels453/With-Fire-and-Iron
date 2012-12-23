@@ -20,7 +20,7 @@ namespace Gondola.GameState{
             //sprite = new Sprite2D(target, "TestTexture", 0, 0, 50, 50);
             var buttongen = new ButtonGenerator("ToolbarButton64.json");
             buttongen.RenderTarget = target;
-            buttongen.TextureName = "TestTexture";
+            buttongen.TextureName = "UI_TestTexture";
             buttongen.X = 0;
             buttongen.Y = 0;
             button = buttongen.GenerateButton();

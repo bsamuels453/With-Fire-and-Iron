@@ -10,8 +10,8 @@ namespace Gondola.Draw{
     internal abstract class StandardEffect : BaseBufferObject<VertexPositionNormalTexture>{
         protected StandardEffect(int numIndicies, int numVerticies, int numPrimitives, string textureName) :
             base(numIndicies, numVerticies, numPrimitives, PrimitiveType.TriangleList){
-            var texture = Gbl.ContentManager.Load<Texture2D>(Gbl.ContentStrLookup[textureName]);
-            BufferEffect = Gbl.ContentManager.Load<Effect>(Gbl.ContentStrLookup["StandardEffect"]).Clone();
+            var texture = Gbl.ContentManager.Load<Texture2D>(Gbl.RawLookup[textureName]);
+            BufferEffect = Gbl.ContentManager.Load<Effect>(Gbl.RawLookup["StandardEffect"]).Clone();
             BufferEffect.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
             BufferEffect.Parameters["World"].SetValue(Matrix.Identity);
             BufferEffect.Parameters["Texture"].SetValue(texture);

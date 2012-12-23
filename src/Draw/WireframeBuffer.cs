@@ -12,7 +12,7 @@ namespace Gondola.Draw{
             : base(numIndicies, numVerticies, numPrimitives, PrimitiveType.LineList){
             BufferRasterizer = new RasterizerState();
             BufferRasterizer.CullMode = CullMode.None;
-            BufferEffect = Gbl.ContentManager.Load<Effect>(Gbl.ContentStrLookup["WireframeEffect"]).Clone();
+            BufferEffect = Gbl.ContentManager.Load<Effect>(Gbl.RawLookup["WireframeEffect"]).Clone();
 
             BufferEffect.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
             BufferEffect.Parameters["World"].SetValue(Matrix.Identity);

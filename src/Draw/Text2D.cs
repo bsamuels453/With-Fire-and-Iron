@@ -18,7 +18,7 @@ namespace Gondola.Draw{
             Str = str;
 
             _spriteBatch = target.SpriteBatch;
-            _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.ContentStrLookup[font]);
+            _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
         }
 
         #region IDrawableSprite Members

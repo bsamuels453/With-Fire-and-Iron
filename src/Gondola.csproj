@@ -118,6 +118,7 @@
     <Compile Include="Draw\RenderTarget.cs" />
     <Compile Include="Draw\Sprite2D.cs" />
     <Compile Include="Draw\StandardEffect.cs" />
+    <Compile Include="Draw\TerrainBuffer.cs" />
     <Compile Include="Draw\Text2D.cs" />
     <Compile Include="Draw\WireframeBuffer.cs" />
     <Compile Include="GameState\TestState.cs" />
