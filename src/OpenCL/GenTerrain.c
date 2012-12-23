@@ -1,3 +1,5 @@
+//todo optimize this, maybe even for vendor-specific if have the time
+
 inline float GenRidge( float height, float offset ){
 	height = fabs(height);
 	height = offset - height;
@@ -6,15 +8,15 @@ inline float GenRidge( float height, float offset ){
 }
 
 inline float GenNoise(int x, int z){
-	int n = x + z*57;
+	int n = x + z*57;//xxxx fix this FFS
 	n = (n << 13) ^ n;
 	return (1.0f - (fabs((float)n*(n*n*15731 + 789221) + 1376312589))/1073741824);
 }
 
 inline float CosInterp(float a, float b, float x){
-            float ft = x*3.1415927f;
-            float f = ((1 - cos(ft))*0.5f);
-            return a*(1 - f) + b*f;
+	float ft = x*3.1415927f;
+	float f = ((1 - cos(ft))*0.5f);
+	return a*(1 - f) + b*f;
 }
 
 inline float InterpNoise(float x, float z){
@@ -62,7 +64,7 @@ __kernel void GenTerrain(
 						InterpNoise(
 							posX * frequency,
 							posZ * frequency
-							),
+						),
 						*offset
 						);
 			sum += n * amplitude * prev;
