@@ -5,10 +5,11 @@
 	"ChunkWidthInBlocks":   128,
 	"WorldWidthInChunks":   4,
 	
-	"GenScript":            "Scripts/GenTerrain.cl",
+	"GenScript":            "Scripts\\GenTerrain.cl",
 	"Lacunarity":           1.8,
 	"Gain":                 0.5,
 	"Octaves":              6,
+	"Offset":               1,
 	"HScale":               0.005,
 	"VScale":               1200
 }
