@@ -10,7 +10,7 @@ inline float GenRidge( float height, float offset ){
 inline float GenNoise(int x, int z){
 	int n = x + z*57;//xxxx fix this FFS
 	n = (n << 13) ^ n;
-	return (1.0f - (fabs((float)n*(n*n*15731 + 789221) + 1376312589))/1073741824);
+	return (1.0f - ((n*(n*n*15731 + 789221) + 1376312589)& 0x7fffffff)/1073741824.0f);
 }
 
 inline float CosInterp(float a, float b, float x){
@@ -38,41 +38,41 @@ inline float InterpNoise(float x, float z){
 }
 
 __kernel void GenTerrain(
-		__constant float *lacunarity,
-		__constant float *gain,
-		__constant float *offset,
-		__constant float *octaves,
-		__constant float *hScale,
-		__constant float *vScale,
-		__constant int *chunkOfstX,
-		__constant int *chunkOfstZ,
-		__global   float *out)	{  
+	__constant float *lacunarity,
+	__constant float *gain,
+	__constant float *offset,
+	__constant int   *octaves,
+	__constant float *hScale,
+	__constant float *vScale,
+	__constant int *chunkOfstX,
+	__constant int *chunkOfstZ,
+	__global   float *out)	{  
 		
-		int blockX = get_global_id(0);
-		int blockZ = get_global_id(1);
+	int blockX = get_global_id(0);
+	int blockZ = get_global_id(1);
 		
-		float posX = (blockX + *chunkOfstX) * *hScale;
-		float posZ = (blockZ + *chunkOfstZ) * *hScale;
+	float posX = (blockX + *chunkOfstX) * *hScale;
+	float posZ = (blockZ + *chunkOfstZ) * *hScale;
 		
-		float sum = 0;
-		float amplitude = 0.5f;
-		float frequency = 1.0f;
-		float prev = 1.0f;
+	float sum = 0;
+	float amplitude = 0.5f;
+	float frequency = 1.0f;
+	float prev = 1.0f;
 		
-		for(int curOctave=0; curOctave < *octaves; curOctave++){
-			float n = GenRidge(
-						InterpNoise(
-							posX * frequency,
-							posZ * frequency
-						),
-						*offset
-						);
-			sum += n * amplitude * prev;
-			prev = n;
-			frequency *= *lacunarity;
-			amplitude *= *gain;
-		}
+	for(int curOctave=0; curOctave < *octaves; curOctave++){
+		float n = GenRidge(
+					InterpNoise(
+						posX * frequency,
+						posZ * frequency
+					),
+					*offset
+					);
+		sum += n * amplitude * prev;
+		prev = n;
+		frequency *= *lacunarity;
+		amplitude *= *gain;
+	}
 		
-		int chunkWidth = get_global_size(0);
-		out[blockX*chunkWidth + blockZ] = sum * *vScale;	
+	int chunkWidth = get_global_size(0);
+	out[blockX*chunkWidth + blockZ] = sum * *vScale;	
 }
