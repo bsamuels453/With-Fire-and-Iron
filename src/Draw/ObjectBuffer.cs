@@ -28,13 +28,11 @@ namespace Gondola.Draw{
             _objectData = new List<ObjectData>();
             _indicies = new int[maxObjects*indiciesPerObject];
             _verticies = new VertexPositionNormalTexture[maxObjects*verticiesPerObject];
-
             _indiciesPerObject = indiciesPerObject;
             _verticiesPerObject = verticiesPerObject;
             _maxObjects = maxObjects;
             _isSlotOccupied = new bool[maxObjects];
             UpdateBufferManually = false;
-            BufferRasterizer.Dispose();
         }
 
         public void UpdateBuffers(){
