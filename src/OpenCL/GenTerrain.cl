@@ -44,9 +44,9 @@ __kernel void GenTerrain(
 		__constant float *octaves,
 		__constant float *hScale,
 		__constant float *vScale,
-		__global	int *chunkOfstX,
-		__global	int *chunkOfstZ,
-		__global	float *out)	{  
+		__constant int *chunkOfstX,
+		__constant int *chunkOfstZ,
+		__global   float *out)	{  
 		
 		int blockX = get_global_id(0);
 		int blockZ = get_global_id(1);
