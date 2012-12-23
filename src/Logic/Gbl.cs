@@ -46,5 +46,13 @@ namespace Gondola.Logic{
                 return (T)Convert.ChangeType(RawLookup[str], typeof(T));
             }
         }
+
+        public static string LoadScript(string str){
+            string address = RawLookup[str];
+            var sr = new StreamReader("Raw\\" + address);
+            string scriptText = sr.ReadToEnd();
+            sr.Close();
+            return scriptText;
+        }
     }
 }
