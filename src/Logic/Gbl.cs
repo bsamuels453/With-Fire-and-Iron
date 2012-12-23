@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Xna.Framework;
@@ -15,14 +16,40 @@ namespace Gondola.Logic{
         public static Vector3 CameraTarget;
         public static GraphicsDevice Device;
         public static ContentManager ContentManager;
-        public static Dictionary<string, string> ContentStrLookup;
+        public static Dictionary<string, string> RawLookup;
         public static Matrix ProjectionMatrix;
         public static Point ScreenSize;
 
         static Gbl(){
-            var sr = new StreamReader("Raw/ContentReferences.json");
-            ContentStrLookup = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
-            sr.Close();
+            RawLookup = new Dictionary<string, string>();
+            var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\Config\\");
+            foreach (var file in files){
+                var sr = new StreamReader(file);
+                var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
+                sr.Close();
+
+                //this next tidbit allows us to retain some level of scoping in the RawLookup by
+                //prefixing each name with the file it came from
+                var temp = file.Split('\\');
+                var prefix = temp[temp.Length - 1];
+                int dotIndex = prefix.IndexOf('.');
+                prefix = prefix.Remove(dotIndex);
+                prefix = prefix + "_";
+
+                foreach (var configVal in newConfigVals){
+                    RawLookup.Add(prefix + configVal.Key, configVal.Value);
+                }
+            }
+        }
+
+        public static T LoadContent<T>(string str){
+            try {
+                string realName = RawLookup[str];
+                return ContentManager.Load<T>(realName);
+            }
+            catch (Exception){
+                return (T)Convert.ChangeType(RawLookup[str], typeof(T));
+            }
         }
     }
 }
