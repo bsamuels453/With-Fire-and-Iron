@@ -28,13 +28,8 @@ namespace Gondola.Logic{
                 var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
                 sr.Close();
 
-                //this next tidbit allows us to retain some level of scoping in the RawLookup by
-                //prefixing each name with the file it came from
-                var temp = file.Split('\\');
-                var prefix = temp[temp.Length - 1];
-                int dotIndex = prefix.IndexOf('.');
-                prefix = prefix.Remove(dotIndex);
-                prefix = prefix + "_";
+                string prefix = newConfigVals["InternalAbbreviation"] + "_";
+                newConfigVals.Remove("InternalAbbreviation");
 
                 foreach (var configVal in newConfigVals){
                     RawLookup.Add(prefix + configVal.Key, configVal.Value);
