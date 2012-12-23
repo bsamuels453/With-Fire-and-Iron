@@ -1,4 +1,6 @@
 {
+	"InternalAbbreviation": "TRend",
+
 	"DirtTexture" :        "Dirt",
 	"GrassTexture" :       "Grass",
 	"RockTexture" :        "Rock",
