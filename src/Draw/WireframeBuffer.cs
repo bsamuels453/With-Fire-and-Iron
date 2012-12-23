@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,14 +17,6 @@ namespace Gondola.Draw{
 
             BufferEffect.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
             BufferEffect.Parameters["World"].SetValue(Matrix.Identity);
-        }
-
-        public new IndexBuffer Indexbuffer{
-            get { return base.Indexbuffer; }
-        }
-
-        public new VertexBuffer Vertexbuffer{
-            get { return base.Vertexbuffer; }
         }
     }
 }
