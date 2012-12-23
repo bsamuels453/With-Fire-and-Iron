@@ -11,7 +11,7 @@
   "Identifier": 0,
   "SpriteTexRepeatX": 1.0,
   "SpriteTexRepeatY": 1.0,
-  "TextureName": "HullEditorHandleTex",
+  "TextureName": "UI_HullEditorHandleTex",
   "Color": "0, 0, 0, 0",
   "Width": 9,
   "Height": 9
