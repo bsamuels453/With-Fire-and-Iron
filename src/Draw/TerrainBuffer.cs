@@ -1,5 +1,6 @@
 ﻿#region
 
+using Gondola.Common;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -7,27 +8,27 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    internal class TerrainBuffer : BaseBufferObject<VertexPositionNormalTexture>{
+    class TerrainBuffer : BaseBufferObject<VertexPositionNormalTexture>{
         public TerrainBuffer(int numIndicies, int numVerticies, int numPrimitives, PrimitiveType primitiveType) :
             base(numIndicies, numVerticies, numPrimitives, primitiveType){
             BufferEffect = Gbl.LoadContent<Effect>("TerrainEffect").Clone();
-            BufferEffect.Parameters["GrassTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_GrassTexture"));
-            BufferEffect.Parameters["DirtTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_DirtTexture"));
-            BufferEffect.Parameters["RockTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_RockTexture"));
-            BufferEffect.Parameters["IceTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_IceTexture"));
-            BufferEffect.Parameters["TreeTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_TreeTexture"));
-            BufferEffect.Parameters["TreeBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_TreeTexNormalMap"));
-            BufferEffect.Parameters["RockBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("Terrain_RockTexNormalMap"));
+            BufferEffect.Parameters["GrassTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_GrassTexture"));
+            BufferEffect.Parameters["DirtTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_DirtTexture"));
+            BufferEffect.Parameters["RockTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_RockTexture"));
+            BufferEffect.Parameters["IceTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_IceTexture"));
+            BufferEffect.Parameters["TreeTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_TreeTexture"));
+            BufferEffect.Parameters["TreeBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_TreeTexNormalMap"));
+            BufferEffect.Parameters["RockBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_RockTexNormalMap"));
 
             BufferEffect.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
             BufferEffect.Parameters["World"].SetValue(Matrix.Identity);
 
-            BufferEffect.Parameters["AmbientColor"].SetValue(Gbl.LoadContent<Vector4>("Terrain_AmbientColor"));
-            BufferEffect.Parameters["AmbientIntensity"].SetValue(Gbl.LoadContent<float>("Terrain_AmbientIntensity"));
-            BufferEffect.Parameters["TextureScalingFactor"].SetValue(Gbl.LoadContent<int>("Terrain_TexScaleFactor"));
+            BufferEffect.Parameters["AmbientColor"].SetValue(Gbl.LoadContent<Vector4>("TRend_AmbientColor"));
+            BufferEffect.Parameters["AmbientIntensity"].SetValue(Gbl.LoadContent<float>("TRend_AmbientIntensity"));
+            BufferEffect.Parameters["TextureScalingFactor"].SetValue(Gbl.LoadContent<int>("TRend_TexScaleFactor"));
 
-            BufferEffect.Parameters["DiffuseIntensity"].SetValue(Gbl.LoadContent<float>("Terrain_DiffuseIntensity"));
-            BufferEffect.Parameters["DiffuseLightDirection"].SetValue(Gbl.LoadContent<Vector3>("Terrain_DiffuseDirection"));
+            BufferEffect.Parameters["DiffuseIntensity"].SetValue(Gbl.LoadContent<float>("TRend_DiffuseIntensity"));
+            BufferEffect.Parameters["DiffuseLightDirection"].SetValue(Gbl.LoadContent<Vector3>("TRend_DiffuseDirection"));
         }
 
         public CullMode CullMode{
