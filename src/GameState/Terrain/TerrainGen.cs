@@ -9,9 +9,11 @@ using OpenCLTemplate;
 namespace Gondola.GameState.Terrain{
     internal class TerrainGen{
         readonly int _blockWidth;
-        readonly int _chunkWidth;
+        readonly int _chunkVertWidth;
         readonly CLCalc.Program.Variable _terrGeometry;
-        readonly CLCalc.Program.Variable _terrNormals;
+        readonly CLCalc.Program.Image2D _terrNormals;
+        readonly CLCalc.Program.Image2D _terrBiNormals;
+        readonly CLCalc.Program.Image2D _terrTangents;
         readonly CLCalc.Program.MemoryObject[] _terrainGenArgs;
         readonly CLCalc.Program.Kernel _terrainGenKernel;
         readonly int[] _terrainGenWorkers;
@@ -19,7 +21,7 @@ namespace Gondola.GameState.Terrain{
         public TerrainGen(){
             CLCalc.InitCL();
 
-            _chunkWidth = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks");
+            _chunkVertWidth = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks") + 1;
             _blockWidth = Gbl.LoadContent<int>("TGen_BlockWidthInMeters");
             float lacunarity = Gbl.LoadContent<float>("TGen_Lacunarity");
             float gain = Gbl.LoadContent<float>("TGen_Gain");
@@ -40,22 +42,26 @@ namespace Gondola.GameState.Terrain{
                 }
                 );
 
-            _terrGeometry = new CLCalc.Program.Variable(new float[_chunkWidth*_chunkWidth*4]);
-            _terrNormals = new CLCalc.Program.Variable(new float[_chunkWidth*_chunkWidth*4]);
+            _terrGeometry = new CLCalc.Program.Variable(new float[_chunkVertWidth*_chunkVertWidth*4]);
+            _terrNormals = new CLCalc.Program.Image2D(new float[_chunkVertWidth*_chunkVertWidth*4], _chunkVertWidth, _chunkVertWidth);
+            _terrBiNormals = new CLCalc.Program.Image2D(new float[_chunkVertWidth*_chunkVertWidth*4], _chunkVertWidth, _chunkVertWidth);
+            _terrTangents = new CLCalc.Program.Image2D(new float[_chunkVertWidth*_chunkVertWidth*4], _chunkVertWidth, _chunkVertWidth);
 
             _terrainGenArgs = new CLCalc.Program.MemoryObject[]{
                 constants,
                 null,
                 null,
                 _terrGeometry,
-                _terrNormals
+                _terrNormals,
+                _terrBiNormals,
+                _terrTangents
             };
 
             string genScript = Gbl.LoadScript("TGen_GenScript");
             CLCalc.Program.Compile(new[]{genScript});
             _terrainGenKernel = new CLCalc.Program.Kernel("GenTerrain");
 
-            _terrainGenWorkers = new[]{_chunkWidth, _chunkWidth};
+            _terrainGenWorkers = new[]{_chunkVertWidth, _chunkVertWidth};
         }
 
         //10 millisecond overhead
@@ -68,9 +74,12 @@ namespace Gondola.GameState.Terrain{
             var sw = new Stopwatch();
             sw.Start();
             _terrainGenKernel.Execute(_terrainGenArgs, _terrainGenWorkers);
-            sw.Stop();
-            var v = new float[_chunkWidth*_chunkWidth*4];
+            var v = new float[_chunkVertWidth*_chunkVertWidth*4];
             _terrGeometry.ReadFromDeviceTo(v);
+            _terrBiNormals.ReadFromDeviceTo(v);
+            _terrNormals.ReadFromDeviceTo(v);
+            _terrTangents.ReadFromDeviceTo(v);
+            sw.Stop();
 
             double d = sw.Elapsed.Milliseconds;
             int f = 3;
