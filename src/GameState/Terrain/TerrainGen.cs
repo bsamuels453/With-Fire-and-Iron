@@ -8,12 +8,13 @@ using OpenCLTemplate;
 
 namespace Gondola.GameState.Terrain{
     internal class TerrainGen{
-        readonly CLCalc.Program.Variable[] _args; //6, 7, 8 are int chunkofstX, chunkofstZ, float result
         readonly int _blockWidth;
         readonly int _chunkWidth;
-        readonly CLCalc.Program.Kernel _kernel;
-        readonly CLCalc.Program.Variable _results;
-        readonly int[] _workers;
+        readonly CLCalc.Program.Variable _terrGeometry;
+        readonly CLCalc.Program.Variable _terrNormals;
+        readonly CLCalc.Program.MemoryObject[] _terrainGenArgs;
+        readonly CLCalc.Program.Kernel _terrainGenKernel;
+        readonly int[] _terrainGenWorkers;
 
         public TerrainGen(){
             CLCalc.InitCL();
@@ -27,38 +28,51 @@ namespace Gondola.GameState.Terrain{
             float hScale = Gbl.LoadContent<float>("TGen_HScale");
             float vScale = Gbl.LoadContent<float>("TGen_VScale");
 
-            CLCalc.Program.Variable lacunarityVar = new CLCalc.Program.Variable(new[]{lacunarity});
-            CLCalc.Program.Variable gainVar = new CLCalc.Program.Variable(new[]{gain});
-            CLCalc.Program.Variable offsetVar = new CLCalc.Program.Variable(new[]{offset});
-            CLCalc.Program.Variable octavesVar = new CLCalc.Program.Variable(new[]{octaves});
-            CLCalc.Program.Variable hScaleVar = new CLCalc.Program.Variable(new[]{hScale});
-            CLCalc.Program.Variable vScaleVar = new CLCalc.Program.Variable(new[]{vScale});
-            _results = new CLCalc.Program.Variable(new float[_chunkWidth*_chunkWidth]);
+            CLCalc.Program.Variable constants = new CLCalc.Program.Variable(
+                new[]{
+                    lacunarity,
+                    gain,
+                    offset,
+                    octaves,
+                    hScale,
+                    vScale,
+                    _blockWidth
+                }
+                );
 
-            _args = new[]{lacunarityVar, gainVar, offsetVar, octavesVar, hScaleVar, vScaleVar, null, null, _results};
+            _terrGeometry = new CLCalc.Program.Variable(new float[_chunkWidth*_chunkWidth*4]);
+            _terrNormals = new CLCalc.Program.Variable(new float[_chunkWidth*_chunkWidth*4]);
+
+            _terrainGenArgs = new CLCalc.Program.MemoryObject[]{
+                constants,
+                null,
+                null,
+                _terrGeometry,
+                _terrNormals
+            };
 
             string genScript = Gbl.LoadScript("TGen_GenScript");
             CLCalc.Program.Compile(new[]{genScript});
-            _kernel = new CLCalc.Program.Kernel("GenTerrain");
+            _terrainGenKernel = new CLCalc.Program.Kernel("GenTerrain");
 
-            _workers = new int[]{_chunkWidth, _chunkWidth};
+            _terrainGenWorkers = new[]{_chunkWidth, _chunkWidth};
         }
 
+        //10 millisecond overhead
         public void Generate(int offsetX, int offsetZ){
-            float[] result = new float[_chunkWidth*_chunkWidth];
+            CLCalc.Program.Variable offsetXVar = new CLCalc.Program.Variable(new[]{offsetX});
+            CLCalc.Program.Variable offsetZVar = new CLCalc.Program.Variable(new[]{offsetZ});
 
-            CLCalc.Program.Variable offsetXVar = new CLCalc.Program.Variable(new []{offsetX});
-            CLCalc.Program.Variable offsetZVar = new CLCalc.Program.Variable(new []{offsetZ});
-            _args[6] = offsetXVar;
-            _args[7] = offsetZVar;
-
-            Stopwatch sw = new Stopwatch();
+            _terrainGenArgs[1] = offsetXVar;
+            _terrainGenArgs[2] = offsetZVar;
+            var sw = new Stopwatch();
             sw.Start();
-            _kernel.Execute(_args, _workers);
-            _results.ReadFromDeviceTo(result);
+            _terrainGenKernel.Execute(_terrainGenArgs, _terrainGenWorkers);
             sw.Stop();
+            var v = new float[_chunkWidth*_chunkWidth*4];
+            _terrGeometry.ReadFromDeviceTo(v);
 
-            double d = sw.ElapsedMilliseconds;
+            double d = sw.Elapsed.Milliseconds;
             int f = 3;
         }
     }

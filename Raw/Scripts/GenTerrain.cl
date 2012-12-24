@@ -1,5 +1,60 @@
 //todo optimize this, maybe even for vendor-specific if have the time
 
+//since max constant parameters to kernel is ~6, gotta cram them into an array
+typedef enum{
+	Lacunarity = 0,
+	Gain = 1,
+	Offset = 2,
+	Octaves = 3,
+	HScale = 4,
+	VScale = 5,
+	MetersPerBlock = 6
+} PARAMETERS;
+
+inline float GenRidge( float height, float offset );
+inline float GenNoise(int x, int z);
+inline float CosInterp(float a, float b, float x);
+inline float InterpNoise(float x, float z);
+inline float GetHeight(int x, int z, float lacunarity, float gain, float offset, int octaves, float hScale, float vScale, int chunkOfstX, int chunkOfstZ);
+
+__kernel void GenTerrain(
+	__constant float *parameters,
+	__constant int *chunkOffsetX,
+	__constant int *chunkOffsetZ,
+	__global float4 *geometry,
+	__global float4 *normals){  
+	
+	////////////////////
+	//GENERATE TERRAIN//
+	////////////////////
+	int blockX = get_global_id(0);
+	int blockZ = get_global_id(1);
+	
+	int chunkWidth = get_global_size(0);
+	float realPosX = (blockX  + *chunkOffsetX) * parameters[MetersPerBlock];
+	float realPosZ = (blockZ  + *chunkOffsetZ) * parameters[MetersPerBlock];
+	
+	float height = GetHeight(
+		blockX, 
+		blockZ, 
+		parameters[Lacunarity], 
+		parameters[Gain], 
+		parameters[Offset], 
+		parameters[Octaves], 
+		parameters[HScale], 
+		parameters[VScale], 
+		*chunkOffsetX,
+		*chunkOffsetZ
+	);
+	
+	geometry[blockX*chunkWidth+blockZ] = (float4)(realPosX,height,realPosZ,-1);
+	
+	////////////////////
+	//GENERATE NORMALS//
+	////////////////////
+	barrier(CLK_GLOBAL_MEM_FENCE);
+}
+
 inline float GenRidge( float height, float offset ){
 	height = fabs(height);
 	height = offset - height;
@@ -37,42 +92,27 @@ inline float InterpNoise(float x, float z){
     return CosInterp(i1, i2, fracZ);
 }
 
-__kernel void GenTerrain(
-	__constant float *lacunarity,
-	__constant float *gain,
-	__constant float *offset,
-	__constant int   *octaves,
-	__constant float *hScale,
-	__constant float *vScale,
-	__constant int *chunkOfstX,
-	__constant int *chunkOfstZ,
-	__global   float *out)	{  
-		
-	int blockX = get_global_id(0);
-	int blockZ = get_global_id(1);
-		
-	float posX = (blockX + *chunkOfstX) * *hScale;
-	float posZ = (blockZ + *chunkOfstZ) * *hScale;
+inline float GetHeight(int x, int z, float lacunarity, float gain, float offset, int octaves, float hScale, float vScale, int chunkOfstX, int chunkOfstZ){
+	float posX = (x + chunkOfstX) * hScale;
+	float posZ = (z + chunkOfstZ) * hScale;
 		
 	float sum = 0;
 	float amplitude = 0.5f;
 	float frequency = 1.0f;
 	float prev = 1.0f;
 		
-	for(int curOctave=0; curOctave < *octaves; curOctave++){
+	for(int curOctave=0; curOctave < octaves; curOctave++){
 		float n = GenRidge(
 					InterpNoise(
 						posX * frequency,
 						posZ * frequency
 					),
-					*offset
+					offset
 					);
 		sum += n * amplitude * prev;
 		prev = n;
-		frequency *= *lacunarity;
-		amplitude *= *gain;
+		frequency *= lacunarity;
+		amplitude *= gain;
 	}
-		
-	int chunkWidth = get_global_size(0);
-	out[blockX*chunkWidth + blockZ] = sum * *vScale;	
+	return sum * vScale;
 }
