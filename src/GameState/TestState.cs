@@ -1,6 +1,7 @@
 ﻿#region
 
 using Gondola.Draw;
+using Gondola.GameState.Terrain;
 using Gondola.Logic;
 using Gondola.UI;
 
@@ -16,6 +17,11 @@ namespace Gondola.GameState{
         readonly Button button1;
 
         public TestState(){
+            var t = new TerrainGen();
+            t.Generate(0, 0);
+
+
+
             target = new RenderTarget();
             //sprite = new Sprite2D(target, "TestTexture", 0, 0, 50, 50);
             var buttongen = new ButtonGenerator("ToolbarButton64.json");
@@ -33,6 +39,7 @@ namespace Gondola.GameState{
         #region IGameState Members
 
         public void Dispose(){
+            target.Dispose();
         }
 
         public void Update(InputState state, double timeDelta){
