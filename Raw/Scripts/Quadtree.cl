@@ -14,6 +14,7 @@ typedef enum{
 
 __kernel void QuadTree(
 	int chunkWidth,
+	int depth,
 	int maxDepth,
 	__constant int *vertAssignments,
 	__global uchar3 *normals,
@@ -21,63 +22,81 @@ __kernel void QuadTree(
 	
 	int workerId = get_global_id(0);
 	
-	for(int curDepth=0; curDepth<maxDepth; curDepth++){
-		int2 vert = GetVertAssignment(
-			curDepth,
-			chunkWidth,
-			workerId,
-			vertAssignments
+	int2 vert = GetVertAssignment(
+		depth,
+		chunkWidth,
+		workerId,
+		vertAssignments
+	);
+	// +              v0 
+	// ^               |  
+	// |               |
+	// Z axis   v3----v4----v1
+	// |               |
+	// v               |
+	//                v2
+	//           <- X axis -> +
+	//notice that even though int2 indexes the second value as y,
+	//it still cooresponds with the value on the z axis
+	
+	int vertIdx[5];
+	uchar3 uvert[5];
+	float angles[4];
+	
+	vertIdx[v0] = GetVertIndex(vert.x, vert.y+1, chunkWidth);
+	vertIdx[v1] = GetVertIndex(vert.x+1, vert.y, chunkWidth);
+	vertIdx[v2] = GetVertIndex(vert.x, vert.y-1, chunkWidth);
+	vertIdx[v3] = GetVertIndex(vert.x-1, vert.y, chunkWidth);
+	vertIdx[v4] = GetVertIndex(vert.x, vert.y, chunkWidth);
+	
+	for(int i=0; i<5; i++){
+		uvert[i] = normals[vertIdx[i]];
+	}
+	
+	for(int i=0; i<4; i++){
+		angles[i] = acos( 
+			uchar3Dot(uvert[4], uvert[i]) / 
+			(uchar3Mag(uvert[4]) * uchar3Mag(uvert[i]))
 		);
-		//check to see if this worker is necessary for this depth
-		if(vert.x == -1){
-			return;
+	}
+	
+	bool disableCentVert = true;
+	const float minAngle = 10 * 0.174533f;
+	for(int i=0; i<4; i++){
+		if(angles[i] > minAngle){
+			disableCentVert = false;
+			break;
 		}
-		// +              v1 
-		// ^               |  
-		// |               |
-		// Z axis   v4----v0----v2
-		// |               |
-		// v               |
-		//                v3
-		//           <- X axis -> +
-		//notice that even though int2 indexes the second value as y,
-		//it still cooresponds with the value on the z axis
-		
-		int vertIdx[5];
-		uchar3 uvert[5];
-		float angles[4];
-		
-		vertIdx[v0] = GetVertIndex(vert.x, vert.y, chunkWidth);
-		vertIdx[v1] = GetVertIndex(vert.x, vert.y+1, chunkWidth);
-		vertIdx[v2] = GetVertIndex(vert.x+1, vert.y, chunkWidth);
-		vertIdx[v3] = GetVertIndex(vert.x, vert.y-1, chunkWidth);
-		vertIdx[v4] = GetVertIndex(vert.x-1, vert.y, chunkWidth);
-		
-		for(int i=0; i<5; i++){
-			uvert[i] = normals[vertIdx[i]];
+	}
+	
+	if(disableCentVert){
+		activeVerts[vertIdx[4]] = false;		
+	}
+	
+	barrier(CLK_GLOBAL_MEM_FENCE);
+	
+	//Now to disable edge vertexes. 
+	if(disableCentVert){
+		int stride = (int)pown(2.0f, depth+1);
+		int halfstride = stride/2;
+			
+		//check north neighbor
+		if(activeVerts[GetVertIndex(vert.x, vert.y+stride, chunkWidth)] == false){
+			activeVerts[GetVertIndex(vert.x, vert.y+halfstride, chunkWidth)] = false;
 		}
-		
-		for(int i=1; i<5; i++){
-			angles[i-1] = acos( 
-				uchar3Dot(uvert[0], uvert[i]) / 
-				(uchar3Mag(uvert[0]) * uchar3Mag(uvert[i]))
-			);
+		//check south neighbor
+		if(activeVerts[GetVertIndex(vert.x, vert.y-stride, chunkWidth)] == false){
+			activeVerts[GetVertIndex(vert.x, vert.y-halfstride, chunkWidth)] = false;
 		}
-		
-		/*
-		for(int i=0; i<5; i++){
-			fvert[i] = cast_char3tfloat3(uvert[i]);
+		//check east neighbor
+		if(activeVerts[GetVertIndex(vert.x+stride, vert.y, chunkWidth)] == false){
+			activeVerts[GetVertIndex(vert.x+halfstride, vert.y, chunkWidth)] = false;
 		}
-		
-		for(int i=0; i<5; i++){
-			vertMag[i] = distance(float3(0,0,0), fvert[i]);
+		//check west neighbor
+		if(activeVerts[GetVertIndex(vert.x-stride, vert.y, chunkWidth)] == false){
+			activeVerts[GetVertIndex(vert.x-halfstride, vert.y, chunkWidth)] = false;
 		}
-		
-		
-		for(int i=1; i<5; i++){
-			angles[i-1] = acos( dot(fvert[0], fvert[i]) / (vertMag[0] * vertMag[i]));
-		}*/
-	}	
+	}
 }
 
 inline int2 GetVertAssignment(int depth, int chunkWidth, int workerId, __constant int *vertAssignments){
