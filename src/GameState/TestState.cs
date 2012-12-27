@@ -1,5 +1,7 @@
 ﻿#region
 
+using System.Diagnostics;
+using System.Threading;
 using Gondola.Draw;
 using Gondola.GameState.Terrain;
 using Gondola.Logic;
@@ -18,8 +20,18 @@ namespace Gondola.GameState{
 
         public TestState(){
             var t = new TerrainGen();
-            t.Generate(0, 0);
+            var sw = new Stopwatch();
+            sw.Start();
+            for (int i = 0; i < 500; i++){
 
+                t.Generate(i, 0);
+
+
+
+            }
+            sw.Stop();
+            double d = sw.ElapsedMilliseconds / 500d;
+            int g = 5;
 
 
             target = new RenderTarget();

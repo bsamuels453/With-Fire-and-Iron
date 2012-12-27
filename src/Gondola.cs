@@ -50,6 +50,7 @@ namespace Gondola{
         protected override void Update(GameTime gameTime){
             _gamestateManager.Update();
             base.Update(gameTime);
+            Exit();
         }
 
         protected override void Draw(GameTime gameTime){
