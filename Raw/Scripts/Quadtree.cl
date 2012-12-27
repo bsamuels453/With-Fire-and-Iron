@@ -11,6 +11,14 @@ typedef enum{
 	v3 = 3,
 	v4 = 4
 } VERTEXENUM;
+// +              v0 
+// ^               |  
+// |               |
+// Z axis   v3----v4----v1
+// |               |
+// v               |
+//                v2
+//           <- X axis -> +
 
 __kernel void QuadTree(
 	int chunkWidth,
@@ -27,14 +35,7 @@ __kernel void QuadTree(
 		workerId,
 		vertAssignments
 	);
-	// +              v0 
-	// ^               |  
-	// |               |
-	// Z axis   v3----v4----v1
-	// |               |
-	// v               |
-	//                v2
-	//           <- X axis -> +
+
 	//notice that even though int2 indexes the second value as y,
 	//it still cooresponds with the value on the z axis
 	
