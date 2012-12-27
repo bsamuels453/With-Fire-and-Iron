@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using Cloo;
 using Gondola.Logic;
 using Microsoft.Xna.Framework.Graphics;
@@ -61,7 +62,8 @@ namespace Gondola.GameState.Terrain{
             _cmdQueue.WriteToBuffer(constArr, _constants, false, null);
 
             _program = new ComputeProgram(_context, Gbl.LoadScript("TGen_GenScript"));
-            _program.Build(null, null, null, IntPtr.Zero);
+            string includeSearchDir = Gbl.GetScriptDirectory("TGen_GenScript");
+            _program.Build(null, "-I " + includeSearchDir, null, IntPtr.Zero);
             _kernel = _program.CreateKernel("GenTerrain");
 
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
