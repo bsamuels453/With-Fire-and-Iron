@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Diagnostics;
 using Gondola.Common;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
@@ -8,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    class TerrainBuffer : BaseBufferObject<VertexPositionNormalTexture>{
+    class TerrainBuffer : BaseBufferObject<VertexPositionTexture>{
         public TerrainBuffer(int numIndicies, int numVerticies, int numPrimitives, PrimitiveType primitiveType) :
             base(numIndicies, numVerticies, numPrimitives, primitiveType){
             BufferEffect = Gbl.LoadContent<Effect>("TerrainEffect").Clone();
@@ -31,6 +32,25 @@ namespace Gondola.Draw{
             BufferEffect.Parameters["DiffuseLightDirection"].SetValue(Gbl.LoadContent<Vector3>("TRend_DiffuseDirection"));
         }
 
+        bool _bufferDataSet;
+
+        public void SetData(
+            VertexPositionTexture[] verticies, 
+            int[] indicies,
+            Texture2D normals,
+            Texture2D binormals,
+            Texture2D tangents
+            ){
+            Debug.Assert(_bufferDataSet == false);
+            Indexbuffer.SetData(indicies);
+            Vertexbuffer.SetData(verticies);
+            BufferEffect.Parameters["NormalMapTexture"].SetValue(normals);
+            BufferEffect.Parameters["BinormalMapTexture"].SetValue(binormals);
+            BufferEffect.Parameters["TangentMapTexture"].SetValue(tangents);
+
+            _bufferDataSet = true;
+        }
+
         public CullMode CullMode{
             set{
                 BufferRasterizer = new RasterizerState();
@@ -38,6 +58,7 @@ namespace Gondola.Draw{
             }
         }
 
+        /*
         public Texture2D NormalMapTex{
             set { BufferEffect.Parameters["NormalMapTexture"].SetValue(value); }
         }
@@ -65,5 +86,6 @@ namespace Gondola.Draw{
         public Texture2D TreeMask{
             set { BufferEffect.Parameters["TreeCanvasTexture"].SetValue(value); }
         }
+         */
     }
 }
