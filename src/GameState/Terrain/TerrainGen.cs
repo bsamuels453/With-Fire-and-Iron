@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using Cloo;
 using Gondola.Logic;
+using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
@@ -62,10 +64,12 @@ namespace Gondola.GameState.Terrain{
             _program.Build(null, null, null, IntPtr.Zero);
             _kernel = _program.CreateKernel("GenTerrain");
 
-            _geometry = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadWrite, _chunkWidthInVerts*_chunkWidthInVerts*3);
-            _normals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.WriteOnly, _chunkWidthInVerts * _chunkWidthInVerts * 3);
-            _binormals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.WriteOnly, _chunkWidthInVerts * _chunkWidthInVerts * 3);
-            _tangents = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.WriteOnly, _chunkWidthInVerts * _chunkWidthInVerts * 3);
+            //despite the script using float3 for these fields, we need to consider it to be float4 because the 
+            //implementation is basically a float4 wrapper that uses zero for the last variable
+            _geometry = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadWrite, _chunkWidthInVerts*_chunkWidthInVerts*4);
+            _normals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.WriteOnly, _chunkWidthInVerts * _chunkWidthInVerts * 4);
+            _binormals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.WriteOnly, _chunkWidthInVerts * _chunkWidthInVerts * 4);
+            _tangents = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.WriteOnly, _chunkWidthInVerts * _chunkWidthInVerts * 4);
 
             _kernel.SetMemoryArgument(0, _constants);
             _kernel.SetMemoryArgument(3, _geometry);
@@ -77,22 +81,66 @@ namespace Gondola.GameState.Terrain{
         }
 
         public void Generate(int offsetX, int offsetZ){
-            var result1 = new float[_chunkWidthInVerts*_chunkWidthInVerts * 3];
-            var result2 = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 3];
-            var result3 = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 3];
-            var result4 = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 3];
+            var rawGeometry = new float[_chunkWidthInVerts*_chunkWidthInVerts * 4];
+            var rawNormals = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 4];
+            var rawBinormals = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 4];
+            var rawTangents = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 4];
 
             _kernel.SetValueArgument(1, offsetX);
             _kernel.SetValueArgument(2, offsetZ);
 
             _cmdQueue.Execute(_kernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
-            _cmdQueue.ReadFromBuffer(_geometry, ref result1, true, null);
-            _cmdQueue.ReadFromBuffer(_normals, ref result2, true, null);
-            _cmdQueue.ReadFromBuffer(_binormals, ref result3, true, null);
-            _cmdQueue.ReadFromBuffer(_tangents, ref result4, true, null);
+            _cmdQueue.ReadFromBuffer(_geometry, ref rawGeometry, true, null);
+            _cmdQueue.ReadFromBuffer(_normals, ref rawNormals, true, null);
+            _cmdQueue.ReadFromBuffer(_binormals, ref rawBinormals, true, null);
+            _cmdQueue.ReadFromBuffer(_tangents, ref rawTangents, true, null);
 
 
             _cmdQueue.Finish();
+
+            var colorNormals = new Color[_chunkWidthInVerts * _chunkWidthInVerts];
+            var colorBinormals = new Color[_chunkWidthInVerts * _chunkWidthInVerts];
+            var colorTangents = new Color[_chunkWidthInVerts * _chunkWidthInVerts];
+
+            //be careful not to thrash the cache
+            int rawIndex = 0;
+            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++) {
+                colorNormals[i] = Color.FromArgb(
+                    rawNormals[rawIndex],
+                    rawNormals[rawIndex + 1],
+                    rawNormals[rawIndex + 2]
+                    );
+                rawIndex += 4;
+            }
+
+            rawIndex = 0;
+            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++) {
+                colorBinormals[i] = Color.FromArgb(
+                    rawBinormals[rawIndex],
+                    rawBinormals[rawIndex + 1],
+                    rawBinormals[rawIndex + 2]
+                    );
+                rawIndex += 4;
+            }
+
+            rawIndex = 0;
+            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++) {
+                colorTangents[i] = Color.FromArgb(
+                    rawTangents[rawIndex],
+                    rawTangents[rawIndex + 1],
+                    rawTangents[rawIndex + 2]
+                    );
+                rawIndex += 4;
+            }
+
+
+            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Vector4);
+            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Vector4);
+            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Vector4);
+
+            texNormal.SetData(colorNormals);
+            texBinormal.SetData(colorBinormals);
+            texTangent.SetData(colorTangents);
 
             int f = 3;
         }
