@@ -98,49 +98,13 @@ namespace Gondola.GameState.Terrain{
 
             _cmdQueue.Finish();
 
-            var colorNormals = new Color[_chunkWidthInVerts * _chunkWidthInVerts];
-            var colorBinormals = new Color[_chunkWidthInVerts * _chunkWidthInVerts];
-            var colorTangents = new Color[_chunkWidthInVerts * _chunkWidthInVerts];
+            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
-            //be careful not to thrash the cache
-            int rawIndex = 0;
-            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++) {
-                colorNormals[i] = Color.FromArgb(
-                    rawNormals[rawIndex],
-                    rawNormals[rawIndex + 1],
-                    rawNormals[rawIndex + 2]
-                    );
-                rawIndex += 4;
-            }
-
-            rawIndex = 0;
-            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++) {
-                colorBinormals[i] = Color.FromArgb(
-                    rawBinormals[rawIndex],
-                    rawBinormals[rawIndex + 1],
-                    rawBinormals[rawIndex + 2]
-                    );
-                rawIndex += 4;
-            }
-
-            rawIndex = 0;
-            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++) {
-                colorTangents[i] = Color.FromArgb(
-                    rawTangents[rawIndex],
-                    rawTangents[rawIndex + 1],
-                    rawTangents[rawIndex + 2]
-                    );
-                rawIndex += 4;
-            }
-
-
-            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Vector4);
-            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Vector4);
-            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Vector4);
-
-            texNormal.SetData(colorNormals);
-            texBinormal.SetData(colorBinormals);
-            texTangent.SetData(colorTangents);
+            texNormal.SetData(rawNormals);
+            texBinormal.SetData(rawBinormals);
+            texTangent.SetData(rawTangents);
 
             int f = 3;
         }
