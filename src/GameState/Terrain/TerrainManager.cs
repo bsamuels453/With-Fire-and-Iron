@@ -5,7 +5,7 @@ using Gondola.Logic;
 
 namespace Gondola.GameState.Terrain {
     class TerrainManager : IGameState {
-        List<ChunkData> _loadedChunks;
+        List<TerrainChunk> _loadedChunks;
         Vec3Ref _viewportPos;
 
         public TerrainManager(){

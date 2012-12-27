@@ -80,7 +80,7 @@ namespace Gondola.GameState.Terrain{
             _cmdQueue.Finish();
         }
 
-        public void Generate(int offsetX, int offsetZ){
+        public TerrainChunk GenerateChunk(int offsetX, int offsetZ) {
             var rawGeometry = new float[_chunkWidthInVerts*_chunkWidthInVerts * 4];
             var rawNormals = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 4];
             var rawBinormals = new byte[_chunkWidthInVerts * _chunkWidthInVerts * 4];
@@ -95,7 +95,6 @@ namespace Gondola.GameState.Terrain{
             _cmdQueue.ReadFromBuffer(_binormals, ref rawBinormals, true, null);
             _cmdQueue.ReadFromBuffer(_tangents, ref rawTangents, true, null);
 
-
             _cmdQueue.Finish();
 
             var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
@@ -106,7 +105,7 @@ namespace Gondola.GameState.Terrain{
             texBinormal.SetData(rawBinormals);
             texTangent.SetData(rawTangents);
 
-            int f = 3;
+            return null;
         }
     }
 }
