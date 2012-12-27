@@ -1,4 +1,4 @@
-inline int2 GetVertAssignment(int depth, int chunkWidth, int workerId, __constant int *vertAssignments);
+inline int2 GetVertAssignment(int chunkWidth, int workerId, __constant int *vertAssignments);
 inline int GetVertIndex(int x, int y, int chunkWidth);
 //inline float3 cast_char3tfloat3(uchar3 var);
 inline float uchar3Dot(uchar3 v1, uchar3 v2);
@@ -23,7 +23,6 @@ __kernel void QuadTree(
 	int workerId = get_global_id(0);
 	
 	int2 vert = GetVertAssignment(
-		depth,
 		chunkWidth,
 		workerId,
 		vertAssignments
@@ -99,9 +98,8 @@ __kernel void QuadTree(
 	}
 }
 
-inline int2 GetVertAssignment(int depth, int chunkWidth, int workerId, __constant int *vertAssignments){
-	int offset = depth * get_global_size(0); + workerId;
-	int vertIndex = vertAssignments[offset];
+inline int2 GetVertAssignment(int chunkWidth, int workerId, __constant int *vertAssignments){
+	int vertIndex = vertAssignments[workerId];
 	if( vertIndex == -1){
 		return (int2)(-1, -1);
 	}
