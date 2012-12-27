@@ -54,5 +54,17 @@ namespace Gondola.Logic{
             sr.Close();
             return scriptText;
         }
+
+        public static string GetScriptDirectory(string str) {
+            string curDir = Directory.GetCurrentDirectory();
+            string address = RawLookup[str];
+            string directory = "";
+            for (int i = address.Length - 1; i >= 0; i--){
+                if( address[i] == '\\'){
+                    directory = address.Substring(0, i);
+                }
+            }
+            return curDir + "\\Raw\\" + directory;
+        }
     }
 }
