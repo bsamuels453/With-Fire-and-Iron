@@ -19,13 +19,12 @@ inline float GetHeight(int x, int z, __constant float *parameters, int chunkOfst
 
 __kernel void GenTerrain(
 	__constant float *parameters,
-	__constant int *chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
-	__constant int *chunkOffsetZ,
-	__global float4 *geometry,
-	__write_only image2d_t normals,
-	__write_only image2d_t binormals,
-	__write_only image2d_t tangents){  
-	
+	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
+	int chunkOffsetZ,
+	__global float3 *geometry,
+	__global uchar3 *normals,
+	__global uchar3 *binormals,
+	__global uchar3 *tangents){  
 	////////////////////
 	//GENERATE TERRAIN//
 	////////////////////
@@ -34,18 +33,19 @@ __kernel void GenTerrain(
 	int blockZ = get_global_id(1);
 	
 	int chunkWidth = get_global_size(0);
-	float realPosX = (blockX  + *chunkOffsetX) * metersPerBlock;
-	float realPosZ = (blockZ  + *chunkOffsetZ) * metersPerBlock;
+	float realPosX = (blockX  + chunkOffsetX) * metersPerBlock;
+	float realPosZ = (blockZ  + chunkOffsetZ) * metersPerBlock;
 	
 	float height = GetHeight(
 		blockX, 
 		blockZ, 
 		parameters,
-		*chunkOffsetX,
-		*chunkOffsetZ
+		chunkOffsetX,
+		chunkOffsetZ
 	);
 	
-	geometry[blockX*chunkWidth+blockZ] = (float4)(realPosX,height,realPosZ,-1);
+	int index = blockX*chunkWidth+blockZ;
+	geometry[index] = (float3)(realPosX, height, realPosZ);
 	
 	////////////////////
 	//GENERATE NORMALS//
@@ -63,79 +63,97 @@ __kernel void GenTerrain(
     // v              |
     //               v3
     //           <- X axis -> +
-	//notice that 1 is being placed in the w component. this is essentially
-	//a flag to let the rest of the program know that the float4 hasn't been
-	//assigned any value, since in this application any assigned float4 will
-	//have a w value of zero
-	float4 v1 = (float4)(0,0,0,1);
-	float4 v2 = (float4)(0,0,0,1);
-	float4 v3 = (float4)(0,0,0,1);
-	float4 v4 = (float4)(0,0,0,1);
+	float3 v1 = (float3)(0,0,0);
+	float3 v2 = (float3)(0,0,0);
+	float3 v3 = (float3)(0,0,0);
+	float3 v4 = (float3)(0,0,0);
+	
+	bool v1Init=false;
+	bool v2Init=false;
+	bool v3Init=false;
+	bool v4Init=false;
 	
 	if(blockX == 0){
-		v4 = (float4)(
+		v4 = (float3)(
 		-1, 
-		GetHeight(blockX-1, blockZ, parameters,*chunkOffsetX,*chunkOffsetZ),
-		0,
+		GetHeight(blockX-1, blockZ, parameters,chunkOffsetX,chunkOffsetZ),
 		0
 		);
+		v1Init = true;
 	}
 	if(blockX == chunkWidth-1){
-		v2 = (float4)(
+		v2 = (float3)(
 		1, 
-		GetHeight(blockX+1, blockZ, parameters,*chunkOffsetX,*chunkOffsetZ),
-		0,
+		GetHeight(blockX+1, blockZ, parameters,chunkOffsetX,chunkOffsetZ),
 		0
 		);
+		v2Init = true;
 	}
 	if(blockZ == 0){
-		v3 = (float4)(
+		v3 = (float3)(
 		0, 
-		GetHeight(blockX, blockZ-1, parameters,*chunkOffsetX,*chunkOffsetZ),
-		-1,
-		0
+		GetHeight(blockX, blockZ-1, parameters,chunkOffsetX,chunkOffsetZ),
+		-1
 		);
+		v3Init = true;
 	}
 	if(blockZ == chunkWidth-1){
-		v1 = (float4)(
+		v1 = (float3)(
 		0, 
-		GetHeight(blockX, blockZ+1, parameters,*chunkOffsetX,*chunkOffsetZ),
-		1,
-		0
+		GetHeight(blockX, blockZ+1, parameters,chunkOffsetX,chunkOffsetZ),
+		1
 		);
+		v4Init = true;
 	}
 	
 	//now we fill v1,v2,v3,v4 with vertexes from the
 	//geometry array if they havent been filled already
-	if(v1.w == 0){
+	if(!v1Init){
 		v1 = geometry[blockX*chunkWidth+blockZ+1];
 	}
-	if(v2.w == 0){
+	if(!v2Init){
 		v2 = geometry[(blockX+1)*chunkWidth+blockZ];
 	}
-	if(v3.w == 0){
+	if(!v3Init){
 		v3 = geometry[blockX*chunkWidth+blockZ-1];
 	}
-	if(v4.w == 0){
+	if(!v4Init){
 		v4 = geometry[(blockX-1)*chunkWidth+blockZ];
 	}
 	
 	//to make this simpler, we assume the center vertex is zero
-	float4 centHeight = (float4)(0,height,0,0);
-	v1 = v1 - centHeight;
-	v2 = v2 - centHeight;
-	v3 = v3 - centHeight;
-	v4 = v4 - centHeight;
-	
-	float4 crossSum = (float4)(0,0,0,0);
+	v1.y = v1.y - height;
+	v2.y = v2.y - height;
+	v3.y = v3.y - height;
+	v4.y = v4.y - height;
+
+	float3 crossSum = (float3)(0,0,0);
 	crossSum += cross(v1, v2);
 	crossSum += cross(v2, v3);
 	crossSum += cross(v3, v4);
 	crossSum += cross(v4, v1);
 	
-	write_imagef(normals, (int2)(blockX, blockZ), crossSum);
-	write_imagef(binormals, (int2)(blockX, blockZ), v1);
-	write_imagef(tangents, (int2)(blockX, blockZ), v2);
+	crossSum = normalize(crossSum);
+	v1 = normalize(v1);
+	v2 = normalize(v2);
+	
+	normals[index] = (uchar3)(
+		(uchar)(crossSum.x*127+128),
+		(uchar)(crossSum.y*127+128),
+		(uchar)(crossSum.z*127+128)
+	);
+	
+	binormals[index] = (uchar3)(
+		(uchar)(v1.x*127+128),
+		(uchar)(v1.y*127+128),
+		(uchar)(v1.z*127+128)
+	);
+	
+	tangents[index] = (uchar3)(
+		(uchar)(v2.x*127+128),
+		(uchar)(v2.y*127+128),
+		(uchar)(v2.z*127+128)
+	);
 }
 
 inline float GenRidge( float height, float offset ){
