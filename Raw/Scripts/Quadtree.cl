@@ -22,80 +22,85 @@ typedef enum{
 
 __kernel void QuadTree(
 	int chunkWidth,
-	int depth,
 	int maxDepth,
 	__constant int *vertAssignments,
 	__global uchar3 *normals,
 	__global bool *activeVerts){
 	
 	int workerId = get_global_id(0);
-	
-	int2 vert = GetVertAssignment(
-		chunkWidth,
-		workerId,
-		vertAssignments
-	);
-
-	//notice that even though int2 indexes the second value as y,
-	//it still cooresponds with the value on the z axis
-	
-	int vertIdx[5];
-	uchar3 uvert[5];
-	float angles[4];
-	
-	vertIdx[v0] = GetVertIndex(vert.x, vert.y+1, chunkWidth);
-	vertIdx[v1] = GetVertIndex(vert.x+1, vert.y, chunkWidth);
-	vertIdx[v2] = GetVertIndex(vert.x, vert.y-1, chunkWidth);
-	vertIdx[v3] = GetVertIndex(vert.x-1, vert.y, chunkWidth);
-	vertIdx[v4] = GetVertIndex(vert.x, vert.y, chunkWidth);
-	
-	for(int i=0; i<5; i++){
-		uvert[i] = normals[vertIdx[i]];
-	}
-	
-	for(int i=0; i<4; i++){
-		angles[i] = acos( 
-			uchar3Dot(uvert[4], uvert[i]) / 
-			(uchar3Mag(uvert[4]) * uchar3Mag(uvert[i]))
+	for(int depth=0; depth<maxDepth; depth++){
+		int2 vert = GetVertAssignment(
+			chunkWidth,
+			workerId,
+			vertAssignments
 		);
-	}
-	
-	bool disableCentVert = true;
-	const float minAngle = 10 * 0.174533f;
-	for(int i=0; i<4; i++){
-		if(angles[i] > minAngle){
-			disableCentVert = false;
-			break;
+		if(vert.x == -1){
+			return;
 		}
-	}
-	
-	if(disableCentVert){
-		activeVerts[vertIdx[4]] = false;		
-	}
-	
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	
-	//Now to disable edge vertexes. 
-	if(disableCentVert){
-		int stride = (int)pown(2.0f, depth+1);
-		int halfstride = stride/2;
-			
-		//check north neighbor
-		if(activeVerts[GetVertIndex(vert.x, vert.y+stride, chunkWidth)] == false){
-			activeVerts[GetVertIndex(vert.x, vert.y+halfstride, chunkWidth)] = false;
+
+		//notice that even though int2 indexes the second value as y,
+		//it still cooresponds with the value on the z axis
+		
+		int vertIdx[5];
+		uchar3 uvert[5];
+		float angles[4];
+		
+		vertIdx[v0] = GetVertIndex(vert.x, vert.y+1, chunkWidth);
+		vertIdx[v1] = GetVertIndex(vert.x+1, vert.y, chunkWidth);
+		vertIdx[v2] = GetVertIndex(vert.x, vert.y-1, chunkWidth);
+		vertIdx[v3] = GetVertIndex(vert.x-1, vert.y, chunkWidth);
+		vertIdx[v4] = GetVertIndex(vert.x, vert.y, chunkWidth);
+		
+		for(int i=0; i<5; i++){
+			uvert[i] = normals[vertIdx[i]];
 		}
-		//check south neighbor
-		if(activeVerts[GetVertIndex(vert.x, vert.y-stride, chunkWidth)] == false){
-			activeVerts[GetVertIndex(vert.x, vert.y-halfstride, chunkWidth)] = false;
+		
+		for(int i=0; i<4; i++){
+			angles[i] = acos( 
+				uchar3Dot(uvert[4], uvert[i]) / 
+				(uchar3Mag(uvert[4]) * uchar3Mag(uvert[i]))
+			);
 		}
-		//check east neighbor
-		if(activeVerts[GetVertIndex(vert.x+stride, vert.y, chunkWidth)] == false){
-			activeVerts[GetVertIndex(vert.x+halfstride, vert.y, chunkWidth)] = false;
+		
+		bool disableCentVert = true;
+		const float minAngle = 10 * 0.174533f;
+		for(int i=0; i<4; i++){
+			if(angles[i] > minAngle){
+				disableCentVert = false;
+				break;
+			}
 		}
-		//check west neighbor
-		if(activeVerts[GetVertIndex(vert.x-stride, vert.y, chunkWidth)] == false){
-			activeVerts[GetVertIndex(vert.x-halfstride, vert.y, chunkWidth)] = false;
+		
+		if(disableCentVert){
+			activeVerts[vertIdx[4]] = false;		
 		}
+		
+		barrier(CLK_GLOBAL_MEM_FENCE);
+		
+		//Now to disable edge vertexes. 
+		if(disableCentVert){
+			int stride = (int)pown(2.0f, depth+1);
+			int halfstride = stride/2;
+				
+			//check north neighbor
+			if(activeVerts[GetVertIndex(vert.x, vert.y+stride, chunkWidth)] == false){
+				activeVerts[GetVertIndex(vert.x, vert.y+halfstride, chunkWidth)] = false;
+			}
+			//check south neighbor
+			if(activeVerts[GetVertIndex(vert.x, vert.y-stride, chunkWidth)] == false){
+				activeVerts[GetVertIndex(vert.x, vert.y-halfstride, chunkWidth)] = false;
+			}
+			//check east neighbor
+			if(activeVerts[GetVertIndex(vert.x+stride, vert.y, chunkWidth)] == false){
+				activeVerts[GetVertIndex(vert.x+halfstride, vert.y, chunkWidth)] = false;
+			}
+			//check west neighbor
+			if(activeVerts[GetVertIndex(vert.x-stride, vert.y, chunkWidth)] == false){
+				activeVerts[GetVertIndex(vert.x-halfstride, vert.y, chunkWidth)] = false;
+			}
+		}
+		
+		barrier(CLK_GLOBAL_MEM_FENCE);
 	}
 }
 
