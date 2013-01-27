@@ -37,9 +37,11 @@ __kernel void QuadTree(
 		if(vert.x == -1){
 			return;
 		}
+		if(vert.x == chunkWidth-1){
+			return;
+		}
 
-		//notice that even though int2 indexes the second value as y,
-		//it still cooresponds with the value on the z axis
+
 		
 		int vertIdx[5];
 		uchar3 uvert[5];
