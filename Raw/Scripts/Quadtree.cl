@@ -1,4 +1,9 @@
 //todo: a damn header file
+typedef enum{
+	HORIZONTAL,
+	VERTICAL
+} WORKERTYPE;
+
 bool IsVertexRelevant(uchar3 *verts);
 bool AreCornersEqual(
     __global bool *activeVerts,
@@ -29,18 +34,12 @@ void CrossCull(
     __global bool *activeVerts,
 		__global int* dummy
 );
-void HorizontalWorker(
+void Worker(
     int chunkBlockWidth,
     int maxDepth,
     __global uchar3 *normals,
     __global bool *activeVerts,
-	__global int* dummy
-);
-void VerticalWorker(
-    int chunkBlockWidth,
-    int maxDepth,
-    __global uchar3 *normals,
-    __global bool *activeVerts,
+	WORKERTYPE type,
 	__global int* dummy
 );
 
@@ -51,6 +50,7 @@ typedef enum{
     v3 = 3,
     v4 = 4
 } VERTEXENUM;
+
 //VERTEXENUM For edge tests:
 // +              v0 
 // ^               |  
@@ -96,10 +96,10 @@ __kernel void QuadTree(
 	__global int* dummy){
     
     if( get_global_id(1) < get_global_size(1)/2){
-         HorizontalWorker(chunkWidth, maxDepth, normals, activeVerts, dummy);
+         Worker(chunkWidth, maxDepth, normals, activeVerts,HORIZONTAL, dummy);
     }
     else{
-         VerticalWorker(chunkWidth, maxDepth, normals, activeVerts, dummy);
+         Worker(chunkWidth, maxDepth, normals, activeVerts,VERTICAL, dummy);
     }
     return;    
 }
@@ -265,26 +265,46 @@ bool IsVertexRelevant(uchar3 *verts){
 }
 
 //todo: combine horizontal and vertical worker methods because they have so much alike
-void HorizontalWorker(
+void Worker(
     int chunkBlockWidth,
     int maxDepth,
     __global uchar3 *normals,
     __global bool *activeNodes,
+	WORKERTYPE type,
 	__global int* dummy
 	){    
-    
+		
         //generate relevant information
         int chunkVertWidth = chunkBlockWidth+1;
-        int x_id = get_global_id(0);
-        int z_id = get_global_id(1);
+		int x_id, z_id, x_pos, z_pos;
+		if(type == HORIZONTAL){
+			x_id = get_global_id(0);
+			z_id = get_global_id(1);
+			x_pos = x_id;
+			z_pos = z_id;
+		}
+		else{
+			z_id = get_global_id(0);
+			x_id = get_global_id(1)-get_global_size(1)/2;
+			x_pos = z_id;
+			z_pos = x_id;
+		}
+
         for(int curDepth=0; curDepth <= maxDepth; curDepth++){
+			barrier(CLK_GLOBAL_MEM_FENCE);
             int curCellWidth = curDepth*2+2;
             int startPoint = curCellWidth/2;
             int step = curCellWidth;
             
-            int pointX = x_id*step+curCellWidth;
-            int pointZ = z_id*step+startPoint;
-
+			int pointX, pointZ;
+			if(type == HORIZONTAL){
+				pointX = x_id*step+curCellWidth;
+				pointZ = z_id*step+startPoint;
+			}
+			else{
+				pointX = x_id*step+startPoint;////
+				pointZ = z_id*step+curCellWidth;////
+			}
             //check if horizontal removal is even valid
             //make sure each corner is inactive(false)
             bool canSetNode = true;
@@ -299,6 +319,7 @@ void HorizontalWorker(
 					dummy
                     );
             }
+			barrier(CLK_GLOBAL_MEM_FENCE);
             if( canSetNode){
                 //now see if we can disable this node
                 uchar3 verts[5];
@@ -317,8 +338,8 @@ void HorizontalWorker(
             //figure out if this thread is going to do cross culling
             //if not, waits at the next fence like a good little worker
             CrossCull(
-                x_id,
-                z_id,
+                x_pos,
+                z_pos,
                 chunkBlockWidth/(curCellWidth),
                 chunkBlockWidth/(curCellWidth),
                 curCellWidth,
@@ -331,90 +352,21 @@ void HorizontalWorker(
             barrier(CLK_GLOBAL_MEM_FENCE);
         
             //see if this worker needs to be culled
-            int numXWorkers = chunkBlockWidth/(curCellWidth*2)-1;
-            int numZWorkers = chunkBlockWidth/(curCellWidth*2);
+			int numXWorkers, numZWorkers;
+			if(type == HORIZONTAL){
+				numXWorkers = chunkBlockWidth/(curCellWidth*2)-1;
+				numZWorkers = chunkBlockWidth/(curCellWidth*2);
+			}
+			else{
+				numZWorkers = chunkBlockWidth/(curCellWidth*2)-1;
+				numXWorkers = chunkBlockWidth/(curCellWidth*2);
+			}
 
             if(x_id >= numXWorkers)
                 break;
             if(z_id >= numZWorkers)
                 break;
+			barrier(CLK_GLOBAL_MEM_FENCE);
         }
     }
-    
-void VerticalWorker(
-    int chunkBlockWidth,
-    int maxDepth,
-    __global uchar3 *normals,
-    __global bool *activeNodes,
-	__global int* dummy
-	){
-       //generate relevant information
-        int chunkVertWidth = chunkBlockWidth+1;
-        int z_id = get_global_id(0);////
-        int x_id = get_global_id(1)-get_global_size(1)/2;////
-        for(int curDepth=0; curDepth <= maxDepth; curDepth++){
-            int curCellWidth = curDepth*2+2;
-            int startPoint = curCellWidth/2;
-            int step = curCellWidth;
-            
-            int pointX = x_id*step+startPoint;////
-            int pointZ = z_id*step+curCellWidth;////
-
-            //check if vertical removal is even valid
-            //make sure each corner is inactive(false)
-            bool canSetNode = true;
-            if(curDepth != 0){
-                canSetNode = AreCornersEqual(
-                activeNodes,
-                chunkVertWidth,
-                pointX,
-                pointZ,
-                curDepth,
-                false,
-				dummy
-                );
-            }
-
-            if( canSetNode){
-                //now see if we can disable this node
-                uchar3 verts[5];
-                verts[v0] = normals[chunkVertWidth*pointX + pointZ+step/2];
-                verts[v1] = normals[chunkVertWidth*(pointX+step/2) + pointZ];
-                verts[v2] = normals[chunkVertWidth*pointX + pointZ-step/2];
-                verts[v3] = normals[chunkVertWidth*(pointX-step/2) + pointZ];
-                verts[v4] = normals[chunkVertWidth*pointX + pointZ];
-
-                if(!IsVertexRelevant(verts)){
-                    activeNodes[chunkVertWidth*pointX + pointZ] = false;        
-                }
-            }
-            //wait until all orthogonal culling is completed
-            barrier(CLK_GLOBAL_MEM_FENCE);
-            //figure out if this thread is going to do cross culling
-            //if not, waits at the next fence like a good little worker
-            CrossCull(
-                z_id,
-                x_id,
-                chunkBlockWidth/(curCellWidth),
-                chunkBlockWidth/(curCellWidth),
-                curCellWidth,
-                chunkBlockWidth,
-                curDepth,
-                normals,
-                activeNodes,
-				dummy
-                );
-            barrier(CLK_GLOBAL_MEM_FENCE);
-
-            //see if this worker needs to be culled
-            int numZWorkers = chunkBlockWidth/(curCellWidth*2)-1;
-            int numXWorkers = chunkBlockWidth/(curCellWidth*2);
-
-            if(x_id >= numXWorkers){
-                break;
-            }
-            if(z_id >= numZWorkers){
-                break;
-            }
-        }
-    }
+  
