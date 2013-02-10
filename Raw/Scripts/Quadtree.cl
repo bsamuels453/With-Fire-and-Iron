@@ -6,7 +6,8 @@ bool AreCornersEqual(
     int centerX,
     int centerZ,
     int radius,
-    bool desiredVal
+    bool desiredVal,
+	__global int* dummy
 );
 bool AreSidesEqual(
     __global bool *activeNodes,
@@ -24,20 +25,23 @@ void CrossCull(
     int cellWidth,
     int chunkBlockWidth,
     int curDepth,
-    __constant uchar3 *normals,
-    __global bool *activeVerts
+    __global uchar3 *normals,
+    __global bool *activeVerts,
+		__global int* dummy
 );
 void HorizontalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant uchar3 *normals,
-    __global bool *activeVerts
+    __global uchar3 *normals,
+    __global bool *activeVerts,
+	__global int* dummy
 );
 void VerticalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant uchar3 *normals,
-    __global bool *activeVerts
+    __global uchar3 *normals,
+    __global bool *activeVerts,
+	__global int* dummy
 );
 
 typedef enum{
@@ -87,14 +91,15 @@ typedef enum{
 __kernel void QuadTree(
     int chunkWidth,
     int maxDepth,
-    __constant uchar3* normals,
-    __global bool* activeVerts){
+    __global uchar3* normals,
+    __global bool* activeVerts,
+	__global int* dummy){
     
     if( get_global_id(1) < get_global_size(1)/2){
-         HorizontalWorker(chunkWidth, maxDepth, normals, activeVerts);
+         HorizontalWorker(chunkWidth, maxDepth, normals, activeVerts, dummy);
     }
     else{
-         VerticalWorker(chunkWidth, maxDepth, normals, activeVerts);
+         VerticalWorker(chunkWidth, maxDepth, normals, activeVerts, dummy);
     }
     return;    
 }
@@ -107,9 +112,10 @@ void CrossCull(
     int cellWidth,
     int chunkBlockWidth,
     int curDepth,
-    __constant uchar3* normals,
-    __global bool* activeNodes){
-
+    __global uchar3* normals,
+    __global bool* activeNodes,
+	__global int* dummy
+	){
         //this enumerates the 2d array of worker ids into a 1d array of super_ids
         int super_id = x_id+z_id*x_max;
         int numCells = chunkBlockWidth/cellWidth;
@@ -135,7 +141,8 @@ void CrossCull(
             x_vert,
             z_vert,
             pown(2.0,curDepth),
-            true
+            true,
+			dummy
             )){
                 return;
         }
@@ -160,7 +167,8 @@ void CrossCull(
                 x_vert,
                 z_vert,
                 pown(2.0,depth),
-                false
+                false,
+				dummy
                 )){
                     return;
             }
@@ -188,14 +196,18 @@ bool AreCornersEqual(
     int centerX,
     int centerZ,
     int radius,
-    bool desiredVal){ 
+    bool desiredVal,
+	__global int* dummy
+	){ 
+		
         bool ret=true;
         //xx these gotos are probably going to cause issues with
         //irreducible control flow, try testing to see if the compiler's
         //optimizations with flag perform better than goto
         for(int x=centerX-radius; x<=centerX+radius; x+=radius*2){
-        for(int z=centerZ-radius; z<=centerZ+radius; z+=radius*2){
+			for(int z=centerZ-radius; z<=centerZ+radius; z+=radius*2){
                 if( activeNodes[x*chunkVertWidth+z] != desiredVal ){
+				dummy[0]=1;
                     ret = false;
                     goto brkLoop;
                 }
@@ -256,15 +268,16 @@ bool IsVertexRelevant(uchar3 *verts){
 void HorizontalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant uchar3 *normals,
-    __global bool *activeNodes){    
+    __global uchar3 *normals,
+    __global bool *activeNodes,
+	__global int* dummy
+	){    
     
         //generate relevant information
         int chunkVertWidth = chunkBlockWidth+1;
         int x_id = get_global_id(0);
         int z_id = get_global_id(1);
-        
-        for(int curDepth=1; curDepth <= maxDepth; curDepth++){
+        for(int curDepth=0; curDepth <= maxDepth; curDepth++){
             int curCellWidth = curDepth*2+2;
             int startPoint = curCellWidth/2;
             int step = curCellWidth;
@@ -282,7 +295,8 @@ void HorizontalWorker(
                     pointX,
                     pointZ,
                     curDepth,//xxx
-                    false
+                    false,
+					dummy
                     );
             }
             if( canSetNode){
@@ -311,7 +325,8 @@ void HorizontalWorker(
                 chunkBlockWidth,
                 curDepth,
                 normals,
-                activeNodes
+                activeNodes,
+				dummy
                 );
             barrier(CLK_GLOBAL_MEM_FENCE);
         
@@ -329,13 +344,15 @@ void HorizontalWorker(
 void VerticalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant uchar3 *normals,
-    __global bool *activeNodes){
+    __global uchar3 *normals,
+    __global bool *activeNodes,
+	__global int* dummy
+	){
        //generate relevant information
         int chunkVertWidth = chunkBlockWidth+1;
         int z_id = get_global_id(0);////
         int x_id = get_global_id(1)-get_global_size(1)/2;////
-        for(int curDepth=1; curDepth <= maxDepth; curDepth++){
+        for(int curDepth=0; curDepth <= maxDepth; curDepth++){
             int curCellWidth = curDepth*2+2;
             int startPoint = curCellWidth/2;
             int step = curCellWidth;
@@ -353,7 +370,8 @@ void VerticalWorker(
                 pointX,
                 pointZ,
                 curDepth,
-                false
+                false,
+				dummy
                 );
             }
 
@@ -383,7 +401,8 @@ void VerticalWorker(
                 chunkBlockWidth,
                 curDepth,
                 normals,
-                activeNodes
+                activeNodes,
+				dummy
                 );
             barrier(CLK_GLOBAL_MEM_FENCE);
 
