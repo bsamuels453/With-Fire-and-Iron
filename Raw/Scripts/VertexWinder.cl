@@ -114,7 +114,7 @@ __kernel void VertexWinder(
 			}
 	int2 pos = (int2)(x_pos, y_pos);
 	int indexes[3];
-	int2* dirs;
+	int2 dirs[3];
 	GetDirections(dirs, windingType);
 	int step=1;
 	while(true){
@@ -141,55 +141,59 @@ __kernel void VertexWinder(
 		indexes[i] = newPos.x*vertWidth+newPos.y;
 		curPos = newPos;
 	}
-	INDICIES(x_id,y_id) = (int3)(indexes[0], indexes[1], indexes[1]);
+
+	if(x_id==0 && y_id==0){
+		//INDICIES(0,0) = windingType;
+		//INDICIES(0,1) = dirs[1].x;
+		//INDICIES(0,2) = dirs[2].x;
+	}
+	INDICIES(x_id,y_id) = (int3)(indexes[0], indexes[1], indexes[2]);
 	}
 
 	//this hardcoding is necessary until I can figure out a way to do it programatically
 void GetDirections(int2* directions, WINDINGTYPE workerType){
-	int2 dirs[3];
 	switch(workerType){
 		case TOPLEFT_RIGHT:
-			dirs[0] = (int2)(1,0);
-			dirs[1] = (int2)(0,-1);
-			dirs[2] = (int2)(-1,1);
+			directions[0] = (int2)(1,0);
+			directions[1] = (int2)(0,-1);
+			directions[2] = (int2)(-1,1);
 			break;
 		case TOPLEFT_DOWN:
-			dirs[0] = (int2)(0,-1);
-			dirs[1] = (int2)(1,0);
-			dirs[2] = (int2)(-1,1);
+			directions[0] = (int2)(0,-1);
+			directions[1] = (int2)(1,0);
+			directions[2] = (int2)(-1,1);
 			break;
 		case BOTTOMLEFT_UP:
-			dirs[0] = (int2)(0,1);
-			dirs[1] = (int2)(1,0);
-			dirs[2] = (int2)(-1,-1);
+			directions[0] = (int2)(0,1);
+			directions[1] = (int2)(1,0);
+			directions[2] = (int2)(-1,-1);
 			break;
 		case BOTTOMLEFT_RIGHT:
-			dirs[0] = (int2)(1,0);
-			dirs[1] = (int2)(0,1);
-			dirs[2] = (int2)(-1,-1);
+			directions[0] = (int2)(1,0);
+			directions[1] = (int2)(0,1);
+			directions[2] = (int2)(-1,-1);
 			break;
 		case BOTTOMRIGHT_LEFT:
-			dirs[0] = (int2)(-1,0);
-			dirs[1] = (int2)(0,1);
-			dirs[2] = (int2)(1,-1);
+			directions[0] = (int2)(-1,0);
+			directions[1] = (int2)(0,1);
+			directions[2] = (int2)(1,-1);
 			break;
 		case BOTTOMRIGHT_UP:
-			dirs[0] = (int2)(0,1);
-			dirs[1] = (int2)(-1,0);
-			dirs[2] = (int2)(1,-1);
+			directions[0] = (int2)(0,1);
+			directions[1] = (int2)(-1,0);
+			directions[2] = (int2)(1,-1);
 			break;
 		case TOPRIGHT_DOWN:
-			dirs[0] = (int2)(-1,0);
-			dirs[1] = (int2)(-1,0);
-			dirs[2] = (int2)(1,1);
+			directions[0] = (int2)(-1,0);
+			directions[1] = (int2)(-1,0);
+			directions[2] = (int2)(1,1);
 			break;
 		case TOPRIGHT_LEFT:
-			dirs[0] = (int2)(-1,0);
-			dirs[1] = (int2)(0,-1);
-			dirs[2] = (int2)(1,1);
+			directions[0] = (int2)(-1,0);
+			directions[1] = (int2)(0,-1);
+			directions[2] = (int2)(1,1);
 			break;
 	}
-	directions = dirs;
 	}
 
 void GetExtensionDirections(int2* directions, WINDINGTYPE workerType){
