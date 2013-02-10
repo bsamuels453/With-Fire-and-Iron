@@ -2,10 +2,12 @@
 	"InternalAbbreviation": "TGen",
 	
 	"BlockWidthInMeters":   10,
-	"ChunkWidthInBlocks":   128,
+	"ChunkWidthInBlocks":   16,
 	"WorldWidthInChunks":   4,
 	
-	"GenScript":            "Scripts\\GenTerrain.cl",
+	"Generator":            "Scripts\\GenTerrain.cl",
+	"QTree":                "Scripts\\QuadTree.cl",
+	"VertexWinder":         "Scripts\\VertexWinder.cl",
 	"Lacunarity":           1.8,
 	"Gain":                 0.5,
 	"Octaves":              6,
