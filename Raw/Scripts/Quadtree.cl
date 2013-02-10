@@ -1,5 +1,5 @@
 //todo: a damn header file
-bool IsVertexRelevant(float3 *verts);
+bool IsVertexRelevant(uchar3 *verts);
 bool AreCornersEqual(
     __global bool *activeVerts,
     int width,
@@ -24,19 +24,19 @@ void CrossCull(
     int cellWidth,
     int chunkBlockWidth,
     int curDepth,
-    __constant float3 *normals,
+    __constant uchar3 *normals,
     __global bool *activeVerts
 );
 void HorizontalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant float3 *normals,
+    __constant uchar3 *normals,
     __global bool *activeVerts
 );
 void VerticalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant float3 *normals,
+    __constant uchar3 *normals,
     __global bool *activeVerts
 );
 
@@ -87,7 +87,7 @@ typedef enum{
 __kernel void QuadTree(
     int chunkWidth,
     int maxDepth,
-    __constant float3* normals, 
+    __constant uchar3* normals,
     __global bool* activeVerts){
     
     if( get_global_id(1) < get_global_size(1)/2){
@@ -107,7 +107,7 @@ void CrossCull(
     int cellWidth,
     int chunkBlockWidth,
     int curDepth,
-    __constant float3* normals,
+    __constant uchar3* normals,
     __global bool* activeNodes){
 
         //this enumerates the 2d array of worker ids into a 1d array of super_ids
@@ -168,7 +168,7 @@ void CrossCull(
         
         //okay, at this point we know that a cross cull would be valid
         //check to see if it's necessary now
-        float3 verts[5];
+        uchar3 verts[5];
         int chunkVertWidth = chunkBlockWidth+1;
         verts[v0] = normals[chunkVertWidth*(x_vert-cellWidth/2) + z_vert+cellWidth/2];
         verts[v1] = normals[chunkVertWidth*(x_vert+cellWidth/2) + z_vert+cellWidth/2];
@@ -230,7 +230,7 @@ bool AreSidesEqual(
         return ret;
     }
     
-bool IsVertexRelevant(float3 *verts){
+bool IsVertexRelevant(uchar3 *verts){
     /*
     float angles[4];
     
@@ -256,7 +256,7 @@ bool IsVertexRelevant(float3 *verts){
 void HorizontalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant float3 *normals,
+    __constant uchar3 *normals,
     __global bool *activeNodes){    
     
         //generate relevant information
@@ -287,7 +287,7 @@ void HorizontalWorker(
             }
             if( canSetNode){
                 //now see if we can disable this node
-                float3 verts[5];
+                uchar3 verts[5];
                 verts[v0] = normals[chunkVertWidth*pointX + pointZ+step/2];
                 verts[v1] = normals[chunkVertWidth*(pointX+step/2) + pointZ];
                 verts[v2] = normals[chunkVertWidth*pointX + pointZ-step/2];
@@ -329,7 +329,7 @@ void HorizontalWorker(
 void VerticalWorker(
     int chunkBlockWidth,
     int maxDepth,
-    __constant float3 *normals,
+    __constant uchar3 *normals,
     __global bool *activeNodes){
        //generate relevant information
         int chunkVertWidth = chunkBlockWidth+1;
@@ -359,7 +359,7 @@ void VerticalWorker(
 
             if( canSetNode){
                 //now see if we can disable this node
-                float3 verts[5];
+                uchar3 verts[5];
                 verts[v0] = normals[chunkVertWidth*pointX + pointZ+step/2];
                 verts[v1] = normals[chunkVertWidth*(pointX+step/2) + pointZ];
                 verts[v2] = normals[chunkVertWidth*pointX + pointZ-step/2];
