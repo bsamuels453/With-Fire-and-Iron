@@ -5,22 +5,22 @@ typedef enum{
 } WORKERTYPE;
 
 bool IsVertexRelevant(uchar3 *verts);
-bool AreCornersEqual(
-    __global bool *activeVerts,
+char AreCornersEqual(
+    __global char *activeVerts,
     int width,
     int centerX,
     int centerZ,
     int radius,
-    bool desiredVal,
+    char desiredVal,
 	__global int* dummy
 );
-bool AreSidesEqual(
-    __global bool *activeNodes,
+char AreSidesEqual(
+    __global char *activeNodes,
     int chunkWidth,
     int centerX,
     int centerZ,
     int radius,
-    bool desiredVal
+    char desiredVal
 );
 void CrossCull(
     int x_id,
@@ -31,14 +31,14 @@ void CrossCull(
     int chunkBlockWidth,
     int curDepth,
     __global uchar3 *normals,
-    __global bool *activeVerts,
+    __global char *activeVerts,
 		__global int* dummy
 );
 void Worker(
     int chunkBlockWidth,
     int maxDepth,
     __global uchar3 *normals,
-    __global bool *activeVerts,
+    __global char *activeVerts,
 	WORKERTYPE type,
 	__global int* dummy
 );
@@ -92,7 +92,7 @@ __kernel void QuadTree(
     int chunkWidth,
     int maxDepth,
     __global uchar3* normals,
-    __global bool* activeVerts,
+    __global char* activeVerts,
 	__global int* dummy){
     
     if( get_global_id(1) < get_global_size(1)/2){
@@ -113,7 +113,7 @@ void CrossCull(
     int chunkBlockWidth,
     int curDepth,
     __global uchar3* normals,
-    __global bool* activeNodes,
+    __global char* activeNodes,
 	__global int* dummy
 	){
         //this enumerates the 2d array of worker ids into a 1d array of super_ids
@@ -185,22 +185,22 @@ void CrossCull(
         verts[v4] = normals[chunkVertWidth*x_vert + z_vert];
 
         if(!IsVertexRelevant(verts)){
-            activeNodes[x_vert*chunkVertWidth+z_vert] = false;        
+            activeNodes[x_vert*chunkVertWidth+z_vert] = 0;        
         }
         return;
     }
     
-bool AreCornersEqual(
-    __global bool *activeNodes,
+char AreCornersEqual(
+    __global char *activeNodes,
     int chunkVertWidth,
     int centerX,
     int centerZ,
     int radius,
-    bool desiredVal,
+    char desiredVal,
 	__global int* dummy
 	){ 
 		
-        bool ret=true;
+        char ret=1;
         //xx these gotos are probably going to cause issues with
         //irreducible control flow, try testing to see if the compiler's
         //optimizations with flag perform better than goto
@@ -208,7 +208,7 @@ bool AreCornersEqual(
 			for(int z=centerZ-radius; z<=centerZ+radius; z+=radius*2){
                 if( activeNodes[x*chunkVertWidth+z] != desiredVal ){
 				dummy[0]=1;
-                    ret = false;
+                    ret = 0;
                     goto brkLoop;
                 }
             }
@@ -217,24 +217,24 @@ bool AreCornersEqual(
         return ret;
     }
 
-bool AreSidesEqual(
-    __global bool *activeNodes,
+char AreSidesEqual(
+    __global char *activeNodes,
     int chunkWidth,
     int centerX,
     int centerZ,
     int radius,
-    bool desiredVal){
-        bool ret=true;
+    char desiredVal){
+        char ret=1;
         //it would have probably been a better idea to just hardcode these loops
         for(int x=centerX-radius; x<=centerX+radius; x+=radius*2){
             if( activeNodes[x*chunkWidth+centerZ] != desiredVal ){
-                ret = false;
+                ret = 0;
                 goto brkLoop;
             }
         }
         for(int z=centerZ-radius; z<=centerZ+radius; z+=radius*2){
             if( activeNodes[centerX*chunkWidth+z] != desiredVal ){
-                ret = false;
+                ret = 0;
                 goto brkLoop;
             }
         }
@@ -269,7 +269,7 @@ void Worker(
     int chunkBlockWidth,
     int maxDepth,
     __global uchar3 *normals,
-    __global bool *activeNodes,
+    __global char *activeNodes,
 	WORKERTYPE type,
 	__global int* dummy
 	){    
@@ -330,7 +330,7 @@ void Worker(
                 verts[v4] = normals[chunkVertWidth*pointX + pointZ];
 
                 if(!IsVertexRelevant(verts)){
-                    activeNodes[chunkVertWidth*pointX + pointZ] = false;        
+                    activeNodes[chunkVertWidth*pointX + pointZ] = 0;        
                 }
             }
             //wait until all orthogonal culling is completed

@@ -28,7 +28,7 @@ namespace Gondola.GameState.Terrain{
 
         readonly ComputeKernel _qTreeKernel;
         readonly ComputeProgram _qTreePrgm;
-        readonly ComputeBuffer<int> _activeVerts;
+        readonly ComputeBuffer<byte> _activeVerts;
         readonly ComputeBuffer<int> _dummy; 
 
         readonly ComputeKernel _winderKernel;
@@ -101,11 +101,11 @@ namespace Gondola.GameState.Terrain{
             _qTreePrgm.Build(null, "", null, IntPtr.Zero);
             _qTreeKernel = _qTreePrgm.CreateKernel("QuadTree");
 
-            _activeVerts = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts);
+            _activeVerts = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts);
 
             _dummy = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, 50);
             var rawNormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
-            var dsada = new int[_chunkWidthInVerts * _chunkWidthInVerts];
+            var dsada = new byte[_chunkWidthInVerts * _chunkWidthInVerts];
             for (int i = 0; i < dsada.Length; i++){
                 dsada[i] = 1;
             }
@@ -113,7 +113,7 @@ namespace Gondola.GameState.Terrain{
             _cmdQueue.WriteToBuffer(dsada, _activeVerts, true, null);
 
             _qTreeKernel.SetValueArgument(0, _chunkWidthInVerts - 1);
-            _qTreeKernel.SetValueArgument(1, -1);
+            _qTreeKernel.SetValueArgument(1, 1);
             _qTreeKernel.SetMemoryArgument(2, _normals);
             _qTreeKernel.SetMemoryArgument(3, _activeVerts);
             _qTreeKernel.SetMemoryArgument(4, _dummy);
@@ -141,29 +141,17 @@ namespace Gondola.GameState.Terrain{
             var rawBinormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var norm = new int[50];
-            var actNode = new int[_chunkWidthInVerts * _chunkWidthInVerts];
+            var actNode = new byte[_chunkWidthInVerts * _chunkWidthInVerts];
             var inds = new int[(_chunkWidthInVerts - 1) * (_chunkWidthInVerts - 1) * 8];
             var sw = new Stopwatch();
             sw.Start();
 
             _genKernel.SetValueArgument(1, offsetX);
             _genKernel.SetValueArgument(2, offsetZ);
-             //_cmdQueue.Execute(_genKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
 
+            //_cmdQueue.Execute(_genKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
             _cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInVerts - 1) / 2 - 1 , (_chunkWidthInVerts - 1)}, null, null);
             _cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInVerts - 1), (_chunkWidthInVerts - 1) }, null, null);
-
-
-
-            _cmdQueue.Finish();
-            //var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            //var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            //var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            _cmdQueue.ReadFromBuffer(_geometry, ref rawGeometry, true, null);
-            _cmdQueue.ReadFromBuffer(_normals, ref rawNormals, true, null);
-            _cmdQueue.ReadFromBuffer(_binormals, ref rawBinormals, true, null);
-            _cmdQueue.ReadFromBuffer(_tangents, ref rawTangents, true, null);
-
 
             _cmdQueue.ReadFromBuffer(_dummy, ref norm, true, null);
             _cmdQueue.ReadFromBuffer(_activeVerts, ref actNode, true, null);
@@ -181,6 +169,9 @@ namespace Gondola.GameState.Terrain{
                 sww.Write('\n');
             }
             sww.Close();
+            //var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            //var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            //var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             //texNormal.SetData(rawNormals);
             //texBinormal.SetData(rawBinormals);
             //texTangent.SetData(rawTangents);

@@ -36,7 +36,7 @@ void GetExtensionDirections(int2* directions, WINDINGTYPE workerType);
 //numXThreads = cells*2
 
 __kernel void VertexWinder(
-	__constant bool* activeVerts,
+	__constant char* activeVerts,
 	__global int3* indicies){
 	
 	int treeWidth = get_global_size(0);
@@ -119,7 +119,7 @@ __kernel void VertexWinder(
 	int step=1;
 	while(true){
 		int2 newPos = dirs[0]*step+pos;
-		if(VERTS(newPos.x,newPos.y)){
+		if(VERTS(newPos.x,newPos.y)==1){
 			break;
 		}
 		else{
