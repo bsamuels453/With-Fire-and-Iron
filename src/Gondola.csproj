@@ -118,7 +118,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Common\Angle3.cs" />
     <Compile Include="Common\FloatingRectangle.cs" />
+    <Compile Include="Common\JsonFallbackParser.cs" />
+    <Compile Include="Common\MeshHelper.cs" />
+    <Compile Include="Common\RenderHelper.cs" />
     <Compile Include="Common\Vec3Ref.cs" />
     <Compile Include="Common\XZPair.cs" />
     <Compile Include="Draw\BaseBufferObject.cs" />
@@ -131,8 +135,10 @@
     <Compile Include="Draw\TerrainBuffer.cs" />
     <Compile Include="Draw\Text2D.cs" />
     <Compile Include="Draw\WireframeBuffer.cs" />
+    <Compile Include="Logic\GameState\PlayerState.cs" />
     <Compile Include="Logic\GameState\TerrainManager.cs" />
     <Compile Include="Logic\GameState\TestState.cs" />
+    <Compile Include="Logic\SharedStateData.cs" />
     <Compile Include="Logic\Terrain\TerrainChunk.cs" />
     <Compile Include="Logic\Terrain\TerrainGen.cs" />
     <Compile Include="Logic\GameStateManager.cs" />
