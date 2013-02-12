@@ -16,7 +16,7 @@ namespace Gondola.Logic{
         public GamestateManager(){
             _activeStates = new List<IGameState>();
             _inputHandler = new InputHandler();
-            _sharedData = new Dictionary<SharedStateData, object>();
+            _sharedData = new Dictionary<SharedStateData, object>();//todo-optimize: might be able to make this into a list instead
         }
 
         public void ClearAllStates(){
@@ -37,6 +37,14 @@ namespace Gondola.Logic{
 
         public void AddSharedData(SharedStateData identifier, object data) {
             _sharedData.Add(identifier, data);
+        }
+
+        public void ModifySharedData(SharedStateData identifier, object data){
+            _sharedData[identifier] = data;
+        }
+
+        public void DeleteSharedData(SharedStateData identifier){
+            _sharedData.Remove(identifier);
         }
 
         public void AddGameState(IGameState newState){
