@@ -66,7 +66,8 @@ namespace Gondola.Common {
             }
         }
 
-        public static void GenerateMeshNormals(Vector3[,] mesh, ref Vector3[,] normals) {
+        public static Vector3[,] GenerateMeshNormals(Vector3[,] mesh) {
+            var normals = new Vector3[mesh.GetLength(0), mesh.GetLength(1)];
             for (int vertX = 0; vertX < mesh.GetLength(0) - 1; vertX++) {
                 for (int vertZ = 0; vertZ < mesh.GetLength(1) - 1; vertZ++) {
                     var crossSum = new Vector3();
@@ -100,6 +101,7 @@ namespace Gondola.Common {
                     normals[vertX, vertZ].Normalize();
                 }
             }
+            return normals;
         }
 
         public static void ConvertMeshToVertList(Vector3[,] mesh, Vector3[,] normals, ref VertexPositionNormalTexture[] verticies) {
