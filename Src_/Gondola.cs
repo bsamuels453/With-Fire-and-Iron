@@ -35,7 +35,9 @@ namespace Gondola{
                 );
 
             _gamestateManager = new GamestateManager();
-            _gamestateManager.SetGameState(new TestState());
+            _gamestateManager.AddGameState(new PlayerState(_gamestateManager));
+            _gamestateManager.AddGameState(new TerrainManager(_gamestateManager));
+
             IsMouseVisible = true;
             base.Initialize();
         }
@@ -44,13 +46,13 @@ namespace Gondola{
         }
 
         protected override void UnloadContent(){
-            _gamestateManager.Dispose();
+            //_gamestateManager.Dispose();
         }
 
         protected override void Update(GameTime gameTime){
             _gamestateManager.Update();
             base.Update(gameTime);
-            Exit();
+            //Exit();
         }
 
         protected override void Draw(GameTime gameTime){

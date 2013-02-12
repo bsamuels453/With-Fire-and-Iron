@@ -13,7 +13,7 @@ namespace Gondola.Draw{
         public Vector2 Position;
         public string Str;
 
-        public Text2D(RenderTarget target, int x, int y, string str, string font = "SpriteFont"){
+        public Text2D(RenderTarget target, int x, int y, string str, string font = "UI_SpriteFont"){
             Position = new Vector2(x, y);
             Str = str;
 

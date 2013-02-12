@@ -45,7 +45,11 @@ namespace Gondola.Draw{
             _renderTargets.Add(this);
         }
 
-        public RenderTarget(){
+        /// <summary>
+        /// lower depth is closer to screen
+        /// </summary>
+        /// <param name="depth"></param>
+        public RenderTarget(float depth = 1){
             SpriteBatch = new SpriteBatch(Gbl.Device);
             _targetCanvas = new RenderTarget2D(
                 Gbl.Device,
@@ -55,7 +59,7 @@ namespace Gondola.Draw{
                 SurfaceFormat.Color,
                 DepthFormat.Depth24Stencil8
                 );
-            Depth = 1;
+            Depth = depth;
 
             Offset = new Vector2(0, 0);
             BoundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);

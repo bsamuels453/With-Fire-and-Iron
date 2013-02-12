@@ -9,7 +9,7 @@ namespace Gondola.Logic.GameState {
         readonly GamestateManager _manager;
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
-        RenderTarget _renderTarget;
+        readonly RenderTarget _renderTarget;
 
         public TerrainManager(GamestateManager mgr){
             _loadedChunks = new List<TerrainChunk>();
@@ -17,7 +17,7 @@ namespace Gondola.Logic.GameState {
             _generator = new TerrainGen();
             var chunk = _generator.GenerateChunk(new XZPair(0, 0));
             _loadedChunks.Add(chunk);
-            _renderTarget = new RenderTarget();
+            _renderTarget = new RenderTarget(0.5f);
         }
 
         public void Dispose(){

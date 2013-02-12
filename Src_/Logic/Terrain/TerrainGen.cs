@@ -73,11 +73,43 @@ namespace Gondola.Logic.Terrain{
             };
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
+            
+            var sr = new StreamReader("helo.cl");
+            string ss = sr.ReadToEnd();
+            var bli = new List<byte>();
+            foreach (var chr in ss){
+                bli.Add((byte)chr);
+            }
+            var ienum = new List<byte[]>();
+            ienum.Add(bli.ToArray());
+            
+            var prg = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
+            prg.Build(null, "", null, IntPtr.Zero);
 
+            var tkern = prg.CreateKernel("GenTerrain");
+            var bins = tkern.Program.Binaries;
+
+
+            //_cmdQueue.Finish();
+            //_genPrgm = new ComputeProgram(_context, ienum, _devices);
             _genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
+            //_genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
             //string scriptDir = Gbl.GetScriptDirectory("TGen_Generator"); //use option -I + scriptDir for header search
             _genPrgm.Build(null, "", null, IntPtr.Zero);
+            /*
+            var sw = new StreamWriter("helo.cl");
+            var kk = _genPrgm.Binaries;
+            foreach (var bytese in kk){
+                foreach (var b in bytese){
+                    sw.Write(b);
+                }
+                break;
+            }
+            sw.Close();
+             */
             _genKernel = _genPrgm.CreateKernel("GenTerrain");
+            
+
 
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
             //implementation is basically a float4 wrapper that uses zero for the last variable

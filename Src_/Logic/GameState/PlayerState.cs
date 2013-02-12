@@ -2,6 +2,7 @@
 
 using System;
 using Gondola.Common;
+using Gondola.Draw;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -10,15 +11,24 @@ using Microsoft.Xna.Framework.Input;
 namespace Gondola.Logic.GameState{
     internal class PlayerState : IGameState{
         readonly GamestateManager _manager;
+        readonly RenderTarget _renderTarget;
         Angle3 _playerLookDir;
         Vector3 _playerPosition;
+        Text2D _x;
+        Text2D _y;
+        Text2D _z;
 
         public PlayerState(GamestateManager mgr){
+            _renderTarget = new RenderTarget(0f);
             _manager = mgr;
             _playerPosition = new Vector3(0, 0, 0);
             _playerLookDir = new Angle3(0, 0, 0);
             _manager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
             _manager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
+
+            _x = new Text2D(_renderTarget, 0, 0, "hi");
+            _y = new Text2D(_renderTarget, 0, 10, "hi");
+            _z = new Text2D(_renderTarget, 0, 20, "hi");
         }
 
         #region IGameState Members
@@ -58,10 +68,18 @@ namespace Gondola.Logic.GameState{
                 _playerPosition.Z = _playerPosition.Z - (float) Math.Cos(_playerLookDir.Yaw + 3.14159f/2)*movementspeed;
             }
 
+            _x.Str = "x: "+_playerPosition.X;
+            _y.Str = "y: " + _playerPosition.Y;
+            _z.Str = "z: " + _playerPosition.Z;
             //xx block wasd from further interpretation?
         }
 
         public void Draw(){
+            _renderTarget.Bind();
+            _x.Draw();
+            _y.Draw();
+            _z.Draw();
+            _renderTarget.Unbind();
         }
 
         #endregion

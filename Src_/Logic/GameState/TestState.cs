@@ -20,13 +20,9 @@ namespace Gondola.Logic.GameState{
             var t = new TerrainGen();
             var sw = new Stopwatch();
             sw.Start();
-            for (int i = 0; i < 500; i++){
 
-                t.GenerateChunk(i, 0);
+            //t.GenerateChunk(i, 0);
 
-
-
-            }
             sw.Stop();
             double d = sw.ElapsedMilliseconds / 500d;
             int g = 5;

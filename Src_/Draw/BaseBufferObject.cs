@@ -24,6 +24,8 @@ namespace Gondola.Draw{
             _numPrimitives = numPrimitives;
             _numIndicies = numIndicies;
             _primitiveType = primitiveType;
+            BufferRasterizer = new RasterizerState();
+            BufferRasterizer.CullMode = CullMode.None;
 
             Indexbuffer = new IndexBuffer(
                 Gbl.Device,
