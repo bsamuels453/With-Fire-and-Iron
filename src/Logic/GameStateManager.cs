@@ -10,13 +10,13 @@ namespace Gondola.Logic{
     internal class GamestateManager{
         readonly InputHandler _inputHandler;
 
-        readonly List<IGameState> _activeStates; 
-        readonly Dictionary<string, object> _sharedData;
+        readonly List<IGameState> _activeStates;
+        readonly Dictionary<SharedStateData, object> _sharedData;
 
         public GamestateManager(){
             _activeStates = new List<IGameState>();
             _inputHandler = new InputHandler();
-            _sharedData = new Dictionary<string, object>();
+            _sharedData = new Dictionary<SharedStateData, object>();
         }
 
         public void ClearAllStates(){
@@ -31,11 +31,11 @@ namespace Gondola.Logic{
             state.Dispose();
         }
 
-        public object QuerySharedData(string identifier){
+        public object QuerySharedData(SharedStateData identifier) {
             return _sharedData[identifier];
         }
 
-        public void AddSharedData(string identifier, object data){
+        public void AddSharedData(SharedStateData identifier, object data) {
             _sharedData.Add(identifier, data);
         }
 
