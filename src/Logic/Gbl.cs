@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Gondola.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,6 +26,7 @@ namespace Gondola.Logic{
             var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\Config\\");
             foreach (var file in files){
                 var sr = new StreamReader(file);
+
                 var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
                 sr.Close();
 
@@ -38,12 +40,20 @@ namespace Gondola.Logic{
         }
 
         public static T LoadContent<T>(string str){
+            string objValue = "";
             try {
-                string realName = RawLookup[str];
-                return ContentManager.Load<T>(realName);
+                objValue = RawLookup[str];
+                return ContentManager.Load<T>(objValue);
             }
-            catch (Exception){
-                return (T)Convert.ChangeType(RawLookup[str], typeof(T));
+            catch (Exception e){
+                T obj;
+                try {
+                    obj = JsonConvert.DeserializeObject<T>(objValue);
+                }
+                catch (Exception ee){
+                    obj = JsonFallbackParser.Parse<T>(objValue);
+                }
+                return obj;
             }
         }
 
