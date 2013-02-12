@@ -5,6 +5,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Cloo;
+using Gondola.Common;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
@@ -13,6 +16,7 @@ namespace Gondola.Logic.Terrain{
 
         readonly int _blockWidth;
         readonly int _chunkWidthInVerts;
+        readonly int _chunkWidthInBlocks;
         readonly ComputeCommandQueue _cmdQueue;
 
         readonly ComputeKernel _genKernel;
@@ -47,7 +51,8 @@ namespace Gondola.Logic.Terrain{
 
             #region setup generator kernel
 
-            _chunkWidthInVerts = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks") + 1;
+            _chunkWidthInBlocks = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks");
+            _chunkWidthInVerts = _chunkWidthInBlocks + 1;
             _blockWidth = Gbl.LoadContent<int>("TGen_BlockWidthInMeters");
             float lacunarity = Gbl.LoadContent<float>("TGen_Lacunarity");
             float gain = Gbl.LoadContent<float>("TGen_Gain");
@@ -108,7 +113,7 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.WriteToBuffer(rawNormals, _normals, true, null);
             _cmdQueue.WriteToBuffer(dsada, _activeVerts, true, null);
 
-            _qTreeKernel.SetValueArgument(0, _chunkWidthInVerts - 1);
+            _qTreeKernel.SetValueArgument(0, _chunkWidthInBlocks);
             _qTreeKernel.SetValueArgument(1, 1);
             _qTreeKernel.SetMemoryArgument(2, _normals);
             _qTreeKernel.SetMemoryArgument(3, _activeVerts);
@@ -121,7 +126,7 @@ namespace Gondola.Logic.Terrain{
             _winderPrgm.Build(null, "", null, IntPtr.Zero);
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
 
-            _indicies = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, (_chunkWidthInVerts-1) * (_chunkWidthInVerts-1) * 8);
+            _indicies = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, (_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8);
 
             _winderKernel.SetMemoryArgument(0, _activeVerts);
             _winderKernel.SetMemoryArgument(1, _indicies);
@@ -131,31 +136,39 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.Finish();
         }
 
-        public TerrainChunk GenerateChunk(int offsetX, int offsetZ){
+        public TerrainChunk GenerateChunk(XZPair id){
+            int offsetX = id.X * _blockWidth * (_chunkWidthInBlocks);
+            int offsetZ = id.Z * _blockWidth * (_chunkWidthInBlocks);
+
             var rawGeometry = new float[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawNormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawBinormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
-            var norm = new int[50];
-            var actNode = new byte[_chunkWidthInVerts * _chunkWidthInVerts];
-            var inds = new int[(_chunkWidthInVerts - 1) * (_chunkWidthInVerts - 1) * 8];
-            var sw = new Stopwatch();
-            sw.Start();
+            //var indicies = new int[(_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8];
+
+            //var norm = new int[50];
+            //var actNode = new byte[_chunkWidthInVerts * _chunkWidthInVerts];
+            
+            //var sw = new Stopwatch();
+            //sw.Start();
 
             _genKernel.SetValueArgument(1, offsetX);
             _genKernel.SetValueArgument(2, offsetZ);
 
-            //_cmdQueue.Execute(_genKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
-            _cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInVerts - 1) / 2 - 1 , (_chunkWidthInVerts - 1)}, null, null);
-            _cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInVerts - 1), (_chunkWidthInVerts - 1) }, null, null);
+            _cmdQueue.Execute(_genKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
+            //_cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInBlocks) / 2 - 1, (_chunkWidthInBlocks) }, null, null);
+            //_cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks) }, null, null);
 
-            _cmdQueue.ReadFromBuffer(_dummy, ref norm, true, null);
-            _cmdQueue.ReadFromBuffer(_activeVerts, ref actNode, true, null);
-            _cmdQueue.ReadFromBuffer(_indicies, ref inds, true, null);
+            //_cmdQueue.ReadFromBuffer(_dummy, ref norm, true, null);
+            //_cmdQueue.ReadFromBuffer(_activeVerts, ref actNode, true, null);
+            _cmdQueue.ReadFromBuffer(_geometry, ref rawGeometry, true, null);
+            _cmdQueue.ReadFromBuffer(_normals, ref rawNormals, true, null);
+            //_cmdQueue.ReadFromBuffer(_indicies, ref indicies, true, null);
             _cmdQueue.Finish();
-            sw.Stop();
-            double d = sw.ElapsedMilliseconds;
-            var sww = new StreamWriter("out.txt");
+            #region commented
+            //sw.Stop();
+            //double d = sw.ElapsedMilliseconds;
+            /*var sww = new StreamWriter("out.txt");
             int i=0;
             for (int x = 0; x < _chunkWidthInVerts; x++) {
                 for (int z = 0; z < _chunkWidthInVerts; z++) {
@@ -165,14 +178,33 @@ namespace Gondola.Logic.Terrain{
                 sww.Write('\n');
             }
             sww.Close();
-            //var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+             */
+
+            
             //var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             //var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            //texNormal.SetData(rawNormals);
+            
             //texBinormal.SetData(rawBinormals);
             //texTangent.SetData(rawTangents);
+            #endregion
 
-           return null;
+            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            texNormal.SetData(rawNormals);
+
+            var indicies = MeshHelper.CreateIndiceArray(_chunkWidthInBlocks);
+            var verts = new Vector3[_chunkWidthInVerts, _chunkWidthInVerts];
+            int i = 0;
+            for(int x=0; x<_chunkWidthInVerts; x++){
+                for (int z = 0; z < _chunkWidthInVerts; z++){
+                    verts[x, z] = new Vector3(rawGeometry[i], rawGeometry[i + 1], rawGeometry[i + 1]);
+                    i+=4;
+                }
+            }
+            var vertexes = MeshHelper.ConvertMeshToVertList(verts);
+
+            var chunkData = new TerrainChunk(id, vertexes, indicies, texNormal, texNormal, texNormal);
+
+            return chunkData;
         }
     }
 }
