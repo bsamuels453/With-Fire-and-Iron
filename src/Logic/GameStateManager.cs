@@ -1,54 +1,59 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 #endregion
 
 namespace Gondola.Logic{
-    internal class GamestateManager : IDisposable{
+    internal class GamestateManager{
         readonly InputHandler _inputHandler;
-        IGameState _currentState;
+
+        readonly List<IGameState> _activeStates; 
+        readonly Dictionary<string, object> _sharedData;
 
         public GamestateManager(){
-            _currentState = null;
+            _activeStates = new List<IGameState>();
             _inputHandler = new InputHandler();
+            _sharedData = new Dictionary<string, object>();
         }
 
-        #region IDisposable Members
-
-        public void Dispose(){
-            if (_currentState != null){
-                _currentState.Dispose();
+        public void ClearAllStates(){
+            foreach (var state in _activeStates){
+                state.Dispose();
             }
+            _activeStates.Clear();
         }
 
-        #endregion
-
-        public void ClearGameState(){
-            Debug.Assert(_currentState != null);
-
-            _currentState = null;
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
+        public void ClearState(IGameState state){
+            _activeStates.Remove(state);
+            state.Dispose();
         }
 
-        public void SetGameState(IGameState newState){
-            Debug.Assert(_currentState == null, "Gamestate must be cleared before a new state is set");
+        public object QuerySharedData(string identifier){
+            return _sharedData[identifier];
+        }
 
-            _currentState = newState;
+        public void AddSharedData(string identifier, object data){
+            _sharedData.Add(identifier, data);
+        }
+
+        public void AddGameState(IGameState newState){
+            _activeStates.Add(newState);
         }
 
         public void Update(){
             _inputHandler.Update();
-            if (_currentState != null){
-                _currentState.Update(_inputHandler.CurrentInputState, 0);
+            foreach (var state in _activeStates){
+                state.Update(_inputHandler.CurrentInputState, 0);
             }
         }
 
         public void Draw(){
-            Debug.Assert(_currentState != null);
-            _currentState.Draw();
+            foreach (var state in _activeStates){
+                state.Draw();
+            }
         }
     }
 }
