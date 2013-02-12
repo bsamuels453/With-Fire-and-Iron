@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using Gondola.Common;
 using Gondola.Draw;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Gondola.Logic.Terrain {
@@ -44,6 +45,10 @@ namespace Gondola.Logic.Terrain {
                 _tangents.Dispose();
             }
             _buffer.Dispose();
+        }
+
+        public void Draw(Matrix viewMatrix){
+            _buffer.Draw(viewMatrix);
         }
     }
 }
