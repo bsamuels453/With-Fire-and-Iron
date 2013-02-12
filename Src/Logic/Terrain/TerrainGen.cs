@@ -3,16 +3,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.Contracts;
-using System.Drawing;
 using System.IO;
 using Cloo;
-using Gondola.Logic;
-using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
-namespace Gondola.GameState.Terrain{
+namespace Gondola.Logic.Terrain{
     internal class TerrainGen{
 
         readonly int _blockWidth;

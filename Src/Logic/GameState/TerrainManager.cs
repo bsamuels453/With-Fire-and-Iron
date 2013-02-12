@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Gondola.Common;
-using Gondola.Logic;
+using Gondola.Logic.Terrain;
 
-namespace Gondola.GameState.Terrain {
+namespace Gondola.Logic.GameState {
     class TerrainManager : IGameState {
         List<TerrainChunk> _loadedChunks;
         Vec3Ref _viewportPos;

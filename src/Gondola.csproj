@@ -131,10 +131,10 @@
     <Compile Include="Draw\TerrainBuffer.cs" />
     <Compile Include="Draw\Text2D.cs" />
     <Compile Include="Draw\WireframeBuffer.cs" />
-    <Compile Include="GameState\Terrain\TerrainChunk.cs" />
-    <Compile Include="GameState\Terrain\TerrainGen.cs" />
-    <Compile Include="GameState\Terrain\TerrainManager.cs" />
-    <Compile Include="GameState\TestState.cs" />
+    <Compile Include="Logic\GameState\TerrainManager.cs" />
+    <Compile Include="Logic\GameState\TestState.cs" />
+    <Compile Include="Logic\Terrain\TerrainChunk.cs" />
+    <Compile Include="Logic\Terrain\TerrainGen.cs" />
     <Compile Include="Logic\GameStateManager.cs" />
     <Compile Include="Logic\Gbl.cs" />
     <Compile Include="Logic\IGameState.cs" />

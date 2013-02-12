@@ -1,15 +1,13 @@
 ﻿#region
 
 using System.Diagnostics;
-using System.Threading;
 using Gondola.Draw;
-using Gondola.GameState.Terrain;
-using Gondola.Logic;
+using Gondola.Logic.Terrain;
 using Gondola.UI;
 
 #endregion
 
-namespace Gondola.GameState{
+namespace Gondola.Logic.GameState{
     internal class TestState : IGameState{
         //readonly Sprite2D sprite;
         readonly RenderTarget target;
@@ -24,7 +22,7 @@ namespace Gondola.GameState{
             sw.Start();
             for (int i = 0; i < 500; i++){
 
-                t.Generate(i, 0);
+                t.GenerateChunk(i, 0);
 
 
 

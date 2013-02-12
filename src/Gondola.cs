@@ -1,8 +1,8 @@
 #region
 
 using Gondola.Draw;
-using Gondola.GameState;
 using Gondola.Logic;
+using Gondola.Logic.GameState;
 using Microsoft.Xna.Framework;
 
 #endregion
