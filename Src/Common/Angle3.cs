@@ -12,7 +12,7 @@ namespace Gondola.Common {
         public Angle3(float pitch, float roll, float yaw){
             Pitch = pitch;
             Roll = roll;
-            Yaw = Yaw;
+            Yaw = yaw;
         }
     }
 }
