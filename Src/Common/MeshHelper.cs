@@ -128,6 +128,23 @@ namespace Gondola.Common {
             return vertLi;
         }
 
+        public static VertexPositionTexture[] ConvertMeshToVertList(Vector3[,] mesh) {
+            var vertLi = new VertexPositionTexture[(mesh.GetLength(0) - 1) * (mesh.GetLength(1) - 1) * 4];
+            //convert from 2d array to 1d
+            int index = 0;
+            for (int x = 0; x < mesh.GetLength(0) - 1; x++) {
+                for (int z = 0; z < mesh.GetLength(1) - 1; z++) {
+                    vertLi[index].Position = mesh[x, z];
+                    vertLi[index + 1].Position = mesh[x, z + 1];
+                    vertLi[index + 2].Position = mesh[x + 1, z + 1];
+                    vertLi[index + 3].Position = mesh[x + 1, z];
+
+                    index += 4;
+                }
+            }
+            return vertLi;
+        }
+
         public static void GenerateCube(out VertexPositionNormalTexture[] verticies, out int[] indicies, Vector3 origin, float xSize, float ySize, float zSize) {
             //boy do i love hardcoding
             verticies = new VertexPositionNormalTexture[20];
