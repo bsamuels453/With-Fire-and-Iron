@@ -12,7 +12,8 @@ namespace Gondola.Draw{
     class TerrainBuffer : BaseBufferObject<VertexPositionTexture>{
         public TerrainBuffer(int numIndicies, int numVerticies, int numPrimitives, PrimitiveType primitiveType) :
             base(numIndicies, numVerticies, numPrimitives, primitiveType){
-            BufferEffect = Gbl.LoadContent<Effect>("TerrainEffect").Clone();
+                
+            BufferEffect = Gbl.LoadContent<Effect>("TRend_Shader").Clone();
             BufferEffect.Parameters["GrassTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_GrassTexture"));
             BufferEffect.Parameters["DirtTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_DirtTexture"));
             BufferEffect.Parameters["RockTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_RockTexture"));
