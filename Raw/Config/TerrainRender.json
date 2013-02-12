@@ -1,13 +1,15 @@
 {
 	"InternalAbbreviation": "TRend",
-
-	"DirtTexture" :        "Dirt",
-	"GrassTexture" :       "Grass",
-	"RockTexture" :        "Rock",
-	"IceTexture" :         "Ice",
-	"TreeTexture" :        "Trees",
-	"TreeTexNormalMap" :   "TreeNormals",
-	"RockTexNormalMap" :   "RockNormals",
+	
+	"Shader": 	           "HLSL/TerrainEffect",
+	
+	"DirtTexture" :        "Materials/Dirt",
+	"GrassTexture" :       "Materials/Grass",
+	"RockTexture" :        "Materials/Rock",
+	"IceTexture" :         "Materials/Ice",
+	"TreeTexture" :        "Materials/Trees",
+	"TreeTexNormalMap" :   "Materials/TreeNormals",
+	"RockTexNormalMap" :   "Materials/RockNormals",
 	
 	"AmbientColor":        "0,0,0,1",
 	"AmbientIntensity":    0.1,
