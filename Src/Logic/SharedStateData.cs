@@ -5,6 +5,7 @@ using System.Text;
 
 namespace Gondola.Logic {
     internal enum SharedStateData{
-        PlayerPosition
+        PlayerPosition,
+        PlayerLook
     }
 }
