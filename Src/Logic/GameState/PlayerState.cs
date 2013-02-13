@@ -20,21 +20,28 @@ namespace Gondola.Logic.GameState{
         readonly Text2D _pitch;
         readonly Text2D _yaw;
         readonly Point _viewportSize;
+        bool _skipNextMouseUpdate;
 
         public PlayerState(GamestateManager mgr, Point viewportSize) {
             _renderTarget = new RenderTarget(0f);
             _manager = mgr;
             _viewportSize = viewportSize;
-            _playerPosition = new Vector3(8890, 1064, 1836);
+            _playerPosition = new Vector3(0, 1000, 466);
             _playerLookDir = new Angle3(-0.36f, 0, -6.704f);
             _manager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
             _manager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
+            _skipNextMouseUpdate = false;
 
             _x = new Text2D(_renderTarget, 0, 0, "hi");
             _y = new Text2D(_renderTarget, 0, 10, "hi");
             _z = new Text2D(_renderTarget, 0, 20, "hi");
             _pitch = new Text2D(_renderTarget, 0, 30, "hi");
             _yaw = new Text2D(_renderTarget, 0, 40, "hi");
+            _x.Color = Color.Wheat;
+            _y.Color = Color.Wheat;
+            _z.Color = Color.Wheat;
+            _pitch.Color = Color.Wheat;
+            _yaw.Color = Color.Wheat;
         }
 
         #region IGameState Members
@@ -86,34 +93,44 @@ namespace Gondola.Logic.GameState{
             var prevPos = state.PrevState.MousePos;
             int dx = pos.X - prevPos.X;
             int dy = pos.Y - prevPos.Y;
+            if (dx != 0 || dy != 0){
+                const double tolerance = 0.2f;
 
-            const double tolerance = 0.2f;
-            //check to see if mouse is outside of permitted area
-            if (
-                pos.X > _viewportSize.X * (1 - tolerance) ||
-                pos.X < _viewportSize.X * tolerance ||
-                pos.Y > _viewportSize.Y * (1 - tolerance) ||
-                pos.Y < _viewportSize.X * tolerance
-                ) {
-                //move mouse to center of screen
-                    Mouse.SetPosition(_viewportSize.X / 2, _viewportSize.Y / 2);
-                    pos.X = _viewportSize.X / 2;
-                    pos.Y = _viewportSize.Y / 2;
+                //now apply viewport changes
+                if (!_skipNextMouseUpdate) {
+                    _playerLookDir.Yaw -= dx * 0.005f;
+                    if (
+                        (_playerLookDir.Pitch - dy * 0.005f) < 1.55 &&
+                        (_playerLookDir.Pitch - dy * 0.005f) > -1.55) {
+                        _playerLookDir.Pitch -= dy * 0.005f;
+                    }
+                }
+                else{
+                    _skipNextMouseUpdate = false;
+                }
+
+                //check to see if mouse is outside of permitted area
+                if (
+                    pos.X > _viewportSize.X*(1 - tolerance) ||
+                    pos.X < _viewportSize.X*tolerance ||
+                    pos.Y > _viewportSize.Y*(1 - tolerance) ||
+                    pos.Y < _viewportSize.X*tolerance
+                    ){
+                    //move mouse to center of screen
+                    Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
+                    pos.X = _viewportSize.X/2;
+                    pos.Y = _viewportSize.Y/2;
+                    _skipNextMouseUpdate = true;
+                }
+
+                _pitch.Str = "pitch: " + _playerLookDir.Pitch;
+                _yaw.Str = "yaw: " + _playerLookDir.Yaw;
             }
-
-            //now apply viewport changes
-            _playerLookDir.Yaw -= dx * 0.005f;
-            if (
-                (_playerLookDir.Pitch - dy * 0.005f) < 1.55 &&
-                (_playerLookDir.Pitch - dy * 0.005f) > -1.55) {
-
-                _playerLookDir.Pitch -= dy * 0.005f;
-            }
-
-            _pitch.Str = "pitch: " + _playerLookDir.Pitch;
-            _yaw.Str = "yaw: " + _playerLookDir.Yaw;
 
             #endregion
+
+            _manager.ModifySharedData(SharedStateData.PlayerPosition, _playerPosition);
+            _manager.ModifySharedData(SharedStateData.PlayerLook, _playerLookDir);
         }
 
         public void Draw(){
