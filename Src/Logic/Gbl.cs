@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using Gondola.Common;
 using Microsoft.Xna.Framework;
@@ -25,7 +27,7 @@ namespace Gondola.Logic{
         /// <summary>
         /// whenever the md5 doesn't match up to the new one, the value of RawDir in the following structure is set to true
         /// </summary>
-        public static Dictionary<RawDir, bool> HasRawHashChanged; 
+        public static Dictionary<RawDir, bool> HasRawHashChanged;
 
         /// <summary>
         /// If the md5 has changed, the new md5 won't be written to file until its RawDir in this dictionary is true.
@@ -33,7 +35,7 @@ namespace Gondola.Logic{
         /// </summary>
         public static Dictionary<RawDir, bool> AllowMD5Refresh;
 
-        static Dictionary<RawDir, byte[]> _fileHashes; 
+        static Dictionary<RawDir, string> _fileHashes;
 
         //todo: write jsonconverter for this enum
         public enum RawDir{
@@ -64,32 +66,30 @@ namespace Gondola.Logic{
         static void CheckHashes(){
             HasRawHashChanged = new Dictionary<RawDir, bool>();
             AllowMD5Refresh = new Dictionary<RawDir, bool>();
-            _fileHashes = new Dictionary<RawDir, byte[]>();
+            _fileHashes = new Dictionary<RawDir, string>();
             var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
             var jobj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
             MD5 md5Gen = MD5.Create();
             foreach (var hashEntry in jobj){
                 string fileDir = hashEntry.Key;
-                byte[] hash = (
-                                  from chr in hashEntry.Value.ToObject<string>()
-                                  select (byte) chr
-                              ).ToArray();
+                var hash = hashEntry.Value.ToObject<string>();
                 var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\" + fileDir + "\\");
-                var newHash = new byte[16];
-                for (int i = 0; i < 16; i++)
-                    newHash[i] = 0;
-
+                string newHash = "";
                 foreach (var file in files){
                     var fr = new FileStream(file, FileMode.Open, FileAccess.Read);
                     var fileHash = md5Gen.ComputeHash(fr);
                     sr.Close();
 
-                    for (int i = 0; i < 16; i++)
-                        newHash[i] = (byte) (newHash[i] ^ fileHash[i]);
+                    for (int i = 0; i < 16; i++){
+                        string temp = "";
+                        foreach (var b in fileHash){
+                            temp += b.ToString();
+                        }
+                        newHash += temp;
+                    }
                 }
 
-                //bool
                 RawDir dir = RawDir.Templates;
                 switch (fileDir){
                     case "Config":
@@ -119,7 +119,7 @@ namespace Gondola.Logic{
             var jobj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
 
-            foreach (var hashEntry in AllowMD5Refresh) {
+            foreach (var hashEntry in AllowMD5Refresh){
                 var dir = hashEntry.Key;
                 bool updateHash = hashEntry.Value;
                 string s = dir.ToString();
@@ -128,7 +128,6 @@ namespace Gondola.Logic{
                 }
             }
             var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
-            //var writer = new JsonTextWriter(sw);
             string ss = JsonConvert.SerializeObject(jobj, Formatting.Indented);
             sw.Write(ss);
             sw.Close();
@@ -137,13 +136,13 @@ namespace Gondola.Logic{
 
         public static T LoadContent<T>(string str){
             string objValue = "";
-            try {
+            try{
                 objValue = RawLookup[str];
                 return ContentManager.Load<T>(objValue);
             }
             catch (Exception e){
                 T obj;
-                try {
+                try{
                     obj = JsonConvert.DeserializeObject<T>(objValue);
                 }
                 catch (Exception ee){
@@ -161,12 +160,34 @@ namespace Gondola.Logic{
             return scriptText;
         }
 
-        public static string GetScriptDirectory(string str) {
+        public static ReadOnlyCollection<byte[]> LoadBinary(string str){
+            string address = "Compiled\\" + RawLookup[str];
+            address += "c"; //the file extension for a compiled binary is .clc for .cl files
+
+            var binaryFormatter = new BinaryFormatter();
+            var fileStrm = new FileStream(address, FileMode.Open, FileAccess.Read, FileShare.None);
+            var binary = (ReadOnlyCollection<byte[]>) binaryFormatter.Deserialize(fileStrm);
+            fileStrm.Close();
+            return binary;
+        }
+
+        public static void SaveBinary(ReadOnlyCollection<byte[]> binary, string str){
+            string address = "Compiled\\" + RawLookup[str];
+            address += "c"; //the file extension for a compiled binary is .clc for .cl files
+
+            var binaryFormatter = new BinaryFormatter();
+            var fileStrm = new FileStream(address, FileMode.Create, FileAccess.Write, FileShare.None);
+            binaryFormatter.Serialize(fileStrm, binary);
+            fileStrm.Close();
+        }
+
+
+        public static string GetScriptDirectory(string str){
             string curDir = Directory.GetCurrentDirectory();
             string address = RawLookup[str];
             string directory = "";
             for (int i = address.Length - 1; i >= 0; i--){
-                if( address[i] == '\\'){
+                if (address[i] == '\\'){
                     directory = address.Substring(0, i);
                 }
             }
