@@ -40,7 +40,6 @@ namespace Gondola.Logic{
             newInputState.RightButtonState = newMouseState.RightButton;
             newInputState.MouseScrollChange = newMouseState.ScrollWheelValue - _prevMouseState.ScrollWheelValue;
             newInputState.KeyboardState = newKeyboardState;
-            newInputState.ViewMatrix = Matrix.CreateLookAt(Gbl.CameraPosition, Gbl.CameraTarget, Vector3.Up);
 
             if (_prevMouseState.X != newMouseState.X || _prevMouseState.Y != newMouseState.Y) {
                 newInputState.MouseMoved = true;

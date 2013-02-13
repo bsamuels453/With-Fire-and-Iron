@@ -24,7 +24,6 @@ namespace Gondola.Logic{
         public bool MouseMoved;
 
         public InputState PrevState;
-        public Matrix ViewMatrix;
 
         public ButtonState RightButtonState;
         public bool RightButtonChange;
