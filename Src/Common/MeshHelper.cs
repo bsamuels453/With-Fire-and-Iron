@@ -58,6 +58,23 @@ namespace Gondola.Common {
             return verticies;
         }
 
+        public static VertexPositionTexture[] CreateTexcoordedVertexListWithoutNormals(int numQuads) {
+            var verticies = new VertexPositionTexture[numQuads * 4];
+
+            for (int i = 0; i < verticies.Count(); i++) {
+                verticies[i] = new VertexPositionTexture();
+            }
+
+            for (int i = 0; i < verticies.Count(); i += 4) {
+                verticies[i].TextureCoordinate = new Vector2(0, 0);
+                verticies[i + 1].TextureCoordinate = new Vector2(0, 1);
+                verticies[i + 2].TextureCoordinate = new Vector2(1, 1);
+                verticies[i + 3].TextureCoordinate = new Vector2(1, 0);
+            }
+
+            return verticies;
+        }
+
         public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, List<List<Vector3>> list) {
             for (int x = 0; x < meshWidth; x++) {
                 for (int y = 0; y < meshHeight; y++) {
@@ -127,22 +144,23 @@ namespace Gondola.Common {
             }
             return vertLi;
         }
-
-        public static VertexPositionTexture[] ConvertMeshToVertList(Vector3[,] mesh) {
-            var vertLi = new VertexPositionTexture[(mesh.GetLength(0) - 1) * (mesh.GetLength(1) - 1) * 4];
-            //convert from 2d array to 1d
+        /// <summary>
+        /// warning: cache thrashes
+        /// </summary>
+        /// <param name="mesh"></param>
+        /// <param name="vertexes"></param>
+        public static void ConvertMeshToVertList(Vector3[,] mesh, ref VertexPositionTexture[] vertexes) {
             int index = 0;
             for (int x = 0; x < mesh.GetLength(0) - 1; x++) {
                 for (int z = 0; z < mesh.GetLength(1) - 1; z++) {
-                    vertLi[index].Position = mesh[x, z];
-                    vertLi[index + 1].Position = mesh[x, z + 1];
-                    vertLi[index + 2].Position = mesh[x + 1, z + 1];
-                    vertLi[index + 3].Position = mesh[x + 1, z];
+                    vertexes[index].Position = mesh[x, z];
+                    vertexes[index + 1].Position = mesh[x, z + 1];
+                    vertexes[index + 2].Position = mesh[x + 1, z + 1];
+                    vertexes[index + 3].Position = mesh[x + 1, z];
 
                     index += 4;
                 }
             }
-            return vertLi;
         }
 
         public static void GenerateCube(out VertexPositionNormalTexture[] verticies, out int[] indicies, Vector3 origin, float xSize, float ySize, float zSize) {
