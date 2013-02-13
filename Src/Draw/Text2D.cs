@@ -13,10 +13,12 @@ namespace Gondola.Draw{
         public Vector2 Position;
         public string Str;
 
+        public Color Color;
+
         public Text2D(RenderTarget target, int x, int y, string str, string font = "UI_SpriteFont"){
             Position = new Vector2(x, y);
             Str = str;
-
+            Color = Color.Black;
             _spriteBatch = target.SpriteBatch;
             _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
         }
@@ -28,7 +30,7 @@ namespace Gondola.Draw{
                 _font,
                 Str,
                 Position,
-                Color.Black
+                Color
                 );
         }
 
