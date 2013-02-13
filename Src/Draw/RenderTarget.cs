@@ -78,7 +78,7 @@ namespace Gondola.Draw{
 
         public void Bind(){
             Gbl.Device.SetRenderTarget(_targetCanvas);
-            Gbl.Device.Clear(Color.CornflowerBlue);
+            Gbl.Device.Clear(Color.Transparent);
             Gbl.Device.DepthStencilState = _universalDepthStencil;
             SpriteBatch.Begin(
                 SpriteSortMode.Immediate,
