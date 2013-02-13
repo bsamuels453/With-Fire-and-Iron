@@ -197,9 +197,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <PropertyGroup>
-    <PostBuildEvent>del /s /q $(SolutionDir)\bin\Raw
-md $(SolutionDir)\bin\Raw
-xcopy /s /y $(SolutionDir)\Raw $(SolutionDir)\bin\Raw</PostBuildEvent>
+    <PostBuildEvent>xcopy /s /y $(SolutionDir)\Raw $(SolutionDir)\bin\Raw</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
