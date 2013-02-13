@@ -35,7 +35,9 @@ namespace Gondola{
                 );
 
             _gamestateManager = new GamestateManager();
-            _gamestateManager.AddGameState(new PlayerState(_gamestateManager));
+            _gamestateManager.AddGameState(new PlayerState(_gamestateManager, 
+                new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
+
             _gamestateManager.AddGameState(new TerrainManager(_gamestateManager));
 
             IsMouseVisible = true;

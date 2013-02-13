@@ -14,21 +14,27 @@ namespace Gondola.Logic.GameState{
         readonly RenderTarget _renderTarget;
         Angle3 _playerLookDir;
         Vector3 _playerPosition;
-        Text2D _x;
-        Text2D _y;
-        Text2D _z;
+        readonly Text2D _x;
+        readonly Text2D _y;
+        readonly Text2D _z;
+        readonly Text2D _pitch;
+        readonly Text2D _yaw;
+        readonly Point _viewportSize;
 
-        public PlayerState(GamestateManager mgr){
+        public PlayerState(GamestateManager mgr, Point viewportSize) {
             _renderTarget = new RenderTarget(0f);
             _manager = mgr;
-            _playerPosition = new Vector3(0, 0, 0);
-            _playerLookDir = new Angle3(0, 0, 0);
+            _viewportSize = viewportSize;
+            _playerPosition = new Vector3(8890, 1064, 1836);
+            _playerLookDir = new Angle3(-0.36f, 0, -6.704f);
             _manager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
             _manager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
 
             _x = new Text2D(_renderTarget, 0, 0, "hi");
             _y = new Text2D(_renderTarget, 0, 10, "hi");
             _z = new Text2D(_renderTarget, 0, 20, "hi");
+            _pitch = new Text2D(_renderTarget, 0, 30, "hi");
+            _yaw = new Text2D(_renderTarget, 0, 40, "hi");
         }
 
         #region IGameState Members
@@ -38,7 +44,8 @@ namespace Gondola.Logic.GameState{
             _manager.DeleteSharedData(SharedStateData.PlayerLook);
         }
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(InputState state, double timeDelta) {
+            #region update player position
             var keyState = state.KeyboardState;
 
             float movementspeed = 5.5f;
@@ -72,6 +79,41 @@ namespace Gondola.Logic.GameState{
             _y.Str = "y: " + _playerPosition.Y;
             _z.Str = "z: " + _playerPosition.Z;
             //xx block wasd from further interpretation?
+            #endregion
+
+            #region update player viewpos
+            var pos = state.MousePos;
+            var prevPos = state.PrevState.MousePos;
+            int dx = pos.X - prevPos.X;
+            int dy = pos.Y - prevPos.Y;
+
+            const double tolerance = 0.2f;
+            //check to see if mouse is outside of permitted area
+            if (
+                pos.X > _viewportSize.X * (1 - tolerance) ||
+                pos.X < _viewportSize.X * tolerance ||
+                pos.Y > _viewportSize.Y * (1 - tolerance) ||
+                pos.Y < _viewportSize.X * tolerance
+                ) {
+                //move mouse to center of screen
+                    Mouse.SetPosition(_viewportSize.X / 2, _viewportSize.Y / 2);
+                    pos.X = _viewportSize.X / 2;
+                    pos.Y = _viewportSize.Y / 2;
+            }
+
+            //now apply viewport changes
+            _playerLookDir.Yaw -= dx * 0.005f;
+            if (
+                (_playerLookDir.Pitch - dy * 0.005f) < 1.55 &&
+                (_playerLookDir.Pitch - dy * 0.005f) > -1.55) {
+
+                _playerLookDir.Pitch -= dy * 0.005f;
+            }
+
+            _pitch.Str = "pitch: " + _playerLookDir.Pitch;
+            _yaw.Str = "yaw: " + _playerLookDir.Yaw;
+
+            #endregion
         }
 
         public void Draw(){
@@ -79,6 +121,8 @@ namespace Gondola.Logic.GameState{
             _x.Draw();
             _y.Draw();
             _z.Draw();
+            _pitch.Draw();
+            _yaw.Draw();
             _renderTarget.Unbind();
         }
 
