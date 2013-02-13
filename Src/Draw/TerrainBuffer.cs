@@ -31,6 +31,7 @@ namespace Gondola.Draw{
 
             BufferEffect.Parameters["DiffuseIntensity"].SetValue(Gbl.LoadContent<float>("TRend_DiffuseIntensity"));
             BufferEffect.Parameters["DiffuseLightDirection"].SetValue(Gbl.LoadContent<Vector3>("TRend_DiffuseDirection"));
+            CullMode = CullMode.None;
         }
 
         bool _bufferDataSet;
