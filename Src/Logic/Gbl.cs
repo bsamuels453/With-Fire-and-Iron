@@ -3,25 +3,47 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Cryptography;
 using Gondola.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
 namespace Gondola.Logic{
     internal static class Gbl{
-        public static Vector3 CameraPosition;
-        public static Vector3 CameraTarget;
         public static GraphicsDevice Device;
         public static ContentManager ContentManager;
         public static Dictionary<string, string> RawLookup;
         public static Matrix ProjectionMatrix;
         public static Point ScreenSize;
 
+        /// <summary>
+        /// whenever the md5 doesn't match up to the new one, the value of RawDir in the following structure is set to true
+        /// </summary>
+        public static Dictionary<RawDir, bool> HasRawHashChanged; 
+
+        /// <summary>
+        /// If the md5 has changed, the new md5 won't be written to file until its RawDir in this dictionary is true.
+        /// This prevents the md5 from updating when certain scripts havent been compiled/processed before the program terminates.
+        /// </summary>
+        public static Dictionary<RawDir, bool> AllowMD5Refresh;
+
+        static Dictionary<RawDir, byte[]> _fileHashes; 
+
+        //todo: write jsonconverter for this enum
+        public enum RawDir{
+            Config,
+            Scripts,
+            Templates
+        }
+
         static Gbl(){
+            CheckHashes();
             RawLookup = new Dictionary<string, string>();
             var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\Config\\");
             foreach (var file in files){
@@ -37,6 +59,80 @@ namespace Gondola.Logic{
                     RawLookup.Add(prefix + configVal.Key, configVal.Value);
                 }
             }
+        }
+
+        static void CheckHashes(){
+            HasRawHashChanged = new Dictionary<RawDir, bool>();
+            AllowMD5Refresh = new Dictionary<RawDir, bool>();
+            _fileHashes = new Dictionary<RawDir, byte[]>();
+            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
+            var jobj = JObject.Parse(sr.ReadToEnd());
+            sr.Close();
+            MD5 md5Gen = MD5.Create();
+            foreach (var hashEntry in jobj){
+                string fileDir = hashEntry.Key;
+                byte[] hash = (
+                                  from chr in hashEntry.Value.ToObject<string>()
+                                  select (byte) chr
+                              ).ToArray();
+                var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\" + fileDir + "\\");
+                var newHash = new byte[16];
+                for (int i = 0; i < 16; i++)
+                    newHash[i] = 0;
+
+                foreach (var file in files){
+                    var fr = new FileStream(file, FileMode.Open, FileAccess.Read);
+                    var fileHash = md5Gen.ComputeHash(fr);
+                    sr.Close();
+
+                    for (int i = 0; i < 16; i++)
+                        newHash[i] = (byte) (newHash[i] ^ fileHash[i]);
+                }
+
+                //bool
+                RawDir dir = RawDir.Templates;
+                switch (fileDir){
+                    case "Config":
+                        dir = RawDir.Config;
+                        break;
+                    case "Templates":
+                        dir = RawDir.Templates;
+                        break;
+                    case "Scripts":
+                        dir = RawDir.Scripts;
+                        break;
+                }
+
+                _fileHashes.Add(dir, newHash);
+                if (!hash.SequenceEqual(newHash)){
+                    HasRawHashChanged.Add(dir, true);
+                    AllowMD5Refresh.Add(dir, false);
+                }
+                else{
+                    HasRawHashChanged.Add(dir, false);
+                }
+            }
+        }
+
+        public static void CommitHashChanges(){
+            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
+            var jobj = JObject.Parse(sr.ReadToEnd());
+            sr.Close();
+
+            foreach (var hashEntry in AllowMD5Refresh) {
+                var dir = hashEntry.Key;
+                bool updateHash = hashEntry.Value;
+                string s = dir.ToString();
+                if (updateHash){
+                    jobj[s] = _fileHashes[dir];
+                }
+            }
+            var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
+            //var writer = new JsonTextWriter(sw);
+            string ss = JsonConvert.SerializeObject(jobj, Formatting.Indented);
+            sw.Write(ss);
+            sw.Close();
+
         }
 
         public static T LoadContent<T>(string str){

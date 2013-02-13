@@ -46,7 +46,7 @@ namespace Gondola{
         }
 
         protected override void UnloadContent(){
-            //_gamestateManager.Dispose();
+            Gbl.CommitHashChanges();
         }
 
         protected override void Update(GameTime gameTime){
