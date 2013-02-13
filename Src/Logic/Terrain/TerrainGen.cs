@@ -172,7 +172,8 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.Finish();
         }
 
-        public TerrainChunk GenerateChunk(XZPair id){
+        public TerrainChunk GenerateChunk(XZPair id) {
+ 
             int offsetX = id.X * _blockWidth * (_chunkWidthInBlocks);
             int offsetZ = id.Z * _blockWidth * (_chunkWidthInBlocks);
 
@@ -182,12 +183,6 @@ namespace Gondola.Logic.Terrain{
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             //var indicies = new int[(_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8];
 
-            //var norm = new int[50];
-            //var actNode = new byte[_chunkWidthInVerts * _chunkWidthInVerts];
-            
-            //var sw = new Stopwatch();
-            //sw.Start();
-
             _genKernel.SetValueArgument(1, offsetX);
             _genKernel.SetValueArgument(2, offsetZ);
 
@@ -195,50 +190,33 @@ namespace Gondola.Logic.Terrain{
             //_cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInBlocks) / 2 - 1, (_chunkWidthInBlocks) }, null, null);
             //_cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks) }, null, null);
 
-            //_cmdQueue.ReadFromBuffer(_dummy, ref norm, true, null);
-            //_cmdQueue.ReadFromBuffer(_activeVerts, ref actNode, true, null);
             _cmdQueue.ReadFromBuffer(_geometry, ref rawGeometry, true, null);
             _cmdQueue.ReadFromBuffer(_normals, ref rawNormals, true, null);
-            //_cmdQueue.ReadFromBuffer(_indicies, ref indicies, true, null);
+            _cmdQueue.ReadFromBuffer(_binormals, ref rawBinormals, true, null);
+            _cmdQueue.ReadFromBuffer(_tangents, ref rawTangents, true, null);
             _cmdQueue.Finish();
-            #region commented
-            //sw.Stop();
-            //double d = sw.ElapsedMilliseconds;
-            /*var sww = new StreamWriter("out.txt");
-            int i=0;
-            for (int x = 0; x < _chunkWidthInVerts; x++) {
-                for (int z = 0; z < _chunkWidthInVerts; z++) {
-                    sww.Write(actNode[i]+" ");
-                    i++;
-                }
-                sww.Write('\n');
-            }
-            sww.Close();
-             */
-
-            
-            //var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            //var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            
-            //texBinormal.SetData(rawBinormals);
-            //texTangent.SetData(rawTangents);
-            #endregion
 
             var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            texNormal.SetData(rawNormals);
+            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
-            var indicies = MeshHelper.CreateIndiceArray(_chunkWidthInBlocks);
+            texNormal.SetData(rawNormals);
+            texBinormal.SetData(rawBinormals);
+            texTangent.SetData(rawTangents);
+
+            var indicies = MeshHelper.CreateIndiceArray(_chunkWidthInBlocks * _chunkWidthInBlocks);
             var verts = new Vector3[_chunkWidthInVerts, _chunkWidthInVerts];
             int i = 0;
             for(int x=0; x<_chunkWidthInVerts; x++){
                 for (int z = 0; z < _chunkWidthInVerts; z++){
-                    verts[x, z] = new Vector3(rawGeometry[i], rawGeometry[i + 1], rawGeometry[i + 1]);
+                    verts[x, z] = new Vector3(rawGeometry[i], rawGeometry[i + 1], rawGeometry[i + 2]);
                     i+=4;
                 }
             }
-            var vertexes = MeshHelper.ConvertMeshToVertList(verts);
+            var vertexList = MeshHelper.CreateTexcoordedVertexListWithoutNormals(_chunkWidthInBlocks * _chunkWidthInBlocks);
+            MeshHelper.ConvertMeshToVertList(verts, ref vertexList);
 
-            var chunkData = new TerrainChunk(id, vertexes, indicies, texNormal, texNormal, texNormal);
+            var chunkData = new TerrainChunk(id, vertexList, indicies, texNormal, texBinormal, texTangent);
 
             return chunkData;
         }
