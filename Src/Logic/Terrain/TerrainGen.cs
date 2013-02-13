@@ -2,8 +2,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using Cloo;
 using Gondola.Common;
 using Microsoft.Xna.Framework;
@@ -51,6 +53,8 @@ namespace Gondola.Logic.Terrain{
 
             #region setup generator kernel
 
+            bool loadFromSource = Gbl.HasRawHashChanged[Gbl.RawDir.Scripts];
+
             _chunkWidthInBlocks = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
             _blockWidth = Gbl.LoadContent<int>("TGen_BlockWidthInMeters");
@@ -73,40 +77,19 @@ namespace Gondola.Logic.Terrain{
             };
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
-            
-            var sr = new StreamReader("helo.cl");
-            string ss = sr.ReadToEnd();
-            var bli = new List<byte>();
-            foreach (var chr in ss){
-                bli.Add((byte)chr);
+
+            if (loadFromSource) {
+                _genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
+                _genPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
+                Gbl.SaveBinary(_genPrgm.Binaries, "TGen_Generator");
             }
-            var ienum = new List<byte[]>();
-            ienum.Add(bli.ToArray());
-            
-            var prg = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
-            prg.Build(null, "", null, IntPtr.Zero);
-
-            var tkern = prg.CreateKernel("GenTerrain");
-            var bins = tkern.Program.Binaries;
-
-
-            //_cmdQueue.Finish();
-            //_genPrgm = new ComputeProgram(_context, ienum, _devices);
-            _genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
-            //_genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
-            //string scriptDir = Gbl.GetScriptDirectory("TGen_Generator"); //use option -I + scriptDir for header search
-            _genPrgm.Build(null, "", null, IntPtr.Zero);
-            /*
-            var sw = new StreamWriter("helo.cl");
-            var kk = _genPrgm.Binaries;
-            foreach (var bytese in kk){
-                foreach (var b in bytese){
-                    sw.Write(b);
-                }
-                break;
+            else{
+                var binary = Gbl.LoadBinary("TGen_Generator");
+                _genPrgm = new ComputeProgram(_context, binary, _devices);
+                _genPrgm.Build(null, "", null, IntPtr.Zero);
             }
-            sw.Close();
-             */
+
+            
             _genKernel = _genPrgm.CreateKernel("GenTerrain");
             
 
@@ -128,10 +111,18 @@ namespace Gondola.Logic.Terrain{
 
             #region setup quadtree kernel
 
-            //Debug.Assert(_chunkWidthInVerts == 129);
+            if (loadFromSource) {
+                _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_QTree"));
+                _qTreePrgm.Build(null, "", null, IntPtr.Zero);
+                Gbl.SaveBinary(_qTreePrgm.Binaries, "TGen_QTree");
+            }
+            else {
+                var binary = Gbl.LoadBinary("TGen_QTree");
+                _qTreePrgm = new ComputeProgram(_context, binary, _devices);
+                _qTreePrgm.Build(null, "", null, IntPtr.Zero);
+            }
 
-            _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_QTree"));
-            _qTreePrgm.Build(null, "", null, IntPtr.Zero);
+            
             _qTreeKernel = _qTreePrgm.CreateKernel("QuadTree");
 
             _activeVerts = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts);
@@ -154,8 +145,17 @@ namespace Gondola.Logic.Terrain{
 
             #region setup winding kernel
 
-            _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
-            _winderPrgm.Build(null, "", null, IntPtr.Zero);
+            if (loadFromSource) {
+                _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
+                _winderPrgm.Build(null, "", null, IntPtr.Zero);
+                Gbl.SaveBinary(_winderPrgm.Binaries, "TGen_VertexWinder");
+            }
+            else {
+                var binary = Gbl.LoadBinary("TGen_VertexWinder");
+                _winderPrgm = new ComputeProgram(_context, binary, _devices);
+                _winderPrgm.Build(null, "", null, IntPtr.Zero);
+            }
+            
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
 
             _indicies = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, (_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8);
@@ -164,6 +164,10 @@ namespace Gondola.Logic.Terrain{
             _winderKernel.SetMemoryArgument(1, _indicies);
 
             #endregion
+
+            if (loadFromSource){
+                Gbl.AllowMD5Refresh[Gbl.RawDir.Scripts] = true;
+            }
 
             _cmdQueue.Finish();
         }
@@ -238,5 +242,7 @@ namespace Gondola.Logic.Terrain{
 
             return chunkData;
         }
+
+
     }
 }
