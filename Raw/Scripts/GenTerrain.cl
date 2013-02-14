@@ -24,7 +24,8 @@ __kernel void GenTerrain(
 	__global float3 *geometry,
 	__global uchar3 *normals,
 	__global uchar3 *binormals,
-	__global uchar3 *tangents){  
+	__global uchar3 *tangents,
+	__global float2 *uvCoords){  
 	////////////////////
 	//GENERATE TERRAIN//
 	////////////////////
@@ -46,6 +47,7 @@ __kernel void GenTerrain(
 	
 	int index = blockX*chunkWidth+blockZ;
 	geometry[index] = (float3)(realPosX, height, realPosZ);
+	uvCoords[index] = (float2)((float)blockX/(chunkWidth-1), (float)blockZ/(chunkWidth-1));
 	
 	////////////////////
 	//GENERATE NORMALS//
