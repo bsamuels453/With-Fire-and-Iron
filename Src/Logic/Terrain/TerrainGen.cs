@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Cloo;
@@ -27,6 +28,7 @@ namespace Gondola.Logic.Terrain{
         readonly ComputeBuffer<byte> _binormals;
         readonly ComputeBuffer<byte> _tangents;
         readonly ComputeBuffer<byte> _normals;
+        readonly ComputeBuffer<float> _uvCoords;
 
         readonly ComputeKernel _qTreeKernel;
         readonly ComputeProgram _qTreePrgm;
@@ -100,12 +102,14 @@ namespace Gondola.Logic.Terrain{
             _normals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 4);
             _binormals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 4);
             _tangents = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 4);
+            _uvCoords = new ComputeBuffer<float>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 2);
 
             _genKernel.SetMemoryArgument(0, _genConstants);
             _genKernel.SetMemoryArgument(3, _geometry);
             _genKernel.SetMemoryArgument(4, _normals);
             _genKernel.SetMemoryArgument(5, _binormals);
             _genKernel.SetMemoryArgument(6, _tangents);
+            _genKernel.SetMemoryArgument(7, _uvCoords);
 
             #endregion
 
@@ -137,23 +141,23 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.WriteToBuffer(dsada, _activeVerts, true, null);
 
             _qTreeKernel.SetValueArgument(0, _chunkWidthInBlocks);
-            _qTreeKernel.SetValueArgument(1, 1);
+            _qTreeKernel.SetValueArgument(1, -1);
             _qTreeKernel.SetMemoryArgument(2, _normals);
             _qTreeKernel.SetMemoryArgument(3, _activeVerts);
             _qTreeKernel.SetMemoryArgument(4, _dummy);
             #endregion
 
             #region setup winding kernel
-
+            //loadFromSource = true;
             if (loadFromSource) {
                 _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
+                //_winderPrgm.Build(null, @"-g -s D:\Projects\Gondola\Raw\Scripts\VertexWinder.cl", null, IntPtr.Zero);
                 Gbl.SaveBinary(_winderPrgm.Binaries, "TGen_VertexWinder");
             }
             else {
                 var binary = Gbl.LoadBinary("TGen_VertexWinder");
                 _winderPrgm = new ComputeProgram(_context, binary, _devices);
-                _winderPrgm.Build(null, "", null, IntPtr.Zero);
             }
             
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
@@ -173,7 +177,6 @@ namespace Gondola.Logic.Terrain{
         }
 
         public TerrainChunk GenerateChunk(XZPair id) {
- 
             int offsetX = id.X * _blockWidth * (_chunkWidthInBlocks);
             int offsetZ = id.Z * _blockWidth * (_chunkWidthInBlocks);
 
@@ -181,42 +184,73 @@ namespace Gondola.Logic.Terrain{
             var rawNormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawBinormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
-            //var indicies = new int[(_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8];
+            var rawUVCoords = new float[_chunkWidthInVerts * _chunkWidthInVerts * 2];
+            var indicies = new int[(_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8];
 
             _genKernel.SetValueArgument(1, offsetX);
             _genKernel.SetValueArgument(2, offsetZ);
 
             _cmdQueue.Execute(_genKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
-            //_cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInBlocks) / 2 - 1, (_chunkWidthInBlocks) }, null, null);
-            //_cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks) }, null, null);
+            _cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInBlocks) / 2 - 1, (_chunkWidthInBlocks) }, null, null);
+            _cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks * 2) }, null, null);
 
             _cmdQueue.ReadFromBuffer(_geometry, ref rawGeometry, true, null);
             _cmdQueue.ReadFromBuffer(_normals, ref rawNormals, true, null);
             _cmdQueue.ReadFromBuffer(_binormals, ref rawBinormals, true, null);
             _cmdQueue.ReadFromBuffer(_tangents, ref rawTangents, true, null);
+            _cmdQueue.ReadFromBuffer(_uvCoords, ref rawUVCoords, true, null);
+            _cmdQueue.ReadFromBuffer(_indicies, ref indicies, true, null);
             _cmdQueue.Finish();
 
             var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
+            for (int v = 3; v < rawNormals.Length; v+=4){
+                rawNormals[v] = 1;
+            }
+            for (int v = 3; v < rawBinormals.Length; v += 4) {
+                rawBinormals[v] = 1;
+            }
+            for (int v = 3; v < rawTangents.Length; v += 4) {
+                rawTangents[v] = 1;
+            }
+
             texNormal.SetData(rawNormals);
             texBinormal.SetData(rawBinormals);
             texTangent.SetData(rawTangents);
 
-            var indicies = MeshHelper.CreateIndiceArray(_chunkWidthInBlocks * _chunkWidthInBlocks);
-            var verts = new Vector3[_chunkWidthInVerts, _chunkWidthInVerts];
-            int i = 0;
-            for(int x=0; x<_chunkWidthInVerts; x++){
-                for (int z = 0; z < _chunkWidthInVerts; z++){
-                    verts[x, z] = new Vector3(rawGeometry[i], rawGeometry[i + 1], rawGeometry[i + 2]);
-                    i+=4;
-                }
-            }
-            var vertexList = MeshHelper.CreateTexcoordedVertexListWithoutNormals(_chunkWidthInBlocks * _chunkWidthInBlocks);
-            MeshHelper.ConvertMeshToVertList(verts, ref vertexList);
+            var sw = new FileStream("ello.jpg", FileMode.Create, FileAccess.ReadWrite);
+            texNormal.SaveAsJpeg(sw, _chunkWidthInVerts, _chunkWidthInVerts);
+            sw.Close();
 
-            var chunkData = new TerrainChunk(id, vertexList, indicies, texNormal, texBinormal, texTangent);
+            //var indicies = MeshHelper.CreateIndiceArray(_chunkWidthInBlocks * _chunkWidthInBlocks);
+            var verts = new Vector3[_chunkWidthInVerts*_chunkWidthInVerts];
+            var uv = new Vector2[_chunkWidthInBlocks*_chunkWidthInBlocks*2];
+
+            int si = 0;
+            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++){
+                verts[i] = new Vector3(rawGeometry[si], rawGeometry[si + 1], rawGeometry[si + 2]);
+                si += 4;
+            }
+            si = 0;
+            for (int v = 0; v < _chunkWidthInVerts * _chunkWidthInVerts; v++) {
+                uv[v]= new Vector2(rawUVCoords[si],rawUVCoords[si+1]);
+                si += 2;
+            }
+            var fixedInds = new List<int>();
+            for(int idx=0; idx<indicies.Length; idx+=4){
+                fixedInds.Add(indicies[idx]);
+                 fixedInds.Add(indicies[idx+1]);
+                 fixedInds.Add(indicies[idx+2]);
+            }
+
+            var vertexList = new VertexPositionTexture[_chunkWidthInVerts * _chunkWidthInVerts];
+            for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++){
+                vertexList[i] = new VertexPositionTexture(verts[i],uv[i] );
+            }
+
+            var chunkData = new TerrainChunk(id, vertexList, fixedInds.ToArray(), texNormal, texBinormal, texTangent);
 
             return chunkData;
         }
