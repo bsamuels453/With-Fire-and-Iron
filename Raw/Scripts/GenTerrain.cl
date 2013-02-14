@@ -22,9 +22,6 @@ __kernel void GenTerrain(
 	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
 	int chunkOffsetZ,
 	__global float3 *geometry,
-	__global uchar3 *normals,
-	__global uchar3 *binormals,
-	__global uchar3 *tangents,
 	__global float2 *uvCoords){  
 	////////////////////
 	//GENERATE TERRAIN//
@@ -48,12 +45,19 @@ __kernel void GenTerrain(
 	int index = blockX*chunkWidth+blockZ;
 	geometry[index] = (float3)(realPosX, height, realPosZ);
 	uvCoords[index] = (float2)((float)blockX/(chunkWidth-1), (float)blockZ/(chunkWidth-1));
-	
+}
+
+__kernel void GenNormals(
+	__constant float *parameters,
+	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
+	int chunkOffsetZ,
+	__global float3 *geometry,
+	__global uchar3 *normals,
+	__global uchar3 *binormals,
+	__global uchar3 *tangents){
 	////////////////////
 	//GENERATE NORMALS//
 	////////////////////
-	barrier(CLK_GLOBAL_MEM_FENCE);
-	
 	//first we have to generate extra vertex(s) if the worker is generating the 
 	//normals for a vertex at the edge of the chunk because its neighboring
 	//vertexes may be in the geometry array
@@ -65,6 +69,12 @@ __kernel void GenTerrain(
     // v              |
     //               v3
     //           <- X axis -> +
+	int blockX = get_global_id(0);
+	int blockZ = get_global_id(1);
+	int chunkWidth = get_global_size(0);
+	int index = blockX*chunkWidth+blockZ;
+	float height = 	geometry[index].y;
+
 	float3 v1 = (float3)(0,0,0);
 	float3 v2 = (float3)(0,0,0);
 	float3 v3 = (float3)(0,0,0);
@@ -81,8 +91,9 @@ __kernel void GenTerrain(
 		GetHeight(blockX-1, blockZ, parameters,chunkOffsetX,chunkOffsetZ),
 		0
 		);
-		v1Init = true;
+		v4Init = true;
 	}
+
 	if(blockX == chunkWidth-1){
 		v2 = (float3)(
 		1, 
@@ -105,22 +116,38 @@ __kernel void GenTerrain(
 		GetHeight(blockX, blockZ+1, parameters,chunkOffsetX,chunkOffsetZ),
 		1
 		);
-		v4Init = true;
+		v1Init = true;
 	}
 	
 	//now we fill v1,v2,v3,v4 with vertexes from the
 	//geometry array if they havent been filled already
 	if(!v1Init){
-		v1 = geometry[blockX*chunkWidth+blockZ+1];
+		v1 = (float3)(
+			0,
+			geometry[(blockX)*chunkWidth+blockZ+1].y,
+			1
+		);
 	}
 	if(!v2Init){
-		v2 = geometry[(blockX+1)*chunkWidth+blockZ];
+		v2 = (float3)(
+			1,
+			geometry[(blockX+1)*chunkWidth+blockZ].y,
+			0
+		);
 	}
 	if(!v3Init){
-		v3 = geometry[blockX*chunkWidth+blockZ-1];
+		v3 = (float3)(
+			0,
+			geometry[blockX*chunkWidth+blockZ-1].y,
+			-1
+		);
 	}
 	if(!v4Init){
-		v4 = geometry[(blockX-1)*chunkWidth+blockZ];
+		v4 = (float3)(
+			-1,
+			geometry[(blockX-1)*chunkWidth+blockZ].y,
+			0
+		);
 	}
 	
 	//to make this simpler, we assume the center vertex is zero
@@ -138,7 +165,7 @@ __kernel void GenTerrain(
 	crossSum = normalize(crossSum);
 	v1 = normalize(v1);
 	v2 = normalize(v2);
-	
+
 	normals[index] = (uchar3)(
 		(uchar)(crossSum.x*127+128),
 		(uchar)(crossSum.y*127+128),
@@ -157,6 +184,7 @@ __kernel void GenTerrain(
 		(uchar)(v2.z*127+128)
 	);
 }
+
 
 inline float GenRidge( float height, float offset ){
 	height = fabs(height);
