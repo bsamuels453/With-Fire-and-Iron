@@ -158,6 +158,7 @@ namespace Gondola.Logic.Terrain{
             else {
                 var binary = Gbl.LoadBinary("TGen_VertexWinder");
                 _winderPrgm = new ComputeProgram(_context, binary, _devices);
+                _winderPrgm.Build(null, "", null, IntPtr.Zero);
             }
             
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
