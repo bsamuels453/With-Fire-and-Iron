@@ -18,7 +18,7 @@
 //enum name syntax:
 //{pos}_{dir}
 //TOPLEFT_RIGHT: position is in topright of quad, is winding triangle to the right
-//BOTTOMRIGHT_UP: position is in bottomright of quad, is winding triangle upwards
+//BOTTOMRIGHT_UP: position is in bottomright of quad, is winding triangle upwards.
 typedef enum{
     TOPLEFT_RIGHT,
 	TOPLEFT_DOWN,
@@ -43,7 +43,8 @@ __kernel void VertexWinder(
 	int vertWidth =  treeWidth+1;
 	int x_id = get_global_id(0);
 	int y_id = get_global_id(1);
-	
+	int indiceIdx = x_id+y_id*treeWidth;
+
 	bool horizontalWorker = true;
 	if(y_id >= treeWidth){
 		horizontalWorker = false;
@@ -93,7 +94,7 @@ __kernel void VertexWinder(
 				canExtend = true;
 			}
 			else{
-				windingType = TOPLEFT_DOWN;
+				windingType = TOPRIGHT_DOWN;
 			}
 	else
 		if(isLeft)
@@ -135,19 +136,20 @@ __kernel void VertexWinder(
 		}
 	}	
 	
-	int2 curPos = pos;
-	for(int i=0; i<3; i++){
-		int2 newPos = dirs[i]*step+curPos;
-		indexes[i] = newPos.x*vertWidth+newPos.y;
-		curPos = newPos;
+	int2 curPos = pos; 
+	indexes[0] = curPos.x*(vertWidth)+curPos.y;
+	for(int i=1; i<3; i++){
+		curPos = dirs[i-1]+curPos;
+		indexes[i] = curPos.x*(vertWidth)+curPos.y;
 	}
-
+	 
 	if(x_id==0 && y_id==0){
 		//INDICIES(0,0) = windingType;
 		//INDICIES(0,1) = dirs[1].x;
 		//INDICIES(0,2) = dirs[2].x;
 	}
-	INDICIES(x_id,y_id) = (int3)(indexes[0], indexes[1], indexes[2]);
+	//INDICIES(x_id,y_id) = (int3)(indexes[0], indexes[1], indexes[2]);
+	indicies[indiceIdx]= (int3)(indexes[0], indexes[1], indexes[2]);
 	}
 
 	//this hardcoding is necessary until I can figure out a way to do it programatically
@@ -155,43 +157,43 @@ void GetDirections(int2* directions, WINDINGTYPE workerType){
 	switch(workerType){
 		case TOPLEFT_RIGHT:
 			directions[0] = (int2)(1,0);
-			directions[1] = (int2)(0,-1);
-			directions[2] = (int2)(-1,1);
+			directions[1] = (int2)(0,1);
+			directions[2] = (int2)(-1,-1);
 			break;
 		case TOPLEFT_DOWN:
+			directions[0] = (int2)(0,1);
+			directions[1] = (int2)(1,0);
+			directions[2] = (int2)(-1,-1);
+			break;
+		case BOTTOMLEFT_UP:
 			directions[0] = (int2)(0,-1);
 			directions[1] = (int2)(1,0);
 			directions[2] = (int2)(-1,1);
 			break;
-		case BOTTOMLEFT_UP:
-			directions[0] = (int2)(0,1);
-			directions[1] = (int2)(1,0);
-			directions[2] = (int2)(-1,-1);
-			break;
 		case BOTTOMLEFT_RIGHT:
 			directions[0] = (int2)(1,0);
-			directions[1] = (int2)(0,1);
-			directions[2] = (int2)(-1,-1);
+			directions[1] = (int2)(0,-1);
+			directions[2] = (int2)(-1,1);
 			break;
 		case BOTTOMRIGHT_LEFT:
 			directions[0] = (int2)(-1,0);
-			directions[1] = (int2)(0,1);
-			directions[2] = (int2)(1,-1);
+			directions[1] = (int2)(0,-1);
+			directions[2] = (int2)(1,1);
 			break;
 		case BOTTOMRIGHT_UP:
+			directions[0] = (int2)(0,-1);
+			directions[1] = (int2)(-1,0);
+			directions[2] = (int2)(1,1);
+			break;
+		case TOPRIGHT_DOWN:
 			directions[0] = (int2)(0,1);
 			directions[1] = (int2)(-1,0);
 			directions[2] = (int2)(1,-1);
 			break;
-		case TOPRIGHT_DOWN:
-			directions[0] = (int2)(-1,0);
-			directions[1] = (int2)(-1,0);
-			directions[2] = (int2)(1,1);
-			break;
 		case TOPRIGHT_LEFT:
 			directions[0] = (int2)(-1,0);
-			directions[1] = (int2)(0,-1);
-			directions[2] = (int2)(1,1);
+			directions[1] = (int2)(0,1);
+			directions[2] = (int2)(1,-1);
 			break;
 	}
 	}
