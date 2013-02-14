@@ -26,8 +26,8 @@ namespace Gondola.Logic.GameState{
             _renderTarget = new RenderTarget(0f);
             _manager = mgr;
             _viewportSize = viewportSize;
-            _playerPosition = new Vector3(0, 1000, 466);
-            _playerLookDir = new Angle3(-0.36f, 0, -6.704f);
+            _playerPosition = new Vector3(348, 1705, -192);
+            _playerLookDir = new Angle3(-1.2f, 0, -10.004f);//xxxxx this value gets ~2 added to it somehow
             _manager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
             _manager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
             _skipNextMouseUpdate = false;
