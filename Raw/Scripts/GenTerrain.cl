@@ -72,7 +72,7 @@ __kernel void GenNormals(
 	int blockX = get_global_id(0);
 	int blockZ = get_global_id(1);
 	int chunkWidth = get_global_size(0);
-	int index = blockX*chunkWidth+blockZ;
+	int index = blockX+chunkWidth*blockZ;
 	float height = 	geometry[index].y;
 
 	float3 v1 = (float3)(0,0,0);
