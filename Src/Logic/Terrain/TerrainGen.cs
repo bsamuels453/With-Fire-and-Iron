@@ -1,16 +1,19 @@
 ﻿#region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using Cloo;
 using Gondola.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Color = System.Drawing.Color;
 
 #endregion
 
@@ -30,6 +33,8 @@ namespace Gondola.Logic.Terrain{
         readonly ComputeBuffer<byte> _normals;
         readonly ComputeBuffer<float> _uvCoords;
 
+        readonly ComputeKernel _normKernel;
+
         readonly ComputeKernel _qTreeKernel;
         readonly ComputeProgram _qTreePrgm;
         readonly ComputeBuffer<byte> _activeVerts;
@@ -45,7 +50,7 @@ namespace Gondola.Logic.Terrain{
         readonly ComputeContextPropertyList _properties;
 
         public TerrainGen(){
-            var platform = ComputePlatform.Platforms[0];
+            var platform = ComputePlatform.Platforms[1];
             _devices = new List<ComputeDevice>();
             _devices.Add(platform.Devices[0]);
 
@@ -79,10 +84,10 @@ namespace Gondola.Logic.Terrain{
             };
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
-
             if (loadFromSource) {
                 _genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
-                _genPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
+                //_genPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
+                _genPrgm.Build(null, @"-g -s D:\Projects\Gondola\Raw\Scripts\GenTerrain.cl", null, IntPtr.Zero);//use option -I + scriptDir for header search
                 Gbl.SaveBinary(_genPrgm.Binaries, "TGen_Generator");
             }
             else{
@@ -90,10 +95,10 @@ namespace Gondola.Logic.Terrain{
                 _genPrgm = new ComputeProgram(_context, binary, _devices);
                 _genPrgm.Build(null, "", null, IntPtr.Zero);
             }
-
+            //loadFromSource = false;
             
             _genKernel = _genPrgm.CreateKernel("GenTerrain");
-            
+            _normKernel = _genPrgm.CreateKernel("GenNormals");
 
 
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
@@ -106,10 +111,14 @@ namespace Gondola.Logic.Terrain{
 
             _genKernel.SetMemoryArgument(0, _genConstants);
             _genKernel.SetMemoryArgument(3, _geometry);
-            _genKernel.SetMemoryArgument(4, _normals);
-            _genKernel.SetMemoryArgument(5, _binormals);
-            _genKernel.SetMemoryArgument(6, _tangents);
-            _genKernel.SetMemoryArgument(7, _uvCoords);
+            _genKernel.SetMemoryArgument(4, _uvCoords);
+
+            _normKernel.SetMemoryArgument(0, _genConstants);
+            _normKernel.SetMemoryArgument(3, _geometry);
+            _normKernel.SetMemoryArgument(4, _normals);
+            _normKernel.SetMemoryArgument(5, _binormals);
+            _normKernel.SetMemoryArgument(6, _tangents);
+
 
             #endregion
 
@@ -148,7 +157,7 @@ namespace Gondola.Logic.Terrain{
             #endregion
 
             #region setup winding kernel
-            //loadFromSource = true;
+
             if (loadFromSource) {
                 _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
@@ -178,6 +187,9 @@ namespace Gondola.Logic.Terrain{
         }
 
         public TerrainChunk GenerateChunk(XZPair id) {
+            var sw = new Stopwatch();
+            sw.Start();
+
             int offsetX = id.X * _blockWidth * (_chunkWidthInBlocks);
             int offsetZ = id.Z * _blockWidth * (_chunkWidthInBlocks);
 
@@ -190,8 +202,12 @@ namespace Gondola.Logic.Terrain{
 
             _genKernel.SetValueArgument(1, offsetX);
             _genKernel.SetValueArgument(2, offsetZ);
+            _normKernel.SetValueArgument(1, offsetX);
+            _normKernel.SetValueArgument(2, offsetZ);
 
-            _cmdQueue.Execute(_genKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
+            _cmdQueue.Execute(_genKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
+            _cmdQueue.AddBarrier();
+            _cmdQueue.Execute(_normKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
             _cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInBlocks) / 2 - 1, (_chunkWidthInBlocks) }, null, null);
             _cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks * 2) }, null, null);
 
@@ -221,11 +237,6 @@ namespace Gondola.Logic.Terrain{
             texBinormal.SetData(rawBinormals);
             texTangent.SetData(rawTangents);
 
-            var sw = new FileStream("ello.jpg", FileMode.Create, FileAccess.ReadWrite);
-            texNormal.SaveAsJpeg(sw, _chunkWidthInVerts, _chunkWidthInVerts);
-            sw.Close();
-
-            //var indicies = MeshHelper.CreateIndiceArray(_chunkWidthInBlocks * _chunkWidthInBlocks);
             var verts = new Vector3[_chunkWidthInVerts*_chunkWidthInVerts];
             var uv = new Vector2[_chunkWidthInBlocks*_chunkWidthInBlocks*2];
 
@@ -234,6 +245,10 @@ namespace Gondola.Logic.Terrain{
                 verts[i] = new Vector3(rawGeometry[si], rawGeometry[si + 1], rawGeometry[si + 2]);
                 si += 4;
             }
+
+            //var maxHeight = verts.Aggregate((agg, next) => next.Y > agg.Y ? next : agg).Y;
+            //var minHeight = verts.Aggregate((agg, next) => next.Y < agg.Y ? next : agg).Y;
+
             si = 0;
             for (int v = 0; v < _chunkWidthInVerts * _chunkWidthInVerts; v++) {
                 uv[v]= new Vector2(rawUVCoords[si],rawUVCoords[si+1]);
@@ -253,9 +268,9 @@ namespace Gondola.Logic.Terrain{
 
             var chunkData = new TerrainChunk(id, vertexList, fixedInds.ToArray(), texNormal, texBinormal, texTangent);
 
+            sw.Stop();
+            double elapsed = sw.ElapsedMilliseconds;
             return chunkData;
         }
-
-
     }
 }
