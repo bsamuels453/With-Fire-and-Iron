@@ -25,23 +25,23 @@ namespace Gondola.Logic.Terrain{
         readonly int _chunkWidthInBlocks;
         readonly ComputeCommandQueue _cmdQueue;
 
-        readonly ComputeKernel _genKernel;
-        readonly ComputeProgram _genPrgm;
+        readonly ComputeProgram _generationPrgm;
+        readonly ComputeKernel _terrainGenKernel;
+        readonly ComputeKernel _normalGenKernel;
         readonly ComputeBuffer<float> _genConstants;
         readonly ComputeBuffer<byte> _binormals;
         readonly ComputeBuffer<byte> _tangents;
         readonly ComputeBuffer<byte> _normals;
         readonly ComputeBuffer<float> _uvCoords;
 
-        readonly ComputeKernel _normKernel;
-
-        readonly ComputeKernel _qTreeKernel;
         readonly ComputeProgram _qTreePrgm;
+        readonly ComputeKernel _qTreeKernel;
+        readonly ComputeKernel _crossCullKernel;
         readonly ComputeBuffer<byte> _activeVerts;
-        readonly ComputeBuffer<int> _dummy; 
+        readonly ComputeBuffer<int> _dummy;
 
-        readonly ComputeKernel _winderKernel;
         readonly ComputeProgram _winderPrgm;
+        readonly ComputeKernel _winderKernel;
         readonly ComputeBuffer<int> _indicies; 
 
         readonly ComputeContext _context;
@@ -85,20 +85,20 @@ namespace Gondola.Logic.Terrain{
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
             if (loadFromSource) {
-                _genPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
-                //_genPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
-                _genPrgm.Build(null, @"-g -s D:\Projects\Gondola\Raw\Scripts\GenTerrain.cl", null, IntPtr.Zero);//use option -I + scriptDir for header search
-                Gbl.SaveBinary(_genPrgm.Binaries, "TGen_Generator");
+                _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
+                //_generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
+                _generationPrgm.Build(null, @"-g -s D:\Projects\Gondola\Raw\Scripts\GenTerrain.cl", null, IntPtr.Zero);//use option -I + scriptDir for header search
+                Gbl.SaveBinary(_generationPrgm.Binaries, "TGen_Generator");
             }
             else{
                 var binary = Gbl.LoadBinary("TGen_Generator");
-                _genPrgm = new ComputeProgram(_context, binary, _devices);
-                _genPrgm.Build(null, "", null, IntPtr.Zero);
+                _generationPrgm = new ComputeProgram(_context, binary, _devices);
+                _generationPrgm.Build(null, "", null, IntPtr.Zero);
             }
             //loadFromSource = false;
             
-            _genKernel = _genPrgm.CreateKernel("GenTerrain");
-            _normKernel = _genPrgm.CreateKernel("GenNormals");
+            _terrainGenKernel = _generationPrgm.CreateKernel("GenTerrain");
+            _normalGenKernel = _generationPrgm.CreateKernel("GenNormals");
 
 
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
@@ -109,15 +109,15 @@ namespace Gondola.Logic.Terrain{
             _tangents = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 4);
             _uvCoords = new ComputeBuffer<float>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 2);
 
-            _genKernel.SetMemoryArgument(0, _genConstants);
-            _genKernel.SetMemoryArgument(3, _geometry);
-            _genKernel.SetMemoryArgument(4, _uvCoords);
+            _terrainGenKernel.SetMemoryArgument(0, _genConstants);
+            _terrainGenKernel.SetMemoryArgument(3, _geometry);
+            _terrainGenKernel.SetMemoryArgument(4, _uvCoords);
 
-            _normKernel.SetMemoryArgument(0, _genConstants);
-            _normKernel.SetMemoryArgument(3, _geometry);
-            _normKernel.SetMemoryArgument(4, _normals);
-            _normKernel.SetMemoryArgument(5, _binormals);
-            _normKernel.SetMemoryArgument(6, _tangents);
+            _normalGenKernel.SetMemoryArgument(0, _genConstants);
+            _normalGenKernel.SetMemoryArgument(3, _geometry);
+            _normalGenKernel.SetMemoryArgument(4, _normals);
+            _normalGenKernel.SetMemoryArgument(5, _binormals);
+            _normalGenKernel.SetMemoryArgument(6, _tangents);
 
 
             #endregion
@@ -135,8 +135,8 @@ namespace Gondola.Logic.Terrain{
                 _qTreePrgm.Build(null, "", null, IntPtr.Zero);
             }
 
-            
             _qTreeKernel = _qTreePrgm.CreateKernel("QuadTree");
+            _crossCullKernel = _qTreePrgm.CreateKernel("CrossCull");
 
             _activeVerts = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts);
 
@@ -150,10 +150,15 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.WriteToBuffer(dsada, _activeVerts, true, null);
 
             _qTreeKernel.SetValueArgument(0, _chunkWidthInBlocks);
-            _qTreeKernel.SetValueArgument(1, -1);
             _qTreeKernel.SetMemoryArgument(2, _normals);
             _qTreeKernel.SetMemoryArgument(3, _activeVerts);
             _qTreeKernel.SetMemoryArgument(4, _dummy);
+
+            _crossCullKernel.SetValueArgument(0, _chunkWidthInBlocks);
+            _crossCullKernel.SetMemoryArgument(2, _normals);
+            _crossCullKernel.SetMemoryArgument(3, _activeVerts);
+            _crossCullKernel.SetMemoryArgument(4, _dummy);
+
             #endregion
 
             #region setup winding kernel
@@ -200,15 +205,23 @@ namespace Gondola.Logic.Terrain{
             var rawUVCoords = new float[_chunkWidthInVerts * _chunkWidthInVerts * 2];
             var indicies = new int[(_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8];
 
-            _genKernel.SetValueArgument(1, offsetX);
-            _genKernel.SetValueArgument(2, offsetZ);
-            _normKernel.SetValueArgument(1, offsetX);
-            _normKernel.SetValueArgument(2, offsetZ);
+            _terrainGenKernel.SetValueArgument(1, offsetX);
+            _terrainGenKernel.SetValueArgument(2, offsetZ);
+            _normalGenKernel.SetValueArgument(1, offsetX);
+            _normalGenKernel.SetValueArgument(2, offsetZ);
 
-            _cmdQueue.Execute(_genKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
+            _cmdQueue.Execute(_terrainGenKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
             _cmdQueue.AddBarrier();
-            _cmdQueue.Execute(_normKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
-            _cmdQueue.Execute(_qTreeKernel, null, new long[] { (_chunkWidthInBlocks) / 2 - 1, (_chunkWidthInBlocks) }, null, null);
+            _cmdQueue.Execute(_normalGenKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
+
+            for (int depth = 0; depth < 1; depth++){
+                _qTreeKernel.SetValueArgument(1, depth);
+                _crossCullKernel.SetValueArgument(1, depth);
+                int cellWidth = depth * 2 + 2;
+                int qTreeWidth = _chunkWidthInBlocks / (cellWidth * 2);
+                _cmdQueue.Execute(_qTreeKernel, null, new long[] { (qTreeWidth*2) - 1, (qTreeWidth) }, null, null);
+                _cmdQueue.Execute(_crossCullKernel, null, new long[] { _chunkWidthInBlocks / cellWidth, _chunkWidthInBlocks / cellWidth }, null, null);
+            }
             _cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks * 2) }, null, null);
 
             _cmdQueue.ReadFromBuffer(_geometry, ref rawGeometry, true, null);
