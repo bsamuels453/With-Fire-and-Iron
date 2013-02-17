@@ -151,21 +151,10 @@ __kernel void CrossCull(
 		int x_max = get_global_size(0);
 		int z_max = get_global_size(1);
 		int cellWidth = depth*2+2;
-	
-        //this enumerates the 2d array of worker ids into a 1d array of super_ids
-        int super_id = x_id+z_id*x_max;
-        int numCells = chunkBlockWidth/cellWidth;
-        
-        //to figure out whether or not this worker should do the crosscull, 
-        //we see if its super_id would fit in a 1d array enumerated from [numCells, numCells]
-        if(super_id/numCells >= numCells){
-            //this worker doesnt participate in crossculling
-            return;
-        }
         
         //these coorespond to which cell this worker is going to try to cull
-        int x_cell = super_id/numCells;
-        int z_cell = super_id - x_cell*numCells;
+        int x_cell = x_id;
+        int z_cell = z_id;
         int x_vert = x_cell * cellWidth+pown(2.0,depth);
         int z_vert = z_cell * cellWidth+pown(2.0,depth);
 
