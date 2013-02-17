@@ -13,7 +13,7 @@
 	
 	"AmbientColor":        "0,0,0,1",
 	"AmbientIntensity":    0.1,
-	"TexScaleFactor":      32,
+	"TexScaleFactor":      64,
 	"DiffuseIntensity":    0.9,
 	"DiffuseDirection":    "1, 1, 0"
 }

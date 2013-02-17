@@ -47,7 +47,7 @@ namespace Gondola.Logic{
         static Gbl(){
             CheckHashes();
             RawLookup = new Dictionary<string, string>();
-            var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\Config\\");
+            var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Config\\");
             foreach (var file in files){
                 var sr = new StreamReader(file);
 
@@ -67,14 +67,14 @@ namespace Gondola.Logic{
             HasRawHashChanged = new Dictionary<RawDir, bool>();
             AllowMD5Refresh = new Dictionary<RawDir, bool>();
             _fileHashes = new Dictionary<RawDir, string>();
-            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
+            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
             var jobj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
             MD5 md5Gen = MD5.Create();
             foreach (var hashEntry in jobj){
                 string fileDir = hashEntry.Key;
                 var hash = hashEntry.Value.ToObject<string>();
-                var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\Raw\\" + fileDir + "\\");
+                var files = Directory.GetFiles(Directory.GetCurrentDirectory() + "\\" + fileDir + "\\");
                 string newHash = "";
                 foreach (var file in files){
                     var fr = new FileStream(file, FileMode.Open, FileAccess.Read);
@@ -115,7 +115,7 @@ namespace Gondola.Logic{
         }
 
         public static void CommitHashChanges(){
-            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
+            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
             var jobj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
 
@@ -127,7 +127,7 @@ namespace Gondola.Logic{
                     jobj[s] = _fileHashes[dir];
                 }
             }
-            var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Raw\\Hashes.json"));
+            var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
             string ss = JsonConvert.SerializeObject(jobj, Formatting.Indented);
             sw.Write(ss);
             sw.Close();
@@ -154,7 +154,7 @@ namespace Gondola.Logic{
 
         public static string LoadScript(string str){
             string address = RawLookup[str];
-            var sr = new StreamReader("Raw\\" + address);
+            var sr = new StreamReader(address);
             string scriptText = sr.ReadToEnd();
             sr.Close();
             return scriptText;
@@ -191,7 +191,7 @@ namespace Gondola.Logic{
                     directory = address.Substring(0, i);
                 }
             }
-            return curDir + "\\Raw\\" + directory;
+            return curDir + "\\" + directory;
         }
     }
 }

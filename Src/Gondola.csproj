@@ -197,7 +197,10 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\Microsoft.Xna.GameStudio.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /s /y $(SolutionDir)\Raw $(SolutionDir)\bin\Raw</PostBuildEvent>
+    <PostBuildEvent>xcopy /s /y $(SolutionDir)\Config $(SolutionDir)\bin\Config
+xcopy /s /y $(SolutionDir)\Data $(SolutionDir)\bin\Data
+xcopy /s /y $(SolutionDir)\Templates $(SolutionDir)\bin\Templates
+xcopy /s /y $(SolutionDir)\Scripts $(SolutionDir)\bin\Scripts</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
