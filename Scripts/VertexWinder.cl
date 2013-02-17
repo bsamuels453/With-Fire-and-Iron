@@ -12,8 +12,8 @@
 //  5/ / / /
 //  6/ / / /
 //  7/ / / /
-#define VERTS(x,y) (activeVerts[(x)*treeWidth+(y)])
-#define INDICIES(x,y) (indicies[(x)*treeWidth+(y)])
+#define VERTS(x,y) (activeVerts[(x)*vertWidth+(y)])
+#define INDICIES(x,y) (indicies[(x)*vertWidth+(y)])
 
 //enum name syntax:
 //{pos}_{dir}
@@ -33,8 +33,6 @@ typedef enum{
 void GetDirections(int2* directions, WINDINGTYPE workerType);
 void GetExtensionDirections(int2* directions, WINDINGTYPE workerType);
 
-//numXThreads = cells*2
-
 __kernel void VertexWinder(
 	__constant char* activeVerts,
 	__global int3* indicies){
@@ -50,7 +48,7 @@ __kernel void VertexWinder(
 		horizontalWorker = false;
 		y_id -= treeWidth;
 	}
-	
+
 	//generate the worker origin point and the direction in which the worker winds the triangle
 	int x_pos, y_pos;
 	WINDINGTYPE windingType;
@@ -118,17 +116,24 @@ __kernel void VertexWinder(
 	int2 dirs[3];
 	GetDirections(dirs, windingType);
 	int step=1;
+	bool hasExtended = false;
 	while(true){
-		int2 newPos = dirs[0]*step+pos;
+		for(int i=0; i<3; i++){
+			dirs[i] = dirs[i] * step;
+		}
+		int2 newPos = dirs[0]+pos;
 		if(VERTS(newPos.x,newPos.y)==1){
 			break;
 		}
 		else{
 			if(canExtend){
-				if(step == 1){
+				if(!hasExtended){
 					GetExtensionDirections(dirs, windingType);
+					hasExtended = true;
 				}
-				step *= 2;
+				else{
+					step *= 2;
+				}
 			}
 			else{
 				return;
@@ -138,17 +143,13 @@ __kernel void VertexWinder(
 	
 	int2 curPos = pos; 
 	indexes[0] = curPos.x*(vertWidth)+curPos.y;
+	//int2 idxs[3];
+	//idxs[0] = curPos;
 	for(int i=1; i<3; i++){
 		curPos = dirs[i-1]+curPos;
+		//idxs[i] = curPos;
 		indexes[i] = curPos.x*(vertWidth)+curPos.y;
 	}
-	 
-	if(x_id==0 && y_id==0){
-		//INDICIES(0,0) = windingType;
-		//INDICIES(0,1) = dirs[1].x;
-		//INDICIES(0,2) = dirs[2].x;
-	}
-	//INDICIES(x_id,y_id) = (int3)(indexes[0], indexes[1], indexes[2]);
 	indicies[indiceIdx]= (int3)(indexes[0], indexes[1], indexes[2]);
 	}
 
@@ -199,28 +200,26 @@ void GetDirections(int2* directions, WINDINGTYPE workerType){
 	}
 
 void GetExtensionDirections(int2* directions, WINDINGTYPE workerType){
-	int2 dirs[3];
 	switch(workerType){
 		case TOPLEFT_DOWN:
-			dirs[0] = (int2)(0,-2);
-			dirs[1] = (int2)(1,1);
-			dirs[2] = (int2)(-1,1);
+			directions[0] = (int2)(0,2);
+			directions[1] = (int2)(1,-1);
+			directions[2] = (int2)(-1,-1);
 			break;
 		case BOTTOMLEFT_RIGHT:
-			dirs[0] = (int2)(2,0);
-			dirs[1] = (int2)(-1,1);
-			dirs[2] = (int2)(-1,-1);
+			directions[0] = (int2)(2,0);
+			directions[1] = (int2)(-1,-1);
+			directions[2] = (int2)(-1,1);
 			break;
 		case BOTTOMRIGHT_UP:
-			dirs[0] = (int2)(0,2);
-			dirs[1] = (int2)(1,-1);
-			dirs[2] = (int2)(1,-1);
+			directions[0] = (int2)(0,-2);
+			directions[1] = (int2)(-1,1);
+			directions[2] = (int2)(1,-1);
 			break;
 		case TOPRIGHT_LEFT:
-			dirs[0] = (int2)(-2,0);
-			dirs[1] = (int2)(1,-1);
-			dirs[2] = (int2)(1,-1);
+			directions[0] = (int2)(-2,0);
+			directions[1] = (int2)(1,1);
+			directions[2] = (int2)(1,-1);
 			break;
 	}
-	directions = dirs;
 	}
