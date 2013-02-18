@@ -34,7 +34,7 @@ void GetDirections(int2* directions, WINDINGTYPE workerType);
 void GetExtensionDirections(int2* directions, WINDINGTYPE workerType);
 
 __kernel void VertexWinder(
-	__constant char* activeVerts,
+	__global char* activeVerts,
 	__global int3* indicies){
 	
 	int treeWidth = get_global_size(0);
