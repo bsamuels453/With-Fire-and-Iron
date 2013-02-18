@@ -11,8 +11,8 @@
 	"TreeTexNormalMap" :   "Materials/TreeNormals",
 	"RockTexNormalMap" :   "Materials/RockNormals",
 	
-	"AmbientColor":        "0,0,0,1",
-	"AmbientIntensity":    0.1,
+	"AmbientColor":        "1,1,1,1",
+	"AmbientIntensity":    0.3,
 	"TexScaleFactor":      64,
 	"DiffuseIntensity":    0.9,
 	"DiffuseDirection":    "1, 1, 0"
