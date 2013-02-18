@@ -32,6 +32,8 @@ typedef enum{
 
 void GetDirections(int2* directions, WINDINGTYPE workerType);
 void GetExtensionDirections(int2* directions, WINDINGTYPE workerType);
+void GetRenderDirections(int2* directions, WINDINGTYPE workerType);
+void GetExtensionRenderDirections(int2* directions, WINDINGTYPE workerType);
 
 __kernel void VertexWinder(
 	__global char* activeVerts,
@@ -160,6 +162,17 @@ __kernel void VertexWinder(
 		}
 	}	
 	
+	if(hasExtended){
+		GetExtensionRenderDirections(dirs, windingType);
+	}
+	else{
+		GetRenderDirections(dirs, windingType);
+	}
+	for(int i=0; i<3; i++){
+		dirs[i] = dirs[i] * step;
+	}
+	
+	
 	int2 curPos = pos; 
 	indexes[0] = curPos.x*(vertWidth)+curPos.y;
 	//int2 idxs[3];
@@ -239,6 +252,81 @@ void GetExtensionDirections(int2* directions, WINDINGTYPE workerType){
 			directions[0] = (int2)(-2,0);
 			directions[1] = (int2)(1,1);
 			directions[2] = (int2)(1,-1);
+			break;
+	}
+	}
+	
+//HARDCODING FOR THE HARDCODING GOD
+//We need these extra methods for getting how a triangle will be actually wound when rendered.
+//The above winding directions are only the way they are for the reduction-function to work. 
+//These methods are defined such that the triangle indexes will be defined in a clockwise manner.
+
+void GetRenderDirections(int2* directions, WINDINGTYPE workerType){
+	switch(workerType){
+		case TOPLEFT_RIGHT:
+			directions[0] = (int2)(1,0);
+			directions[1] = (int2)(0,1);
+			directions[2] = (int2)(-1,-1);
+			break;
+		case TOPLEFT_DOWN:
+			directions[0] = (int2)(1,1);
+			directions[1] = (int2)(-1,0);
+			directions[2] = (int2)(0,-1);
+			break;
+		case BOTTOMLEFT_UP:
+			directions[0] = (int2)(0,-1);
+			directions[1] = (int2)(1,0);
+			directions[2] = (int2)(-1,1);
+			break;
+		case BOTTOMLEFT_RIGHT:
+			directions[0] = (int2)(1,-1);
+			directions[1] = (int2)(0,1);
+			directions[2] = (int2)(-1,0);
+			break;
+		case BOTTOMRIGHT_LEFT:
+			directions[0] = (int2)(-1,0);
+			directions[1] = (int2)(0,-1);
+			directions[2] = (int2)(1,1);
+			break;
+		case BOTTOMRIGHT_UP:
+			directions[0] = (int2)(-1,-1);
+			directions[1] = (int2)(1,0);
+			directions[2] = (int2)(0,1);
+			break;
+		case TOPRIGHT_DOWN:
+			directions[0] = (int2)(0,1);
+			directions[1] = (int2)(-1,0);
+			directions[2] = (int2)(1,-1);
+			break;
+		case TOPRIGHT_LEFT:
+			directions[0] = (int2)(-1,1);
+			directions[1] = (int2)(0,-1);
+			directions[2] = (int2)(1,0);
+			break;
+	}
+	}
+
+void GetExtensionRenderDirections(int2* directions, WINDINGTYPE workerType){
+	switch(workerType){
+		case TOPLEFT_DOWN:
+			directions[0] = (int2)(1,1);
+			directions[1] = (int2)(-1,1);
+			directions[2] = (int2)(0,-2);
+			break;
+		case BOTTOMLEFT_RIGHT:
+			directions[0] = (int2)(1,-1);
+			directions[1] = (int2)(1,1);
+			directions[2] = (int2)(-2,0);
+			break;
+		case BOTTOMRIGHT_UP:
+			directions[0] = (int2)(-1,-1);
+			directions[1] = (int2)(1,-1);
+			directions[2] = (int2)(0,2);
+			break;
+		case TOPRIGHT_LEFT:
+			directions[0] = (int2)(-1,1);
+			directions[1] = (int2)(-1,-1);
+			directions[2] = (int2)(2,0);
 			break;
 	}
 	}

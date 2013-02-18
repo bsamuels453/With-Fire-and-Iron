@@ -39,7 +39,6 @@ namespace Gondola.Draw{
                 _gblTerrainShader.Parameters["DiffuseLightDirection"].SetValue(Gbl.LoadContent<Vector3>("TRend_DiffuseDirection"));
             }
             BufferEffect = _gblTerrainShader.Clone();
-            CullMode = CullMode.None;
         }
 
         bool _bufferDataSet;
