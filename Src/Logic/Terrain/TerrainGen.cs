@@ -1,4 +1,6 @@
-﻿#region
+﻿//#define CPU_DEBUG
+
+#region
 
 using System;
 using System.Collections.Generic;
@@ -11,6 +13,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 #endregion
+
+
 
 namespace Gondola.Logic.Terrain{
     internal class TerrainGen{
@@ -43,16 +47,18 @@ namespace Gondola.Logic.Terrain{
         readonly ComputeProgram _winderPrgm;
 
         public TerrainGen(){
+#if CPU_DEBUG
             var platform = ComputePlatform.Platforms[1];
+#else
+            var platform = ComputePlatform.Platforms[0];
+#endif
             _devices = new List<ComputeDevice>();
             _devices.Add(platform.Devices[0]);
-
             _properties = new ComputeContextPropertyList(platform);
             _context = new ComputeContext(_devices, _properties, null, IntPtr.Zero);
             _cmdQueue = new ComputeCommandQueue(_context, _devices[0], ComputeCommandQueueFlags.None);
 
             #region setup generator kernel
-
             bool loadFromSource = Gbl.HasRawHashChanged[Gbl.RawDir.Scripts];
 
             _chunkWidthInBlocks = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks");
@@ -80,8 +86,11 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
             if (loadFromSource){
                 _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
-                //_generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
+#if CPU_DEBUG
                 _generationPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\GenTerrain.cl", null, IntPtr.Zero); //use option -I + scriptDir for header search
+#else
+                _generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
+#endif
                 Gbl.SaveBinary(_generationPrgm.Binaries, "TGen_Generator");
             }
             else{
@@ -119,8 +128,11 @@ namespace Gondola.Logic.Terrain{
 
             if (loadFromSource){
                 _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_QTree"));
+#if CPU_DEBUG
                 _qTreePrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\Quadtree.cl", null, IntPtr.Zero);
-                //_qTreePrgm.Build(null, "", null, IntPtr.Zero);
+#else
+                _qTreePrgm.Build(null, "", null, IntPtr.Zero);
+#endif
                 Gbl.SaveBinary(_qTreePrgm.Binaries, "TGen_QTree");
             }
             else{
@@ -159,8 +171,11 @@ namespace Gondola.Logic.Terrain{
 
             if (loadFromSource){
                 _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
-                //_winderPrgm.Build(null, "", null, IntPtr.Zero);
+#if CPU_DEBUG
                 _winderPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\VertexWinder.cl", null, IntPtr.Zero);
+#else
+                _winderPrgm.Build(null, "", null, IntPtr.Zero);
+#endif
                 Gbl.SaveBinary(_winderPrgm.Binaries, "TGen_VertexWinder");
             }
             else{
@@ -224,7 +239,7 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.Execute(_terrainGenKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
             _cmdQueue.Execute(_normalGenKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
 
-            for (int depth = 0; depth < 6; depth++){
+            for (int depth = 0; depth < 5; depth++){
                 _qTreeKernel.SetValueArgument(0, depth);
                 _crossCullKernel.SetValueArgument(0, depth);
                 int cellWidth = (int) Math.Pow(2, depth)*2;
@@ -243,6 +258,9 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.ReadFromBuffer(_activeVerts, ref activeVerts, true, null);
 
             _cmdQueue.Finish();
+
+            sw.Stop();
+            double elapsed = sw.ElapsedMilliseconds;
 
             for (int v = 3; v < rawNormals.Length; v += 4){
                 rawNormals[v] = 1;
@@ -286,8 +304,6 @@ namespace Gondola.Logic.Terrain{
 
             var chunkData = new TerrainChunk(id, culledVertexes, culledIndexes, texNormal, texBinormal, texTangent);
 
-            sw.Stop();
-            double elapsed = sw.ElapsedMilliseconds;
             return chunkData;
         }
 
