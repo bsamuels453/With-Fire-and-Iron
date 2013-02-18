@@ -8,7 +8,8 @@ typedef enum{
 	Octaves = 3,
 	HScale = 4,
 	VScale = 5,
-	MetersPerBlock = 6
+	MetersPerBlock = 6,
+	BlocksPerChunk = 7
 } PARAMETERS;
 
 inline float GenRidge( float height, float offset );
@@ -19,7 +20,7 @@ inline float GetHeight(int x, int z, __constant float *parameters, int chunkOfst
 
 __kernel void GenTerrain(
 	__constant float *parameters,
-	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
+	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in chunks
 	int chunkOffsetZ,
 	__global float3 *geometry,
 	__global float2 *uvCoords){  
@@ -27,19 +28,21 @@ __kernel void GenTerrain(
 	//GENERATE TERRAIN//
 	////////////////////
 	float metersPerBlock = parameters[MetersPerBlock];
+	float blocksPerChunk = parameters[BlocksPerChunk];
+	
 	int blockX = get_global_id(0);
 	int blockZ = get_global_id(1);
 	
 	int chunkWidth = get_global_size(0);
-	float realPosX = (blockX  + chunkOffsetX) * metersPerBlock;
-	float realPosZ = (blockZ  + chunkOffsetZ) * metersPerBlock;
+	float realPosX = blockX * metersPerBlock + chunkOffsetX;
+	float realPosZ = blockZ * metersPerBlock + chunkOffsetZ;
 	
 	float height = GetHeight(
 		blockX, 
 		blockZ, 
 		parameters,
-		chunkOffsetX,
-		chunkOffsetZ
+		chunkOffsetX/metersPerBlock,
+		chunkOffsetZ/metersPerBlock
 	);
 	
 	int index = blockX*chunkWidth+blockZ;
@@ -74,6 +77,7 @@ __kernel void GenNormals(
 	int chunkWidth = get_global_size(0);
 	int index = blockX+chunkWidth*blockZ;
 	float height = 	geometry[index].y;
+	float metersPerBlock = parameters[MetersPerBlock];
 
 	float3 v1 = (float3)(0,0,0);
 	float3 v2 = (float3)(0,0,0);
@@ -88,7 +92,7 @@ __kernel void GenNormals(
 	if(blockX == 0){
 		v4 = (float3)(
 		-1, 
-		GetHeight(blockX-1, blockZ, parameters,chunkOffsetX,chunkOffsetZ),
+		GetHeight(blockX-1, blockZ, parameters,chunkOffsetX/metersPerBlock,chunkOffsetZ/metersPerBlock),
 		0
 		);
 		v4Init = true;
@@ -97,7 +101,7 @@ __kernel void GenNormals(
 	if(blockX == chunkWidth-1){
 		v2 = (float3)(
 		1, 
-		GetHeight(blockX+1, blockZ, parameters,chunkOffsetX,chunkOffsetZ),
+		GetHeight(blockX+1, blockZ, parameters,chunkOffsetX/metersPerBlock,chunkOffsetZ/metersPerBlock),
 		0
 		);
 		v2Init = true;
@@ -105,7 +109,7 @@ __kernel void GenNormals(
 	if(blockZ == 0){
 		v3 = (float3)(
 		0, 
-		GetHeight(blockX, blockZ-1, parameters,chunkOffsetX,chunkOffsetZ),
+		GetHeight(blockX, blockZ-1, parameters,chunkOffsetX/metersPerBlock,chunkOffsetZ/metersPerBlock),
 		-1
 		);
 		v3Init = true;
@@ -113,7 +117,7 @@ __kernel void GenNormals(
 	if(blockZ == chunkWidth-1){
 		v1 = (float3)(
 		0, 
-		GetHeight(blockX, blockZ+1, parameters,chunkOffsetX,chunkOffsetZ),
+		GetHeight(blockX, blockZ+1, parameters,chunkOffsetX/metersPerBlock,chunkOffsetZ/metersPerBlock),
 		1
 		);
 		v1Init = true;
@@ -231,8 +235,8 @@ inline float GetHeight(int x, int z, __constant float *parameters, int chunkOfst
 	float hScale = parameters[HScale];
 	float vScale = parameters[VScale];
 
-	float posX = (x + chunkOfstX) * hScale;
-	float posZ = (z + chunkOfstZ) * hScale;
+	float posX = (x + chunkOfstX)* hScale;
+	float posZ = (z + chunkOfstZ)* hScale;
 		
 	float sum = 0;
 	float amplitude = 0.5f;
