@@ -11,6 +11,7 @@ namespace Gondola.Logic.Terrain {
         public XZPair Identifier;
 
         readonly TerrainBuffer _buffer;
+        readonly WireframeBuffer _wbuff;
         readonly VertexPositionTexture[] _verticies;
         readonly int[] _indicies;
         readonly Texture2D _normals;
@@ -26,12 +27,14 @@ namespace Gondola.Logic.Terrain {
             _normals = normals;
             _binormals = binormals;
             _tangents = tangents;
-            _buffer = new TerrainBuffer(indicies.Count(), verticies.Count(), indicies.Count() / 3, PrimitiveType.TriangleList);
+            _buffer = new TerrainBuffer(indicies.Length, verticies.Count(), indicies.Count() / 3, PrimitiveType.TriangleList);
+            _wbuff = new WireframeBuffer(indicies.Count(), verticies.Count(), indicies.Count()/3);
         }
 
         public void SetBufferData(){
             Debug.Assert(_bufferDataSet == false);
-            _buffer.SetData(_verticies, _indicies, _normals, _binormals, _tangents);
+            _buffer.SetData(_verticies, (int[])_indicies.Clone(), _normals, _binormals, _tangents);
+            _wbuff.SetData(_verticies, _indicies);
             _normals.Dispose();
             _binormals.Dispose();
             _tangents.Dispose();
@@ -49,6 +52,7 @@ namespace Gondola.Logic.Terrain {
 
         public void Draw(Matrix viewMatrix){
             _buffer.Draw(viewMatrix);
+            _wbuff.Draw(viewMatrix);
         }
     }
 }
