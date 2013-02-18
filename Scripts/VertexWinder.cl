@@ -143,14 +143,15 @@ __kernel void VertexWinder(
 					hasExtended = true;
 					dirToCheck=0;
 					checkPos = pos;
+					if(x_pos%(step*2) != 0 || y_pos%(step*2) != 0){
+						return;
+					}
 				}
 				else{
 					step *= 2;
 					hasExtended = false;
 					dirToCheck=0;
 					checkPos = pos;
-					if(x_pos%(step*2) != 0 || y_pos%(step*2) != 0)
-						return;
 				}
 			}
 			else{
