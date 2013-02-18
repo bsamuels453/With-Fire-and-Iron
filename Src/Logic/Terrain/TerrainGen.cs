@@ -72,7 +72,7 @@ namespace Gondola.Logic.Terrain{
             float hScale = Gbl.LoadContent<float>("TGen_HScale");
             float vScale = Gbl.LoadContent<float>("TGen_VScale");
 
-            _genConstants = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadOnly, 7);
+            _genConstants = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadOnly, 8);
             var genArr = new[]{
                 lacunarity,
                 gain,
@@ -80,7 +80,8 @@ namespace Gondola.Logic.Terrain{
                 octaves,
                 hScale,
                 vScale,
-                _blockWidth
+                _blockWidth,
+                _chunkWidthInBlocks
             };
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
@@ -195,7 +196,6 @@ namespace Gondola.Logic.Terrain{
         public TerrainChunk GenerateChunk(XZPair id){
             var sw = new Stopwatch();
             sw.Start();
-
             int offsetX = id.X*_blockWidth*(_chunkWidthInBlocks);
             int offsetZ = id.Z*_blockWidth*(_chunkWidthInBlocks);
 
@@ -219,7 +219,6 @@ namespace Gondola.Logic.Terrain{
                 _qTreeKernel.SetValueArgument(0, depth);
                 _crossCullKernel.SetValueArgument(0, depth);
                 int cellWidth = (int) Math.Pow(2, depth)*2;
-                //int cellWidth = depth * 2 + 2;
                 int qTreeWidth = _chunkWidthInBlocks/(cellWidth);
                 _cmdQueue.Execute(_qTreeKernel, null, new long[]{(qTreeWidth) - 1, (qTreeWidth*2)}, null, null);
                 _cmdQueue.Execute(_crossCullKernel, null, new long[]{_chunkWidthInBlocks/cellWidth, _chunkWidthInBlocks/cellWidth}, null, null);
@@ -234,8 +233,6 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.ReadFromBuffer(_indicies, ref indicies, true, null);
             _cmdQueue.ReadFromBuffer(_activeVerts, ref activeVerts, true, null);
             _cmdQueue.Finish();
-
-            DumpArray(activeVerts, _chunkWidthInVerts);
 
             var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
