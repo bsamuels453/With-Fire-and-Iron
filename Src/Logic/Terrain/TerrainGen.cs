@@ -1,53 +1,46 @@
 ﻿#region
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using Cloo;
 using Gondola.Common;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Color = System.Drawing.Color;
 
 #endregion
 
 namespace Gondola.Logic.Terrain{
     internal class TerrainGen{
-
+        readonly ComputeBuffer<byte> _activeVerts;
+        readonly ComputeBuffer<byte> _binormals;
         readonly int _blockWidth;
-        readonly int _chunkWidthInVerts;
         readonly int _chunkWidthInBlocks;
+        readonly int _chunkWidthInVerts;
         readonly ComputeCommandQueue _cmdQueue;
+        readonly ComputeContext _context;
+        readonly ComputeKernel _crossCullKernel;
+        readonly List<ComputeDevice> _devices;
+        readonly ComputeBuffer<int> _dummy;
+        readonly int[] _emptyIndices;
+        readonly byte[] _emptyVerts;
+        readonly ComputeBuffer<float> _genConstants;
 
         readonly ComputeProgram _generationPrgm;
-        readonly ComputeKernel _terrainGenKernel;
-        readonly ComputeKernel _normalGenKernel;
-        readonly ComputeBuffer<float> _genConstants;
-        readonly ComputeBuffer<byte> _binormals;
-        readonly ComputeBuffer<byte> _tangents;
-        readonly ComputeBuffer<byte> _normals;
-        readonly ComputeBuffer<float> _uvCoords;
-
-        readonly ComputeProgram _qTreePrgm;
-        readonly ComputeKernel _qTreeKernel;
-        readonly ComputeKernel _crossCullKernel;
-        readonly ComputeBuffer<byte> _activeVerts;
-        readonly ComputeBuffer<int> _dummy;
-
-        readonly ComputeProgram _winderPrgm;
-        readonly ComputeKernel _winderKernel;
-        readonly ComputeBuffer<int> _indicies;
-
-        readonly ComputeContext _context;
-        readonly List<ComputeDevice> _devices;
         readonly ComputeBuffer<float> _geometry;
+        readonly ComputeBuffer<int> _indicies;
+        readonly ComputeKernel _normalGenKernel;
+        readonly ComputeBuffer<byte> _normals;
         readonly ComputeContextPropertyList _properties;
+        readonly ComputeKernel _qTreeKernel;
+        readonly ComputeProgram _qTreePrgm;
+        readonly ComputeBuffer<byte> _tangents;
+        readonly ComputeKernel _terrainGenKernel;
+        readonly ComputeBuffer<float> _uvCoords;
+        readonly ComputeKernel _winderKernel;
+        readonly ComputeProgram _winderPrgm;
 
         public TerrainGen(){
             var platform = ComputePlatform.Platforms[1];
@@ -120,7 +113,6 @@ namespace Gondola.Logic.Terrain{
             _normalGenKernel.SetMemoryArgument(5, _binormals);
             _normalGenKernel.SetMemoryArgument(6, _tangents);
 
-
             #endregion
 
             #region setup quadtree kernel
@@ -144,12 +136,12 @@ namespace Gondola.Logic.Terrain{
 
             _dummy = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, 50);
             var rawNormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
-            var dsada = new byte[_chunkWidthInVerts*_chunkWidthInVerts];
-            for (int i = 0; i < dsada.Length; i++){
-                dsada[i] = 1;
+            _emptyVerts = new byte[_chunkWidthInVerts*_chunkWidthInVerts];
+            for (int i = 0; i < _emptyVerts.Length; i++){
+                _emptyVerts[i] = 1;
             }
             _cmdQueue.WriteToBuffer(rawNormals, _normals, true, null);
-            _cmdQueue.WriteToBuffer(dsada, _activeVerts, true, null);
+            _cmdQueue.WriteToBuffer(_emptyVerts, _activeVerts, true, null);
 
             _qTreeKernel.SetValueArgument(1, _chunkWidthInBlocks);
             _qTreeKernel.SetMemoryArgument(2, _normals);
@@ -178,11 +170,16 @@ namespace Gondola.Logic.Terrain{
             }
 
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
-
             _indicies = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, (_chunkWidthInBlocks)*(_chunkWidthInBlocks)*8);
 
             _winderKernel.SetMemoryArgument(0, _activeVerts);
             _winderKernel.SetMemoryArgument(1, _indicies);
+
+            _emptyIndices = new int[(_chunkWidthInBlocks)*(_chunkWidthInBlocks)*8];
+            for (int i = 0; i < (_chunkWidthInBlocks)*(_chunkWidthInBlocks)*8; i++){
+                _emptyIndices[i] = 0;
+            }
+            _cmdQueue.WriteToBuffer(_emptyIndices, _indicies, true, null);
 
             #endregion
 
@@ -212,6 +209,8 @@ namespace Gondola.Logic.Terrain{
             _normalGenKernel.SetValueArgument(1, offsetX);
             _normalGenKernel.SetValueArgument(2, offsetZ);
 
+            _cmdQueue.WriteToBuffer(_emptyVerts, _activeVerts, true, null);
+            _cmdQueue.WriteToBuffer(_emptyIndices, _indicies, true, null);
             _cmdQueue.Execute(_terrainGenKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
             _cmdQueue.Execute(_normalGenKernel, null, new long[]{_chunkWidthInVerts, _chunkWidthInVerts}, null, null);
 
@@ -232,11 +231,8 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.ReadFromBuffer(_uvCoords, ref rawUVCoords, true, null);
             _cmdQueue.ReadFromBuffer(_indicies, ref indicies, true, null);
             _cmdQueue.ReadFromBuffer(_activeVerts, ref activeVerts, true, null);
-            _cmdQueue.Finish();
 
-            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            _cmdQueue.Finish();
 
             for (int v = 3; v < rawNormals.Length; v += 4){
                 rawNormals[v] = 1;
@@ -247,6 +243,10 @@ namespace Gondola.Logic.Terrain{
             for (int v = 3; v < rawTangents.Length; v += 4){
                 rawTangents[v] = 1;
             }
+
+            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
             texNormal.SetData(rawNormals);
             texBinormal.SetData(rawBinormals);
@@ -305,7 +305,6 @@ namespace Gondola.Logic.Terrain{
                 destIdx++;
             }
             return
-
                 outVertexes;
         }
 
@@ -335,7 +334,7 @@ namespace Gondola.Logic.Terrain{
         List<int> ParseIndicies(int[] indicies){
             var outIndicies = new List<int>();
 
-            for (int i = 0; i < indicies.Length; i+=4){
+            for (int i = 0; i < indicies.Length; i += 4){
                 if (indicies[i] == 0 && indicies[i + 1] == 0 && indicies[i + 2] == 0){
                     continue;
                 }
@@ -353,7 +352,6 @@ namespace Gondola.Logic.Terrain{
             Vector2[] uvCoords,
             out int[] reparsedIndicies,
             out VertexPositionTexture[] oVertexes){
-
             //first get a list of numeric indicies that will be used by the index buffer
             //there will be missing indexes because of the culling
             var indiciesInUse = new List<int>();
@@ -368,11 +366,11 @@ namespace Gondola.Logic.Terrain{
             //indexes are stored in reparsedIndicies
             var vertexList = new List<VertexPositionTexture>();
             reparsedIndicies = new int[indicies.Count];
-            foreach (var uniqueIdx in indiciesInUse) {
+            foreach (var uniqueIdx in indiciesInUse){
                 vertexList.Add(new VertexPositionTexture(geometry[uniqueIdx], uvCoords[uniqueIdx]));
                 int newIDx = vertexList.Count - 1;
                 int idx;
-                while ((idx = indicies.IndexOf(uniqueIdx)) != -1) {
+                while ((idx = indicies.IndexOf(uniqueIdx)) != -1){
                     reparsedIndicies[idx] = newIDx;
                     indicies[idx] = -1;
                 }
