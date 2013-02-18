@@ -87,7 +87,7 @@ namespace Gondola.Logic.Terrain{
             if (loadFromSource) {
                 _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
                 //_generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
-                _generationPrgm.Build(null, @"-g -s D:\Projects\Gondola\Raw\Scripts\GenTerrain.cl", null, IntPtr.Zero);//use option -I + scriptDir for header search
+                _generationPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\GenTerrain.cl", null, IntPtr.Zero);//use option -I + scriptDir for header search
                 Gbl.SaveBinary(_generationPrgm.Binaries, "TGen_Generator");
             }
             else{
@@ -126,7 +126,8 @@ namespace Gondola.Logic.Terrain{
 
             if (loadFromSource) {
                 _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_QTree"));
-                _qTreePrgm.Build(null, "", null, IntPtr.Zero);
+                _qTreePrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\Quadtree.cl", null, IntPtr.Zero);
+                //_qTreePrgm.Build(null, "", null, IntPtr.Zero);
                 Gbl.SaveBinary(_qTreePrgm.Binaries, "TGen_QTree");
             }
             else {
@@ -149,12 +150,12 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.WriteToBuffer(rawNormals, _normals, true, null);
             _cmdQueue.WriteToBuffer(dsada, _activeVerts, true, null);
 
-            _qTreeKernel.SetValueArgument(0, _chunkWidthInBlocks);
+            _qTreeKernel.SetValueArgument(1, _chunkWidthInBlocks);
             _qTreeKernel.SetMemoryArgument(2, _normals);
             _qTreeKernel.SetMemoryArgument(3, _activeVerts);
             _qTreeKernel.SetMemoryArgument(4, _dummy);
 
-            _crossCullKernel.SetValueArgument(0, _chunkWidthInBlocks);
+            _crossCullKernel.SetValueArgument(1, _chunkWidthInBlocks);
             _crossCullKernel.SetMemoryArgument(2, _normals);
             _crossCullKernel.SetMemoryArgument(3, _activeVerts);
             _crossCullKernel.SetMemoryArgument(4, _dummy);
@@ -165,8 +166,8 @@ namespace Gondola.Logic.Terrain{
 
             if (loadFromSource) {
                 _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
-                _winderPrgm.Build(null, "", null, IntPtr.Zero);
-                //_winderPrgm.Build(null, @"-g -s D:\Projects\Gondola\Raw\Scripts\VertexWinder.cl", null, IntPtr.Zero);
+                //_winderPrgm.Build(null, "", null, IntPtr.Zero);
+                _winderPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\VertexWinder.cl", null, IntPtr.Zero);
                 Gbl.SaveBinary(_winderPrgm.Binaries, "TGen_VertexWinder");
             }
             else {
@@ -204,6 +205,7 @@ namespace Gondola.Logic.Terrain{
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawUVCoords = new float[_chunkWidthInVerts * _chunkWidthInVerts * 2];
             var indicies = new int[(_chunkWidthInBlocks) * (_chunkWidthInBlocks) * 8];
+            var activeVerts = new byte[_chunkWidthInVerts*_chunkWidthInVerts];
 
             _terrainGenKernel.SetValueArgument(1, offsetX);
             _terrainGenKernel.SetValueArgument(2, offsetZ);
@@ -211,15 +213,15 @@ namespace Gondola.Logic.Terrain{
             _normalGenKernel.SetValueArgument(2, offsetZ);
 
             _cmdQueue.Execute(_terrainGenKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
-            _cmdQueue.AddBarrier();
             _cmdQueue.Execute(_normalGenKernel, null, new long[] { _chunkWidthInVerts, _chunkWidthInVerts }, null, null);
 
-            for (int depth = 0; depth < 1; depth++){
-                _qTreeKernel.SetValueArgument(1, depth);
-                _crossCullKernel.SetValueArgument(1, depth);
-                int cellWidth = depth * 2 + 2;
-                int qTreeWidth = _chunkWidthInBlocks / (cellWidth * 2);
-                _cmdQueue.Execute(_qTreeKernel, null, new long[] { (qTreeWidth*2) - 1, (qTreeWidth) }, null, null);
+            for (int depth = 0; depth <5; depth++){
+                _qTreeKernel.SetValueArgument(0, depth);
+                _crossCullKernel.SetValueArgument(0, depth);
+                int cellWidth = (int)Math.Pow(2, depth) * 2;
+                //int cellWidth = depth * 2 + 2;
+                int qTreeWidth = _chunkWidthInBlocks / (cellWidth);
+                _cmdQueue.Execute(_qTreeKernel, null, new long[] { (qTreeWidth)-1, (qTreeWidth*2) }, null, null);
                 _cmdQueue.Execute(_crossCullKernel, null, new long[] { _chunkWidthInBlocks / cellWidth, _chunkWidthInBlocks / cellWidth }, null, null);
             }
             _cmdQueue.Execute(_winderKernel, null, new long[] { (_chunkWidthInBlocks), (_chunkWidthInBlocks * 2) }, null, null);
@@ -230,7 +232,10 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.ReadFromBuffer(_tangents, ref rawTangents, true, null);
             _cmdQueue.ReadFromBuffer(_uvCoords, ref rawUVCoords, true, null);
             _cmdQueue.ReadFromBuffer(_indicies, ref indicies, true, null);
+            _cmdQueue.ReadFromBuffer(_activeVerts, ref activeVerts, true, null);
             _cmdQueue.Finish();
+
+            DumpArray(activeVerts, _chunkWidthInVerts);
 
             var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
@@ -269,12 +274,25 @@ namespace Gondola.Logic.Terrain{
             }
             var fixedInds = new List<int>();
             for(int idx=0; idx<indicies.Length; idx+=4){
+                if (indicies[idx] == 0 && indicies[idx + 1] == 0 && indicies[idx + 2] == 0 && indicies[idx + 3] == 0) {
+                    continue;
+                }
+                //if (indicies[idx] < 0)
+                    //continue;
                 fixedInds.Add(indicies[idx]);
-                 fixedInds.Add(indicies[idx+1]);
-                 fixedInds.Add(indicies[idx+2]);
+                fixedInds.Add(indicies[idx+1]);
+                fixedInds.Add(indicies[idx+2]);
             }
 
-            var vertexList = new VertexPositionTexture[_chunkWidthInVerts * _chunkWidthInVerts];
+           var vertexList = new VertexPositionTexture[_chunkWidthInVerts * _chunkWidthInVerts];
+
+           var li = new List<int>();
+            for(int i=0; i<fixedInds.Count; i++){
+                if (fixedInds[i] == 2)
+                    li.Add(i);
+            }
+
+
             for (int i = 0; i < _chunkWidthInVerts * _chunkWidthInVerts; i++){
                 vertexList[i] = new VertexPositionTexture(verts[i],uv[i] );
             }
@@ -284,6 +302,17 @@ namespace Gondola.Logic.Terrain{
             sw.Stop();
             double elapsed = sw.ElapsedMilliseconds;
             return chunkData;
+        }
+
+        void DumpArray(byte[] array, int width){
+            var sw = new StreamWriter("dump.txt");
+            for (int x = 0; x < width; x++){
+                for (int z = 0; z < width; z++){
+                    sw.Write(array[x + z * width]+" ");
+                }
+                sw.Write('\n');
+            }
+            sw.Close();
         }
     }
 }
