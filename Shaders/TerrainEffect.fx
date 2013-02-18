@@ -220,8 +220,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	
 	float slope = normal.y;
 	
-	const float transitionStart=0.53;
-	const float range=0.03;
+	const float transitionStart=0.27;
+	const float range=0.007;
 	float multiplier = 1/range;
 	float transitionEnd = transitionStart+range;
 	
@@ -252,13 +252,12 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	normalize(normal);
 
     float diffuseQuantity = dot(normalize(DiffuseLightDirection), normal) * DiffuseIntensity;
-    //float3 light = normalize(DiffuseLightDirection);
-
+	float ambientQuantity = AmbientIntensity * AmbientColor;
 
 	float4 diffuseContribution = (pixelColor) *(diffuseQuantity);
-	float4 ambientContribution = (pixelColor) *( AmbientColor * AmbientIntensity);
-	float4 shadedColor = diffuseContribution; + ambientContribution;
-
+	float4 ambientContribution = (pixelColor) *(ambientQuantity);
+	float4 shadedColor = diffuseContribution + ambientContribution;
+	
 	shadedColor.a = 1;
 	return saturate(shadedColor);
 }
