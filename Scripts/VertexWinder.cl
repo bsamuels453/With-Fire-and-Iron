@@ -117,22 +117,40 @@ __kernel void VertexWinder(
 	GetDirections(dirs, windingType);
 	int step=1;
 	bool hasExtended = false;
+	int dirToCheck=0;
+	int2 checkPos = pos;
 	while(true){
+		if(hasExtended)
+			GetExtensionDirections(dirs, windingType);
+		else
+			GetDirections(dirs, windingType);
+		
 		for(int i=0; i<3; i++){
 			dirs[i] = dirs[i] * step;
 		}
-		int2 newPos = dirs[0]+pos;
+		int2 newPos = dirs[dirToCheck]+checkPos;
 		if(VERTS(newPos.x,newPos.y)==1){
-			break;
+			if(dirToCheck == 2){
+				break;
+			}
+			
+			dirToCheck++;
+			checkPos = newPos;
 		}
 		else{
 			if(canExtend){
 				if(!hasExtended){
-					GetExtensionDirections(dirs, windingType);
 					hasExtended = true;
+					dirToCheck=0;
+					checkPos = pos;
 				}
 				else{
 					step *= 2;
+					hasExtended = false;
+					dirToCheck=0;
+					checkPos = pos;
+					if(x_pos%(step*2) != 0 || y_pos%(step*2) != 0)
+						return;
 				}
 			}
 			else{
