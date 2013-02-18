@@ -31,7 +31,7 @@ namespace Gondola{
                 fieldOfView: 3.14f/4,
                 aspectRatio: aspectRatio,
                 nearPlaneDistance: 1,
-                farPlaneDistance: 500
+                farPlaneDistance: 50000
                 );
 
             _gamestateManager = new GamestateManager();
