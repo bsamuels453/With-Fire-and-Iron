@@ -96,7 +96,8 @@ __kernel void QuadTree(
 			z_pos = x_id;
 		}
 
-        int curCellWidth = depth*2+2;
+        //int curCellWidth = depth*2+2;
+		int curCellWidth = pown(2.0,depth)*2;
         int startPoint = curCellWidth/2;
         int step = curCellWidth;
             
@@ -118,7 +119,7 @@ __kernel void QuadTree(
                 chunkVertWidth,
                 pointX,
                 pointZ,
-                depth,
+                pown(2.0,depth-1),
                 false,
 			   	 dummy
                 );
@@ -140,8 +141,8 @@ __kernel void QuadTree(
     }
 
 __kernel void CrossCull(
-	int chunkBlockWidth,//??
     int depth,
+	int chunkBlockWidth,
     __global uchar3* normals,
     __global char* activeNodes,
 	__global int* dummy
@@ -150,13 +151,12 @@ __kernel void CrossCull(
 		int z_id = get_global_id(1);
 		int x_max = get_global_size(0);
 		int z_max = get_global_size(1);
-		int cellWidth = depth*2+2;
-        
+        int cellWidth = pown(2.0,depth)*2;
         //these coorespond to which cell this worker is going to try to cull
         int x_cell = x_id;
         int z_cell = z_id;
-        int x_vert = x_cell * cellWidth+pown(2.0,depth);
-        int z_vert = z_cell * cellWidth+pown(2.0,depth);
+        int x_vert = x_cell * cellWidth+cellWidth/2;//+pown(2.0,depth)
+        int z_vert = z_cell * cellWidth+cellWidth/2;//+pown(2.0,depth)
 
         //make sure we're able to cull the cross
         //first check outer corners. They must be enabled.
@@ -165,9 +165,9 @@ __kernel void CrossCull(
             chunkBlockWidth+1,
             x_vert,
             z_vert,
-            pown(2.0,depth),
+            cellWidth/2,
             true,
-			 dummy
+			dummy
             )){
                 return;
         }
@@ -178,7 +178,7 @@ __kernel void CrossCull(
             chunkBlockWidth+1,
             x_vert,
             z_vert,
-            pown(2.0,depth),
+            cellWidth/2,
             false
             )){
                 return;
