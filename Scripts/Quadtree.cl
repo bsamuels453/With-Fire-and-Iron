@@ -1,4 +1,4 @@
-//todo: a damn header file
+//todo:a damn header file
 typedef enum{
 	HORIZONTAL,
 	VERTICAL
@@ -127,11 +127,11 @@ __kernel void QuadTree(
         if( canSetNode){
             //now see if we can disable this node
             short3 verts[5];
-            verts[v0] = normals[chunkVertWidth*pointX + pointZ+step/2];
-            verts[v1] = normals[chunkVertWidth*(pointX+step/2) + pointZ];
-            verts[v2] = normals[chunkVertWidth*pointX + pointZ-step/2];
-            verts[v3] = normals[chunkVertWidth*(pointX-step/2) + pointZ];
-            verts[v4] = normals[chunkVertWidth*pointX + pointZ];
+            verts[v0] = normals[pointX + (pointZ*chunkVertWidth)+step/2];
+            verts[v1] = normals[(pointX+step/2) + pointZ*chunkVertWidth];
+            verts[v2] = normals[pointX + (pointZ*chunkVertWidth)-step/2];
+            verts[v3] = normals[(pointX-step/2) + pointZ*chunkVertWidth];
+            verts[v4] = normals[pointX + pointZ*chunkVertWidth];
 
             if(!IsVertexRelevant(verts)){
                 activeNodes[chunkVertWidth*pointX + pointZ] = 0;        
@@ -203,11 +203,11 @@ __kernel void CrossCull(
         //check to see if it's necessary now
         short3 verts[5];
         int chunkVertWidth = chunkBlockWidth+1;
-        verts[v0] = normals[chunkVertWidth*(x_vert-cellWidth/2) + z_vert+cellWidth/2];
-        verts[v1] = normals[chunkVertWidth*(x_vert+cellWidth/2) + z_vert+cellWidth/2];
-        verts[v2] = normals[chunkVertWidth*(x_vert-cellWidth/2) + z_vert-cellWidth/2];
-        verts[v3] = normals[chunkVertWidth*(x_vert+cellWidth/2) + z_vert-cellWidth/2];
-        verts[v4] = normals[chunkVertWidth*x_vert + z_vert];
+        verts[v0] = normals[x_vert + (z_vert*chunkVertWidth)+cellWidth/2];
+        verts[v1] = normals[(x_vert+cellWidth/2) + z_vert*chunkVertWidth];
+        verts[v2] = normals[x_vert + (z_vert*chunkVertWidth)-cellWidth/2];
+        verts[v3] = normals[(x_vert-cellWidth/2) + z_vert*chunkVertWidth];
+        verts[v4] = normals[x_vert + z_vert*chunkVertWidth];
 
         if(!IsVertexRelevant(verts)){
             activeNodes[x_vert*chunkVertWidth+z_vert] = 0;        
@@ -274,16 +274,19 @@ bool IsVertexRelevant(short3 *verts){
     float angles[4];
 	float3 fVerts[5];
 	for(int i=0; i<5; i++){
-		fVerts[i] = (float3)(verts[i].x, verts[i].y, verts[i].z);
+		fVerts[i] = normalize((float3)((float)(verts[i].x), (float)(verts[i].y), (float)(verts[i].z)));
 	}
     
     for(int i=0; i<4; i++){
         angles[i] = acos( 
-            dot(fVerts[4], fVerts[i])/(Magnitude(fVerts[4]) * Magnitude(fVerts[i]))
-        );
+            dot(fVerts[4], fVerts[i])
+        )*57.29;
+		angles[i] = fabs(angles[i]);
     }
+
     bool disableCentNode = true;
-    const float minAngle = 3 * 0.174533f;
+	//3
+    float minAngle = 10;
     for(int i=0; i<4; i++){
         if(angles[i] > minAngle){
             disableCentNode = false;
@@ -291,8 +294,4 @@ bool IsVertexRelevant(short3 *verts){
         }
     }
     return !disableCentNode;
-	//if(fVerts[0].y>250){
-		//return true;
-	//}
-	//return true;
 }  
