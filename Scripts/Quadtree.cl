@@ -285,7 +285,6 @@ bool IsVertexRelevant(short3 *verts){
     }
 
     bool disableCentNode = true;
-	//3
     float minAngle = 10;
     for(int i=0; i<4; i++){
         if(angles[i] > minAngle){
