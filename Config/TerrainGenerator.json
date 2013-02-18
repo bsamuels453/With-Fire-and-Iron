@@ -2,7 +2,7 @@
 	"InternalAbbreviation": "TGen",
 	
 	"BlockWidthInMeters":   10,
-	"ChunkWidthInBlocks":   64,
+	"ChunkWidthInBlocks":   128,
 	"WorldWidthInChunks":   4,
 	
 	"Generator":            "Scripts\\GenTerrain.cl",
