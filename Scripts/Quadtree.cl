@@ -265,25 +265,34 @@ char AreSidesEqual(
         brkLoop:
         return ret;
     }
+
+float Magnitude(float3 vec){
+	return sqrt(vec.x*vec.x+vec.y*vec.y+vec.z+vec.z);
+}
     
 bool IsVertexRelevant(uchar3 *verts){
-    /*
     float angles[4];
+	float3 fVerts[5];
+	for(int i=0; i<5; i++){
+		fVerts[i] = (float3)(verts[i].x, verts[i].y, verts[i].z);
+	}
     
     for(int i=0; i<4; i++){
         angles[i] = acos( 
-            dot(verts[4], verts[i]) / 
-            (Magnitude(verts[4]) * Magnitude(verts[i]))
+            dot(fVerts[4], fVerts[i])/(Magnitude(fVerts[4]) * Magnitude(fVerts[i]))
         );
     }
-    */
-    bool disableCentNode = true;/*
-    const float minAngle = 10 * 0.174533f;
+    bool disableCentNode = true;
+    const float minAngle = 3 * 0.174533f;
     for(int i=0; i<4; i++){
         if(angles[i] > minAngle){
             disableCentNode = false;
             break;
         }
-    }*/
+    }
     return !disableCentNode;
+	//if(fVerts[0].y>250){
+		//return true;
+	//}
+	//return true;
 }  
