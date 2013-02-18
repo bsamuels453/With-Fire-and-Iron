@@ -10,6 +10,7 @@
 	"TreeTexture" :        "Materials/Trees",
 	"TreeTexNormalMap" :   "Materials/TreeNormals",
 	"RockTexNormalMap" :   "Materials/RockNormals",
+	"SnowTexNormalMap" :   "Materials/SnowNormals",
 	
 	"AmbientColor":        "1,1,1,1",
 	"AmbientIntensity":    0.3,

@@ -17,6 +17,7 @@ texture IceTexture;
 texture TreeTexture;
 texture TreeBumpTexture;
 texture RockBumpTexture;
+texture SnowBumpTexture;
 
 ////dynamic textures
 texture NormalMapTexture;
@@ -85,6 +86,15 @@ sampler2D TreeBumpSamp = sampler_state {
 
 sampler2D RockBumpSamp = sampler_state {
     Texture = (RockBumpTexture);
+    MinFilter = Anisotropic;
+    MagFilter = Anisotropic;
+    AddressU = Wrap;
+    AddressV = Wrap;
+	MipFilter = Linear;
+};
+
+sampler2D SnowBumpSamp = sampler_state {
+    Texture = (SnowBumpTexture);
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -215,6 +225,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	float3 normal = tex2D(NormalSamp, input.TextureCoordinate);
 	float3 treeBump = tex2D(TreeBumpSamp, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
 	float3 rockBump = tex2D(RockBumpSamp, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
+	float3 snowBump = tex2D(SnowBumpSamp, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
 	
 	float rockContrib, iceContrib;
 	
@@ -245,9 +256,10 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	float3 tangent = tex2D(TangentSamp, input.TextureCoordinate);
 	float3 binormal = tex2D(BinormalSamp, input.TextureCoordinate);
 
-	float3 treeNormal = (treeBump.x * tangent + treeBump.y * binormal) * terrainCanvas.b;
-	float3 rockNormal = (rockBump.x * tangent + rockBump.y * binormal) * terrainCanvas.r * inorganicCanvas.r;
-	normal += treeNormal;
+	//float3 treeNormal = (treeBump.x * tangent + treeBump.y * binormal) * terrainCanvas.b;
+	float3 rockNormal = (rockBump.x * tangent + rockBump.y * binormal) * rockContrib/8;
+	float3 snowNormal = (snowBump.x * tangent + snowBump.y * binormal) * iceContrib/2;
+	//normal += treeNormal;
 	normal += (rockNormal);
 	normalize(normal);
 

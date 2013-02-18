@@ -27,6 +27,7 @@ namespace Gondola.Draw{
                 _gblTerrainShader.Parameters["TreeTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_TreeTexture"));
                 _gblTerrainShader.Parameters["TreeBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_TreeTexNormalMap"));
                 _gblTerrainShader.Parameters["RockBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_RockTexNormalMap"));
+                _gblTerrainShader.Parameters["SnowBumpTexture"].SetValue(Gbl.LoadContent<Texture2D>("TRend_SnowTexNormalMap"));
 
                 _gblTerrainShader.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
                 _gblTerrainShader.Parameters["World"].SetValue(Matrix.Identity);
