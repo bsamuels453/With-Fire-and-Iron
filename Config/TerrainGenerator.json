@@ -10,7 +10,7 @@
 	"VertexWinder":         "Scripts\\VertexWinder.cl",
 	"Lacunarity":           1.8,
 	"Gain":                 0.5,
-	"Octaves":              6,
+	"Octaves":              4,
 	"Offset":               1,
 	"HScale":               0.005,
 	"VScale":               1200
