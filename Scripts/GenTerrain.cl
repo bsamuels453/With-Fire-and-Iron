@@ -1,5 +1,3 @@
-//todo optimize this, maybe even for vendor-specific if have the time
-
 //since max const parameters to kernel is 8, gotta cram some in an array
 typedef enum{
 	Lacunarity = 0,
@@ -50,12 +48,13 @@ __kernel void GenTerrain(
 	uvCoords[index] = (float2)((float)blockX/(chunkWidth-1), (float)blockZ/(chunkWidth-1));
 }
 
+//todo: even though the normal buffers are uchar/ushort, the kernel treats them like signed variant so there's a lot of accuracy lost. fix it.
 __kernel void GenNormals(
 	__constant float *parameters,
 	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
 	int chunkOffsetZ,
 	__global float3 *geometry,
-	__global uchar3 *normals,
+	__global ushort3 *normals,
 	__global uchar3 *binormals,
 	__global uchar3 *tangents){
 	////////////////////
@@ -170,10 +169,10 @@ __kernel void GenNormals(
 	v1 = normalize(v1);
 	v2 = normalize(v2);
 
-	normals[index] = (uchar3)(
-		(uchar)(crossSum.x*127+128),
-		(uchar)(crossSum.y*127+128),
-		(uchar)(crossSum.z*127+128)
+	normals[index] = (ushort3)(
+		(ushort)(crossSum.x*16383.0+16384.0),//*16383+16384),
+		(ushort)(crossSum.y*16383.0+16384.0),//*16383+16384),
+		(ushort)(crossSum.z*16383.0+16384.0)//*16383+16384)
 	);
 	
 	binormals[index] = (uchar3)(

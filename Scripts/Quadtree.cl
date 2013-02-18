@@ -4,7 +4,7 @@ typedef enum{
 	VERTICAL
 } WORKERTYPE;
 
-bool IsVertexRelevant(uchar3 *verts);
+bool IsVertexRelevant(short3 *verts);
 char AreCornersEqual(
     __global char *activeVerts,
     int width,
@@ -68,7 +68,7 @@ typedef enum{
 __kernel void QuadTree(
 	int depth,
     int chunkBlockWidth,
-    __global uchar3 *normals,
+    __global short3 *normals,
     __global char *activeNodes,
 	__global int* dummy
 	){    
@@ -126,7 +126,7 @@ __kernel void QuadTree(
         }
         if( canSetNode){
             //now see if we can disable this node
-            uchar3 verts[5];
+            short3 verts[5];
             verts[v0] = normals[chunkVertWidth*pointX + pointZ+step/2];
             verts[v1] = normals[chunkVertWidth*(pointX+step/2) + pointZ];
             verts[v2] = normals[chunkVertWidth*pointX + pointZ-step/2];
@@ -143,7 +143,7 @@ __kernel void QuadTree(
 __kernel void CrossCull(
     int depth,
 	int chunkBlockWidth,
-    __global uchar3* normals,
+    __global short3* normals,
     __global char* activeNodes,
 	__global int* dummy
 	){
@@ -201,7 +201,7 @@ __kernel void CrossCull(
         
         //okay, at this point we know that a cross cull would be valid
         //check to see if it's necessary now
-        uchar3 verts[5];
+        short3 verts[5];
         int chunkVertWidth = chunkBlockWidth+1;
         verts[v0] = normals[chunkVertWidth*(x_vert-cellWidth/2) + z_vert+cellWidth/2];
         verts[v1] = normals[chunkVertWidth*(x_vert+cellWidth/2) + z_vert+cellWidth/2];
@@ -270,7 +270,7 @@ float Magnitude(float3 vec){
 	return sqrt(vec.x*vec.x+vec.y*vec.y+vec.z+vec.z);
 }
     
-bool IsVertexRelevant(uchar3 *verts){
+bool IsVertexRelevant(short3 *verts){
     float angles[4];
 	float3 fVerts[5];
 	for(int i=0; i<5; i++){

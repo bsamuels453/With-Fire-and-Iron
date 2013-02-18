@@ -32,7 +32,7 @@ namespace Gondola.Logic.Terrain{
         readonly ComputeBuffer<float> _geometry;
         readonly ComputeBuffer<int> _indicies;
         readonly ComputeKernel _normalGenKernel;
-        readonly ComputeBuffer<byte> _normals;
+        readonly ComputeBuffer<ushort> _normals;
         readonly ComputeContextPropertyList _properties;
         readonly ComputeKernel _qTreeKernel;
         readonly ComputeProgram _qTreePrgm;
@@ -98,7 +98,7 @@ namespace Gondola.Logic.Terrain{
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
             //implementation is basically a float4 wrapper that uses zero for the last variable
             _geometry = new ComputeBuffer<float>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
-            _normals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
+            _normals = new ComputeBuffer<ushort>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 4);
             _binormals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
             _tangents = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
             _uvCoords = new ComputeBuffer<float>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*2);
@@ -135,7 +135,7 @@ namespace Gondola.Logic.Terrain{
             _activeVerts = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts);
 
             _dummy = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, 50);
-            var rawNormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
+            var rawNormals = new ushort[_chunkWidthInVerts * _chunkWidthInVerts * 4];
             _emptyVerts = new byte[_chunkWidthInVerts*_chunkWidthInVerts];
             for (int i = 0; i < _emptyVerts.Length; i++){
                 _emptyVerts[i] = 1;
@@ -190,6 +190,16 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.Finish();
         }
 
+        struct Short4{
+            public ushort X, Y, Z, A;
+            public Short4(ushort x, ushort y, ushort z, ushort a){
+                X = x;
+                Y = y;
+                Z = z;
+                A = a;
+            }
+        }
+
         public TerrainChunk GenerateChunk(XZPair id){
             var sw = new Stopwatch();
             sw.Start();
@@ -197,7 +207,7 @@ namespace Gondola.Logic.Terrain{
             int offsetZ = id.Z*_blockWidth*(_chunkWidthInBlocks);
 
             var rawGeometry = new float[_chunkWidthInVerts*_chunkWidthInVerts*4];
-            var rawNormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
+            var rawNormals = new ushort[_chunkWidthInVerts * _chunkWidthInVerts * 4];
             var rawBinormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawUVCoords = new float[_chunkWidthInVerts*_chunkWidthInVerts*2];
@@ -244,11 +254,20 @@ namespace Gondola.Logic.Terrain{
                 rawTangents[v] = 1;
             }
 
-            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+
+            var floatNorms = new Short4[rawNormals.Count()/4];
+            int destIdx = 0;
+            for (int i = 0; i < rawNormals.Count(); i += 4){
+                floatNorms[destIdx] = new Short4((ushort)(rawNormals[i]), (ushort)(rawNormals[i + 1]), (ushort)(rawNormals[i + 2]), (ushort)(rawNormals[i + 3]));
+                //floatNorms[destIdx].Normalize();
+                destIdx++;
+            }
+
+            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Rgba64);
             var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
-            texNormal.SetData(rawNormals);
+            texNormal.SetData(floatNorms);
             texBinormal.SetData(rawBinormals);
             texTangent.SetData(rawTangents);
 
