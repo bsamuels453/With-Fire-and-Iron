@@ -14,8 +14,6 @@ using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
-
-
 namespace Gondola.Logic.Terrain{
     internal class TerrainGen{
         readonly ComputeBuffer<byte> _activeVerts;
@@ -60,7 +58,7 @@ namespace Gondola.Logic.Terrain{
 
             #region setup generator kernel
             bool loadFromSource = Gbl.HasRawHashChanged[Gbl.RawDir.Scripts];
-
+            loadFromSource = true;
             _chunkWidthInBlocks = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
             _blockWidth = Gbl.LoadContent<int>("TGen_BlockWidthInMeters");
@@ -205,19 +203,7 @@ namespace Gondola.Logic.Terrain{
             _cmdQueue.Finish();
         }
 
-        struct Short4{
-            public ushort X, Y, Z, A;
-            public Short4(ushort x, ushort y, ushort z, ushort a){
-                X = x;
-                Y = y;
-                Z = z;
-                A = a;
-            }
-        }
-
         public TerrainChunk GenerateChunk(XZPair id){
-            var sw = new Stopwatch();
-            sw.Start();
             int offsetX = id.X*_blockWidth*(_chunkWidthInBlocks);
             int offsetZ = id.Z*_blockWidth*(_chunkWidthInBlocks);
 
@@ -259,9 +245,6 @@ namespace Gondola.Logic.Terrain{
 
             _cmdQueue.Finish();
 
-            sw.Stop();
-            double elapsed = sw.ElapsedMilliseconds;
-
             for (int v = 3; v < rawNormals.Length; v += 4){
                 rawNormals[v] = 1;
             }
@@ -273,19 +256,11 @@ namespace Gondola.Logic.Terrain{
             }
 
 
-            var floatNorms = new Short4[rawNormals.Count()/4];
-            int destIdx = 0;
-            for (int i = 0; i < rawNormals.Count(); i += 4){
-                floatNorms[destIdx] = new Short4((ushort)(rawNormals[i]), (ushort)(rawNormals[i + 1]), (ushort)(rawNormals[i + 2]), (ushort)(rawNormals[i + 3]));
-                //floatNorms[destIdx].Normalize();
-                destIdx++;
-            }
-
             var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Rgba64);
             var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
             var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
-            texNormal.SetData(floatNorms);
+            texNormal.SetData(rawNormals);
             texBinormal.SetData(rawBinormals);
             texTangent.SetData(rawTangents);
 
@@ -297,11 +272,15 @@ namespace Gondola.Logic.Terrain{
             var parsedGeometry = ParseGeometry(rawGeometry);
             var parsedIndicies = ParseIndicies(indicies);
 
+            var sw = new Stopwatch();
+            sw.Start();
+
             int[] culledIndexes;
             VertexPositionTexture[] culledVertexes;
 
-            CullVertexes(parsedIndicies.ToList(), parsedGeometry, parsedUV, out culledIndexes, out culledVertexes);
-
+            CullVertexes(activeVerts, parsedIndicies.ToList(), parsedGeometry, parsedUV, out culledIndexes, out culledVertexes);
+            sw.Stop();
+            double elapsed = sw.ElapsedMilliseconds;
             var chunkData = new TerrainChunk(id, culledVertexes, culledIndexes, texNormal, texBinormal, texTangent);
 
             return chunkData;
@@ -382,6 +361,7 @@ namespace Gondola.Logic.Terrain{
         }
 
         void CullVertexes(
+            byte[] activeNodes,
             List<int> indicies,
             Vector3[] geometry,
             Vector2[] uvCoords,
@@ -389,28 +369,23 @@ namespace Gondola.Logic.Terrain{
             out VertexPositionTexture[] oVertexes){
             //first get a list of numeric indicies that will be used by the index buffer
             //there will be missing indexes because of the culling
-            var indiciesInUse = new List<int>();
-            foreach (var indice in indicies){
-                if (!indiciesInUse.Contains(indice)){
-                    indiciesInUse.Add(indice);
+
+            var indicieMap = new Dictionary<int, int>(indicies.Count);
+            for (int i = 0; i < activeNodes.Length; i++) {
+                if (activeNodes[i] == 1) {
+                    indicieMap.Add(i, indicieMap.Count);
                 }
             }
 
-            //now use those indexes to cull vertexes that aren't referenced by the vbo.
-            //in the process, the index associated with each vertex changes, and the new 
-            //indexes are stored in reparsedIndicies
             var vertexList = new List<VertexPositionTexture>();
             reparsedIndicies = new int[indicies.Count];
-            foreach (var uniqueIdx in indiciesInUse){
-                vertexList.Add(new VertexPositionTexture(geometry[uniqueIdx], uvCoords[uniqueIdx]));
-                int newIDx = vertexList.Count - 1;
-                int idx;
-                while ((idx = indicies.IndexOf(uniqueIdx)) != -1){
-                    reparsedIndicies[idx] = newIDx;
-                    indicies[idx] = -1;
-                }
+            for(int i=0; i<indicies.Count; i++){
+                reparsedIndicies[i] = indicieMap[indicies[i]];
             }
 
+            foreach (var pair in indicieMap){
+                vertexList.Add(new VertexPositionTexture(geometry[pair.Key], uvCoords[pair.Key]));
+            }
             oVertexes = vertexList.ToArray();
         }
 
