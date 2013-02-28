@@ -23,6 +23,7 @@ namespace Gondola.Logic{
             foreach (var state in _activeStates){
                 state.Dispose();
             }
+            _sharedData.Clear();
             _activeStates.Clear();
         }
 
@@ -53,8 +54,8 @@ namespace Gondola.Logic{
 
         public static void Update() {
             _inputHandler.Update();
-            foreach (var state in _activeStates){
-                state.Update(_inputHandler.CurrentInputState, 0);
+            for(int i=0; i<_activeStates.Count; i++){
+                _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
             }
         }
 

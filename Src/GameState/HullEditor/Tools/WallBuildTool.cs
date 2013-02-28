@@ -21,7 +21,7 @@ namespace Gondola.GameState.HullEditor.Tools {
             10,
             20,
             30,
-            "InternalWalls") { UpdateBufferManually = true };
+            "Shader_AirshipWalls") { UpdateBufferManually = true };
 
             _tempWallIdentifiers = new List<WallSegmentIdentifier>();
             _wallHeight = hullData.DeckHeight - 0.01f;

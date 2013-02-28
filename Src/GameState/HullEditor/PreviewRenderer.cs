@@ -43,7 +43,7 @@ namespace Gondola.GameState.HullEditor {
                 _indicies.Count(),
                 _verticies.Count(),
                 (_meshVertexWidth) * (_meshVertexWidth) * 2,
-                "HullEffect"
+                "Shader_AirshipHull"
             );
 
             _mesh = new Vector3[_meshVertexWidth, _meshVertexWidth];

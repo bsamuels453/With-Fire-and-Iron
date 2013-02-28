@@ -16,7 +16,7 @@ namespace Gondola.GameState.HullEditor.Tools {
         public WallDeleteTool(HullDataManager hullData) :
             base(hullData, hullData.WallResolution) {
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
-                (5000, 10, 20, 30, "WallDeleteMarquee") { UpdateBufferManually = true };
+                (5000, 10, 20, 30, "Shader_GroundDecal") { UpdateBufferManually = true };
             _prevIdentifiers = new List<WallSegmentIdentifier>();
         }
 

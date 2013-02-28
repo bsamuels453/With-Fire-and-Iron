@@ -24,11 +24,11 @@ namespace Gondola.GameState.HullEditor.Tools {
             // ReSharper restore CompareOfFloatsByEqualityOperator
             _hullData = hullData;
 
-            _ghostedLadderModel = new ObjectModelBuffer<int>(1, "TintedModel");
+            _ghostedLadderModel = new ObjectModelBuffer<int>(1, "Shader_TintedModel");
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2);
             var trans = Matrix.Identity;
 
-            _ghostedLadderModel.AddObject(0, Gbl.ContentManager.Load<Model>("models/ladder"), trans);
+            _ghostedLadderModel.AddObject(0, Gbl.ContentManager.Load<Model>("Models/Ladder"), trans);
             _ghostedLadderModel.DisableObject(0);
         }
 
@@ -54,7 +54,7 @@ namespace Gondola.GameState.HullEditor.Tools {
 
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2) * Matrix.CreateTranslation(CursorPosition);
             Matrix trans = Matrix.Identity * Matrix.CreateTranslation(CursorPosition);
-            _hullData.CurObjBuffer.AddObject(identifier, Gbl.ContentManager.Load<Model>("models/ladder"), trans);
+            _hullData.CurObjBuffer.AddObject(identifier, Gbl.ContentManager.Load<Model>("Models/Ladder"), trans);
 
             var quadsToHide = new List<ObjectIdentifier>();
             var upperBoxesToHide = new List<BoundingBox>();

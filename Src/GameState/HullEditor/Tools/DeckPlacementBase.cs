@@ -63,7 +63,7 @@ namespace Gondola.GameState.HullEditor.Tools {
             _enabled = false;
             GridResolution = gridResolution;
 
-            _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Wireframe", PrimitiveType.LineList);
+            _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Shader_Wireframe", PrimitiveType.LineList);
             var selectionIndicies = new[] { 0, 1 };
             _cursorBuff.IndexBuffer.SetData(selectionIndicies);
             _cursorBuff.Enabled = false;
@@ -220,7 +220,7 @@ namespace Gondola.GameState.HullEditor.Tools {
                 if (GuideGridBuffers[i] != null) {
                     GuideGridBuffers[i].Dispose();
                 }
-                GuideGridBuffers[i] = new GeometryBuffer<VertexPositionColor>(8 * numBoxes, 8 * numBoxes, 4 * numBoxes, "Wireframe", PrimitiveType.LineList);
+                GuideGridBuffers[i] = new GeometryBuffer<VertexPositionColor>(8 * numBoxes, 8 * numBoxes, 4 * numBoxes, "Shader_Wireframe", PrimitiveType.LineList);
                 var guideDotIndicies = new int[8 * numBoxes];
                 for (int si = 0; si < 8 * numBoxes; si += 1) {
                     guideDotIndicies[si] = si;

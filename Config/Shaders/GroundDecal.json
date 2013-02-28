@@ -4,5 +4,5 @@
 	"DiffuseIntensity": "1",
 	"AmbientIntensity": "1",
 	"Texture": "Materials/RedBox",
-	"Shader": HLSL/StandardEffect"
+	"Shader": "HLSL/StandardEffect"
 }

@@ -2,6 +2,7 @@
 
 using Gondola.Draw;
 using Gondola.GameState;
+using Gondola.GameState.HullEditor;
 using Gondola.GameState.TerrainManager;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
@@ -33,10 +34,9 @@ namespace Gondola{
                 farPlaneDistance: 50000
                 );
 
-            GamestateManager.AddGameState(new PlayerState(
-                new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
-
+            GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new TerrainManager());
+            //GamestateManager.AddGameState(new HullEditor());
 
             IsMouseVisible = true;
             base.Initialize();

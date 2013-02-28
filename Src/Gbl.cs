@@ -163,6 +163,10 @@ namespace Gondola {
 
         public static T LoadContent<T>(string str){
             string objValue = "";
+            if(str.Contains('/')){
+                return ContentManager.Load<T>(str);
+            }
+
             try{
                 objValue = RawLookup[str];
                 return ContentManager.Load<T>(objValue);

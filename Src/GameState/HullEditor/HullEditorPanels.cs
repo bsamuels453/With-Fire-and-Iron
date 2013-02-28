@@ -64,7 +64,7 @@ namespace Gondola.GameState.HullEditor {
                     width: width,
                     height: height,
                     depth: DepthLevel.Background,
-                    textureName: "UI_Materials/BlueBox",
+                    textureName: "Materials/BlueBox",
                     spriteTexRepeatX: width / (Curves.PixelsPerMeter * 1),
                     spriteTexRepeatY: height / (Curves.PixelsPerMeter * 1),
                     components: new IUIComponent[] { new PanelComponent() }
