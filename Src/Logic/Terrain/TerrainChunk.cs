@@ -28,7 +28,7 @@ namespace Gondola.Logic.Terrain {
             _binormals = binormals;
             _tangents = tangents;
             _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count() / 3,"Shader_Terrain");
-            _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count() * 2, verticies.Count(), indicies.Count()*2, "Terrain-Wireframe");
+            _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count() * 2, verticies.Count(), indicies.Count(), "Terrain-Wireframe", PrimitiveType.LineList);
         }
 
         public void SetBufferData(){
@@ -52,8 +52,8 @@ namespace Gondola.Logic.Terrain {
                 srcIdx += 3;
             }
 
-            _wbuff.IndexBuffer.SetData(wireframeInds);
-            _wbuff.VertexBuffer.SetData(_verticies);
+            //_wbuff.IndexBuffer.SetData(wireframeInds);
+            //_wbuff.VertexBuffer.SetData(_verticies);
 
             _normals.Dispose();
             _binormals.Dispose();
