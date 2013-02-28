@@ -3,6 +3,6 @@
 	"DiffuseLightDirection": "0,-1,1",
 	"DiffuseIntensity": "1",
 	"AmbientIntensity": "1",
-	"Texture": "UI_InternalWallTex",
-	"Shader": "Shader_StandardEffect"
+	"Texture": "Materials/BrownBox",
+	"Shader": "HLSL/StandardEffect"
 }
