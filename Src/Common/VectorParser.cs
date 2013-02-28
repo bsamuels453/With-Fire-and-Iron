@@ -10,7 +10,7 @@ namespace Gondola.Common {
     /// <summary>
     /// this helper class serves as a base to parse values that json is known to fuck up deserializing
     /// </summary>
-    static class JsonFallbackParser{
+    static class VectorParser{
         static public T Parse<T>(string s){
             Type t = typeof(T);
             if (t == typeof(Vector4)){
@@ -19,7 +19,7 @@ namespace Gondola.Common {
             if (t == typeof(Vector3)){
                 return ParseVec3<T>(s);
             }
-            throw new Exception("JsonFallbackParser recieved a type which it cannot deserialize");
+            throw new Exception("VectorParser recieved a type which it cannot deserialize");
         }
 
         static T ParseVec4<T>(string s){
