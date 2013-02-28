@@ -32,16 +32,18 @@ namespace Gondola.Logic.GameState{
             _manager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
             _skipNextMouseUpdate = false;
 
-            _x = new Text2D(_renderTarget, 0, 0, "hi");
-            _y = new Text2D(_renderTarget, 0, 10, "hi");
-            _z = new Text2D(_renderTarget, 0, 20, "hi");
-            _pitch = new Text2D(_renderTarget, 0, 30, "hi");
-            _yaw = new Text2D(_renderTarget, 0, 40, "hi");
+            _renderTarget.Bind();
+            _x = new Text2D(0, 0, "hi");
+            _y = new Text2D(0, 10, "hi");
+            _z = new Text2D(0, 20, "hi");
+            _pitch = new Text2D(0, 30, "hi");
+            _yaw = new Text2D(0, 40, "hi");
             _x.Color = Color.Wheat;
             _y.Color = Color.Wheat;
             _z.Color = Color.Wheat;
             _pitch.Color = Color.Wheat;
             _yaw.Color = Color.Wheat;
+            _renderTarget.Unbind();
         }
 
         #region IGameState Members
@@ -52,6 +54,7 @@ namespace Gondola.Logic.GameState{
         }
 
         public void Update(InputState state, double timeDelta) {
+            _renderTarget.Bind();
             #region update player position
             var keyState = state.KeyboardState;
 
@@ -131,15 +134,12 @@ namespace Gondola.Logic.GameState{
 
             _manager.ModifySharedData(SharedStateData.PlayerPosition, _playerPosition);
             _manager.ModifySharedData(SharedStateData.PlayerLook, _playerLookDir);
+            _renderTarget.Unbind();
         }
 
         public void Draw(){
             _renderTarget.Bind();
-            _x.Draw();
-            _y.Draw();
-            _z.Draw();
-            _pitch.Draw();
-            _yaw.Draw();
+
             _renderTarget.Unbind();
         }
 

@@ -60,12 +60,14 @@ namespace Gondola {
                 directoriesToSearch.AddRange(Directory.GetDirectories(dir).ToList());
                 directories.Add(dir);
             }
+            string s;
             try {
                 foreach (string directory in directories) {
+                    s = directory;
                     string[] files = Directory.GetFiles(directory);
                     foreach (string file in files) {
                         var sr = new StreamReader(file);
-
+                        s = file;
                         var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
                         sr.Close();
 

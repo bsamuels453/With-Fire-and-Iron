@@ -10,8 +10,8 @@ namespace Gondola.Logic.Terrain {
     class TerrainChunk : IDisposable{
         public XZPair Identifier;
 
-        readonly TerrainBuffer _buffer;
-        readonly WireframeBuffer _wbuff;
+        readonly GeometryBuffer<VertexPositionTexture> _buffer;
+        readonly GeometryBuffer<VertexPositionTexture> _wbuff;
         readonly VertexPositionTexture[] _verticies;
         readonly int[] _indicies;
         readonly Texture2D _normals;
@@ -27,14 +27,34 @@ namespace Gondola.Logic.Terrain {
             _normals = normals;
             _binormals = binormals;
             _tangents = tangents;
-            _buffer = new TerrainBuffer(indicies.Length, verticies.Count(), indicies.Count() / 3, PrimitiveType.TriangleList);
-            _wbuff = new WireframeBuffer(indicies.Count(), verticies.Count(), indicies.Count()/3);
+            _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count() / 3,"Shader_Terrain");
+            _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count() * 2, verticies.Count(), indicies.Count()*2, "Terrain-Wireframe");
         }
 
         public void SetBufferData(){
             Debug.Assert(_bufferDataSet == false);
-            _buffer.SetData(_verticies, (int[])_indicies.Clone(), _normals, _binormals, _tangents);
-            _wbuff.SetData(_verticies, _indicies);
+            _buffer.IndexBuffer.SetData((int[])_indicies.Clone());
+            _buffer.VertexBuffer.SetData(_verticies);
+            _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
+            _buffer.ShaderParams["BinormalMapTexture"].SetValue(_binormals);
+            _buffer.ShaderParams["TangentMapTexture"].SetValue(_tangents);
+
+            //we need to explode the indice list from triangle list to line list
+            var wireframeInds = new int[_indicies.Length * 2];
+            int srcIdx = 0;
+            for (int i = 0; i < _indicies.Length * 2; i += 6) {
+                wireframeInds[i] = _indicies[srcIdx];
+                wireframeInds[i + 1] = _indicies[srcIdx + 1];
+                wireframeInds[i + 2] = _indicies[srcIdx + 1];
+                wireframeInds[i + 3] = _indicies[srcIdx + 2];
+                wireframeInds[i + 4] = _indicies[srcIdx + 2];
+                wireframeInds[i + 5] = _indicies[srcIdx];
+                srcIdx += 3;
+            }
+
+            _wbuff.IndexBuffer.SetData(wireframeInds);
+            _wbuff.VertexBuffer.SetData(_verticies);
+
             _normals.Dispose();
             _binormals.Dispose();
             _tangents.Dispose();
@@ -48,11 +68,6 @@ namespace Gondola.Logic.Terrain {
                 _tangents.Dispose();
             }
             _buffer.Dispose();
-        }
-
-        public void Draw(Matrix viewMatrix){
-            _buffer.Draw(viewMatrix);
-            _wbuff.Draw(viewMatrix);
         }
     }
 }

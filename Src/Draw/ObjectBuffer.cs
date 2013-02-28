@@ -9,8 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    internal class ObjectBuffer<T> : StandardEffect where T : IEquatable<T>{
-        //key=identifier
+    internal class ObjectBuffer<TIdentifier> : BaseGeometryBuffer<VertexPositionNormalTexture> where TIdentifier : IEquatable<TIdentifier> {
         readonly int[] _indicies;
         readonly int _indiciesPerObject;
         readonly bool[] _isSlotOccupied;
@@ -21,13 +20,14 @@ namespace Gondola.Draw{
 
         public bool UpdateBufferManually;
 
-        public ObjectBuffer(int maxObjects, int primitivesPerObject, int verticiesPerObject, int indiciesPerObject, string textureName) :
-            base(indiciesPerObject*maxObjects, verticiesPerObject*maxObjects, primitivesPerObject*maxObjects, textureName){
-            BufferRasterizer = new RasterizerState{CullMode = CullMode.None};
+        public ObjectBuffer(int maxObjects, int primitivesPerObject, int verticiesPerObject, int indiciesPerObject, string settingsFileName) :
+            base(indiciesPerObject * maxObjects, verticiesPerObject * maxObjects, primitivesPerObject * maxObjects, settingsFileName, PrimitiveType.TriangleList) {
+            Rasterizer = new RasterizerState { CullMode = CullMode.None };
 
             _objectData = new List<ObjectData>();
-            _indicies = new int[maxObjects*indiciesPerObject];
-            _verticies = new VertexPositionNormalTexture[maxObjects*verticiesPerObject];
+            _indicies = new int[maxObjects * indiciesPerObject];
+            _verticies = new VertexPositionNormalTexture[maxObjects * verticiesPerObject];
+
             _indiciesPerObject = indiciesPerObject;
             _verticiesPerObject = verticiesPerObject;
             _maxObjects = maxObjects;
@@ -35,22 +35,22 @@ namespace Gondola.Draw{
             UpdateBufferManually = false;
         }
 
-        public void UpdateBuffers(){
+        public void UpdateBuffers() {
             Debug.Assert(UpdateBufferManually, "cannot update a buffer that's set to automatic updating");
-            base.Indexbuffer.SetData(_indicies);
-            base.Vertexbuffer.SetData(_verticies);
+            base.BaseIndexBuffer.SetData(_indicies);
+            base.BaseVertexBuffer.SetData(_verticies);
         }
 
-        public void AddObject(IEquatable<T> identifier, int[] indicies, VertexPositionNormalTexture[] verticies){
+        public void AddObject(IEquatable<TIdentifier> identifier, int[] indicies, VertexPositionNormalTexture[] verticies) {
             Debug.Assert(indicies.Length == _indiciesPerObject);
             Debug.Assert(verticies.Length == _verticiesPerObject);
 
             int index = -1;
-            for (int i = 0; i < _maxObjects; i++){
-                if (_isSlotOccupied[i] == false){
+            for (int i = 0; i < _maxObjects; i++) {
+                if (_isSlotOccupied[i] == false) {
                     //add buffer offset to the indice list
-                    for (int indice = 0; indice < indicies.Length; indice++){
-                        indicies[indice] += i*_verticiesPerObject;
+                    for (int indice = 0; indice < indicies.Length; indice++) {
+                        indicies[indice] += i * _verticiesPerObject;
                     }
 
                     _objectData.Add(new ObjectData(identifier, i, indicies, verticies));
@@ -61,15 +61,15 @@ namespace Gondola.Draw{
             }
             Debug.Assert(index != -1, "not enough space in object buffer to add new object");
 
-            indicies.CopyTo(_indicies, index*_indiciesPerObject);
-            verticies.CopyTo(_verticies, index*_verticiesPerObject);
-            if (!UpdateBufferManually){
-                base.Indexbuffer.SetData(_indicies);
-                base.Vertexbuffer.SetData(_verticies);
+            indicies.CopyTo(_indicies, index * _indiciesPerObject);
+            verticies.CopyTo(_verticies, index * _verticiesPerObject);
+            if (!UpdateBufferManually) {
+                base.BaseIndexBuffer.SetData(_indicies);
+                base.BaseVertexBuffer.SetData(_verticies);
             }
         }
 
-        public void RemoveObject(IEquatable<T> identifier){
+        public void RemoveObject(TIdentifier identifier) {
             ObjectData objectToRemove = (
                                             from obj in _objectData
                                             where obj.Identifier.Equals(identifier)
@@ -80,59 +80,59 @@ namespace Gondola.Draw{
                 return;
 
             _isSlotOccupied[objectToRemove.ObjectOffset] = false;
-            for (int i = 0; i < _indiciesPerObject; i++){
-                _indicies[objectToRemove.ObjectOffset*_indiciesPerObject + i] = 0;
+            for (int i = 0; i < _indiciesPerObject; i++) {
+                _indicies[objectToRemove.ObjectOffset * _indiciesPerObject + i] = 0;
             }
-            if (!UpdateBufferManually){
-                base.Indexbuffer.SetData(_indicies);
+            if (!UpdateBufferManually) {
+                base.BaseIndexBuffer.SetData(_indicies);
             }
             _objectData.Remove(objectToRemove);
         }
 
-        public void ClearObjects(){
+        public void ClearObjects() {
             _objectData.Clear();
-            for (int i = 0; i < _maxObjects; i++){
+            for (int i = 0; i < _maxObjects; i++) {
                 _isSlotOccupied[i] = false;
             }
-            for (int i = 0; i < _maxObjects*_indiciesPerObject; i++){
+            for (int i = 0; i < _maxObjects * _indiciesPerObject; i++) {
                 _indicies[i] = 0;
             }
-            base.Indexbuffer.SetData(_indicies);
+            base.BaseIndexBuffer.SetData(_indicies);
         }
 
-        public bool EnableObject(IEquatable<T> identifier){
+        public bool EnableObject(IEquatable<TIdentifier> identifier) {
             ObjectData objToEnable = null;
-            foreach (var obj in _objectData){
-                if (obj.Identifier.Equals(identifier)){
+            foreach (var obj in _objectData) {
+                if (obj.Identifier.Equals(identifier)) {
                     objToEnable = obj;
                 }
             }
             if (objToEnable == null)
                 return false;
 
-            objToEnable.IsEnabled = true;
-            objToEnable.Indicies.CopyTo(_indicies, objToEnable.ObjectOffset*_indiciesPerObject);
-            if (!UpdateBufferManually){
-                base.Indexbuffer.SetData(_indicies);
+            objToEnable.Enabled = true;
+            objToEnable.Indicies.CopyTo(_indicies, objToEnable.ObjectOffset * _indiciesPerObject);
+            if (!UpdateBufferManually) {
+                base.BaseIndexBuffer.SetData(_indicies);
             }
             return true;
         }
 
-        public bool DisableObject(IEquatable<T> identifier){
+        public bool DisableObject(TIdentifier identifier) {
             ObjectData objToDisable = null;
-            foreach (var obj in _objectData){
-                if (obj.Identifier.Equals(identifier)){
+            foreach (var obj in _objectData) {
+                if (obj.Identifier.Equals(identifier)) {
                     objToDisable = obj;
                 }
             }
             if (objToDisable == null)
                 return false;
 
-            objToDisable.IsEnabled = false;
+            objToDisable.Enabled = false;
             var indicies = new int[_indiciesPerObject];
-            indicies.CopyTo(_indicies, objToDisable.ObjectOffset*_indiciesPerObject);
-            if (!UpdateBufferManually){
-                base.Indexbuffer.SetData(_indicies);
+            indicies.CopyTo(_indicies, objToDisable.ObjectOffset * _indiciesPerObject);
+            if (!UpdateBufferManually) {
+                base.BaseIndexBuffer.SetData(_indicies);
             }
             return true;
         }
@@ -140,20 +140,20 @@ namespace Gondola.Draw{
         /// <summary>
         ///   really cool method that will take another objectbuffer and absorb its objects into this objectbuffer. also clears the other buffer afterwards.
         /// </summary>
-        public void AbsorbBuffer(ObjectBuffer<T> buffer){
+        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer) {
             bool buffUpdateState = UpdateBufferManually;
             UpdateBufferManually = true; //temporary for this heavy copy algo
 
-            foreach (var objectData in buffer._objectData){
+            foreach (var objectData in buffer._objectData) {
                 bool isDuplicate = false;
-                foreach (var data in _objectData){
+                foreach (var data in _objectData) {
                     if (data.Identifier.Equals(objectData.Identifier))
                         isDuplicate = true;
                 }
                 if (isDuplicate)
                     continue;
 
-                int offset = objectData.ObjectOffset*_verticiesPerObject;
+                int offset = objectData.ObjectOffset * _verticiesPerObject;
                 var indicies = from index in objectData.Indicies
                                select index - offset;
 
@@ -164,19 +164,35 @@ namespace Gondola.Draw{
             buffer.ClearObjects();
         }
 
+        public ObjectData[] DumpObjectData() {
+            return _objectData.ToArray();
+        }
+
+        public VertexPositionNormalTexture[] DumpVerticies() {
+            var data = new VertexPositionNormalTexture[base.BaseVertexBuffer.VertexCount];
+            BaseVertexBuffer.GetData(data);
+            return data;
+        }
+
+        public int[] DumpIndicies() {
+            var data = new int[base.BaseIndexBuffer.IndexCount];
+            BaseIndexBuffer.GetData(data);
+            return data;
+        }
+
         #region Nested type: ObjectData
 
-        class ObjectData{
+        public class ObjectData {
             // ReSharper disable MemberCanBePrivate.Local
-            public readonly IEquatable<T> Identifier;
+            public readonly IEquatable<TIdentifier> Identifier;
             public readonly int[] Indicies;
             public readonly int ObjectOffset;
             public readonly VertexPositionNormalTexture[] Verticies;
-            public bool IsEnabled;
+            public bool Enabled;
             // ReSharper restore MemberCanBePrivate.Local
 
-            public ObjectData(IEquatable<T> identifier, int objectOffset, int[] indicies, VertexPositionNormalTexture[] verticies){
-                IsEnabled = true;
+            public ObjectData(IEquatable<TIdentifier> identifier, int objectOffset, int[] indicies, VertexPositionNormalTexture[] verticies) {
+                Enabled = true;
                 Identifier = identifier;
                 ObjectOffset = objectOffset;
                 Indicies = indicies;
