@@ -1,7 +1,7 @@
 ﻿#region
 
-using Gondola.Common;
 using Gondola.Logic;
+using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 

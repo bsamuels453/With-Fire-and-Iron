@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Gondola.Common {
+﻿namespace Gondola.Util {
     struct Angle3 {
         public float Pitch;
         public float Roll;

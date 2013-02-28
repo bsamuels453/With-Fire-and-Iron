@@ -9,17 +9,15 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Gondola.UI.Components{
-    ///xxxx untested
     internal delegate void FadeStateChange(FadeComponent.FadeState state);
 
     /// <summary>
     ///   allows a UI element to be faded in and out. Required element to be IUIInteractiveComponent for certain settings.
     /// </summary>
-    internal class FadeComponent : IUIComponent{
-
+    internal class FadeComponent : IUIComponent, IAcceptMouseEntryEvent, IAcceptMouseExitEvent {
         #region FadeState enum
 
-        public enum FadeState{
+        public enum FadeState {
             InvalidState,
             Visible,
             Faded
@@ -29,7 +27,7 @@ namespace Gondola.UI.Components{
 
         #region FadeTrigger enum
 
-        public enum FadeTrigger{
+        public enum FadeTrigger {
             InvalidState,
             EntryExit,
             None
@@ -44,17 +42,18 @@ namespace Gondola.UI.Components{
         readonly FadeTrigger _fadeTrigger;
         readonly float _fadeoutOpacity;
         float _fadeDuration;
-        bool _isEnabled;
+        bool _Enabled;
         bool _isFadingOut;
         bool _isInTransition;
-        Button _owner;
+        IUIElement _owner;
+        ButtonEventDispatcher _ownerEventDispatcher;
         long _prevUpdateTimeIndex;
 
         #region properties
 
-        public float FadeDuration{
-            set{
-                if (_isInTransition){
+        public float FadeDuration {
+            set {
+                if (_isInTransition) {
                     throw new Exception("cannot set duration while a fade is in progress");
                 }
                 _fadeDuration = value;
@@ -62,17 +61,22 @@ namespace Gondola.UI.Components{
         }
 
 
-        public void ComponentCtor(Button owner){
+        public void ComponentCtor(IUIElement owner, ButtonEventDispatcher ownerEventDispatcher) {
             _owner = owner;
-            if (_defaultState == FadeState.Faded){
+            _ownerEventDispatcher = ownerEventDispatcher;
+            if (_defaultState == FadeState.Faded) {
                 _owner.Opacity = _fadeoutOpacity;
             }
-            switch (_fadeTrigger){
+            switch (_fadeTrigger) {
                 case FadeTrigger.EntryExit:
-                    if (!(_owner is Button)){
+
+
+                    if (!(_owner is IUIInteractiveElement)) {
                         throw new Exception("Invalid fade trigger: Unable to set an interactive trigger to a non-interactive element.");
                     }
 
+                    ownerEventDispatcher.OnMouseEntry.Add(this);
+                    ownerEventDispatcher.OnMouseExit.Add(this);
                     //((IUIInteractiveElement) _owner).OnLeftButtonRelease.Add(ConfirmFadeoutProc);what the fuck was this for
                     break;
 
@@ -81,15 +85,15 @@ namespace Gondola.UI.Components{
             }
         }
 
-        public bool IsEnabled{
-            get { return _isEnabled; }
-            set{
-                _isEnabled = value;
+        public bool Enabled {
+            get { return _Enabled; }
+            set {
+                _Enabled = value;
                 var state = Mouse.GetState();
-                if (_isEnabled){ //reset the timer
+                if (_Enabled) { //reset the timer
                     _prevUpdateTimeIndex = DateTime.Now.Ticks;
                     //because the mouse may have left the bounding box while this component was disabled
-                    if (!_owner.BoundingBox.Contains(state.X, state.Y)){
+                    if (!_owner.BoundingBox.Contains(state.X, state.Y)) {
                         ForceFadeout();
                     }
                 }
@@ -105,75 +109,72 @@ namespace Gondola.UI.Components{
         /// <param name="fadeoutOpacity"> opacity level to fade out to. range 0-1f </param>
         /// <param name="fadeDuration"> the time it takes for sprite to fade out in milliseconds </param>
         /// <param name="identifier"> </param>
-        public FadeComponent(FadeState defaultState, FadeTrigger trigger = DefaultTrigger, float fadeoutOpacity = DefaultFadeoutOpacity, float fadeDuration = DefaultFadeDuration, string identifier = ""){
+        public FadeComponent(FadeState defaultState, FadeTrigger trigger = DefaultTrigger, float fadeoutOpacity = DefaultFadeoutOpacity, float fadeDuration = DefaultFadeDuration, string identifier = "") {
             _fadeoutOpacity = fadeoutOpacity;
-            _fadeDuration = fadeDuration*10000; //10k ticks in a millisecond
+            _fadeDuration = fadeDuration * 10000; //10k ticks in a millisecond
             _isInTransition = false;
             _isFadingOut = false;
             _prevUpdateTimeIndex = DateTime.Now.Ticks;
             _defaultState = defaultState;
             _fadeTrigger = trigger;
-            _isEnabled = true;
+            _Enabled = true;
             Identifier = identifier;
         }
 
+        #region IAcceptMouseEntryEvent Members
+
+        public void OnMouseEntry(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
+            UIElementCollection.Collection.DisableEntryHandlers = true;
+            if (Enabled) {
+                _isInTransition = true;
+                _isFadingOut = false;
+                if (FadeStateChangeDispatcher != null) {
+                    FadeStateChangeDispatcher(FadeState.Visible);
+                }
+            }
+        }
+
+        #endregion
+
+        #region IAcceptMouseExitEvent Members
+
+        public void OnMouseExit(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
+            UIElementCollection.Collection.DisableEntryHandlers = false;
+            if (Enabled) {
+                _isInTransition = true;
+                _isFadingOut = true;
+                if (FadeStateChangeDispatcher != null) {
+                    FadeStateChangeDispatcher(FadeState.Faded);
+                }
+            }
+        }
+
+        #endregion
+
         #region IUIComponent Members
 
-        public void Update(InputState state, double timeDelta) {
-            if (IsEnabled){
-                if (_fadeTrigger == FadeTrigger.EntryExit){
-                    //mouse entry
-                    if (state.AllowMouseMovementInterpretation &&
-                        _owner.ContainsMouse &&
-                        !_owner.ContainedMousePrevisly){
-
-                        _isInTransition = true;
-                        _isFadingOut = false;
-                        if (FadeStateChangeDispatcher != null){
-                            FadeStateChangeDispatcher(FadeState.Visible);
-                        }
-                    }
-
-                    //mouse exit
-                    if (state.AllowMouseMovementInterpretation &&
-                        !_owner.ContainsMouse &&
-                        _owner.ContainedMousePrevisly){
-
-                        _isInTransition = true;
-                        _isFadingOut = true;
-                        if (FadeStateChangeDispatcher != null){
-                            FadeStateChangeDispatcher(FadeState.Faded);
-                        }
-                    }
-                }
-
-
-                //now update any fade tweens that are running
-                if (_isInTransition){
+        public void Update() {
+            if (Enabled) {
+                if (_isInTransition) {
                     long timeSinceLastUpdate = DateTime.Now.Ticks - _prevUpdateTimeIndex;
-                    float step = timeSinceLastUpdate/_fadeDuration;
-                    if (_isFadingOut){
+                    float step = timeSinceLastUpdate / _fadeDuration;
+                    if (_isFadingOut) {
                         _owner.Opacity -= step;
-                        if (_owner.Opacity < _fadeoutOpacity){
+                        if (_owner.Opacity < _fadeoutOpacity) {
                             _owner.Opacity = _fadeoutOpacity;
                             _isInTransition = false;
                         }
                     }
-                    else{
+                    else {
                         _owner.Opacity += step;
-                        if (_owner.Opacity > 1){
+                        if (_owner.Opacity > 1) {
                             _owner.Opacity = 1;
                             _isInTransition = false;
                         }
                     }
                 }
-                //xxx change this to time delta
                 _prevUpdateTimeIndex = DateTime.Now.Ticks;
             }
-        }
-
-        public void Draw(){
-            
         }
 
         public string Identifier { get; private set; }
@@ -182,23 +183,23 @@ namespace Gondola.UI.Components{
 
         #region modification methods
 
-        public void ForceFadeout(){
-            ////UIElementCollection.Collection.DisableEntryHandlers = false;
-            if (IsEnabled){
+        public void ForceFadeout() {
+            UIElementCollection.Collection.DisableEntryHandlers = false;
+            if (Enabled) {
                 _isInTransition = true;
                 _isFadingOut = true;
-                if (FadeStateChangeDispatcher != null){
+                if (FadeStateChangeDispatcher != null) {
                     FadeStateChangeDispatcher(FadeState.Faded);
                 }
             }
         }
 
-        public void ForceFadein(){
-            ////UIElementCollection.Collection.DisableEntryHandlers = true;
-            if (IsEnabled){
+        public void ForceFadein() {
+            UIElementCollection.Collection.DisableEntryHandlers = true;
+            if (Enabled) {
                 _isInTransition = true;
                 _isFadingOut = false;
-                if (FadeStateChangeDispatcher != null){
+                if (FadeStateChangeDispatcher != null) {
                     FadeStateChangeDispatcher(FadeState.Visible);
                 }
             }
@@ -214,16 +215,16 @@ namespace Gondola.UI.Components{
         /// <param name="element1"> </param>
         /// <param name="element2"> </param>
         /// <param name="state"> </param>
-        public static void LinkFadeComponentTriggers(Button element1, Button element2, FadeTrigger state){
-            switch (state){
+        public static void LinkFadeComponentTriggers(IUIElement element1, IUIElement element2, FadeTrigger state) {
+            switch (state) {
                 case FadeTrigger.EntryExit:
                     //first we check both elements to make sure they are both interactive. This check is specific for triggers that are interactive
-                    if (!(element1 is Button) || !(element2 is Button)){
+                    if (!(element1 is IUIInteractiveElement) || !(element2 is IUIInteractiveElement)) {
                         throw new Exception("Unable to link interactive element fade triggers; one of the elements is not interactive");
                     }
                     //cast to interactive
-                    var e1 = element1;
-                    var e2 = element2;
+                    var e1 = (IUIInteractiveElement)element1;
+                    var e2 = (IUIInteractiveElement)element2;
 
                     e1.GetComponent<FadeComponent>().AddRecievingFadeComponent(
                         e2.GetComponent<FadeComponent>()
@@ -237,10 +238,9 @@ namespace Gondola.UI.Components{
             }
         }
 
-        public void AddRecievingFadeComponent(FadeComponent component){
-            //_ownerEventDispatcher.OnMouseEntry.Add(component);
-            //_ownerEventDispatcher.OnMouseExit.Add(component);
-            throw new NotImplementedException();
+        public void AddRecievingFadeComponent(FadeComponent component) {
+            _ownerEventDispatcher.OnMouseEntry.Add(component);
+            _ownerEventDispatcher.OnMouseExit.Add(component);
         }
 
         /// <summary>
@@ -249,14 +249,14 @@ namespace Gondola.UI.Components{
         /// <param name="eventProcElement"> The element whose events will proc the recieving element's fade. </param>
         /// <param name="eventRecieveElement"> The recieving element. </param>
         /// <param name="state"> </param>
-        public static void LinkOnewayFadeComponentTriggers(Button eventProcElement, Button eventRecieveElement, FadeTrigger state){
-            switch (state){
+        public static void LinkOnewayFadeComponentTriggers(IUIElement eventProcElement, IUIElement eventRecieveElement, FadeTrigger state) {
+            switch (state) {
                 case FadeTrigger.EntryExit:
-                    if (!(eventProcElement is Button)){
+                    if (!(eventProcElement is IUIInteractiveElement)) {
                         throw new Exception("Unable to link interactive element fade triggers; the event proc element is not interactive.");
                     }
                     //cast to interactive
-                    var e1 = eventProcElement;
+                    var e1 = (IUIInteractiveElement)eventProcElement;
 
 
                     e1.GetComponent<FadeComponent>().AddRecievingFadeComponent(
@@ -273,15 +273,15 @@ namespace Gondola.UI.Components{
         /// <param name="eventProcElements"> The list of elements whose events will proc the recieving element's fade. </param>
         /// <param name="eventRecieveElements"> The recieving elements. </param>
         /// <param name="state"> </param>
-        public static void LinkOnewayFadeComponentTriggers(Button[] eventProcElements, Button[] eventRecieveElements, FadeTrigger state){
-            switch (state){
+        public static void LinkOnewayFadeComponentTriggers(IUIElement[] eventProcElements, IUIElement[] eventRecieveElements, FadeTrigger state) {
+            switch (state) {
                 case FadeTrigger.EntryExit:
-                    foreach (var pElement in eventProcElements){
-                        if (!(pElement is Button)){
+                    foreach (var pElement in eventProcElements) {
+                        if (!(pElement is IUIInteractiveElement)) {
                             throw new Exception("Unable to link interactive element fade triggers; the event proc element is not interactive.");
                         }
-                        foreach (var eElement in eventRecieveElements){
-                            var procElement = pElement;
+                        foreach (var eElement in eventRecieveElements) {
+                            var procElement = (IUIInteractiveElement)pElement;
 
                             procElement.GetComponent<FadeComponent>().AddRecievingFadeComponent(
                                 eElement.GetComponent<FadeComponent>()
@@ -297,7 +297,7 @@ namespace Gondola.UI.Components{
 
         public event FadeStateChange FadeStateChangeDispatcher;
 
-        public static FadeComponent ConstructFromObject(JObject obj, string identifier){
+        public static FadeComponent ConstructFromObject(JObject obj, string identifier) {
             var ctorData = obj.ToObject<FadeComponentCtorData>();
 
             if (ctorData.DefaultState == FadeState.InvalidState) //trivial: why no default state for this?
@@ -315,13 +315,13 @@ namespace Gondola.UI.Components{
 
 
             if (ctorData.FadedOpacity != null)
-                fadeOpacity = (float) ctorData.FadedOpacity;
+                fadeOpacity = (float)ctorData.FadedOpacity;
             else
                 fadeOpacity = DefaultFadeoutOpacity;
 
 
             if (ctorData.FadeDuration != null)
-                fadeDuration = (float) ctorData.FadeDuration;
+                fadeDuration = (float)ctorData.FadeDuration;
             else
                 fadeDuration = DefaultFadeDuration;
 
@@ -330,7 +330,7 @@ namespace Gondola.UI.Components{
 
         #region Nested type: FadeComponentCtorData
 
-        struct FadeComponentCtorData{
+        struct FadeComponentCtorData {
 #pragma warning disable 649
             public FadeState DefaultState;
             public FadeTrigger FadeTrigger;

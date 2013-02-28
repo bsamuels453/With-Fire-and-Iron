@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 
 #endregion
 
-namespace Gondola.Common{
+namespace Gondola.Util{
     /// <summary>
     ///   floating point-based rectangle. This exists to fix many of the quantization problems experienced in the ui namespace caused by screen coordinates being expressed as integers.
     /// </summary>

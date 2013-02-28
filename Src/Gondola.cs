@@ -1,8 +1,9 @@
 #region
 
 using Gondola.Draw;
+using Gondola.GameState;
+using Gondola.GameState.TerrainManager;
 using Gondola.Logic;
-using Gondola.Logic.GameState;
 using Microsoft.Xna.Framework;
 
 #endregion
@@ -10,8 +11,6 @@ using Microsoft.Xna.Framework;
 namespace Gondola{
     public class Gondola : Game{
         readonly GraphicsDeviceManager _graphics;
-        GamestateManager _gamestateManager;
-
         public Gondola(){
             Content.RootDirectory = "Content";
             _graphics = new GraphicsDeviceManager(this){
@@ -24,7 +23,7 @@ namespace Gondola{
         protected override void Initialize(){
             Gbl.Device = _graphics.GraphicsDevice;
             Gbl.ContentManager = Content;
-            Gbl.ScreenSize = new Point(1200, 800);
+            Gbl.ScreenSize = new ScreenSize(1200, 800);
 
             var aspectRatio = Gbl.Device.Viewport.Bounds.Width/(float) Gbl.Device.Viewport.Bounds.Height;
             Gbl.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
@@ -34,11 +33,10 @@ namespace Gondola{
                 farPlaneDistance: 50000
                 );
 
-            _gamestateManager = new GamestateManager();
-            _gamestateManager.AddGameState(new PlayerState(_gamestateManager, 
+            GamestateManager.AddGameState(new PlayerState(
                 new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
 
-            _gamestateManager.AddGameState(new TerrainManager(_gamestateManager));
+            GamestateManager.AddGameState(new TerrainManager());
 
             IsMouseVisible = true;
             base.Initialize();
@@ -52,14 +50,14 @@ namespace Gondola{
         }
 
         protected override void Update(GameTime gameTime){
-            _gamestateManager.Update();
+            GamestateManager.Update();
             base.Update(gameTime);
             //Exit();
         }
 
         protected override void Draw(GameTime gameTime){
             RenderTarget.BeginDraw();
-            _gamestateManager.Draw();
+            GamestateManager.Draw();
             RenderTarget.EndDraw();
             base.Draw(gameTime);
         }

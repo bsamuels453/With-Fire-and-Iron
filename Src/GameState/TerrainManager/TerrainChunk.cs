@@ -1,12 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
-using Gondola.Common;
 using Gondola.Draw;
-using Microsoft.Xna.Framework;
+using Gondola.Util;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gondola.Logic.Terrain {
+namespace Gondola.GameState.TerrainManager {
     class TerrainChunk : IDisposable{
         public XZPair Identifier;
 
