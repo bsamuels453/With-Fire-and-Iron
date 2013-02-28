@@ -3,9 +3,9 @@
   "ButtonSize": "64, 64",
   "BackgroundColor": "0, 0, 0, 0",
   "ButtonIcons": [
-    "UI_WallToolbarIcon",
-    "UI_LadderBuildIcon",
-    "UI_UnboundButtonIcon"
+    "Icons/WallBuildIcon",
+    "Icons/LadderIcon",
+    "Icons/CrossIcon"
   ],
   "NumButtons": 3,
   "Orientation": "Vertical",
