@@ -12,14 +12,21 @@ namespace Gondola.Logic.GameState {
         readonly RenderTarget _renderTarget;
 
         public TerrainManager(GamestateManager mgr){
+            _renderTarget = new RenderTarget(0.0f);
+            _renderTarget.Bind();
             _loadedChunks = new List<TerrainChunk>();
             _manager = mgr;
             _generator = new TerrainGen();
-            var chunk = _generator.GenerateChunk(new XZPair(0, 0));
-            chunk.SetBufferData();
-            _loadedChunks.Add(chunk);
+            for (int x = 0; x < 3; x++){
+                for (int z = 0; z < 3; z++){
+                    var chunk = _generator.GenerateChunk(new XZPair(x, z));
+                    chunk.SetBufferData();
+                    _loadedChunks.Add(chunk);
+                }
+            }
 
-            _renderTarget = new RenderTarget(0.0f);
+
+            _renderTarget.Unbind();
         }
 
         public void Dispose(){
@@ -30,18 +37,16 @@ namespace Gondola.Logic.GameState {
         }
 
         public void Update(InputState state, double timeDelta){
+            _renderTarget.Bind();
             var playerPos = (Vector3)_manager.QuerySharedData(SharedStateData.PlayerPosition);
+            _renderTarget.Unbind();
         }
 
         public void Draw(){
-            _renderTarget.Bind();
             var playerPos = (Vector3)_manager.QuerySharedData(SharedStateData.PlayerPosition);
             var playerLook = (Angle3)_manager.QuerySharedData(SharedStateData.PlayerLook);
             var matrix = RenderHelper.CalculateViewMatrix(playerPos, playerLook);
-            foreach (var chunk in _loadedChunks){
-                chunk.Draw(matrix);
-            }
-            _renderTarget.Unbind();
+            _renderTarget.Draw(matrix, Color.Transparent);
         }
     }
 }

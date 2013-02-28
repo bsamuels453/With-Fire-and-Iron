@@ -59,15 +59,15 @@ namespace Gondola.Logic.Terrain{
             #region setup generator kernel
             bool loadFromSource = Gbl.HasRawHashChanged[Gbl.RawDir.Scripts];
             loadFromSource = true;
-            _chunkWidthInBlocks = Gbl.LoadContent<int>("TGen_ChunkWidthInBlocks");
+            _chunkWidthInBlocks = Gbl.LoadContent<int>("TerrainGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
-            _blockWidth = Gbl.LoadContent<int>("TGen_BlockWidthInMeters");
-            float lacunarity = Gbl.LoadContent<float>("TGen_Lacunarity");
-            float gain = Gbl.LoadContent<float>("TGen_Gain");
-            int octaves = Gbl.LoadContent<int>("TGen_Octaves");
-            float offset = Gbl.LoadContent<float>("TGen_Offset");
-            float hScale = Gbl.LoadContent<float>("TGen_HScale");
-            float vScale = Gbl.LoadContent<float>("TGen_VScale");
+            _blockWidth = Gbl.LoadContent<int>("TerrainGen_BlockWidthInMeters");
+            float lacunarity = Gbl.LoadContent<float>("TerrainGen_Lacunarity");
+            float gain = Gbl.LoadContent<float>("TerrainGen_Gain");
+            int octaves = Gbl.LoadContent<int>("TerrainGen_Octaves");
+            float offset = Gbl.LoadContent<float>("TerrainGen_Offset");
+            float hScale = Gbl.LoadContent<float>("TerrainGen_HScale");
+            float vScale = Gbl.LoadContent<float>("TerrainGen_VScale");
 
             _genConstants = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadOnly, 8);
             var genArr = new[]{
@@ -83,16 +83,16 @@ namespace Gondola.Logic.Terrain{
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
             if (loadFromSource){
-                _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_Generator"));
+                _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_Generator"));
 #if CPU_DEBUG
                 _generationPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\GenTerrain.cl", null, IntPtr.Zero); //use option -I + scriptDir for header search
 #else
                 _generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
 #endif
-                Gbl.SaveBinary(_generationPrgm.Binaries, "TGen_Generator");
+                Gbl.SaveBinary(_generationPrgm.Binaries, "TerrainGen_Generator");
             }
             else{
-                var binary = Gbl.LoadBinary("TGen_Generator");
+                var binary = Gbl.LoadBinary("TerrainGen_Generator");
                 _generationPrgm = new ComputeProgram(_context, binary, _devices);
                 _generationPrgm.Build(null, "", null, IntPtr.Zero);
             }
@@ -125,13 +125,13 @@ namespace Gondola.Logic.Terrain{
             #region setup quadtree kernel
 
             if (loadFromSource){
-                _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_QTree"));
+                _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_QTree"));
 #if CPU_DEBUG
                 _qTreePrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\Quadtree.cl", null, IntPtr.Zero);
 #else
                 _qTreePrgm.Build(null, "", null, IntPtr.Zero);
 #endif
-                Gbl.SaveBinary(_qTreePrgm.Binaries, "TGen_QTree");
+                Gbl.SaveBinary(_qTreePrgm.Binaries, "TerrainGen_QTree");
             }
             else{
                 var binary = Gbl.LoadBinary("TGen_QTree");
@@ -168,16 +168,16 @@ namespace Gondola.Logic.Terrain{
             #region setup winding kernel
 
             if (loadFromSource){
-                _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TGen_VertexWinder"));
+                _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_VertexWinder"));
 #if CPU_DEBUG
                 _winderPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\VertexWinder.cl", null, IntPtr.Zero);
 #else
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
 #endif
-                Gbl.SaveBinary(_winderPrgm.Binaries, "TGen_VertexWinder");
+                Gbl.SaveBinary(_winderPrgm.Binaries, "TerrainGen_VertexWinder");
             }
             else{
-                var binary = Gbl.LoadBinary("TGen_VertexWinder");
+                var binary = Gbl.LoadBinary("TerrainGen_VertexWinder");
                 _winderPrgm = new ComputeProgram(_context, binary, _devices);
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
             }

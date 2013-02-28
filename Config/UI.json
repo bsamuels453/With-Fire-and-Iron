@@ -1,8 +1,0 @@
-{
-	"InternalAbbreviation": "UI",
-
-	"TestTexture" : "Temp/bigbox",
-	"ButtonHighlightTex": "Effects/highlighteffect",
-	"SpriteFont" : "Fonts/SpriteFont",
-	"black": "Effects/blackhighlight"
-}

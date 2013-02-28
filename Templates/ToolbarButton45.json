@@ -1,17 +1,17 @@
 {
   "Components": {
 	"HighlightComponent_HoverMask":{
-      "HighlightTexture": "UI_ButtonHighlightTex",
+      "HighlightTexture": "UI_Effects/SolidYellow",
 	  "HighlightTrigger": "MouseEntryExit",
 	  "HighlightTexOpacity": 0.3
 	},
 	"HighlightComponent_ClickEffect":{
-      "HighlightTexture": "UI_black",
+      "HighlightTexture": "UI_Effects/SolidBlack",
 	  "HighlightTrigger": "MousePressRelease",
 	  "HighlightTexOpacity": 0.7
 	},
 	"HighlightComponent_ClickHoldEffect":{
-      "HighlightTexture": "UI_black",
+      "HighlightTexture": "UI_Effects/SolidBlack",
 	  "HighlightTrigger": "None",
 	  "HighlightTexOpacity": 0.7
 	}

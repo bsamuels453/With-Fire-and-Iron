@@ -205,7 +205,7 @@ namespace Gondola.UI{
             get { return _isEnabled; }
             set{
                 _isEnabled = value;
-                _sprite.IsEnabled = value;
+                _sprite.Enabled = value;
                 foreach (var component in Components){
                     component.IsEnabled = value;
                 }
@@ -237,7 +237,7 @@ namespace Gondola.UI{
 
             _centPosition = new Vector2();
             _boundingBox = new FloatingRectangle(x, y, width, height);
-            _sprite = new Sprite2D(target, textureName, x, y, width, height, 1, spriteTexRepeatX, spriteTexRepeatY);
+            _sprite = new Sprite2D(textureName, x, y, width, height, 1, spriteTexRepeatX, spriteTexRepeatY);
 
             _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
             _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;

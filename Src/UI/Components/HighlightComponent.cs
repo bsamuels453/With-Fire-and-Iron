@@ -45,7 +45,7 @@ namespace Gondola.UI.Components{
             get { return _isEnabled; }
             set{
                 _isEnabled = value;
-                _highlightSprite.IsEnabled = value;
+                _highlightSprite.Enabled = value;
             }
         }
 
@@ -59,7 +59,7 @@ namespace Gondola.UI.Components{
             }
 
             //create sprite
-            _highlightSprite = new Sprite2D(_owner.RenderTarget, _highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, 0);
+            _highlightSprite = new Sprite2D(_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, 0);
         }
 
         public void Update(InputState state, double timeDelta){
