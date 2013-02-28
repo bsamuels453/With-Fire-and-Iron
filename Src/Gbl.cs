@@ -161,18 +161,18 @@ namespace Gondola {
 
         }
 
-        public static T LoadContent<T>(string str) {
+        public static T LoadContent<T>(string str){
             string objValue = "";
-            try {
+            try{
                 objValue = RawLookup[str];
                 return ContentManager.Load<T>(objValue);
             }
-            catch (Exception e) {
+            catch{
                 T obj;
-                try {
+                try{
                     obj = JsonConvert.DeserializeObject<T>(objValue);
                 }
-                catch (Exception ee) {
+                catch{
                     obj = VectorParser.Parse<T>(objValue);
                 }
                 return obj;
@@ -203,7 +203,10 @@ namespace Gondola {
 
             for (int i = 0; i < configs.Count; i++) {
                 if (configs[i] == "Shader") {
-                    effect = LoadContent<Effect>(configValues[i]).Clone();
+                    effect = ContentManager.Load<Effect>(configValues[i]).Clone();
+                    if (effect == null){
+                        throw new Exception("Shader not found");
+                    }
                     break;
                 }
             }
@@ -248,7 +251,7 @@ namespace Gondola {
                     if (name == "Shader")
                         continue;
                     //it's a string, and in the context of shader settings, strings always coorespond with texture names
-                    var texture = LoadContent<Texture2D>(configVal);
+                    var texture = ContentManager.Load<Texture2D > (configVal);
                     effect.Parameters[name].SetValue(texture);
                     continue;
                 }

@@ -1,0 +1,4 @@
+{
+	"InternalAbbreviation": "Shader_Wireframe",	
+	"Shader": "HLSL/WireframeEffect"
+}

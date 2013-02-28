@@ -2,16 +2,16 @@
 	"InternalAbbreviation": "Shader_Terrain",
 	"DiffuseLightDirection": "1,1,0",
 	"DiffuseIntensity": "1.0",
-	"AmbientIntensity": "0.4",
-	"GrassTexture": "TRend_GrassTexture",
-	"DirtTexture": "TRend_DirtTexture",
-	"RockTexture": "TRend_RockTexture",
-	"IceTexture": "TRend_IceTexture",
-	"TreeTexture": "TRend_TreeTexture",
-	"TreeBumpTexture": "TRend_TreeTexNormalMap",
-	"RockBumpTexture": "TRend_RockTexNormalMap",
-	"SnowBumpTexture": "TRend_SnowTexNormalMap",
+	"AmbientIntensity": "0.3",
+	"AmbientColor": "1,1,1,1",
+	"GrassTexture": "Materials/Grass",
+	"DirtTexture": "Materials/Dirt",
+	"RockTexture": "Materials/Rock",
+	"IceTexture": "Materials/Ice",
+	"TreeTexture": "Materials/Trees",
+	"TreeBumpTexture": "Materials/TreeNormals",
+	"RockBumpTexture": "Materials/RockNormals",
+	"SnowBumpTexture": "Materials/SnowNormals",
 	"TextureScalingFactor": "64",
-	
-	"Shader": "TRend_Shader"
+	"Shader": "HLSL/TerrainEffect"
 }

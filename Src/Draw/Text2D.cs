@@ -14,11 +14,16 @@ namespace Gondola.Draw{
 
         public Color Color;
 
-        public Text2D(int x, int y, string str, string font = "UI_SpriteFont"){
+        public Text2D(int x, int y, string str, string font = "Fonts/SpriteFont"){
             Position = new Vector2(x, y);
             Str = str;
             Color = Color.Black;
-            _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
+            try {
+                _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
+            }
+            catch{
+                _font = Gbl.ContentManager.Load<SpriteFont>(font);
+            }
             RenderTarget.Sprites.Add(this);
         }
 

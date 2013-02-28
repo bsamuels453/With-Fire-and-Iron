@@ -201,8 +201,7 @@
     <PostBuildEvent>xcopy /s /y $(SolutionDir)\Config $(SolutionDir)\bin\Config
 xcopy /s /y $(SolutionDir)\Data $(SolutionDir)\bin\Data
 xcopy /s /y $(SolutionDir)\Templates $(SolutionDir)\bin\Templates
-xcopy /s /y $(SolutionDir)\Scripts $(SolutionDir)\bin\Scripts
-xcopy /s /y $(SolutionDir)\Shaders $(SolutionDir)\Content\HLSL</PostBuildEvent>
+xcopy /s /y $(SolutionDir)\Scripts $(SolutionDir)\bin\Scripts</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

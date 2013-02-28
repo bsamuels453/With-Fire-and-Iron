@@ -1,17 +1,17 @@
 {
-	"InternalAbbreviation": "TGen",
+	"InternalAbbreviation": "TerrainGen",
 	
-	"BlockWidthInMeters":   10,
-	"ChunkWidthInBlocks":   128,
-	"WorldWidthInChunks":   4,
+	"BlockWidthInMeters":   "10",
+	"ChunkWidthInBlocks":   "128",
+	"WorldWidthInChunks":   "4",
 	
 	"Generator":            "Scripts\\GenTerrain.cl",
 	"QTree":                "Scripts\\QuadTree.cl",
 	"VertexWinder":         "Scripts\\VertexWinder.cl",
-	"Lacunarity":           1.8,
-	"Gain":                 0.5,
-	"Octaves":              4,
-	"Offset":               1,
-	"HScale":               0.005,
-	"VScale":               1200
+	"Lacunarity":           "1.8",
+	"Gain":                 "0.5",
+	"Octaves":              "4",
+	"Offset":               "1",
+	"HScale":               "0.005",
+	"VScale":               "1200"
 }
