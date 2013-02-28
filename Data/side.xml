@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Data>
+  <NumControllers>3</NumControllers>
+  <Handle0>
+    <PosX>0</PosX>
+    <PosY>0</PosY>
+    <Angle>-2.615762</Angle>
+    <PrevLength>5</PrevLength>
+    <NextLength>9.572803</NextLength>
+  </Handle0>
+  <Handle1>
+    <PosX>36.25</PosX>
+    <PosY>7.250177</PosY>
+    <Angle>3.141592</Angle>
+    <PrevLength>25.5</PrevLength>
+    <NextLength>11.1</NextLength>
+  </Handle1>
+  <Handle2>
+    <PosX>50.00001</PosX>
+    <PosY>0</PosY>
+    <Angle>1.602275</Angle>
+    <PrevLength>4.885468</PrevLength>
+    <NextLength>5</NextLength>
+  </Handle2>
+</Data>

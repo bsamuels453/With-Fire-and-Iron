@@ -8,13 +8,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Cloo;
-using Gondola.Common;
+using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
-namespace Gondola.Logic.Terrain{
+namespace Gondola.GameState.TerrainManager{
     internal class TerrainGen{
         readonly ComputeBuffer<byte> _activeVerts;
         readonly ComputeBuffer<byte> _binormals;

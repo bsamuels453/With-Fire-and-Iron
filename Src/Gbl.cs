@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
-using Gondola.Common;
+using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,7 +22,7 @@ namespace Gondola {
         public static ContentManager ContentManager;
         public static Dictionary<string, string> RawLookup;
         public static Matrix ProjectionMatrix;
-        public static Point ScreenSize;
+        public static ScreenSize ScreenSize;
 
         /// <summary>
         /// whenever the md5 doesn't match up to the new one, the value of RawDir in the following structure is set to true
@@ -163,6 +163,10 @@ namespace Gondola {
 
         public static T LoadContent<T>(string str){
             string objValue = "";
+            if(str.Contains('/')){
+                return ContentManager.Load<T>(str);
+            }
+
             try{
                 objValue = RawLookup[str];
                 return ContentManager.Load<T>(objValue);
@@ -299,6 +303,29 @@ namespace Gondola {
                 }
             }
             return curDir + "\\" + directory;
+        }
+    }
+
+    internal struct ScreenSize{
+        public int X;
+        public int Y;
+
+        public ScreenSize(int x, int y){
+            X = x;
+            Y = y;
+        }
+
+        public void GetScreenValue(float percentX, float percentY, ref int x, ref int y) {
+            x = (int)(X * percentX);
+            y = (int)(Y * percentY);
+        }
+
+        public int GetScreenValueX(float percentX) {
+            return (int)(X * percentX);
+        }
+
+        public int GetScreenValueY(float percentY) {
+            return (int)(Y * percentY);
         }
     }
 }

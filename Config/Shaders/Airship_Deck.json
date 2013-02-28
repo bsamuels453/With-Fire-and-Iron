@@ -3,6 +3,6 @@
 	"DiffuseLightDirection": "0,1,0",
 	"DiffuseIntensity": "1",
 	"AmbientIntensity": "1",
-	"Texture": "UI_DoodadEditorFloorTex",
-	"Shader": "Shader_StandardEffect"
+	"Texture": "Materials/BrownBox",
+	"Shader": "HLSL/StandardEffect"
 }

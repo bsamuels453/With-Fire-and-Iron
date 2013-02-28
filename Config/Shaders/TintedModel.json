@@ -1,0 +1,5 @@
+{
+	"InternalAbbreviation": "Shader_TintedModel",
+	"TintColor": "0.4,0.4,0.4,1",
+	"Shader": "HLSL/TintedModel"
+}

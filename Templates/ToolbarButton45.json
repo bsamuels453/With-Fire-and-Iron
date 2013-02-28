@@ -1,17 +1,17 @@
 {
   "Components": {
 	"HighlightComponent_HoverMask":{
-      "HighlightTexture": "UI_Effects/SolidYellow",
+      "HighlightTexture": "Materials/SolidYellow",
 	  "HighlightTrigger": "MouseEntryExit",
 	  "HighlightTexOpacity": 0.3
 	},
 	"HighlightComponent_ClickEffect":{
-      "HighlightTexture": "UI_Effects/SolidBlack",
+      "HighlightTexture": "Materials/SolidBlack",
 	  "HighlightTrigger": "MousePressRelease",
 	  "HighlightTexOpacity": 0.7
 	},
 	"HighlightComponent_ClickHoldEffect":{
-      "HighlightTexture": "UI_Effects/SolidBlack",
+      "HighlightTexture": "Materials/SolidBlack",
 	  "HighlightTrigger": "None",
 	  "HighlightTexOpacity": 0.7
 	}
@@ -22,5 +22,5 @@
   "Identifier": 0,
   "SpriteTexRepeatX": 1,
   "SpriteTexRepeatY": 1,
-  "TextureName": "UI_UnboundButtonIcon"
+  "TextureName": "Icons/CrossIcon"
 }

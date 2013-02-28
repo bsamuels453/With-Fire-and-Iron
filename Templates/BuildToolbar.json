@@ -3,8 +3,8 @@
   "ButtonSize": "45, 45",
   "BackgroundColor": "0, 0, 0, 0",
   "ButtonIcons": [
-    "UI_WallBuildIcon",
-    "UI_WallDeleteIcon"
+    "Icons/WallBuildIcon",
+    "Icons/WallDeleteIcon"
   ],
   "NumButtons": 2,
   "Orientation": "Vertical",

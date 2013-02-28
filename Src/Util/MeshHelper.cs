@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
-namespace Gondola.Common {
+namespace Gondola.Util {
     /// <summary>
     ///   helper class for use with rectangular meshes
     /// </summary>
@@ -75,6 +75,14 @@ namespace Gondola.Common {
             return verticies;
         }
 
+        public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, Vector3[][] list) {
+            for (int x = 0; x < meshWidth; x++) {
+                for (int y = 0; y < meshHeight; y++) {
+                    mesh[x, y] = list[x][y];
+                }
+            }
+        }
+
         public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, List<List<Vector3>> list) {
             for (int x = 0; x < meshWidth; x++) {
                 for (int y = 0; y < meshHeight; y++) {
@@ -83,8 +91,7 @@ namespace Gondola.Common {
             }
         }
 
-        public static Vector3[,] GenerateMeshNormals(Vector3[,] mesh) {
-            var normals = new Vector3[mesh.GetLength(0), mesh.GetLength(1)];
+        public static void GenerateMeshNormals(Vector3[,] mesh, ref Vector3[,] normals) {
             for (int vertX = 0; vertX < mesh.GetLength(0) - 1; vertX++) {
                 for (int vertZ = 0; vertZ < mesh.GetLength(1) - 1; vertZ++) {
                     var crossSum = new Vector3();
@@ -118,31 +125,28 @@ namespace Gondola.Common {
                     normals[vertX, vertZ].Normalize();
                 }
             }
-            return normals;
         }
 
-        public static VertexPositionNormalTexture[] ConvertMeshToVertList(Vector3[,] mesh, Vector3[,] normals) {
-            var vertLi = new VertexPositionNormalTexture[(mesh.GetLength(0) - 1) * (mesh.GetLength(1) - 1) * 4];
+        public static void ConvertMeshToVertList(Vector3[,] mesh, Vector3[,] normals, ref VertexPositionNormalTexture[] verticies) {
             //convert from 2d array to 1d
             int index = 0;
             for (int x = 0; x < mesh.GetLength(0) - 1; x++) {
                 for (int z = 0; z < mesh.GetLength(1) - 1; z++) {
-                    vertLi[index].Position = mesh[x, z];
-                    vertLi[index].Normal = normals[x, z];
+                    verticies[index].Position = mesh[x, z];
+                    verticies[index].Normal = normals[x, z];
 
-                    vertLi[index + 1].Position = mesh[x, z + 1];
-                    vertLi[index + 1].Normal = normals[x, z + 1];
+                    verticies[index + 1].Position = mesh[x, z + 1];
+                    verticies[index + 1].Normal = normals[x, z + 1];
 
-                    vertLi[index + 2].Position = mesh[x + 1, z + 1];
-                    vertLi[index + 2].Normal = normals[x + 1, z + 1];
+                    verticies[index + 2].Position = mesh[x + 1, z + 1];
+                    verticies[index + 2].Normal = normals[x + 1, z + 1];
 
-                    vertLi[index + 3].Position = mesh[x + 1, z];
-                    vertLi[index + 3].Normal = normals[x + 1, z];
+                    verticies[index + 3].Position = mesh[x + 1, z];
+                    verticies[index + 3].Normal = normals[x + 1, z];
 
                     index += 4;
                 }
             }
-            return vertLi;
         }
         /// <summary>
         /// warning: cache thrashes

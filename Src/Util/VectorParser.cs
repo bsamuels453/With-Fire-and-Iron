@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
 
-namespace Gondola.Common {
+namespace Gondola.Util {
     /// <summary>
     /// this helper class serves as a base to parse values that json is known to fuck up deserializing
     /// </summary>

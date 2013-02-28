@@ -1,16 +1,16 @@
 ﻿#region
 
 using System;
-using Gondola.Common;
 using Gondola.Draw;
+using Gondola.Logic;
+using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 #endregion
 
-namespace Gondola.Logic.GameState{
+namespace Gondola.GameState{
     internal class PlayerState : IGameState{
-        readonly GamestateManager _manager;
         readonly RenderTarget _renderTarget;
         Angle3 _playerLookDir;
         Vector3 _playerPosition;
@@ -22,14 +22,13 @@ namespace Gondola.Logic.GameState{
         readonly Point _viewportSize;
         bool _skipNextMouseUpdate;
 
-        public PlayerState(GamestateManager mgr, Point viewportSize) {
+        public PlayerState(Point viewportSize) {
             _renderTarget = new RenderTarget(0f);
-            _manager = mgr;
             _viewportSize = viewportSize;
             _playerPosition = new Vector3(348, 1705, -192);
             _playerLookDir = new Angle3(-1.2f, 0, -10.004f);//xxxxx this value gets ~2 added to it somehow
-            _manager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
-            _manager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
+            GamestateManager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
+            GamestateManager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
             _skipNextMouseUpdate = false;
 
             _renderTarget.Bind();
@@ -49,8 +48,8 @@ namespace Gondola.Logic.GameState{
         #region IGameState Members
 
         public void Dispose(){
-            _manager.DeleteSharedData(SharedStateData.PlayerPosition);
-            _manager.DeleteSharedData(SharedStateData.PlayerLook);
+            GamestateManager.DeleteSharedData(SharedStateData.PlayerPosition);
+            GamestateManager.DeleteSharedData(SharedStateData.PlayerLook);
         }
 
         public void Update(InputState state, double timeDelta) {
@@ -132,8 +131,8 @@ namespace Gondola.Logic.GameState{
 
             #endregion
 
-            _manager.ModifySharedData(SharedStateData.PlayerPosition, _playerPosition);
-            _manager.ModifySharedData(SharedStateData.PlayerLook, _playerLookDir);
+            GamestateManager.ModifySharedData(SharedStateData.PlayerPosition, _playerPosition);
+            GamestateManager.ModifySharedData(SharedStateData.PlayerLook, _playerLookDir);
             _renderTarget.Unbind();
         }
 

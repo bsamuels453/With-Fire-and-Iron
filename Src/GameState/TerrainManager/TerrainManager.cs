@@ -1,21 +1,19 @@
 ﻿using System.Collections.Generic;
-using Gondola.Common;
 using Gondola.Draw;
-using Gondola.Logic.Terrain;
+using Gondola.Logic;
+using Gondola.Util;
 using Microsoft.Xna.Framework;
 
-namespace Gondola.Logic.GameState {
+namespace Gondola.GameState.TerrainManager {
     class TerrainManager : IGameState {
-        readonly GamestateManager _manager;
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
         readonly RenderTarget _renderTarget;
 
-        public TerrainManager(GamestateManager mgr){
+        public TerrainManager(){
             _renderTarget = new RenderTarget(0.0f);
             _renderTarget.Bind();
             _loadedChunks = new List<TerrainChunk>();
-            _manager = mgr;
             _generator = new TerrainGen();
             for (int x = 0; x < 3; x++){
                 for (int z = 0; z < 3; z++){
@@ -38,13 +36,13 @@ namespace Gondola.Logic.GameState {
 
         public void Update(InputState state, double timeDelta){
             _renderTarget.Bind();
-            var playerPos = (Vector3)_manager.QuerySharedData(SharedStateData.PlayerPosition);
+            var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
             _renderTarget.Unbind();
         }
 
         public void Draw(){
-            var playerPos = (Vector3)_manager.QuerySharedData(SharedStateData.PlayerPosition);
-            var playerLook = (Angle3)_manager.QuerySharedData(SharedStateData.PlayerLook);
+            var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
+            var playerLook = (Angle3)GamestateManager.QuerySharedData(SharedStateData.PlayerLook);
             var matrix = RenderHelper.CalculateViewMatrix(playerPos, playerLook);
             _renderTarget.Draw(matrix, Color.Transparent);
         }

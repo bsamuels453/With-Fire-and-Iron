@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 
 #endregion
 
-namespace Gondola.Common{
+namespace Gondola.Util{
     /// <summary>
     ///   each XZpair cooresponds to an x and z value. SERIALIZABLE CLONEABLE
     /// </summary>

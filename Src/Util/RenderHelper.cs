@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
-namespace Gondola.Common {
+namespace Gondola.Util {
     static class RenderHelper {
         public static Matrix CalculateViewMatrix(Vector3 position, Angle3 lookDir){
             Matrix rotation = Matrix.CreateFromYawPitchRoll(lookDir.Yaw, -lookDir.Pitch, 0);
