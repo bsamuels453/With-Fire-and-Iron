@@ -14,7 +14,7 @@ using Newtonsoft.Json.Linq;
 
 #endregion
 
-namespace Gondola.Airship{
+namespace Gondola.GameState.Airship{
     internal static class AirshipPackager{
         const int _version = 0;
 
