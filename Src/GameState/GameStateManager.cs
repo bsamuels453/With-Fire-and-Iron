@@ -2,16 +2,37 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Gondola.Draw;
+using Gondola.Logic;
+using Gondola.Util;
+using Microsoft.Xna.Framework;
 
 #endregion
 
-namespace Gondola.Logic{
+namespace Gondola.GameState{
     internal static class GamestateManager{
         static readonly InputHandler _inputHandler;
 
         static readonly List<IGameState> _activeStates;
         static readonly Dictionary<SharedStateData, object> _sharedData;
+
+        static bool _useGlobalRenderTarget;
+        static RenderTarget _globalRenderTarget;
+
+        public static bool UseGlobalRenderTarget{
+            set {
+                if (value) {
+                    if (!_useGlobalRenderTarget) {
+                        _useGlobalRenderTarget = true;
+                        _globalRenderTarget = new RenderTarget();
+                        _globalRenderTarget.Bind();
+                    }
+                }
+                else{
+                    throw new Exception("not supported");
+                }
+            }
+        }
 
         static GamestateManager(){
             _activeStates = new List<IGameState>();
@@ -23,6 +44,9 @@ namespace Gondola.Logic{
             foreach (var state in _activeStates){
                 state.Dispose();
             }
+            _useGlobalRenderTarget = false;
+            _globalRenderTarget.Dispose();
+
             _sharedData.Clear();
             _activeStates.Clear();
         }
@@ -54,14 +78,28 @@ namespace Gondola.Logic{
 
         public static void Update() {
             _inputHandler.Update();
-            for(int i=0; i<_activeStates.Count; i++){
-                _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
+            if (_useGlobalRenderTarget){
+               // _globalRenderTarget.Bind();
+            }
+            for (int i = 0; i < _activeStates.Count; i++){
+                    _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
+                }
+            
+            if (_useGlobalRenderTarget){
+               // _globalRenderTarget.Unbind();
             }
         }
 
         public static void Draw() {
             foreach (var state in _activeStates){
                 state.Draw();
+            }
+
+            if (_useGlobalRenderTarget){
+                var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
+                var playerLook = (Angle3)GamestateManager.QuerySharedData(SharedStateData.PlayerLook);
+                var matrix = RenderHelper.CalculateViewMatrix(playerPos, playerLook);
+                _globalRenderTarget.Draw(matrix, Color.Transparent);
             }
         }
     }
