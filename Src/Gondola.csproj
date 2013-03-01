@@ -121,6 +121,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameState\Airship\AirshipManagerState.cs" />
     <Compile Include="GameState\Airship\AirshipPackager.cs" />
     <Compile Include="GameState\HullEditor\BezierCurve.cs" />
     <Compile Include="GameState\HullEditor\BezierCurveCollection.cs" />
@@ -169,8 +170,8 @@
     <Compile Include="Logic\SharedStateData.cs" />
     <Compile Include="GameState\TerrainManager\TerrainChunk.cs" />
     <Compile Include="GameState\TerrainManager\TerrainGen.cs" />
-    <Compile Include="Logic\GameStateManager.cs" />
-    <Compile Include="Logic\IGameState.cs" />
+    <Compile Include="GameState\GameStateManager.cs" />
+    <Compile Include="GameState\IGameState.cs" />
     <Compile Include="Logic\InputHandler.cs" />
     <Compile Include="Logic\InputState.cs" />
     <Compile Include="Logic\UpdateInterfaces.cs" />
