@@ -11,7 +11,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Gondola.GameState{
     internal class PlayerState : IGameState{
-        readonly RenderTarget _renderTarget;
         Angle3 _playerLookDir;
         Vector3 _playerPosition;
         readonly Text2D _x;
@@ -23,7 +22,6 @@ namespace Gondola.GameState{
         bool _skipNextMouseUpdate;
 
         public PlayerState(Point viewportSize) {
-            _renderTarget = new RenderTarget(0f);
             _viewportSize = viewportSize;
             _playerPosition = new Vector3(348, 1705, -192);
             _playerLookDir = new Angle3(-1.2f, 0, -10.004f);//xxxxx this value gets ~2 added to it somehow
@@ -31,7 +29,6 @@ namespace Gondola.GameState{
             GamestateManager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
             _skipNextMouseUpdate = false;
 
-            _renderTarget.Bind();
             _x = new Text2D(0, 0, "hi");
             _y = new Text2D(0, 10, "hi");
             _z = new Text2D(0, 20, "hi");
@@ -42,7 +39,6 @@ namespace Gondola.GameState{
             _z.Color = Color.Wheat;
             _pitch.Color = Color.Wheat;
             _yaw.Color = Color.Wheat;
-            _renderTarget.Unbind();
         }
 
         #region IGameState Members
@@ -53,7 +49,6 @@ namespace Gondola.GameState{
         }
 
         public void Update(InputState state, double timeDelta) {
-            _renderTarget.Bind();
             #region update player position
             var keyState = state.KeyboardState;
 
@@ -133,13 +128,9 @@ namespace Gondola.GameState{
 
             GamestateManager.ModifySharedData(SharedStateData.PlayerPosition, _playerPosition);
             GamestateManager.ModifySharedData(SharedStateData.PlayerLook, _playerLookDir);
-            _renderTarget.Unbind();
         }
 
         public void Draw(){
-            _renderTarget.Bind();
-
-            _renderTarget.Unbind();
         }
 
         #endregion

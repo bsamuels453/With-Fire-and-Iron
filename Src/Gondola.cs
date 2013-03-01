@@ -33,7 +33,7 @@ namespace Gondola{
                 nearPlaneDistance: 1,
                 farPlaneDistance: 50000
                 );
-
+            GamestateManager.UseGlobalRenderTarget = true;
             GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new TerrainManager());
             //GamestateManager.AddGameState(new HullEditor());

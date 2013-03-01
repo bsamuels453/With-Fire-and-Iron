@@ -13,11 +13,8 @@ namespace Gondola.GameState.TerrainManager {
     class TerrainManager : IGameState {
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
-        readonly RenderTarget _renderTarget;
-
         public TerrainManager(){
-            _renderTarget = new RenderTarget(0.0f);
-            _renderTarget.Bind();
+            GamestateManager.UseGlobalRenderTarget = true;
             _loadedChunks = new List<TerrainChunk>();
             /*
             _generator = new TerrainGen();
@@ -40,8 +37,8 @@ namespace Gondola.GameState.TerrainManager {
             }
              */
 
-            for (int x = 0; x < 3; x++){
-                for (int z = 0; z < 3; z++){
+            for (int x = 0; x < 2; x++){
+                for (int z = 0; z < 2; z++){
                     var sr = new StreamReader("chunk" + x + " " + z);
                     var jObj = JsonConvert.DeserializeObject<JObject>(sr.ReadToEnd());
                     var norms = jObj["Norms"].ToObject<ushort[]>();
@@ -62,7 +59,6 @@ namespace Gondola.GameState.TerrainManager {
                     _loadedChunks.Add(chunk);
                 }
             }
-            _renderTarget.Unbind();
         }
 
         public void Dispose(){
@@ -73,16 +69,11 @@ namespace Gondola.GameState.TerrainManager {
         }
 
         public void Update(InputState state, double timeDelta){
-            _renderTarget.Bind();
             var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
-            _renderTarget.Unbind();
         }
 
         public void Draw(){
-            var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
-            var playerLook = (Angle3)GamestateManager.QuerySharedData(SharedStateData.PlayerLook);
-            var matrix = RenderHelper.CalculateViewMatrix(playerPos, playerLook);
-            _renderTarget.Draw(matrix, Color.Transparent);
+
         }
     }
 }
