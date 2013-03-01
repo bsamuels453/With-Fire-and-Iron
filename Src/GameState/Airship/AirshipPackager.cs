@@ -239,13 +239,25 @@ namespace Gondola.GameState.Airship{
             ret.Decks = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
             ret.HullLayers = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
 
+            //offset the airship
+            foreach (var layer in hullVerts){
+                for (int i = 0; i < layer.Length; i++){
+                    layer[i].Position = new Vector3(0, 1000, 0) + layer[i].Position;
+                }
+            }
+            foreach (var layer in deckVerts) {
+                for (int i = 0; i < layer.Length; i++) {
+                    layer[i].Position = new Vector3(0, 1000, 0) + layer[i].Position;
+                }
+            }
+
             for (int i = 0; i < numDecks; i++){
-                ret.Decks[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length/2, "DeckFloor");
+                ret.Decks[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
                 ret.Decks[i].IndexBuffer.SetData(deckInds[i]);
                 ret.Decks[i].VertexBuffer.SetData(deckVerts[i]);
 
 
-                ret.HullLayers[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length/2, "DeckFloor");
+                ret.HullLayers[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
                 ret.HullLayers[i].IndexBuffer.SetData(hullInds[i]);
                 ret.HullLayers[i].VertexBuffer.SetData(hullVerts[i]);
             }
