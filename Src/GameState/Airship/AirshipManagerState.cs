@@ -14,8 +14,12 @@ namespace Gondola.GameState.Airship {
         Button[] _highlightMasks;
         Button _speedIndicator;
 
+        Button _deckUpButton;
+        Button _deckDownButton;
+
         public AirshipManagerState(){
             GamestateManager.UseGlobalRenderTarget = true;
+
             _airship = AirshipPackager.Import("Export.airship");
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
@@ -49,6 +53,17 @@ namespace Gondola.GameState.Airship {
                 _highlightMasks[i].Alpha = 0.65f;
             }
             _highlightMasks[3].Alpha = 0;
+
+            buttonGen = new ButtonGenerator("ToolbarButton32.json");
+            buttonGen.X = 0;
+            buttonGen.Y = 200;
+            buttonGen.TextureName = "Icons/UpArrow";
+            _deckUpButton = buttonGen.GenerateButton();
+            buttonGen.Y = 200 + 32;
+            buttonGen.TextureName = "Icons/DownArrow";
+            _deckDownButton = buttonGen.GenerateButton();
+            _deckUpButton.OnLeftClickDispatcher += _airship.AddVisibleLayer;
+            _deckDownButton.OnLeftClickDispatcher += _airship.RemoveVisibleLayer;
         }
 
         public void Update(InputState state, double timeDelta) {
