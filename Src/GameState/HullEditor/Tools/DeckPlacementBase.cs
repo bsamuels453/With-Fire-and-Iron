@@ -86,7 +86,7 @@ namespace Gondola.GameState.HullEditor.Tools {
                 var nearMouse = new Vector3(state.MousePos.X, state.MousePos.Y, 0);
                 var farMouse = new Vector3(state.MousePos.X, state.MousePos.Y, 1);
 
-                var camera = (BodyCenteredCamera)GamestateManager.Camera;
+                var camera = (BodyCenteredCamera)GamestateManager.CameraController;
 
                 var camPos = camera.CameraPosition;
                 var camTarg = camera.CameraTarget;

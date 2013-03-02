@@ -29,7 +29,7 @@ namespace Gondola.GameState.HullEditor {
                      Gbl.ScreenSize.GetScreenValueY(0.5f)
                      )
                      );
-            GamestateManager.Camera = _camera;
+            GamestateManager.CameraController = _camera;
 
             _renderTarget = new RenderTarget(
                 Gbl.ScreenSize.GetScreenValueX(0.5f),
