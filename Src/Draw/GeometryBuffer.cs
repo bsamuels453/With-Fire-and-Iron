@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Gondola.Draw {
     internal class GeometryBuffer<T> : BaseGeometryBuffer<T> where T : struct{
         Vector3 _rotation;
-        Vector3 _translation;
+        Vector3 _position;
 
         public Vector3 Rotation{
             get { return _rotation; }
@@ -19,12 +19,17 @@ namespace Gondola.Draw {
             }
         }
 
-        public Vector3 Translation{
-            get { return _translation; }
+        public Vector3 Position{
+            get { return _position; }
             set{
-                _translation = value;
+                _position = value;
                 UpdateWorldMatrix();
             }
+        }
+
+        public Matrix WorldMatrix{
+            get { return BaseWorldMatrix; }
+            set { BaseWorldMatrix = value; }
         }
 
         public GeometryBuffer(
@@ -37,7 +42,7 @@ namespace Gondola.Draw {
             )
             : base(numIndicies, numVerticies, numPrimitives, settingsFileName, primitiveType, cullMode){
             Rotation = new Vector3();
-            Translation = new Vector3();
+            Position = new Vector3();
 
         }
 
@@ -66,7 +71,7 @@ namespace Gondola.Draw {
         }
 
         public void Translate(Vector3 diff){
-            _translation += diff;
+            _position += diff;
             UpdateWorldMatrix();
         }
 
@@ -78,7 +83,7 @@ namespace Gondola.Draw {
         void UpdateWorldMatrix(){
             BaseWorldMatrix = Matrix.Identity;
             BaseWorldMatrix *= Matrix.CreateRotationX(Rotation.X)*Matrix.CreateRotationY(Rotation.Y)*Matrix.CreateRotationZ(Rotation.Z);
-            BaseWorldMatrix *= Matrix.CreateTranslation(Translation.X, Translation.Y, Translation.Z);
+            BaseWorldMatrix *= Matrix.CreateTranslation(Position.X, Position.Y, Position.Z);
         }
     }
 }
