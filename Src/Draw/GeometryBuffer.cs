@@ -7,9 +7,25 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Gondola.Draw {
-    internal class GeometryBuffer<T> : BaseGeometryBuffer<T> where T : struct {
-        public Vector3 Rotation{get; private set;}
-        public Vector3 Translation { get; private set; }
+    internal class GeometryBuffer<T> : BaseGeometryBuffer<T> where T : struct{
+        Vector3 _rotation;
+        Vector3 _translation;
+
+        public Vector3 Rotation{
+            get { return _rotation; }
+            set{
+                _rotation = value;
+                UpdateWorldMatrix();
+            }
+        }
+
+        public Vector3 Translation{
+            get { return _translation; }
+            set{
+                _translation = value;
+                UpdateWorldMatrix();
+            }
+        }
 
         public GeometryBuffer(
             int numIndicies,
@@ -19,49 +35,49 @@ namespace Gondola.Draw {
             PrimitiveType primitiveType = PrimitiveType.TriangleList,
             CullMode cullMode = CullMode.None
             )
-            : base(numIndicies, numVerticies, numPrimitives, settingsFileName, primitiveType, cullMode) {
-                Rotation = new Vector3();
-                Translation = new Vector3();
+            : base(numIndicies, numVerticies, numPrimitives, settingsFileName, primitiveType, cullMode){
+            Rotation = new Vector3();
+            Translation = new Vector3();
 
         }
 
-        public IndexBuffer IndexBuffer {
+        public IndexBuffer IndexBuffer{
             get { return base.BaseIndexBuffer; }
         }
 
-        public VertexBuffer VertexBuffer {
+        public VertexBuffer VertexBuffer{
             get { return base.BaseVertexBuffer; }
         }
 
-        public CullMode CullMode {
-            set { Rasterizer = new RasterizerState { CullMode = value }; }
+        public CullMode CullMode{
+            set { Rasterizer = new RasterizerState{CullMode = value}; }
         }
 
-        public T[] DumpVerticies() {
+        public T[] DumpVerticies(){
             T[] data = new T[BaseVertexBuffer.VertexCount];
             base.BaseVertexBuffer.GetData(data);
             return data;
         }
 
-        public int[] DumpIndicies() {
+        public int[] DumpIndicies(){
             int[] data = new int[BaseIndexBuffer.IndexCount];
             base.BaseIndexBuffer.GetData(data);
             return data;
         }
 
         public void Translate(Vector3 diff){
-            Translation += diff;
+            _translation += diff;
             UpdateWorldMatrix();
         }
 
-        public void Rotate(Angle3 diff) {
-            Rotation += diff.ToVec();
+        public void Rotate(Angle3 diff){
+            _rotation += diff.ToVec();
             UpdateWorldMatrix();
         }
 
         void UpdateWorldMatrix(){
             BaseWorldMatrix = Matrix.Identity;
-            BaseWorldMatrix *= Matrix.CreateRotationX(Rotation.X) * Matrix.CreateRotationY(Rotation.Y) * Matrix.CreateRotationZ(Rotation.Z);
+            BaseWorldMatrix *= Matrix.CreateRotationX(Rotation.X)*Matrix.CreateRotationY(Rotation.Y)*Matrix.CreateRotationZ(Rotation.Z);
             BaseWorldMatrix *= Matrix.CreateTranslation(Translation.X, Translation.Y, Translation.Z);
         }
     }
