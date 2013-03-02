@@ -8,8 +8,8 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Gondola.Draw {
     internal class GeometryBuffer<T> : BaseGeometryBuffer<T> where T : struct {
-        Vector3 _rotation;
-        Vector3 _translation;
+        public Vector3 Rotation{get; private set;}
+        public Vector3 Translation { get; private set; }
 
         public GeometryBuffer(
             int numIndicies,
@@ -20,8 +20,8 @@ namespace Gondola.Draw {
             CullMode cullMode = CullMode.None
             )
             : base(numIndicies, numVerticies, numPrimitives, settingsFileName, primitiveType, cullMode) {
-                _rotation = new Vector3();
-                _translation = new Vector3();
+                Rotation = new Vector3();
+                Translation = new Vector3();
 
         }
 
@@ -50,17 +50,19 @@ namespace Gondola.Draw {
         }
 
         public void Translate(Vector3 diff){
-            _translation += diff;
-            BaseWorldMatrix = Matrix.Identity;
-            BaseWorldMatrix *= Matrix.CreateRotationX(_rotation.X) * Matrix.CreateRotationY(_rotation.Y) * Matrix.CreateRotationZ(_rotation.Z);
-            BaseWorldMatrix *= Matrix.CreateTranslation(_translation.X, _translation.Y, _translation.Z);
+            Translation += diff;
+            UpdateWorldMatrix();
         }
 
         public void Rotate(Angle3 diff) {
-            _rotation += diff.ToVec();
+            Rotation += diff.ToVec();
+            UpdateWorldMatrix();
+        }
+
+        void UpdateWorldMatrix(){
             BaseWorldMatrix = Matrix.Identity;
-            BaseWorldMatrix *= Matrix.CreateRotationX(_rotation.X) * Matrix.CreateRotationY(_rotation.Y) * Matrix.CreateRotationZ(_rotation.Z);
-            BaseWorldMatrix *= Matrix.CreateTranslation(_translation.X, _translation.Y, _translation.Z);
+            BaseWorldMatrix *= Matrix.CreateRotationX(Rotation.X) * Matrix.CreateRotationY(Rotation.Y) * Matrix.CreateRotationZ(Rotation.Z);
+            BaseWorldMatrix *= Matrix.CreateTranslation(Translation.X, Translation.Y, Translation.Z);
         }
     }
 }
