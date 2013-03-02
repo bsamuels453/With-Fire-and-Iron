@@ -121,6 +121,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GameState\Airship\Airship.cs" />
     <Compile Include="GameState\Airship\AirshipManagerState.cs" />
     <Compile Include="GameState\Airship\AirshipPackager.cs" />
     <Compile Include="GameState\HullEditor\BezierCurve.cs" />

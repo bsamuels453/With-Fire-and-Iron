@@ -7,6 +7,7 @@ using System.IO;
 using Gondola.Draw;
 using Gondola.GameState.ObjectEditor;
 using Gondola.Logic;
+using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
@@ -219,14 +220,15 @@ namespace Gondola.GameState.Airship{
             verticies = listVerts;
         }
 
-        public static AirshipModel Import(string fileName){
+        public static Airship Import(string fileName){
             var sw = new Stopwatch();
             sw.Start();
             var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
             var jObj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
 
-            var ret = new AirshipModel();
+            var ret = new Airship();
+            ret.Length = 50;
             int numDecks = jObj["NumDecks"].ToObject<int>();
             ret.Centroid = jObj["Centroid"].ToObject<Vector3>();
 
@@ -239,18 +241,6 @@ namespace Gondola.GameState.Airship{
             ret.Decks = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
             ret.HullLayers = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
 
-            //offset the airship
-            foreach (var layer in hullVerts){
-                for (int i = 0; i < layer.Length; i++){
-                    layer[i].Position = new Vector3(0, 1000, 0) + layer[i].Position;
-                }
-            }
-            foreach (var layer in deckVerts) {
-                for (int i = 0; i < layer.Length; i++) {
-                    layer[i].Position = new Vector3(0, 1000, 0) + layer[i].Position;
-                }
-            }
-
             for (int i = 0; i < numDecks; i++){
                 ret.Decks[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
                 ret.Decks[i].IndexBuffer.SetData(deckInds[i]);
@@ -260,17 +250,23 @@ namespace Gondola.GameState.Airship{
                 ret.HullLayers[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
                 ret.HullLayers[i].IndexBuffer.SetData(hullInds[i]);
                 ret.HullLayers[i].VertexBuffer.SetData(hullVerts[i]);
+
+                ret.Decks[i].Translate(new Vector3(0, 1000, 0));
+                ret.HullLayers[i].Translate(new Vector3(0, 1000, 0));
+                ret.Decks[i].Rotate(new Angle3(0, 0, 3.14159f));
+                ret.HullLayers[i].Rotate(new Angle3(0, 0, 3.14159f));
+
+                ret.Decks[i].Translate(new Vector3(ret.Length, 0, 0));
+                ret.HullLayers[i].Translate(new Vector3(ret.Length, 0, 0));
             }
 
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
+
+
             return ret;
         }
     }
 
-    internal class AirshipModel{
-        public Vector3 Centroid;
-        public GeometryBuffer<VertexPositionNormalTexture>[] Decks;
-        public GeometryBuffer<VertexPositionNormalTexture>[] HullLayers;
-    }
+
 }
