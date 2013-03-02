@@ -2,16 +2,52 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using Gondola.Draw;
+using Gondola.Logic;
+using Gondola.Util;
+using Microsoft.Xna.Framework;
 
 #endregion
 
-namespace Gondola.Logic{
+namespace Gondola.GameState{
+    delegate void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera);
+
     internal static class GamestateManager{
         static readonly InputHandler _inputHandler;
 
         static readonly List<IGameState> _activeStates;
         static readonly Dictionary<SharedStateData, object> _sharedData;
+
+        static bool _useGlobalRenderTarget;
+        static RenderTarget _globalRenderTarget;
+        static ICamera _cameraController;
+
+        public static ICamera CameraController{
+            get { return _cameraController; }
+            set {
+                if (OnCameraControllerChange != null){
+                    OnCameraControllerChange.Invoke(_cameraController, value);
+                }
+                _cameraController = value; 
+            }
+        }
+
+        public static event OnCameraControllerChange OnCameraControllerChange;
+
+        public static bool UseGlobalRenderTarget{
+            set {
+                if (value) {
+                    if (!_useGlobalRenderTarget) {
+                        _useGlobalRenderTarget = true;
+                        _globalRenderTarget = new RenderTarget();
+                        _globalRenderTarget.Bind();
+                    }
+                }
+                else{
+                    throw new Exception("not supported");
+                }
+            }
+        }
 
         static GamestateManager(){
             _activeStates = new List<IGameState>();
@@ -23,6 +59,9 @@ namespace Gondola.Logic{
             foreach (var state in _activeStates){
                 state.Dispose();
             }
+            _useGlobalRenderTarget = false;
+            _globalRenderTarget.Dispose();
+
             _sharedData.Clear();
             _activeStates.Clear();
         }
@@ -54,14 +93,25 @@ namespace Gondola.Logic{
 
         public static void Update() {
             _inputHandler.Update();
-            for(int i=0; i<_activeStates.Count; i++){
-                _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
+            if (_useGlobalRenderTarget){
+               // _globalRenderTarget.Bind();
+            }
+            for (int i = 0; i < _activeStates.Count; i++){
+                    _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
+                }
+            
+            if (_useGlobalRenderTarget){
+               // _globalRenderTarget.Unbind();
             }
         }
 
         public static void Draw() {
             foreach (var state in _activeStates){
                 state.Draw();
+            }
+
+            if (_useGlobalRenderTarget){
+                _globalRenderTarget.Draw(CameraController.ViewMatrix, Color.Transparent);
             }
         }
     }

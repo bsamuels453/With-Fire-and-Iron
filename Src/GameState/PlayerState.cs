@@ -11,27 +11,25 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Gondola.GameState{
     internal class PlayerState : IGameState{
-        readonly RenderTarget _renderTarget;
-        Angle3 _playerLookDir;
-        Vector3 _playerPosition;
+        readonly SubmarineCamera _cameraController;
         readonly Text2D _x;
         readonly Text2D _y;
         readonly Text2D _z;
         readonly Text2D _pitch;
         readonly Text2D _yaw;
         readonly Point _viewportSize;
+        bool _clampMouse;
         bool _skipNextMouseUpdate;
 
         public PlayerState(Point viewportSize) {
-            _renderTarget = new RenderTarget(0f);
             _viewportSize = viewportSize;
-            _playerPosition = new Vector3(348, 1705, -192);
-            _playerLookDir = new Angle3(-1.2f, 0, -10.004f);//xxxxx this value gets ~2 added to it somehow
-            GamestateManager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
-            GamestateManager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
-            _skipNextMouseUpdate = false;
 
-            _renderTarget.Bind();
+            _cameraController = new SubmarineCamera(new Vector3(-31, 1043, -50), new Angle3(-0.49f, 0, -11.7f));
+            GamestateManager.CameraController = _cameraController;
+            GamestateManager.OnCameraControllerChange += OnCameraControllerChange;
+            _clampMouse = true;
+            _skipNextMouseUpdate = true;
+
             _x = new Text2D(0, 0, "hi");
             _y = new Text2D(0, 10, "hi");
             _z = new Text2D(0, 20, "hi");
@@ -42,18 +40,14 @@ namespace Gondola.GameState{
             _z.Color = Color.Wheat;
             _pitch.Color = Color.Wheat;
             _yaw.Color = Color.Wheat;
-            _renderTarget.Unbind();
         }
 
         #region IGameState Members
 
         public void Dispose(){
-            GamestateManager.DeleteSharedData(SharedStateData.PlayerPosition);
-            GamestateManager.DeleteSharedData(SharedStateData.PlayerLook);
         }
 
         public void Update(InputState state, double timeDelta) {
-            _renderTarget.Bind();
             #region update player position
             var keyState = state.KeyboardState;
 
@@ -65,28 +59,22 @@ namespace Gondola.GameState{
                 movementspeed = 0.25f;
             }
             if (keyState.IsKeyDown(Keys.W)){
-                _playerPosition.X = _playerPosition.X + (float) Math.Sin(_playerLookDir.Yaw)*(float) Math.Cos(_playerLookDir.Pitch)*movementspeed;
-                _playerPosition.Y = _playerPosition.Y + (float) Math.Sin(_playerLookDir.Pitch)*movementspeed;
-                _playerPosition.Z = _playerPosition.Z + (float) Math.Cos(_playerLookDir.Yaw)*(float) Math.Cos(_playerLookDir.Pitch)*movementspeed;
+                _cameraController.MoveForward(movementspeed);
             }
             if (keyState.IsKeyDown(Keys.S)){
-                _playerPosition.X = _playerPosition.X - (float) Math.Sin(_playerLookDir.Yaw)*(float) Math.Cos(_playerLookDir.Pitch)*movementspeed;
-                _playerPosition.Y = _playerPosition.Y - (float) Math.Sin(_playerLookDir.Pitch)*movementspeed;
-                _playerPosition.Z = _playerPosition.Z - (float) Math.Cos(_playerLookDir.Yaw)*(float) Math.Cos(_playerLookDir.Pitch)*movementspeed;
+                _cameraController.MoveBackward(movementspeed);
             }
             if (keyState.IsKeyDown(Keys.A)){
-                _playerPosition.X = _playerPosition.X + (float) Math.Sin(_playerLookDir.Yaw + 3.14159f/2)*movementspeed;
-                _playerPosition.Z = _playerPosition.Z + (float) Math.Cos(_playerLookDir.Yaw + 3.14159f/2)*movementspeed;
+                _cameraController.MoveLeft(movementspeed);
             }
 
             if (keyState.IsKeyDown(Keys.D)){
-                _playerPosition.X = _playerPosition.X - (float) Math.Sin(_playerLookDir.Yaw + 3.14159f/2)*movementspeed;
-                _playerPosition.Z = _playerPosition.Z - (float) Math.Cos(_playerLookDir.Yaw + 3.14159f/2)*movementspeed;
+                _cameraController.MoveRight(movementspeed);
             }
 
-            _x.Str = "x: "+_playerPosition.X;
-            _y.Str = "y: " + _playerPosition.Y;
-            _z.Str = "z: " + _playerPosition.Z;
+            _x.Str = "x: " + _cameraController.Position.X;
+            _y.Str = "y: " + _cameraController.Position.Y;
+            _z.Str = "z: " + _cameraController.Position.Z;
             //xx block wasd from further interpretation?
             #endregion
 
@@ -100,11 +88,11 @@ namespace Gondola.GameState{
 
                 //now apply viewport changes
                 if (!_skipNextMouseUpdate) {
-                    _playerLookDir.Yaw -= dx * 0.005f;
+                    _cameraController.LookAng.Yaw -= dx * 0.005f;
                     if (
-                        (_playerLookDir.Pitch - dy * 0.005f) < 1.55 &&
-                        (_playerLookDir.Pitch - dy * 0.005f) > -1.55) {
-                        _playerLookDir.Pitch -= dy * 0.005f;
+                        (_cameraController.LookAng.Pitch - dy * 0.005f) < 1.55 &&
+                        (_cameraController.LookAng.Pitch - dy * 0.005f) > -1.55){
+                        _cameraController.LookAng.Pitch -= dy*0.005f;
                     }
                 }
                 else{
@@ -112,34 +100,32 @@ namespace Gondola.GameState{
                 }
 
                 //check to see if mouse is outside of permitted area
-                if (
-                    pos.X > _viewportSize.X*(1 - tolerance) ||
-                    pos.X < _viewportSize.X*tolerance ||
-                    pos.Y > _viewportSize.Y*(1 - tolerance) ||
-                    pos.Y < _viewportSize.X*tolerance
-                    ){
-                    //move mouse to center of screen
-                    Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
-                    pos.X = _viewportSize.X/2;
-                    pos.Y = _viewportSize.Y/2;
-                    _skipNextMouseUpdate = true;
+                if (_clampMouse){
+                    if (
+                        pos.X > _viewportSize.X*(1 - tolerance) ||
+                        pos.X < _viewportSize.X*tolerance ||
+                        pos.Y > _viewportSize.Y*(1 - tolerance) ||
+                        pos.Y < _viewportSize.X*tolerance
+                        ){
+                        //move mouse to center of screen
+                        Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
+                        pos.X = _viewportSize.X/2;
+                        pos.Y = _viewportSize.Y/2;
+                        _skipNextMouseUpdate = true;
+                    }
                 }
-
-                _pitch.Str = "pitch: " + _playerLookDir.Pitch;
-                _yaw.Str = "yaw: " + _playerLookDir.Yaw;
+                _pitch.Str = "pitch: " + _cameraController.LookAng.Pitch;
+                _yaw.Str = "yaw: " + _cameraController.LookAng.Yaw;
             }
 
             #endregion
-
-            GamestateManager.ModifySharedData(SharedStateData.PlayerPosition, _playerPosition);
-            GamestateManager.ModifySharedData(SharedStateData.PlayerLook, _playerLookDir);
-            _renderTarget.Unbind();
         }
 
         public void Draw(){
-            _renderTarget.Bind();
+        }
 
-            _renderTarget.Unbind();
+        void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera){
+            _clampMouse = (newCamera == _cameraController);
         }
 
         #endregion

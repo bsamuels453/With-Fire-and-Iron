@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Gondola.GameState.HullEditor {
-    internal class PreviewRenderer : BodyCenteredCamera {
+    internal class PreviewRenderer{
         const int _meshVertexWidth = 64; //this is in primitives
         readonly BezierCurveCollection _backCurves;
         readonly GeometryBuffer<VertexPositionNormalTexture> _geometryBuffer;
@@ -18,15 +18,18 @@ namespace Gondola.GameState.HullEditor {
         readonly RenderTarget _renderTarget;
         readonly BezierCurveCollection _sideCurves;
         readonly BezierCurveCollection _topCurves;
+        readonly BodyCenteredCamera _camera;
         VertexPositionNormalTexture[] _verticies;
 
-        public PreviewRenderer(BezierCurveCollection sideCurves, BezierCurveCollection topCurves, BezierCurveCollection backCurves) :
-            base(new Rectangle(
+        public PreviewRenderer(BezierCurveCollection sideCurves, BezierCurveCollection topCurves, BezierCurveCollection backCurves){
+            _camera = new BodyCenteredCamera(new Rectangle(
                      Gbl.ScreenSize.GetScreenValueX(0.5f),
                      Gbl.ScreenSize.GetScreenValueY(0.5f),
                      Gbl.ScreenSize.GetScreenValueX(0.5f),
                      Gbl.ScreenSize.GetScreenValueY(0.5f)
-                     )) {
+                     )
+                     );
+            GamestateManager.CameraController = _camera;
 
             _renderTarget = new RenderTarget(
                 Gbl.ScreenSize.GetScreenValueX(0.5f),
@@ -59,8 +62,7 @@ namespace Gondola.GameState.HullEditor {
 
         public void Draw() {
             Gbl.Device.Clear(Color.CornflowerBlue);
-            var viewMatrix = Matrix.CreateLookAt(base.CameraPosition, base.CameraTarget, Vector3.Up);
-            _renderTarget.Draw(viewMatrix, Color.CornflowerBlue);
+            _renderTarget.Draw(_camera.ViewMatrix, Color.CornflowerBlue);
         }
 
         public void Dispose() {
@@ -68,7 +70,7 @@ namespace Gondola.GameState.HullEditor {
         }
 
         public void Update(ref InputState state) {
-            base.UpdateInput(ref state);
+            _camera.Update(ref state, 0);//xx
             _topCurves.GetParameterizedPoint(0, true);
 
             var topPts = new Vector2[_meshVertexWidth];
@@ -132,7 +134,7 @@ namespace Gondola.GameState.HullEditor {
             p += _mesh[0, _meshVertexWidth - 1];
             p += _mesh[_meshVertexWidth - 1, _meshVertexWidth - 1];
             p /= 4;
-            base.SetCameraTarget(p);
+            _camera.SetCameraTarget(p);
         }
 
         //public void Dispose(){

@@ -13,7 +13,7 @@ namespace Gondola.Draw{
         public float Depth;
         public int Height;
         public bool Enabled;
-        public float Opacity;
+        public float Alpha;
         public int Width;
         public int X;
         public int Y;
@@ -25,7 +25,7 @@ namespace Gondola.Draw{
         /// <summary>
         ///   constructor for a normal sprite
         /// </summary>
-        public Sprite2D(string textureName, int x, int y, int width, int height, float depth = 0.5f, float opacity = 1, float spriteRepeatX = 1, float spriteRepeatY = 1) {
+        public Sprite2D(string textureName, int x, int y, int width, int height, float depth = 0.5f, float alpha = 1, float spriteRepeatX = 1, float spriteRepeatY = 1) {
             _texture = Gbl.LoadContent<Texture2D>(textureName);
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height * spriteRepeatX, _texture.Width * spriteRepeatY);
             _destRect = new Rectangle();
@@ -35,7 +35,7 @@ namespace Gondola.Draw{
             Width = width;
             Height = height;
             Depth = depth;
-            Opacity = opacity;
+            Alpha = alpha;
             Enabled = true;
             RenderTarget.Sprites.Add(this);
         }
@@ -68,7 +68,7 @@ namespace Gondola.Draw{
                     _texture,
                     _destRect,
                     (Rectangle?)_srcRect,
-                    Color.White * Opacity,
+                    Color.White * Alpha,
                     0,
                     Vector2.Zero,
                     SpriteEffects.None,

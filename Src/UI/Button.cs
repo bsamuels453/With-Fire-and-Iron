@@ -108,9 +108,9 @@ namespace Gondola.UI{
 
         public bool ContainsMouse { get; set; }
 
-        public float Opacity {
-            get { return _sprite.Opacity; }
-            set { _sprite.Opacity = value; }
+        public float Alpha {
+            get { return _sprite.Alpha; }
+            set { _sprite.Alpha = value; }
         }
 
         public float Depth {
@@ -136,7 +136,7 @@ namespace Gondola.UI{
             _centPosition.Y = _boundingBox.Y + _boundingBox.Height / 2;
 
             Components = components;
-            Opacity = 1;
+            Alpha = 1;
             if (Components != null) {
                 foreach (IUIComponent component in Components) {
                     component.ComponentCtor(this, _iEventDispatcher);
@@ -290,7 +290,6 @@ namespace Gondola.UI{
 
     internal class ButtonGenerator {
         public Dictionary<string, JObject> Components;
-        public RenderTarget Target;
         public DepthLevel? Depth;
         public float? Height;
         public int? Identifier;

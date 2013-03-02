@@ -65,7 +65,7 @@ namespace Gondola.UI.Components{
             _owner = owner;
             _ownerEventDispatcher = ownerEventDispatcher;
             if (_defaultState == FadeState.Faded) {
-                _owner.Opacity = _fadeoutOpacity;
+                _owner.Alpha = _fadeoutOpacity;
             }
             switch (_fadeTrigger) {
                 case FadeTrigger.EntryExit:
@@ -159,16 +159,16 @@ namespace Gondola.UI.Components{
                     long timeSinceLastUpdate = DateTime.Now.Ticks - _prevUpdateTimeIndex;
                     float step = timeSinceLastUpdate / _fadeDuration;
                     if (_isFadingOut) {
-                        _owner.Opacity -= step;
-                        if (_owner.Opacity < _fadeoutOpacity) {
-                            _owner.Opacity = _fadeoutOpacity;
+                        _owner.Alpha -= step;
+                        if (_owner.Alpha < _fadeoutOpacity) {
+                            _owner.Alpha = _fadeoutOpacity;
                             _isInTransition = false;
                         }
                     }
                     else {
-                        _owner.Opacity += step;
-                        if (_owner.Opacity > 1) {
-                            _owner.Opacity = 1;
+                        _owner.Alpha += step;
+                        if (_owner.Alpha > 1) {
+                            _owner.Alpha = 1;
                             _isInTransition = false;
                         }
                     }

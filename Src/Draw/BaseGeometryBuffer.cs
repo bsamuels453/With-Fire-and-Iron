@@ -15,6 +15,7 @@ namespace Gondola.Draw{
         readonly int _numPrimitives;
         readonly PrimitiveType _primitiveType;
         bool _isDisposed;
+        protected Matrix BaseWorldMatrix;
 
         protected Effect Shader;
         protected RasterizerState Rasterizer;
@@ -25,6 +26,7 @@ namespace Gondola.Draw{
             _numPrimitives = numPrimitives;
             _numIndicies = numIndicies;
             _primitiveType = primitiveType;
+            BaseWorldMatrix = Matrix.Identity;
 
             Rasterizer = new RasterizerState { CullMode = cullMode };
 
@@ -58,6 +60,7 @@ namespace Gondola.Draw{
         public void Draw(Matrix viewMatrix) {
             if (Enabled) {
                 Shader.Parameters["View"].SetValue(viewMatrix);
+                Shader.Parameters["World"].SetValue(BaseWorldMatrix);
                 Gbl.Device.RasterizerState = Rasterizer;
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes) {

@@ -29,7 +29,7 @@ namespace Gondola.Draw {
                 _texture,
                 _parent.OriginPoint,
                 null,
-                Color.White * _parent.Opacity,
+                Color.White * _parent.Alpha,
                 _parent.Angle,
                 Vector2.Zero,
                 new Vector2(_parent.Length, _parent.LineWidth),

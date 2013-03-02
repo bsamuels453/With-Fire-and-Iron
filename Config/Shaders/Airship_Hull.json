@@ -1,8 +1,8 @@
 {
 	"InternalAbbreviation": "Shader_AirshipHull",
 	"DiffuseLightDirection": "0,-1,1",
-	"DiffuseIntensity": "1",
-	"AmbientIntensity": "1",
+	"DiffuseIntensity": "0.8",
+	"AmbientIntensity": "0.2",
 	"Texture": "Materials/BrownBox",
 	"Shader": "HLSL/StandardEffect"
 }

@@ -55,7 +55,7 @@ namespace Gondola.UI {
             get { return _lineSprite; }
         }
 
-        public float Opacity { get; set; }
+        public float Alpha { get; set; }
         public float Depth { get; set; }
 
         public String Texture {
@@ -110,7 +110,7 @@ namespace Gondola.UI {
             _point1 = v1;
             _point2 = v2;
             Depth = (float)depth / 10;
-            Opacity = 1;
+            Alpha = 1;
             LineWidth = 1;
             Identifier = identifier;
             CalculateInfoFromPoints();
