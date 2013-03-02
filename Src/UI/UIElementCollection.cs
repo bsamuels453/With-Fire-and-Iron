@@ -140,7 +140,7 @@ namespace Gondola.UI {
                 }
             }
             else {
-                throw new Exception("no uielementcollection bound");
+                //throw new Exception("no uielementcollection bound");
             }
         }
 

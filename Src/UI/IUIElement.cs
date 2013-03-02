@@ -12,7 +12,7 @@ namespace Gondola.UI {
         float Width { get; set; }
         float Height { get; set; }
         FloatingRectangle BoundingBox { get; } //move somewhere else?
-        float Opacity { get; set; }
+        float Alpha { get; set; }
         float Depth { get; set; }
         string Texture { get; set; }
         int Identifier { get; }

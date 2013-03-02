@@ -63,7 +63,6 @@ namespace Gondola.UI.Widgets {
             #region create the buttons
 
             var buttonGen = new ButtonGenerator(ctorData.ButtonTemplate);
-            buttonGen.Target = target;
             ToolbarButtons = new Button[ctorData.NumButtons];
 
             int xPos = _position.X;

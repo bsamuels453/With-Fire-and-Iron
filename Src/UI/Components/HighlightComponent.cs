@@ -121,11 +121,11 @@ namespace Gondola.UI.Components{
         #endregion
 
         public void ProcHighlight() {
-            _highlightSprite.Opacity = _highlightTexOpacity;
+            _highlightSprite.Alpha = _highlightTexOpacity;
         }
 
         public void UnprocHighlight() {
-            _highlightSprite.Opacity = 0;
+            _highlightSprite.Alpha = 0;
         }
 
         //xxx untested

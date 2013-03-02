@@ -243,7 +243,6 @@ namespace Gondola.GameState.HullEditor {
             #region stuff for generating ui elements
 
             var buttonTemplate = new ButtonGenerator("HullEditorHandle.json");
-            buttonTemplate.Target = target;
 
             var lineTemplate = new LineGenerator("HullEditorLine.json");
             lineTemplate.Target = target;
