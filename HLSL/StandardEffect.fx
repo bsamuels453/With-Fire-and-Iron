@@ -45,12 +45,13 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
 
-    float4 normal = mul(input.Normal, WorldInverseTranspose);
+    //float4 normal = mul(input.Normal, WorldInverseTranspose);
+	float4 normal = input.Normal;
 	normal = normalize(normal);
-	float3 dir = normalize(DiffuseLightDirection);
-    float lightIntensity = dot(normal, dir) * AmbientIntensity;
-	//float lightIntensity = dot(normal, DiffuseLightDirection) * AmbientIntensity;
-    output.Color = saturate(DiffuseColor * DiffuseIntensity * lightIntensity);
+	//float3 dir = normalize(DiffuseLightDirection);
+    //float lightIntensity = dot(normal, dir) * AmbientIntensity;
+	float lightIntensity = dot(normal, DiffuseLightDirection) * DiffuseIntensity;
+    output.Color = saturate(AmbientColor * AmbientIntensity + lightIntensity);
 
     output.Normal = normal;
     output.TextureCoordinate = input.TextureCoordinate;
