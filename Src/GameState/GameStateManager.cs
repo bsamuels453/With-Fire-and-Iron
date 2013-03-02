@@ -59,8 +59,10 @@ namespace Gondola.GameState{
             foreach (var state in _activeStates){
                 state.Dispose();
             }
-            _useGlobalRenderTarget = false;
-            _globalRenderTarget.Dispose();
+            if (_useGlobalRenderTarget){
+                _useGlobalRenderTarget = false;
+                _globalRenderTarget.Dispose();
+            }
 
             _sharedData.Clear();
             _activeStates.Clear();

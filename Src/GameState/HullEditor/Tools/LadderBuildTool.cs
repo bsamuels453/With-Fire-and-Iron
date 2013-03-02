@@ -33,13 +33,12 @@ namespace Gondola.GameState.HullEditor.Tools {
         }
 
         protected override void EnableCursorGhost() {
-            _ghostedLadderModel.EnableObject(0);
+            
             _ghostedLadderModel.ShaderParams["TintColor"].SetValue(Color.Green.ToVector4());
         }
 
         protected override void DisableCursorGhost() {
             _ghostedLadderModel.ShaderParams["TintColor"].SetValue(Color.DarkRed.ToVector4());
-            //_ghostedLadderModel.DisableObject(0);
         }
 
         protected override void UpdateCursorGhost() {
@@ -90,6 +89,7 @@ namespace Gondola.GameState.HullEditor.Tools {
         }
 
         protected override void OnEnable() {
+            _ghostedLadderModel.EnableObject(0);
         }
 
         protected override void OnDisable() {

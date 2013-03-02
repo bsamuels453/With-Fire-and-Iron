@@ -31,14 +31,10 @@ namespace Gondola.Draw{
         }
 
         public void AddObject(IEquatable<T> identifier, Model model, Matrix transform){
+
             int index = -1;
             for (int i = 0; i < _maxObjects; i++){
                 if (_isSlotOccupied[i] == false){
-                    foreach (var meshes in model.Meshes){
-                        foreach (var part in meshes.MeshParts){
-                            part.Effect = _shader;
-                        }
-                    }
                     _objectData.Add(new ObjectData(identifier, i, transform, model));
                     _isSlotOccupied[i] = true;
                     index = i;
@@ -151,6 +147,9 @@ namespace Gondola.Draw{
                 if (!obj.Enabled)
                     continue;
                 foreach (var mesh in obj.Model.Meshes){
+                    foreach (var part in mesh.MeshParts){
+                        part.Effect = _shader;
+                    }
                     foreach (var effect in mesh.Effects){
                         effect.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
                         effect.Parameters["World"].SetValue(obj.Transform*_globalTransform);

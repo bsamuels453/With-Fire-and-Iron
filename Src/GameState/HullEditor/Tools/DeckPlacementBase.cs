@@ -147,10 +147,12 @@ namespace Gondola.GameState.HullEditor.Tools {
                     }
                 }
                 if (!intersectionFound) {
+                    _cursorGhostActive = false;
                     DisableCursorGhost();
                 }
             }
             else {
+                _cursorGhostActive = false;
                 DisableCursorGhost();
             }
 
@@ -274,15 +276,24 @@ namespace Gondola.GameState.HullEditor.Tools {
             VisibleDeckChange(-1, HullData.CurDeck);
         }
 
+        /// <summary>
+        /// this is called when the cursor ghost is turned on
+        /// </summary>
         protected virtual void EnableCursorGhost() {
             _cursorBuff.Enabled = true;
 
         }
 
+        /// <summary>
+        /// this is called when the cursor ghost is turned off
+        /// </summary>
         protected virtual void DisableCursorGhost() {
             _cursorBuff.Enabled = false;
         }
 
+        /// <summary>
+        /// this is called when the cursor ghost needs to be moved to a new position
+        /// </summary>
         protected virtual void UpdateCursorGhost() {
             var verts = new VertexPositionColor[2];
             verts[0] = new VertexPositionColor(
