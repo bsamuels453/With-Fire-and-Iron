@@ -26,10 +26,11 @@ namespace Gondola.GameState.TerrainManager {
             _normals = normals;
             _binormals = binormals;
             _tangents = tangents;
-            _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count() / 3,"Shader_Terrain");
-            _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count() * 2, verticies.Count(), indicies.Count(), "Shader_Wireframe", PrimitiveType.LineList);
-            
-            Debug.Assert(_bufferDataSet == false);
+            _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Shader_Terrain");
+            _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count()*2, verticies.Count(), indicies.Count(), "Shader_Wireframe", PrimitiveType.LineList);
+            _wbuff.ShaderParams["Alpha"].SetValue(0.1f);
+
+        Debug.Assert(_bufferDataSet == false);
             _buffer.IndexBuffer.SetData((int[])_indicies.Clone());
             _buffer.VertexBuffer.SetData(_verticies);
             _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
@@ -49,8 +50,8 @@ namespace Gondola.GameState.TerrainManager {
                 srcIdx += 3;
             }
 
-            //_wbuff.IndexBuffer.SetData(wireframeInds);
-            //_wbuff.VertexBuffer.SetData(_verticies);
+            _wbuff.IndexBuffer.SetData(wireframeInds);
+            _wbuff.VertexBuffer.SetData(_verticies);
 
             _normals.Dispose();
             _binormals.Dispose();
