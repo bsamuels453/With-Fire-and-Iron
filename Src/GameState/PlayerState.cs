@@ -18,13 +18,16 @@ namespace Gondola.GameState{
         readonly Text2D _pitch;
         readonly Text2D _yaw;
         readonly Point _viewportSize;
+        bool _clampMouse;
         bool _skipNextMouseUpdate;
 
         public PlayerState(Point viewportSize) {
             _viewportSize = viewportSize;
 
             _cameraController = new SubmarineCamera(new Vector3(-31, 1043, -50), new Angle3(-0.49f, 0, -11.7f));
-            GamestateManager.Camera = _cameraController;
+            GamestateManager.CameraController = _cameraController;
+            GamestateManager.OnCameraControllerChange += OnCameraControllerChange;
+            _clampMouse = true;
             _skipNextMouseUpdate = true;
 
             _x = new Text2D(0, 0, "hi");
@@ -97,19 +100,20 @@ namespace Gondola.GameState{
                 }
 
                 //check to see if mouse is outside of permitted area
-                if (
-                    pos.X > _viewportSize.X*(1 - tolerance) ||
-                    pos.X < _viewportSize.X*tolerance ||
-                    pos.Y > _viewportSize.Y*(1 - tolerance) ||
-                    pos.Y < _viewportSize.X*tolerance
-                    ){
-                    //move mouse to center of screen
-                    Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
-                    pos.X = _viewportSize.X/2;
-                    pos.Y = _viewportSize.Y/2;
-                    _skipNextMouseUpdate = true;
+                if (_clampMouse){
+                    if (
+                        pos.X > _viewportSize.X*(1 - tolerance) ||
+                        pos.X < _viewportSize.X*tolerance ||
+                        pos.Y > _viewportSize.Y*(1 - tolerance) ||
+                        pos.Y < _viewportSize.X*tolerance
+                        ){
+                        //move mouse to center of screen
+                        Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
+                        pos.X = _viewportSize.X/2;
+                        pos.Y = _viewportSize.Y/2;
+                        _skipNextMouseUpdate = true;
+                    }
                 }
-
                 _pitch.Str = "pitch: " + _cameraController.LookAng.Pitch;
                 _yaw.Str = "yaw: " + _cameraController.LookAng.Yaw;
             }
@@ -118,6 +122,10 @@ namespace Gondola.GameState{
         }
 
         public void Draw(){
+        }
+
+        void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera){
+            _clampMouse = (newCamera == _cameraController);
         }
 
         #endregion

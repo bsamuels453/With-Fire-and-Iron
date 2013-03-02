@@ -10,6 +10,8 @@ using Microsoft.Xna.Framework;
 #endregion
 
 namespace Gondola.GameState{
+    delegate void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera);
+
     internal static class GamestateManager{
         static readonly InputHandler _inputHandler;
 
@@ -18,7 +20,19 @@ namespace Gondola.GameState{
 
         static bool _useGlobalRenderTarget;
         static RenderTarget _globalRenderTarget;
-        public static ICamera Camera;
+        static ICamera _cameraController;
+
+        public static ICamera CameraController{
+            get { return _cameraController; }
+            set {
+                if (OnCameraControllerChange != null){
+                    OnCameraControllerChange.Invoke(_cameraController, value);
+                }
+                _cameraController = value; 
+            }
+        }
+
+        public static event OnCameraControllerChange OnCameraControllerChange;
 
         public static bool UseGlobalRenderTarget{
             set {
@@ -97,7 +111,7 @@ namespace Gondola.GameState{
             }
 
             if (_useGlobalRenderTarget){
-                _globalRenderTarget.Draw(Camera.ViewMatrix, Color.Transparent);
+                _globalRenderTarget.Draw(CameraController.ViewMatrix, Color.Transparent);
             }
         }
     }
