@@ -2,6 +2,7 @@
 
 using Gondola.Draw;
 using Gondola.GameState;
+using Gondola.GameState.Airship;
 using Gondola.GameState.HullEditor;
 using Gondola.GameState.TerrainManager;
 using Gondola.Logic;
@@ -36,6 +37,7 @@ namespace Gondola{
             GamestateManager.UseGlobalRenderTarget = true;
             GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new TerrainManager());
+            GamestateManager.AddGameState(new AirshipManagerState());
             //GamestateManager.AddGameState(new HullEditor());
 
             IsMouseVisible = true;
