@@ -18,6 +18,8 @@ namespace Gondola.GameState.Airship {
 
         public Vector3 Position;
         public Vector3 Angle;
+        int _curDeck;
+        int _numDecks;
 
         public Vector3 Centroid;
         public GeometryBuffer<VertexPositionNormalTexture>[] Decks;
@@ -37,6 +39,8 @@ namespace Gondola.GameState.Airship {
         }
 
         public Airship(){
+            _curDeck = 0;
+            _numDecks = 4;
             Length = 50;
             MaxAscentSpeed = 1;
             MaxMovementSpeed = 1;
@@ -113,6 +117,44 @@ namespace Gondola.GameState.Airship {
             Position.Z += -unitVec.Y * engineDutyCycle* MaxMovementSpeed;
             Position.Y += altitudeDutyCycle * MaxAscentSpeed;
             SetAirshipPosition(Position, Angle);
+        }
+
+        public void AddVisibleLayer(int _){
+            if (_curDeck != 0){
+                var tempFloorBuff = Decks.Reverse().ToArray();
+                var tempWallBuff = HullLayers.Reverse().ToArray();
+                //var tempWWallBuff = WallBuffers.Reverse().ToArray();
+                for (int i = 0; i < tempFloorBuff.Count(); i++){
+                    if (tempFloorBuff[i].Enabled == false){
+                        _curDeck--;
+                        tempFloorBuff[i].Enabled = true;
+                        //tempWWallBuff[i].Enabled = true;
+
+                        if (i < _numDecks - 1){
+                            tempWallBuff[i + 1].Enabled = true;
+                        }
+                        tempWallBuff[i].CullMode = CullMode.None;
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void RemoveVisibleLayer(int _){
+            if (_curDeck < _numDecks - 1){
+                for (int i = 0; i < Decks.Count(); i++){
+                    if (Decks[i].Enabled){
+                        _curDeck++;
+                        Decks[i].Enabled = false;
+                        HullLayers[i].CullMode = CullMode.CullCounterClockwiseFace;
+                        if (i > 0){
+                            HullLayers[i - 1].Enabled = false;
+                        }
+                        //WallBuffers[i].Enabled = false;
+                        break;
+                    }
+                }
+            }
         }
 
         void SetAirshipPosition(Vector3 position, Vector3 angle){
