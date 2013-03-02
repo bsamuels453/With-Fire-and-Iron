@@ -18,6 +18,7 @@ namespace Gondola.GameState{
 
         static bool _useGlobalRenderTarget;
         static RenderTarget _globalRenderTarget;
+        public static ICamera Camera;
 
         public static bool UseGlobalRenderTarget{
             set {
@@ -96,10 +97,7 @@ namespace Gondola.GameState{
             }
 
             if (_useGlobalRenderTarget){
-                var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
-                var playerLook = (Angle3)GamestateManager.QuerySharedData(SharedStateData.PlayerLook);
-                var matrix = RenderHelper.CalculateViewMatrix(playerPos, playerLook);
-                _globalRenderTarget.Draw(matrix, Color.Transparent);
+                _globalRenderTarget.Draw(Camera.ViewMatrix, Color.Transparent);
             }
         }
     }

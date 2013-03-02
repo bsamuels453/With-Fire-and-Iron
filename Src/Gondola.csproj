@@ -139,7 +139,9 @@
     <Compile Include="GameState\ObjectEditor\ObjectEditorState.cs" />
     <Compile Include="GameState\ObjectEditor\ObjectEditorUI.cs" />
     <Compile Include="Logic\BodyCenteredCamera.cs" />
+    <Compile Include="Logic\ICamera.cs" />
     <Compile Include="Logic\ObjectIdentifier.cs" />
+    <Compile Include="Logic\SubmarineCamera.cs" />
     <Compile Include="UI\DepthLevel.cs" />
     <Compile Include="UI\UIElementCollection.cs" />
     <Compile Include="UI\Widgets\IToolbarTool.cs" />
