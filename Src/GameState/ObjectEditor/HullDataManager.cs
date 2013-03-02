@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Gondola.Draw;
-using Gondola.GameState.HullEditor.Tools;
+using Gondola.GameState.ObjectEditor.Tools;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

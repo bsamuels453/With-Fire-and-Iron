@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Gondola.Draw;
-using Gondola.GameState.ObjectEditor;
+﻿using Gondola.Draw;
 using Gondola.Logic;
 using Gondola.UI.Widgets;
 
-namespace Gondola.GameState.HullEditor.Tools {
+namespace Gondola.GameState.ObjectEditor.Tools {
     internal class WallMenuTool : IToolbarTool {
         readonly Toolbar _toolbar;
         //todo: break this and put it in doodadui

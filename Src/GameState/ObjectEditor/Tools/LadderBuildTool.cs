@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Gondola.Draw;
-using Gondola.GameState.ObjectEditor;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gondola.GameState.HullEditor.Tools {
+namespace Gondola.GameState.ObjectEditor.Tools {
     internal class LadderBuildTool : DeckPlacementBase {
         const float _ladderWidth = 1f;
         const float _gridWidth = 0.5f;
