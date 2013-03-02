@@ -23,11 +23,11 @@ namespace Gondola.GameState{
 
         public PlayerState(Point viewportSize) {
             _viewportSize = viewportSize;
-            _playerPosition = new Vector3(348, 1705, -192);
-            _playerLookDir = new Angle3(-1.2f, 0, -10.004f);//xxxxx this value gets ~2 added to it somehow
+            _playerPosition = new Vector3(-31, 1043, -50);
+            _playerLookDir = new Angle3(-0.49f, 0, -11.7f);//xxxxx this value gets ~2 added to it somehow
             GamestateManager.AddSharedData(SharedStateData.PlayerPosition, _playerPosition);
             GamestateManager.AddSharedData(SharedStateData.PlayerLook, _playerLookDir);
-            _skipNextMouseUpdate = false;
+            _skipNextMouseUpdate = true;
 
             _x = new Text2D(0, 0, "hi");
             _y = new Text2D(0, 10, "hi");
