@@ -18,25 +18,24 @@ namespace Gondola.GameState.TerrainManager {
             _loadedChunks = new List<TerrainChunk>();
             /*
             _generator = new TerrainGen();
-            for (int x = 0; x < 3; x++){
-                for (int z = 0; z < 3; z++){
+            for (int x = 0; x < 10; x++){
+                for (int z = 0; z < 10; z++){
                     var chunk = _generator.GenerateChunk(new XZPair(x, z));
                     _loadedChunks.Add(chunk);
 
-                    var sw = new StreamWriter("chunk"+x+" "+z);
-                    var jobj = new JObject();
-                    jobj["Norms"] = JToken.FromObject(chunk.Normals);
-                    jobj["Binorms"] = JToken.FromObject(chunk.Binormals);
-                    jobj["Tangs"] = JToken.FromObject(chunk.Tangents);
-                    jobj["Verts"] = JToken.FromObject(chunk._verticies);
-                    jobj["Inds"] = JToken.FromObject(chunk._indicies);
+                    //var sw = new StreamWriter("chunk"+x+" "+z);
+                    //var jobj = new JObject();
+                    //jobj["Norms"] = JToken.FromObject(chunk.Normals);
+                    //jobj["Binorms"] = JToken.FromObject(chunk.Binormals);
+                    //jobj["Tangs"] = JToken.FromObject(chunk.Tangents);
+                    //jobj["Verts"] = JToken.FromObject(chunk._verticies);
+                    //jobj["Inds"] = JToken.FromObject(chunk._indicies);
 
-                    sw.Write(JsonConvert.SerializeObject(jobj, Formatting.Indented));
-                    sw.Close();
+                    //sw.Write(JsonConvert.SerializeObject(jobj, Formatting.Indented));
+                    //sw.Close();
                 }
             }
              */
-
             for (int x = 0; x < 2; x++){
                 for (int z = 0; z < 2; z++){
                     var sr = new StreamReader("chunk" + x + " " + z);
@@ -59,6 +58,7 @@ namespace Gondola.GameState.TerrainManager {
                     _loadedChunks.Add(chunk);
                 }
             }
+
         }
 
         public void Dispose(){
@@ -69,7 +69,6 @@ namespace Gondola.GameState.TerrainManager {
         }
 
         public void Update(InputState state, double timeDelta){
-            var playerPos = (Vector3)GamestateManager.QuerySharedData(SharedStateData.PlayerPosition);
         }
 
         public void Draw(){

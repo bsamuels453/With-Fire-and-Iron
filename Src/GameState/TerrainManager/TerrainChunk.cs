@@ -28,7 +28,7 @@ namespace Gondola.GameState.TerrainManager {
             _tangents = tangents;
             _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Shader_Terrain");
             _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count()*2, verticies.Count(), indicies.Count(), "Shader_Wireframe", PrimitiveType.LineList);
-            _wbuff.ShaderParams["Alpha"].SetValue(0.1f);
+            _wbuff.ShaderParams["Alpha"].SetValue(0.25f);
 
         Debug.Assert(_bufferDataSet == false);
             _buffer.IndexBuffer.SetData((int[])_indicies.Clone());
