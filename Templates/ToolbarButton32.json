@@ -1,0 +1,26 @@
+{
+  "Components": {
+	"HighlightComponent_HoverMask":{
+      "HighlightTexture": "Materials/SolidYellow",
+	  "HighlightTrigger": "MouseEntryExit",
+	  "HighlightTexOpacity": 0.3
+	},
+	"HighlightComponent_ClickEffect":{
+      "HighlightTexture": "Materials/SolidBlack",
+	  "HighlightTrigger": "MousePressRelease",
+	  "HighlightTexOpacity": 0.7
+	},
+	"HighlightComponent_ClickHoldEffect":{
+      "HighlightTexture": "Materials/SolidBlack",
+	  "HighlightTrigger": "None",
+	  "HighlightTexOpacity": 0.7
+	}
+  },
+  "Depth": "High",
+  "Width": 32,
+  "Height": 32,
+  "Identifier": 0,
+  "SpriteTexRepeatX": 1,
+  "SpriteTexRepeatY": 1,
+  "TextureName": "Icons/CrossIcon"
+}

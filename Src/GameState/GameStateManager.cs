@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Gondola.Draw;
 using Gondola.Logic;
+using Gondola.UI;
 using Gondola.Util;
 using Microsoft.Xna.Framework;
 
@@ -20,7 +21,9 @@ namespace Gondola.GameState{
 
         static bool _useGlobalRenderTarget;
         static RenderTarget _globalRenderTarget;
+        static UIElementCollection _globalElementCollection;
         static ICamera _cameraController;
+        
 
         public static ICamera CameraController{
             get { return _cameraController; }
@@ -40,6 +43,8 @@ namespace Gondola.GameState{
                     if (!_useGlobalRenderTarget) {
                         _useGlobalRenderTarget = true;
                         _globalRenderTarget = new RenderTarget();
+                        _globalElementCollection = new UIElementCollection();
+                        UIElementCollection.BindCollection(_globalElementCollection);
                         _globalRenderTarget.Bind();
                     }
                 }
@@ -61,6 +66,8 @@ namespace Gondola.GameState{
             }
             if (_useGlobalRenderTarget){
                 _useGlobalRenderTarget = false;
+                _globalRenderTarget.Unbind();
+                UIElementCollection.UnbindCollection();
                 _globalRenderTarget.Dispose();
             }
 
@@ -96,14 +103,14 @@ namespace Gondola.GameState{
         public static void Update() {
             _inputHandler.Update();
             if (_useGlobalRenderTarget){
-               // _globalRenderTarget.Bind();
             }
             for (int i = 0; i < _activeStates.Count; i++){
                     _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
                 }
             
             if (_useGlobalRenderTarget){
-               // _globalRenderTarget.Unbind();
+                _globalElementCollection.UpdateLogic(0);
+                _globalElementCollection.UpdateInput(ref _inputHandler.CurrentInputState);
             }
         }
 
