@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
 namespace Gondola.Util {
+    //depreciated
     internal class Interpolate {
         /// <summary>
         ///   the distance between the two points being interpolated. Only matters if value is going to be queried for distances outside the range of 0-1.
@@ -109,7 +111,34 @@ namespace Gondola.Util {
         }
 
         #endregion
+    }
 
-        //public float GetStepValue(float t); //sense of humor?
+    internal static class Lerp{
+        static public Vector3 Lerp3(Vector3 start, Vector3 end, float t){
+            var posVec = (end - start);
+            var uVec = posVec;
+            uVec.Normalize();
+            float dist = posVec.Length()*t;
+            return uVec*dist;
+        }
+
+        static public Vector3 Trace3X(Vector3 start, Vector3 end, float x) {
+            var uVec = (end - start);
+            uVec.Normalize();
+
+            float absX = x - start.X;
+            float dist = absX / uVec.X;
+
+            return uVec * dist + start;
+        }
+        static public Vector3 Trace3Y(Vector3 start, Vector3 end, float y) {
+            var uVec = (end - start);
+            uVec.Normalize();
+
+            float absY = y - start.Y;
+            float dist = absY / uVec.Y;
+
+            return uVec * dist + start;
+        }
     }
 }
