@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    internal class ObjectBuffer<TIdentifier> : BaseGeometryBuffer<VertexPositionNormalTexture> where TIdentifier : IEquatable<TIdentifier> {
+    internal class ObjectBuffer<TIdentifier> : GeometryBuffer<VertexPositionNormalTexture> where TIdentifier : IEquatable<TIdentifier> {
         readonly int[] _indicies;
         readonly int _indiciesPerObject;
         readonly bool[] _isSlotOccupied;
