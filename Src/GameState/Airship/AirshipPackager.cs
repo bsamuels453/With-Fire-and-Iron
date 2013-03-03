@@ -28,8 +28,9 @@ namespace Gondola.GameState.Airship{
             var hullVerts = new VertexPositionNormalTexture[hullData.NumDecks][];
 
             for (int i = 0; i < hullData.NumDecks; i++){
-                hullInds[i] = hullData.HullBuffers[i].DumpIndicies();
-                hullVerts[i] = hullData.HullBuffers[i].DumpVerticies();
+                //fixme
+                //hullInds[i] = hullData.HullBuffers[i].DumpIndicies();
+                //hullVerts[i] = hullData.HullBuffers[i].DumpVerticies();
             }
 
             var center = CalculateCenter(hullVerts);
