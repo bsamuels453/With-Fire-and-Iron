@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    internal class ObjectBuffer<TIdentifier> : GeometryBuffer<VertexPositionNormalTexture> where TIdentifier : IEquatable<TIdentifier> {
+    internal class ObjectBuffer<TIdentifier> : GeometryBuffer<VertexPositionNormalTexture>, IEnumerable where TIdentifier : IEquatable<TIdentifier> {
         readonly int[] _indicies;
         readonly int _indiciesPerObject;
         readonly bool[] _isSlotOccupied;
@@ -201,5 +202,11 @@ namespace Gondola.Draw{
         }
 
         #endregion
+
+        public IEnumerator GetEnumerator(){
+            var enumLi = from data in _objectData
+                         select data.Identifier;
+            return enumLi.GetEnumerator();
+        }
     }
 }
