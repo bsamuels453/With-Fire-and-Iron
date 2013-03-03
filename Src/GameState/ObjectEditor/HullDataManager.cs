@@ -63,7 +63,7 @@ namespace Gondola.GameState.ObjectEditor {
         //these will save from having to do array[curDeck] all the time elsewhere in the editor
         public ObjectBuffer<ObjectIdentifier> CurDeckBuffer { get; private set; }
         public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
-        public GeometryBuffer<VertexPositionNormalTexture> CurHullBuffer { get; private set; }
+        public List<HullMesh> CurHullBuffer { get; private set; }
         public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
         public List<BoundingBox> CurDeckBoundingBoxes { get; private set; }
         public List<Vector3> CurDeckVertexes { get; private set; }
@@ -84,7 +84,9 @@ namespace Gondola.GameState.ObjectEditor {
 
                 CurDeckBuffer = DeckBuffers[_curDeck];
                 CurWallBuffer = WallBuffers[_curDeck];
-                //CurHullBuffer = HullBuffers[_curDeck];
+                if (_curDeck != 0) {
+                    CurHullBuffer = HullBuffers[_curDeck - 1];
+                }
                 CurWallIdentifiers = WallIdentifiers[_curDeck];
                 CurDeckBoundingBoxes = DeckBoundingBoxes[_curDeck];
                 CurDeckVertexes = DeckVertexes[_curDeck];
