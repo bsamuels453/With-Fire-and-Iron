@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Gondola.Draw;
 using Gondola.Logic;
 using Gondola.Util;
@@ -44,7 +43,8 @@ namespace Gondola.GameState.ObjectEditor {
             resultant.DeckFloorBoundingBoxes = boundingBoxResults.DeckBoundingBoxes;
             resultant.DeckFloorBuffers = deckFloorBuffers;
             resultant.FloorVertexes = boundingBoxResults.DeckVertexes;
-            resultant.HullWallTexBuffers = hullBuffers;
+            //resultant.HullWallTexBuffers = hullBuffers;
+            resultant.HullMeshes = hullBuffers;
             resultant.NumDecks = genResults.NumDecks;
             resultant.WallResolution = bBoxWidth;
             resultant.DeckHeight = deckHeight;
@@ -389,39 +389,50 @@ namespace Gondola.GameState.ObjectEditor {
             return ret;
         }
 
-        static GeometryBuffer<VertexPositionNormalTexture>[] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck) {
+        static HullMesh[][] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck) {
             int vertsInSilhouette = deckSVerts[0][0].Length;
 
-            var hullBuffers = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
+            var hullMeshBuffs = new HullMesh[numDecks][];
+            for (int i = 0; i < numDecks; i++)
+                hullMeshBuffs[i] = new HullMesh[2];
+
             //now set up the display buffer for each deck's wall
             for (int i = 0; i < deckSVerts.Length; i++){
-                var hullMesh = new Vector3[primitivesPerDeck + 1,vertsInSilhouette];
-                var hullNormals = new Vector3[primitivesPerDeck + 1,vertsInSilhouette];
-                int[] hullIndicies = MeshHelper.CreateIndiceArray((primitivesPerDeck + 1)*vertsInSilhouette);
-                VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((primitivesPerDeck + 1)*vertsInSilhouette);
+                // ReSharper disable AccessToModifiedClosure
+                Func<int, int, HullMesh> generateBuff = (start, end) => {
+                    var hullMesh = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
+                    var hullNormals = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
+                    int[] hullIndicies = MeshHelper.CreateIndiceArray((primitivesPerDeck + 1) * (vertsInSilhouette / 2));
+                    VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((primitivesPerDeck + 1) * (vertsInSilhouette / 2));
 
-                //get the hull normals for this part of the hull from the total normals
-                for (int x = 0; x < primitivesPerDeck + 1; x++){
-                    for (int z = 0; z < vertsInSilhouette; z++){
-                        hullNormals[x, z] = normalMesh[i*primitivesPerDeck + x, z];
+                    //get the hull normals for this part of the hull from the total normals
+                    for (int x = 0; x < primitivesPerDeck + 1; x++) {
+                        for (int z = start; z < end; z++) {
+                            hullNormals[x, z - start] = normalMesh[i * primitivesPerDeck + x, z];
+                        }
                     }
-                }
-                //convert the 2d list heightmap into a 2d array heightmap
-                MeshHelper.Encode2DListIntoArray(primitivesPerDeck + 1, vertsInSilhouette, ref hullMesh, deckSVerts[i]);
-                //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
-                MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
+                    //convert the 2d list heightmap into a 2d array heightmap
+                    //this gets hella messy because gotta subsection the 2d array
+                    var sVerts = new Vector3[deckSVerts[i].Length][];
+                    for (int j = 0; j < deckSVerts[i].Length; j++){
+                        sVerts[j] = new Vector3[end-start];
+                        for (int k = start; k < end; k++){
+                            sVerts[j][k - start] = deckSVerts[i][j][k];
+                        }
+                    }
 
-                //now stick it in a buffer
-                hullBuffers[i] = new GeometryBuffer<VertexPositionNormalTexture>(
-                    hullIndicies.Length,
-                    hullVerticies.Length,
-                    hullIndicies.Length / 3,
-                    "Shader_AirshipHull"
-                );
-                hullBuffers[i].IndexBuffer.SetData(hullIndicies);
-                hullBuffers[i].VertexBuffer.SetData(hullVerticies);
+                    MeshHelper.Encode2DListIntoArray(primitivesPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
+                    //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
+                    MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
+
+                    return new HullMesh(3, hullIndicies, hullVerticies);
+                };
+                // ReSharper restore AccessToModifiedClosure
+
+                hullMeshBuffs[i][0] = generateBuff(0, vertsInSilhouette / 2);
+                hullMeshBuffs[i][1] = generateBuff(vertsInSilhouette / 2, vertsInSilhouette);
             }
-            return hullBuffers;
+            return hullMeshBuffs;
         }
 
         static Vector3 GenerateCenterPoint(Vector3[,] totalMesh){
@@ -608,6 +619,7 @@ namespace Gondola.GameState.ObjectEditor {
         public List<Vector3>[] FloorVertexes;
         public GeometryBuffer<VertexPositionNormalTexture>[] HullWallTexBuffers;
         public Vector2 MaxBoundingBoxDims;
+        public HullMesh[][] HullMeshes;
         public int NumDecks;
         public float WallResolution;
     }
