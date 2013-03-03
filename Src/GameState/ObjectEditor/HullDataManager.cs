@@ -22,7 +22,7 @@ namespace Gondola.GameState.ObjectEditor {
         public readonly ObjectBuffer<ObjectIdentifier>[] DeckBuffers;
         public readonly float DeckHeight;
         public readonly List<Vector3>[] DeckVertexes;
-        public readonly GeometryBuffer<VertexPositionNormalTexture>[] HullBuffers;
+        public readonly List<HullMesh>[] HullBuffers;
         public readonly int NumDecks;
         public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
         public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
@@ -33,7 +33,7 @@ namespace Gondola.GameState.ObjectEditor {
         public HullDataManager(HullGeometryInfo geometryInfo) {
             NumDecks = geometryInfo.NumDecks;
             VisibleDecks = NumDecks;
-            HullBuffers = geometryInfo.HullWallTexBuffers;
+            HullBuffers = geometryInfo.HullMeshes;
             DeckBuffers = geometryInfo.DeckFloorBuffers;
             DeckBoundingBoxes = geometryInfo.DeckFloorBoundingBoxes;
             DeckVertexes = geometryInfo.FloorVertexes;
@@ -84,7 +84,7 @@ namespace Gondola.GameState.ObjectEditor {
 
                 CurDeckBuffer = DeckBuffers[_curDeck];
                 CurWallBuffer = WallBuffers[_curDeck];
-                CurHullBuffer = HullBuffers[_curDeck];
+                //CurHullBuffer = HullBuffers[_curDeck];
                 CurWallIdentifiers = WallIdentifiers[_curDeck];
                 CurDeckBoundingBoxes = DeckBoundingBoxes[_curDeck];
                 CurDeckVertexes = DeckVertexes[_curDeck];
@@ -117,7 +117,7 @@ namespace Gondola.GameState.ObjectEditor {
                         CurDeck--;
                         tempFloorBuff[i].Enabled = true;
                         tempWWallBuff[i].Enabled = true;
-                        tempWallBuff[i].CullMode = CullMode.None;
+                        tempWallBuff[i].ForEach(item => item.CullMode = CullMode.None);
                         break;
                     }
                 }
@@ -130,7 +130,7 @@ namespace Gondola.GameState.ObjectEditor {
                     if (DeckBuffers[i].Enabled) {
                         CurDeck++;
                         DeckBuffers[i].Enabled = false;
-                        HullBuffers[i].CullMode = CullMode.CullClockwiseFace;
+                        HullBuffers[i].ForEach(item => item.CullMode = CullMode.CullClockwiseFace);
                         WallBuffers[i].Enabled = false;
                         break;
                     }
