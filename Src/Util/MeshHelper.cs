@@ -107,6 +107,7 @@ namespace Gondola.Util {
                     if (crossSum != Vector3.Zero) {
                         normals[vertX, vertZ].Normalize();
                     }
+
                 }
             }
 
@@ -123,6 +124,10 @@ namespace Gondola.Util {
 
                     normals[vertX, vertZ] += crossSum;
                     normals[vertX, vertZ].Normalize();
+                    if (crossSum == Vector3.Zero) {
+                        
+                        normals[vertX, vertZ] = Vector3.Down;
+                    }
                 }
             }
         }
