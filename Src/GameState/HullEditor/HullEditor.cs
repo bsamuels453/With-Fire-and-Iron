@@ -39,6 +39,14 @@ namespace Gondola.GameState.HullEditor {
             _previewRenderer = new PreviewRenderer(_sidepanel.Curves, _toppanel.Curves, _backpanel.Curves);
 
             UIElementCollection.UnbindCollection();
+
+            //force end early
+            var sideInfo = _sidepanel.Curves.GetControllerInfo();
+            var backInfo = _backpanel.Curves.GetControllerInfo();
+            var topInfo = _toppanel.Curves.GetControllerInfo();
+
+            GamestateManager.ClearAllStates();
+            GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
         }
 
 
