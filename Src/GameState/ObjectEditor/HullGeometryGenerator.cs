@@ -424,9 +424,6 @@ namespace Gondola.GameState.ObjectEditor {
                     MeshHelper.Encode2DListIntoArray(primitivesPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
                     //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
                     MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
-                    if (start != 0){
-                        hullVerticies = hullVerticies.Reverse().ToArray();
-                    }
                     return new HullMesh(3, hullIndicies, hullVerticies);
                 };
                 // ReSharper restore AccessToModifiedClosure
