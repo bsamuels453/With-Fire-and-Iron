@@ -18,7 +18,7 @@ namespace Gondola.GameState.ObjectEditor{
     internal class HullMesh : IEnumerable{
         readonly ObjectBuffer<SectionIdentifier> _structureBuffer;
         ObjectBuffer<SectionIdentifier> _fillBuffer;
-        Vector3[][] _structureVerts;//necessary?
+        Vector3[][] _structureVerts; //necessary?
 
         public HullMesh(int layersPerDeck, int[] indicies, VertexPositionNormalTexture[] verts){
             _structureVerts = new Vector3[layersPerDeck][];
@@ -170,81 +170,91 @@ namespace Gondola.GameState.ObjectEditor{
                 Vector2 min = new Vector2(box.Min.X, box.Min.Y);
                 float sliceMin, sliceMax;
                 sliceMin = min.X;
-                sliceMax  = max.X;
+                sliceMax = max.X;
 
                 //starting @ min
-                float progressive = 0;
+                if (sliceMin < _lowerPts[0].X && sliceMin < _upperPts[0].X) {
+                    NearBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                }
+                else{
+                    if (sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X) {
+                        FarBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                    }
+                    else{
+                        MiddleBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                    }
+                }
+
+
+                verts = null;
+                inds = null;
+            }
+
+            float NearBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
+                //we know sliceMin is out of the picture
                 //left to right
-                if (sliceMin < _lowerPts[0].X && sliceMin < _upperPts[0].X){
-                    //we know sliceMin is out of the picture
-                    if (sliceMax > _lowerPts[0].X && sliceMax < _upperPts[0].X ||
-                        sliceMax < _lowerPts[0].X && sliceMax > _upperPts[0].X){
-                        //near end clipped off
-                        //generate intermediate
-                        progressive = _lowerPts[0].X > _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;
-                        //return
-                    }
-                    if (sliceMax > _lowerPts[0].X && sliceMax > _upperPts[0].X &&
-                        sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X) {
-                        //near half clipped off
-                        //generate intermediate
-                        progressive = sliceMax;
-                        //return
-                    }
-                    if (sliceMax > _lowerPts[1].X && sliceMax < _upperPts[1].X ||
-                        sliceMax < _lowerPts[1].X && sliceMax > _upperPts[1].X){
-                        //near half engulfed
-                        progressive = sliceMax;
-                        //return
-                    }
-                    //entire engulfed?
-                    //return
+                
+                if (sliceMax > _lowerPts[0].X && sliceMax < _upperPts[0].X ||
+                    sliceMax < _lowerPts[0].X && sliceMax > _upperPts[0].X){
+                    //near end clipped off
+                    //generate intermediate
+                    return _lowerPts[0].X > _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;;
                 }
+                if (sliceMax > _lowerPts[0].X && sliceMax > _upperPts[0].X &&
+                    sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
+                    //near half clipped off
+                    //generate intermediate
+                    return sliceMax;
+                }
+                if (sliceMax > _lowerPts[1].X && sliceMax < _upperPts[1].X ||
+                    sliceMax < _lowerPts[1].X && sliceMax > _upperPts[1].X){
+                    //near half engulfed
+                    return sliceMax;
+                }
+                //entire engulfed?
+                throw new Exception();
+            }
 
-                //opposite render direction
+            float FarBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
+                //we know sliceMax is out of the picture
                 //right to left
-                if (sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
-                    //we know sliceMax is out of the picture
-                    if (sliceMin > _lowerPts[1].X && sliceMin < _upperPts[1].X ||
-                        sliceMin < _lowerPts[1].X && sliceMin > _upperPts[1].X) {
-                        //far end clipped off
-                        //generate intermediate
-                        progressive = _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
-                        //return
-                    }
-                    if (sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X &&
-                        sliceMin < _lowerPts[1].X && sliceMin < _upperPts[1].X) {
-                        //far half clipped off
-                        //generate intermediate
-                        progressive = sliceMin;
-                        //return
-                    }
-                    if (sliceMin > _lowerPts[0].X && sliceMin < _upperPts[0].X ||
-                        sliceMin < _lowerPts[0].X && sliceMin > _upperPts[0].X) {
-                        //far half engulfed
-                        progressive = sliceMin;
-                        //return
-                    }
-                    //entire engulfed?
-                    //return
-                }
 
-                //now the center outlier
+                if (sliceMin > _lowerPts[1].X && sliceMin < _upperPts[1].X ||
+                    sliceMin < _lowerPts[1].X && sliceMin > _upperPts[1].X){
+                    //far end clipped off
+                    //generate intermediate
+                    return _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
+                }
+                if (sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X &&
+                    sliceMin < _lowerPts[1].X && sliceMin < _upperPts[1].X){
+                    //far half clipped off
+                    //generate intermediate
+                    return sliceMin;
+                }
+                if (sliceMin > _lowerPts[0].X && sliceMin < _upperPts[0].X ||
+                    sliceMin < _lowerPts[0].X && sliceMin > _upperPts[0].X){
+                    //far half engulfed
+                    return sliceMin;
+                }
+                throw new Exception();
+            }
+
+            float MiddleBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
                 if (sliceMin > _lowerPts[0].X && sliceMin < _upperPts[0].X ||
                     sliceMin < _lowerPts[0].X && sliceMin > _upperPts[0].X){
                     //slicemin is between near
 
-                    if(sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
+                    if (sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
                         //cut from between near to middle
-                        //return
+                        return 0;
                     }
 
                     if (sliceMax > _lowerPts[1].X && sliceMax < _upperPts[1].X ||
                         sliceMax < _lowerPts[1].X && sliceMax > _upperPts[1].X){
                         //cut from between near to between far
-                        //return
+                        return 0;
                     }
-                    //return
+                    throw new Exception();
                 }
 
                 if (sliceMax > _lowerPts[1].X && sliceMax < _upperPts[1].X ||
@@ -253,20 +263,17 @@ namespace Gondola.GameState.ObjectEditor{
 
                     if (sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X){
                         //cut from between far to middle
-                        //return
+                        return 0;
                     }
-                    //dont need cut between near and between far because covered above
-                    //return
+                    throw new Exception();
                 }
 
                 if (sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X &&
                     sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
                     //center cut
+                    return 0;
                 }
-
-
-                verts = null;
-                inds = null;
+                throw new Exception();
             }
 
             #region Nested type: OverlapState
@@ -291,3 +298,4 @@ namespace Gondola.GameState.ObjectEditor{
         #endregion
     }
 }
+    
