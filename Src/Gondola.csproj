@@ -130,6 +130,7 @@
     <Compile Include="GameState\HullEditor\HullEditor.cs" />
     <Compile Include="GameState\HullEditor\HullEditorPanels.cs" />
     <Compile Include="GameState\HullEditor\PreviewRenderer.cs" />
+    <Compile Include="GameState\ObjectEditor\HullMesh.cs" />
     <Compile Include="GameState\ObjectEditor\Tools\DeckPlacementBase.cs" />
     <Compile Include="GameState\ObjectEditor\Tools\LadderBuildTool.cs" />
     <Compile Include="GameState\ObjectEditor\Tools\WallBuildTool.cs" />
