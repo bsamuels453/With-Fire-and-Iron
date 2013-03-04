@@ -163,31 +163,58 @@ namespace Gondola.GameState.ObjectEditor{
                 throw new Exception();
             }
 
-            public void CutRectangle(BoundingBox box, out VertexPositionNormalTexture[] verts, out int[] inds){
+            public void CutRectangle(List<BoundingBox> boxes, out VertexPositionNormalTexture[] verts, out int[] inds){
                 var indsLi = new List<int>();
                 var vertsLi = new List<VertexPositionNormalTexture>();
-                Vector2 max = new Vector2(box.Max.Y, box.Max.Y);
-                Vector2 min = new Vector2(box.Min.X, box.Min.Y);
-                float sliceMin, sliceMax;
-                sliceMin = min.X;
-                sliceMax = max.X;
 
-                //starting @ min
+                var orderedBoxes = from b in boxes
+                                   orderby b.Min.X
+                                   select b;
+
+                int boxesHandled = 0;
+
+                int startIdx = 0;
+                float nearStartPt = -1;
+                float sliceMin = orderedBoxes.ElementAt(0).Min.X;
+                float sliceMax = orderedBoxes.ElementAt(0).Max.X;
                 if (sliceMin < _lowerPts[0].X && sliceMin < _upperPts[0].X) {
-                    NearBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
-                }
-                else{
-                    if (sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X) {
-                        FarBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
-                    }
-                    else{
-                        MiddleBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
-                    }
+                    nearStartPt = NearBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                    startIdx++;
+                    boxesHandled++;
                 }
 
+                int endIdx = 0;
+                float farStartPt = -1;
+                sliceMin = orderedBoxes.Last().Min.X;
+                sliceMax = orderedBoxes.Last().Max.X;
+                if (sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X) {
+                    farStartPt = FarBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                    endIdx++;
+                    boxesHandled++;
+                }
+
+                if (boxesHandled == orderedBoxes.Count()){
+                    //return;
+                }
+
+                var midBoxes = orderedBoxes.Skip(startIdx).Take(orderedBoxes.Count() - endIdx - startIdx);
+                GenerateMidGeometry(nearStartPt, farStartPt, midBoxes, vertsLi, indsLi);
 
                 verts = null;
                 inds = null;
+            }
+
+            void GenerateMidGeometry(
+                float sliceStart, 
+                float sliceEnd, 
+                IEnumerable<BoundingBox> boxes, 
+                List<VertexPositionNormalTexture> verts, 
+                List<int> inds) {
+
+
+
+
+
             }
 
             float NearBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
@@ -238,7 +265,7 @@ namespace Gondola.GameState.ObjectEditor{
                 }
                 throw new Exception();
             }
-
+            /*
             float MiddleBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
                 if (sliceMin > _lowerPts[0].X && sliceMin < _upperPts[0].X ||
                     sliceMin < _lowerPts[0].X && sliceMin > _upperPts[0].X){
@@ -275,6 +302,7 @@ namespace Gondola.GameState.ObjectEditor{
                 }
                 throw new Exception();
             }
+             */
 
             #region Nested type: OverlapState
 
