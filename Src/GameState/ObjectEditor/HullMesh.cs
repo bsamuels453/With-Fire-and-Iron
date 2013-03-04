@@ -253,10 +253,10 @@ namespace Gondola.GameState.ObjectEditor{
                 float leftBound = centSliceStart;
                 while (boxes.Count > 0){
                     float min = boxes.Min(bo => bo.Min.X);
-                    var minBox = (BoundingBox)
+                    var minBox = (
                                 from b in boxes
                                 where b.Min.X == min
-                                select b;
+                                select b).First();
                     boxes.Remove(minBox);
                     float rightBound = minBox.Min.X;
                     //generate quad
