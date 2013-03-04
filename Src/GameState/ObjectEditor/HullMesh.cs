@@ -198,24 +198,80 @@ namespace Gondola.GameState.ObjectEditor{
                 }
 
                 var midBoxes = orderedBoxes.Skip(startIdx).Take(orderedBoxes.Count() - endIdx - startIdx);
-                GenerateMidGeometry(nearStartPt, farStartPt, midBoxes, vertsLi, indsLi);
+                GenerateMidGeometry(nearStartPt, farStartPt, midBoxes.ToList(), vertsLi);
 
                 verts = null;
                 inds = null;
             }
 
             void GenerateMidGeometry(
-                float sliceStart, 
-                float sliceEnd, 
-                IEnumerable<BoundingBox> boxes, 
-                List<VertexPositionNormalTexture> verts, 
-                List<int> inds) {
+                float centSliceStart,
+                float centSliceEnd,
+                List<BoundingBox> boxes,
+                List<VertexPositionNormalTexture> verts){
+                // ReSharper disable CompareOfFloatsByEqualityOperator
+                if (centSliceStart == -1){
+                    //need to generate the first section
+                    float pSliceStart = _upperPts[0].X < _lowerPts[0].X ? _upperPts[0].X : _lowerPts[0].X;
 
+                    //potential slice end
+                    float pSliceEnd = _upperPts[0].X > _lowerPts[0].X ? _upperPts[0].X : _lowerPts[0].X;
+                    BoundingBox? bboxToRemove = null;
+                    foreach (var box in boxes){
+                        if (box.Min.X < pSliceEnd){
+                            centSliceStart = box.Max.X;
+                            pSliceEnd = box.Min.X;
+                            bboxToRemove = box;
+                            break;
+                        }
+                    }
+                    if (bboxToRemove != null){
+                        boxes.Remove((BoundingBox)bboxToRemove);
+                    }
+                    //gentri
+                }
+                if (centSliceEnd == -1) {
+                    //need to generate the last section
+                    float pSliceEnd = _upperPts[1].X > _lowerPts[1].X ? _upperPts[1].X : _lowerPts[1].X;
 
+                    float pSliceBegin = _upperPts[1].X < _lowerPts[1].X ? _upperPts[1].X : _lowerPts[1].X;
+                    BoundingBox? bboxToRemove = null;
+                    foreach (var box in boxes) {
+                        if (box.Max.X < pSliceBegin) {
+                            centSliceEnd = box.Max.X;
+                            pSliceBegin = box.Min.X;
+                            bboxToRemove = box;
+                            break;
+                        }
+                    }
+                    if (bboxToRemove != null) {
+                        boxes.Remove((BoundingBox)bboxToRemove);
+                    }
+                    //gentri
+                }
 
+                float leftBound = centSliceStart;
+                while (boxes.Count > 0){
+                    float min = boxes.Min(bo => bo.Min.X);
+                    var minBox = (BoundingBox)
+                                from b in boxes
+                                where b.Min.X == min
+                                select b;
+                    boxes.Remove(minBox);
+                    float rightBound = minBox.Min.X;
+                    //generate quad
 
+                    leftBound = minBox.Max.X;
 
+                    if (boxes.Count == 0){
+                        rightBound = centSliceEnd;
+                        //generate final quad
+                    }
+                }
+
+                // ReSharper restore CompareOfFloatsByEqualityOperator
             }
+
 
             float NearBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
                 //we know sliceMin is out of the picture
