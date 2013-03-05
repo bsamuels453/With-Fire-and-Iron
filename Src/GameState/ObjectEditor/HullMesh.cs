@@ -17,11 +17,10 @@ namespace Gondola.GameState.ObjectEditor{
     /// </summary>
     internal class HullMesh : IEnumerable{
         readonly ObjectBuffer<SectionIdentifier> _structureBuffer;
-        ObjectBuffer<SectionIdentifier> _fillBuffer;
-        Vector3[][] _structureVerts; //necessary?
+        ObjectBuffer<int> _fillBuffer;
 
         public HullMesh(int layersPerDeck, int[] indicies, VertexPositionNormalTexture[] verts){
-            _structureVerts = new Vector3[layersPerDeck][];
+            //_structureVerts = new Vector3[layersPerDeck][];
 
             _structureBuffer = new ObjectBuffer<SectionIdentifier>(indicies.Length, 2, 4, 6, "Shader_AirshipHull");
             int idcIdx = 0;
@@ -57,9 +56,27 @@ namespace Gondola.GameState.ObjectEditor{
         #endregion
 
         public void Cut(Vector3 v){
+            var toremove = new List<SectionIdentifier>();
             foreach (SectionIdentifier section in _structureBuffer){
-                if (section.ContainsPoint(new Vector2(v.X, v.Y)))
-                    _structureBuffer.DisableObject(section);
+                var bb = new List<BoundingBox>();
+                bb.Add(new BoundingBox(v, v+new Vector3(1,0,0)));
+                List<VertexPositionNormalTexture> totVerts;
+                VertexPositionNormalTexture[] verts;
+                totVerts = new List<VertexPositionNormalTexture>();
+
+                if (section.ContainsPoint(new Vector2(v.X, v.Y))){
+                    section.CutRectangle(bb, out verts);
+                    totVerts.AddRange(verts);
+                    toremove.Add(section);
+                }
+                var inds = MeshHelper.CreateTriangleIndiceArray(totVerts.Count / 3);
+                if (totVerts.Count > 0){
+                    _fillBuffer = new ObjectBuffer<int>(1, totVerts.Count/3, totVerts.Count, inds.Count(), "Shader_AirshipHull");
+                    _fillBuffer.AddObject(0, inds, totVerts.ToArray());
+                }
+            }
+            foreach (var identifier in toremove){
+                _structureBuffer.DisableObject(identifier);
             }
         }
 
@@ -163,8 +180,7 @@ namespace Gondola.GameState.ObjectEditor{
                 throw new Exception();
             }
 
-            public void CutRectangle(List<BoundingBox> boxes, out VertexPositionNormalTexture[] verts, out int[] inds){
-                var indsLi = new List<int>();
+            public void CutRectangle(List<BoundingBox> boxes, out VertexPositionNormalTexture[] verts){
                 var vertsLi = new List<VertexPositionNormalTexture>();
 
                 var orderedBoxes = from b in boxes
@@ -178,7 +194,7 @@ namespace Gondola.GameState.ObjectEditor{
                 float sliceMin = orderedBoxes.ElementAt(0).Min.X;
                 float sliceMax = orderedBoxes.ElementAt(0).Max.X;
                 if (sliceMin < _lowerPts[0].X && sliceMin < _upperPts[0].X) {
-                    nearStartPt = NearBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                    nearStartPt = NearBasedCut(sliceMin, sliceMax, vertsLi);
                     startIdx++;
                     boxesHandled++;
                 }
@@ -188,7 +204,7 @@ namespace Gondola.GameState.ObjectEditor{
                 sliceMin = orderedBoxes.Last().Min.X;
                 sliceMax = orderedBoxes.Last().Max.X;
                 if (sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X) {
-                    farStartPt = FarBasedCut(sliceMin, sliceMax, vertsLi, indsLi);
+                    farStartPt = FarBasedCut(sliceMin, sliceMax, vertsLi);
                     endIdx++;
                     boxesHandled++;
                 }
@@ -200,8 +216,7 @@ namespace Gondola.GameState.ObjectEditor{
                 var midBoxes = orderedBoxes.Skip(startIdx).Take(orderedBoxes.Count() - endIdx - startIdx);
                 GenerateMidGeometry(nearStartPt, farStartPt, midBoxes.ToList(), vertsLi);
 
-                verts = null;
-                inds = null;
+                verts = vertsLi.ToArray();
             }
 
             void GenerateMidGeometry(
@@ -211,7 +226,7 @@ namespace Gondola.GameState.ObjectEditor{
                 List<VertexPositionNormalTexture> verts){
                 // ReSharper disable CompareOfFloatsByEqualityOperator
                 if (centSliceStart == -1){
-                    //need to generate the first section
+                    //need to generate the near section
                     float pSliceStart = _upperPts[0].X < _lowerPts[0].X ? _upperPts[0].X : _lowerPts[0].X;
 
                     //potential slice end
@@ -220,7 +235,7 @@ namespace Gondola.GameState.ObjectEditor{
                     foreach (var box in boxes){
                         if (box.Min.X < pSliceEnd){
                             centSliceStart = box.Max.X;
-                            pSliceEnd = box.Min.X;
+                            pSliceEnd = box.Min.Y;
                             bboxToRemove = box;
                             break;
                         }
@@ -229,9 +244,13 @@ namespace Gondola.GameState.ObjectEditor{
                         boxes.Remove((BoundingBox)bboxToRemove);
                     }
                     //gentri
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    var v = Lerp.Trace3X(_upperPts[0], _upperPts[1], pSliceEnd);
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _upperPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceStart, _upperPts[0].Y, _upperPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
                 }
                 if (centSliceEnd == -1) {
-                    //need to generate the last section
+                    //need to generate the far section
                     float pSliceEnd = _upperPts[1].X > _lowerPts[1].X ? _upperPts[1].X : _lowerPts[1].X;
 
                     float pSliceBegin = _upperPts[1].X < _lowerPts[1].X ? _upperPts[1].X : _lowerPts[1].X;
@@ -248,6 +267,11 @@ namespace Gondola.GameState.ObjectEditor{
                         boxes.Remove((BoundingBox)bboxToRemove);
                     }
                     //gentri
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[1].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    var v = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], pSliceBegin);
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceBegin, _lowerPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceBegin, _upperPts[0].Y, _upperPts[1].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+               
                 }
 
                 float leftBound = centSliceStart;
@@ -273,15 +297,22 @@ namespace Gondola.GameState.ObjectEditor{
             }
 
 
-            float NearBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
+            float NearBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts) {
                 //we know sliceMin is out of the picture
                 //left to right
                 
                 if (sliceMax > _lowerPts[0].X && sliceMax < _upperPts[0].X ||
                     sliceMax < _lowerPts[0].X && sliceMax > _upperPts[0].X){
                     //near end clipped off
+                    //verts.Add(new VertexPositionNormalTexture(new Vector3(0,0,0), new Vector3(0,0,0), new Vector2(0,0));
+                    float cutEndPt = _lowerPts[0].X > _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;
+                    float cutStartPt = sliceMax;
+                    var v1 = Lerp.Intersection(_lowerPts[0], _upperPts[0], new Vector3(sliceMin, 5, 0), new Vector3(sliceMin, 0, 0));
+
+
+                    verts.Add(new VertexPositionNormalTexture(new Vector3(0,0,0), new Vector3(0,0,0), new Vector2(0,0)));
                     //generate intermediate
-                    return _lowerPts[0].X > _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;;
+                    return cutEndPt;
                 }
                 if (sliceMax > _lowerPts[0].X && sliceMax > _upperPts[0].X &&
                     sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
@@ -298,7 +329,7 @@ namespace Gondola.GameState.ObjectEditor{
                 throw new Exception();
             }
 
-            float FarBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts, List<int> inds) {
+            float FarBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts) {
                 //we know sliceMax is out of the picture
                 //right to left
 
@@ -311,7 +342,6 @@ namespace Gondola.GameState.ObjectEditor{
                 if (sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X &&
                     sliceMin < _lowerPts[1].X && sliceMin < _upperPts[1].X){
                     //far half clipped off
-                    //generate intermediate
                     return sliceMin;
                 }
                 if (sliceMin > _lowerPts[0].X && sliceMin < _upperPts[0].X ||
