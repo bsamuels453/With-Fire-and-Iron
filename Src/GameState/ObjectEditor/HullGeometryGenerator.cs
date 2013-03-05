@@ -402,7 +402,7 @@ namespace Gondola.GameState.ObjectEditor {
                 Func<int, int, HullMesh> generateBuff = (start, end) => {
                     var hullMesh = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
                     var hullNormals = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
-                    int[] hullIndicies = MeshHelper.CreateIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
+                    int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
                     VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((primitivesPerDeck) * (vertsInSilhouette / 2-1));
 
                     //get the hull normals for this part of the hull from the total normals

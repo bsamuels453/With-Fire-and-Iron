@@ -12,7 +12,7 @@ namespace Gondola.Util {
     ///   helper class for use with rectangular meshes
     /// </summary>
     internal static class MeshHelper {
-        public static int[] CreateIndiceArray(int numQuads) {
+        public static int[] CreateQuadIndiceArray(int numQuads) {
             //construct indice list
             //remember the clockwise-fu
             //+1-----+2
@@ -37,6 +37,18 @@ namespace Gondola.Util {
                 indicies[i + 5] = curVertex + 3;
 
                 curVertex += 4;
+            }
+            return indicies;
+        }
+
+        public static int[] CreateTriangleIndiceArray(int numTris){
+            var indicies = new int[numTris * 3];
+            int curVertex = 0;
+            for (int i = 0; i < indicies.Count(); i += 3) {
+                indicies[i] = curVertex;
+                indicies[i + 1] = curVertex + 1;
+                indicies[i + 2] = curVertex + 2;
+                curVertex += 3;
             }
             return indicies;
         }
