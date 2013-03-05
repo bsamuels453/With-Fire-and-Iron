@@ -45,6 +45,9 @@ namespace Gondola.GameState.ObjectEditor.Tools {
         }
 
         protected override void HandleCursorRelease() {
+
+            _hullData.CurHullBuffer[1].Cut(CursorPosition + new Vector3(0,0.01f,0));
+
             var identifier = new ObjectIdentifier(ObjectType.Ladder, CursorPosition);
 
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2) * Matrix.CreateTranslation(CursorPosition);

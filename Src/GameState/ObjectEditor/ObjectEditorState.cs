@@ -27,7 +27,7 @@ namespace Gondola.GameState.ObjectEditor {
             GamestateManager.CameraController = _cameraController;
 
             UIElementCollection.BindCollection(_uiElementCollection);
-            var geometryInfo = HullGeometryGenerator.GenerateShip(backCurveInfo, sideCurveInfo, topCurveInfo, _primsPerDeck);
+            var geometryInfo = HullGeometryGenerator.GenerateShip(backCurveInfo, sideCurveInfo, topCurveInfo, 5);
             _hullData = new HullDataManager(geometryInfo);
             _doodadUI = new ObjectEditorUI(_hullData, _renderTarget);
             UIElementCollection.UnbindCollection();
