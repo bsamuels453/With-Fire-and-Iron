@@ -247,7 +247,7 @@ namespace Gondola.GameState.ObjectEditor{
                     BoundingBox? bboxToRemove = null;
                     foreach (var box in boxes){
                         if (box.Min.X < pSliceEnd){
-                            centSliceStart = box.Max.X;
+                            centSliceStart = box.Max.X;//might have to reverse
                             pSliceEnd = box.Min.Y;
                             bboxToRemove = box;
                             break;
@@ -273,8 +273,8 @@ namespace Gondola.GameState.ObjectEditor{
                     BoundingBox? bboxToRemove = null;
                     foreach (var box in boxes) {
                         if (box.Max.X > pSliceBegin) {
-                            centSliceEnd = box.Max.X;
-                            pSliceBegin = box.Min.X;
+                            centSliceEnd = box.Min.X;
+                            pSliceBegin = box.Max.X;
                             bboxToRemove = box;
                             break;
                         }
