@@ -60,7 +60,7 @@ namespace Gondola.GameState.ObjectEditor{
             var toremove = new List<SectionIdentifier>();
             foreach (SectionIdentifier section in _structureBuffer){
                 var bb = new List<BoundingBox>();
-                bb.Add(new BoundingBox(v, v+new Vector3(1,0,0)));
+                bb.Add(new BoundingBox(v, v+new Vector3(0.5f,0,0)));
                 List<VertexPositionNormalTexture> totVerts;
                 VertexPositionNormalTexture[] verts;
                 totVerts = new List<VertexPositionNormalTexture>();
@@ -216,7 +216,7 @@ namespace Gondola.GameState.ObjectEditor{
                 sliceMin = orderedBoxes.Last().Min.X;
                 sliceMax = orderedBoxes.Last().Max.X;
                 if (sliceMax > _lowerPts[1].X && sliceMax > _upperPts[1].X) {
-                    farStartPt = FarBasedCut(sliceMin, sliceMax, vertsLi);
+                    farStartPt = FarBasedCut(sliceMin, sliceMax, verts2);
                     endIdx++;
                     boxesHandled++;
                 }
@@ -301,13 +301,13 @@ namespace Gondola.GameState.ObjectEditor{
                     var upperLeft = Lerp.Trace3X(_upperPts[0], _upperPts[1], lBound);
                     var bottomLeft = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], lBound);
 
-                    verts2.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts2.Add(new VertexPositionNormalTexture(upperRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts2.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(upperRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
 
-                    verts2.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts2.Add(new VertexPositionNormalTexture(bottomLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts2.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(bottomLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
                     return true;
                 };
                 while (boxes.Count > 0){
@@ -337,12 +337,11 @@ namespace Gondola.GameState.ObjectEditor{
                     sliceMax < _lowerPts[0].X && sliceMax > _upperPts[0].X){
                     //near end clipped off
                     //verts.Add(new VertexPositionNormalTexture(new Vector3(0,0,0), new Vector3(0,0,0), new Vector2(0,0));
-                    float cutEndPt = _lowerPts[0].X > _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;
+                    float cutEndPt = _lowerPts[0].X < _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;
                     float cutStartPt = sliceMax;
                     var v1 = Lerp.Intersection(_lowerPts[0], _upperPts[0], new Vector3(sliceMin, 5, 0), new Vector3(sliceMin, 0, 0));
 
-
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(0,0,0), new Vector3(0,0,0), new Vector2(0,0)));
+                                
                     //generate intermediate
                     return cutEndPt;
                 }
@@ -364,20 +363,43 @@ namespace Gondola.GameState.ObjectEditor{
             float FarBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts) {
                 //we know sliceMax is out of the picture
                 //right to left
-
                 if (sliceMin > _lowerPts[1].X && sliceMin < _upperPts[1].X ||
                     sliceMin < _lowerPts[1].X && sliceMin > _upperPts[1].X){
                     //far end clipped off
                     //generate intermediate
+                    float cutEndPt = sliceMin;
+                    float cutStartPt = _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
+                    var v1 = Lerp.Trace3X(_lowerPts[1], _upperPts[1], cutEndPt);
+                    Vector3 v2, v3, v4;
+                    if (_lowerPts[1].X > _upperPts[1].X) {
+                        //building
+                        v2 = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], cutEndPt);
+                        var v3Z = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], _upperPts[1].X).Z;
+                        v3 = new Vector3(_upperPts[1].X, _lowerPts[1].Y, v3Z);
+                        v4 = _upperPts[1];
+                    }
+                    else{
+                        v2 = _lowerPts[1];
+                        v3 = new Vector3(_lowerPts[1].X, _upperPts[1].Y, _upperPts[1].Z);
+                        v4 = Lerp.Trace3X(_upperPts[0], _upperPts[1], cutStartPt);
+                    }
+
+                    verts.Add(new VertexPositionNormalTexture(v1, new Vector3(), new Vector2()));
+                    verts.Add(new VertexPositionNormalTexture(v2, new Vector3(), new Vector2()));
+                    verts.Add(new VertexPositionNormalTexture(v3, new Vector3(), new Vector2()));
+                    verts.Add(new VertexPositionNormalTexture(v3, new Vector3(), new Vector2()));
+                    verts.Add(new VertexPositionNormalTexture(v4, new Vector3(), new Vector2()));
+                    verts.Add(new VertexPositionNormalTexture(v1, new Vector3(), new Vector2()));
+
                     return _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
                 }
-                if (sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X &&
+                if (sliceMin > _lowerPts[1].X && sliceMin > _upperPts[1].X &&
                     sliceMin < _lowerPts[1].X && sliceMin < _upperPts[1].X){
                     //far half clipped off
                     return sliceMin;
                 }
-                if (sliceMin > _lowerPts[0].X && sliceMin < _upperPts[0].X ||
-                    sliceMin < _lowerPts[0].X && sliceMin > _upperPts[0].X){
+                if (sliceMin > _lowerPts[1].X && sliceMin < _upperPts[1].X ||
+                    sliceMin < _lowerPts[1].X && sliceMin > _upperPts[1].X){
                     //far half engulfed
                     return sliceMin;
                 }
