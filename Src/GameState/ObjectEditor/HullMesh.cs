@@ -42,6 +42,8 @@ namespace Gondola.GameState.ObjectEditor{
                 idcIdx += 6;
                 vertIdx += 4;
             }
+
+            
         }
 
         public CullMode CullMode{
@@ -56,36 +58,45 @@ namespace Gondola.GameState.ObjectEditor{
 
         #endregion
 
-        public void Cut(Vector3 v){
+        public void Cut(Vector3 v1, Vector3 v2){
             var toremove = new List<SectionIdentifier>();
-            foreach (SectionIdentifier section in _structureBuffer){
-                var bb = new List<BoundingBox>();
-                bb.Add(new BoundingBox(v, v+new Vector3(0.6f,0,0)));
-                List<VertexPositionNormalTexture> totVerts;
-                VertexPositionNormalTexture[] verts;
-                totVerts = new List<VertexPositionNormalTexture>();
-                var verts2 = new List<VertexPositionNormalTexture>();
+            var totVerts = new List<VertexPositionNormalTexture>();
+            var verts2 = new List<VertexPositionNormalTexture>();
 
-                if (section.ContainsPoint(new Vector2(v.X, v.Y))){
-                    section.CutRectangle(bb, out verts, verts2);
+            foreach (SectionIdentifier section in _structureBuffer){
+                var verts = new List<VertexPositionNormalTexture>();
+                var bb = new BoundingBox(v1, v2);
+
+                if (section.ContainsPoint(new Vector2(v1.X, v1.Y))) {
+                    section.SlicedSections.Add(bb);
+                }
+                else{
+                    if (section.ContainsPoint(new Vector2(v2.X, v2.Y))){
+                        section.SlicedSections.Add(bb);
+                    }
+                }
+                if (section.CutRectangle(verts, verts2)){
                     totVerts.AddRange(verts);
                     toremove.Add(section);
-
-
-                    //break;
                 }
-                if (totVerts.Count > 0) {
-                    var inds = MeshHelper.CreateTriangleIndiceArray(totVerts.Count / 3);
-                    _fillBuffer = new ObjectBuffer<int>(1, totVerts.Count / 3, totVerts.Count, inds.Count(), "Shader_AirshipHull");
-                    _fillBuffer.AddObject(0, inds, totVerts.ToArray());
-                }
+            }
 
-                if (verts2.Count > 0) {
-                    var inds = MeshHelper.CreateTriangleIndiceArray(verts2.Count / 3);
-                    _buff = new ObjectBuffer<int>(1, verts2.Count / 3, verts2.Count, inds.Count(), "Shader_TintedModel");
-                    _buff.AddObject(1, inds, verts2.ToArray());
+            if (totVerts.Count > 0) {
+                var inds = MeshHelper.CreateTriangleIndiceArray(totVerts.Count / 3);
+                if (_fillBuffer != null) {
+                    _fillBuffer.Dispose();
                 }
+                _fillBuffer = new ObjectBuffer<int>(1, totVerts.Count / 3, totVerts.Count, inds.Count(), "Shader_AirshipHull");
+                _fillBuffer.AddObject(0, inds, totVerts.ToArray());
+            }
 
+            if (verts2.Count > 0) {
+                var inds = MeshHelper.CreateTriangleIndiceArray(verts2.Count / 3);
+                if (_buff != null) {
+                    _buff.Dispose();
+                }
+                _buff = new ObjectBuffer<int>(1, verts2.Count / 3, verts2.Count, inds.Count(), "Shader_TintedModel");
+                _buff.AddObject(1, inds, verts2.ToArray());
             }
             foreach (var identifier in toremove){
                 _structureBuffer.DisableObject(identifier);
@@ -101,9 +112,12 @@ namespace Gondola.GameState.ObjectEditor{
             readonly OverlapState _nearOverlap;
             readonly Vector3[] _upperPts;
 
+            readonly public List<BoundingBox> SlicedSections; 
+
             public SectionIdentifier(VertexPositionNormalTexture[] verts){
                 _upperPts = new Vector3[2];
                 _lowerPts = new Vector3[2];
+                SlicedSections = new List<BoundingBox>();
 
                 if (verts[0].Position.X < verts[1].Position.X){
                     _upperPts[0] = verts[0].Position;
@@ -192,10 +206,13 @@ namespace Gondola.GameState.ObjectEditor{
                 throw new Exception();
             }
 
-            public void CutRectangle(List<BoundingBox> boxes, out VertexPositionNormalTexture[] verts, List<VertexPositionNormalTexture> verts2 ){
+            public bool CutRectangle(List<VertexPositionNormalTexture> verts, List<VertexPositionNormalTexture> verts2) {
+                if (SlicedSections.Count == 0){
+                    return false;
+                }
                 var vertsLi = new List<VertexPositionNormalTexture>();
 
-                var orderedBoxes = from b in boxes
+                var orderedBoxes = from b in SlicedSections
                                    orderby b.Min.X
                                    select b;
 
@@ -228,7 +245,8 @@ namespace Gondola.GameState.ObjectEditor{
                 var midBoxes = orderedBoxes.Skip(startIdx).Take(orderedBoxes.Count() - endIdx - startIdx);
                 GenerateMidGeometry(nearStartPt, farStartPt, midBoxes.ToList(), vertsLi, verts2);
 
-                verts = vertsLi.ToArray();
+                verts.AddRange(vertsLi);
+                return true;
             }
 
             void GenerateMidGeometry(
