@@ -66,7 +66,7 @@ namespace Gondola.GameState.ObjectEditor{
             foreach (SectionIdentifier section in _structureBuffer){
                 var verts = new List<VertexPositionNormalTexture>();
                 var bb = new BoundingBox(v1, v2);
-
+                section.SlicedSections.Clear();
                 if (section.ContainsPoint(new Vector2(v1.X, v1.Y))) {
                     section.SlicedSections.Add(bb);
                 }
@@ -266,7 +266,7 @@ namespace Gondola.GameState.ObjectEditor{
                     foreach (var box in boxes){
                         if (box.Min.X < pSliceEnd){
                             centSliceStart = box.Max.X;//might have to reverse
-                            pSliceEnd = box.Min.Y;
+                            pSliceEnd = box.Min.X;
                             bboxToRemove = box;
                             break;
                         }
@@ -275,10 +275,11 @@ namespace Gondola.GameState.ObjectEditor{
                         boxes.Remove((BoundingBox)bboxToRemove);
                     }
                     //gentri
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    
+                    verts2.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
                     var v = Lerp.Trace3X(_upperPts[0], _upperPts[1], pSliceEnd);
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _upperPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceStart, _upperPts[0].Y, _upperPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts2.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _upperPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    verts2.Add(new VertexPositionNormalTexture(new Vector3(pSliceStart, _upperPts[0].Y, _upperPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
                     
                 }
                 if (centSliceEnd == -1) {
@@ -301,6 +302,7 @@ namespace Gondola.GameState.ObjectEditor{
                         boxes.Remove((BoundingBox)bboxToRemove);
                     }
                     //gentri
+                    
                     verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[1].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
                     var v = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], pSliceBegin);
                     verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceBegin, _lowerPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
@@ -316,7 +318,7 @@ namespace Gondola.GameState.ObjectEditor{
                     var upperRight = Lerp.Trace3X(_upperPts[0], _upperPts[1], rBound);
                     var upperLeft = Lerp.Trace3X(_upperPts[0], _upperPts[1], lBound);
                     var bottomLeft = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], lBound);
-
+                    
                     verts.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
                     verts.Add(new VertexPositionNormalTexture(upperRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
                     verts.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
@@ -324,6 +326,7 @@ namespace Gondola.GameState.ObjectEditor{
                     verts.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
                     verts.Add(new VertexPositionNormalTexture(bottomLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
                     verts.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    
                     return true;
                 };
                 while (boxes.Count > 0){
@@ -399,14 +402,14 @@ namespace Gondola.GameState.ObjectEditor{
                         v3 = new Vector3(_lowerPts[1].X, _upperPts[1].Y, _upperPts[1].Z);
                         v4 = Lerp.Trace3X(_upperPts[0], _upperPts[1], cutStartPt);
                     }
-
+                    
                     verts.Add(new VertexPositionNormalTexture(v1, new Vector3(), new Vector2()));
                     verts.Add(new VertexPositionNormalTexture(v2, new Vector3(), new Vector2()));
                     verts.Add(new VertexPositionNormalTexture(v3, new Vector3(), new Vector2()));
                     verts.Add(new VertexPositionNormalTexture(v3, new Vector3(), new Vector2()));
                     verts.Add(new VertexPositionNormalTexture(v4, new Vector3(), new Vector2()));
                     verts.Add(new VertexPositionNormalTexture(v1, new Vector3(), new Vector2()));
-
+                    
                     return _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
                 }
                 if (sliceMin < _lowerPts[1].X && sliceMin < _upperPts[1].X &&
