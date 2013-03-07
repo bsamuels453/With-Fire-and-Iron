@@ -71,23 +71,23 @@ namespace Gondola.Draw{
         }
 
         public void RemoveObject(TIdentifier identifier) {
-            ObjectData objectToRemove = (
-                                            from obj in _objectData
-                                            where obj.Identifier.Equals(identifier)
-                                            select obj
-                                        ).FirstOrDefault();
+            var objectToRemove =
+                from obj in _objectData
+                where obj.Identifier.Equals(identifier)
+                select obj;                          
 
-            if (objectToRemove == null)
+            if (!objectToRemove.Any())
                 return;
-
-            _isSlotOccupied[objectToRemove.ObjectOffset] = false;
-            for (int i = 0; i < _indiciesPerObject; i++) {
-                _indicies[objectToRemove.ObjectOffset * _indiciesPerObject + i] = 0;
+            foreach (var obj in objectToRemove){
+                _isSlotOccupied[obj.ObjectOffset] = false;
+                for (int i = 0; i < _indiciesPerObject; i++){
+                    _indicies[obj.ObjectOffset*_indiciesPerObject + i] = 0;
+                }
+                if (!UpdateBufferManually){
+                    base.BaseIndexBuffer.SetData(_indicies);
+                }
+                _objectData.Remove(obj);
             }
-            if (!UpdateBufferManually) {
-                base.BaseIndexBuffer.SetData(_indicies);
-            }
-            _objectData.Remove(objectToRemove);
         }
 
         public void ClearObjects() {
