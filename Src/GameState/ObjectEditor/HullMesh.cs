@@ -16,14 +16,76 @@ namespace Gondola.GameState.ObjectEditor{
     ///   This class handles the meshes that make up the hull on each deck of the airship. This class is used for projecting shapes into the mesh to allow for objects such as portholes. Each deck's hull is broken in two parts split down the center.
     /// </summary>
     internal class HullMesh : IEnumerable{
-        readonly ObjectBuffer<SectionIdentifier> _structureBuffer;
+        readonly ObjectBuffer<HullSection> _structureBuffer;
         ObjectBuffer<int> _fillBuffer;
-        ObjectBuffer<int> _buff; 
+        ObjectBuffer<int> _buff;
 
-        public HullMesh(int layersPerDeck, int[] indicies, VertexPositionNormalTexture[] verts){
+        public HullMesh( float boundingWidth, int[] indicies, VertexPositionNormalTexture[] verts) {
             //_structureVerts = new Vector3[layersPerDeck][];
 
-            _structureBuffer = new ObjectBuffer<SectionIdentifier>(indicies.Length, 2, 4, 6, "Shader_AirshipHull");
+            //_structureBuffer = new ObjectBuffer<HullSection>(indicies.Length, 2, 4, 6, "Shader_AirshipHull");
+            var subDividedVerts = new List<VertexPositionNormalTexture>();
+
+            var groupedPanels = new List<IEnumerable<VertexPositionNormalTexture>>();
+            for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4){
+                groupedPanels.Add(verts.Skip(panelIdx).Take(4));
+            }
+
+            var sortedPanels = (from grp in groupedPanels
+                                orderby grp.Min(vert => vert.Position.X) ascending
+                                group grp by grp.ElementAt(0).Position.Y into layers
+                                select layers.ToArray()).ToArray();
+
+            var vertss = new List<VertexPositionNormalTexture>();
+            foreach (var layer in sortedPanels){
+                float layerMin = layer.Min(g => g.Min(vert => vert.Position.X));
+                int bboxesSkipped = (int)(layerMin / boundingWidth);
+                float partialBBox = 1-((layerMin / boundingWidth) - bboxesSkipped);
+
+                for (int panelIdx = 0; panelIdx < 5; panelIdx++){
+
+
+                }
+
+
+
+                //var bottomRight = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], rBound);
+                var orderedPts = layer.ElementAt(0).OrderByDescending(vert => vert.Position.X).ToArray();
+                
+                var panelStartPt = orderedPts[2].Position.X < orderedPts[3].Position.X ? orderedPts[2].Position.X : orderedPts[3].Position.X;
+                var panelEndPt = orderedPts[0].Position.X > orderedPts[1].Position.X ? orderedPts[1].Position.X : orderedPts[0].Position.X;
+                float subStartPt = panelStartPt;
+                float subEndPt = partialBBox * boundingWidth + layerMin;
+
+
+
+                while (subEndPt < panelEndPt){
+                    int gf = 5;
+
+                    //var bottomRight = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], rBound);
+                    //var upperRight = Lerp.Trace3X(_upperPts[0], _upperPts[1], rBound);
+                    //var upperLeft = Lerp.Trace3X(_upperPts[0], _upperPts[1], lBound);
+                    //var bottomLeft = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], lBound);
+                    /*
+                    vertss.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    vertss.Add(new VertexPositionNormalTexture(upperRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    vertss.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
+
+                    vertss.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    vertss.Add(new VertexPositionNormalTexture(bottomLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    vertss.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
+                    */
+
+                    subEndPt += boundingWidth;
+                }
+                //panelIdx++;
+                orderedPts = layer.ElementAt(0).OrderByDescending(vert => vert.Position.X).ToArray();
+                panelEndPt = orderedPts[0].Position.X > orderedPts[1].Position.X ? orderedPts[1].Position.X : orderedPts[0].Position.X;
+
+                int f = 4;
+            }
+
+
             int idcIdx = 0;
             int vertIdx = 0;
             for (int obj = 0; obj < indicies.Length/6; obj++){
@@ -37,14 +99,141 @@ namespace Gondola.GameState.ObjectEditor{
                     subInds[i] = subInds[i] - obj*4;
                 }
 
-                _structureBuffer.AddObject(new SectionIdentifier(subVerts), subInds, subVerts);
+                //_structureBuffer.AddObject(new HullSection(subVerts), subInds, subVerts);
 
                 idcIdx += 6;
                 vertIdx += 4;
             }
-
-            
         }
+
+        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, float width) {
+            HullSection.Side side = panelVerts[0].Position.Z > 0 ? HullSection.Side.Right : HullSection.Side.Left;
+
+            var upperPts = new Vector3[2];
+            var lowerPts = new Vector3[2];
+
+            if (panelVerts[0].Position.X < panelVerts[1].Position.X) {
+                upperPts[0] = panelVerts[0].Position;
+                upperPts[1] = panelVerts[1].Position;
+            }
+            else {
+                upperPts[0] = panelVerts[1].Position;
+                upperPts[1] = panelVerts[0].Position;
+            }
+            if (panelVerts[2].Position.X < panelVerts[3].Position.X) {
+                lowerPts[0] = panelVerts[2].Position;
+                lowerPts[1] = panelVerts[3].Position;
+            }
+            else {
+                lowerPts[0] = panelVerts[3].Position;
+                lowerPts[1] = panelVerts[2].Position;
+            }
+
+            float frontMin = lowerPts[0].X < upperPts[0].X ? lowerPts[0].X : upperPts[0].X;
+            float frontMax = lowerPts[0].X > upperPts[0].X ? lowerPts[0].X : upperPts[0].X;
+
+            float backMin = lowerPts[1].X < upperPts[1].X ? lowerPts[1].X : upperPts[1].X;
+            float backMax = lowerPts[1].X > upperPts[1].X ? lowerPts[1].X : upperPts[1].X;
+
+            float subBoxStart = 0;
+            while (subBoxStart + width < frontMin) {
+                subBoxStart += width;
+            }
+            float subBoxEnd = subBoxStart + width;
+
+            {
+                if (subBoxEnd > lowerPts[0].X && subBoxEnd < upperPts[0].X ||
+                    subBoxEnd < lowerPts[0].X && subBoxEnd > upperPts[0].X) {
+                    //box terminates between the near points
+
+                    //generate geometry (triangle) :bound to subBoxend
+
+                    //generate partial quad bound from subBoxEnd to frontMax
+                }
+                else {
+                    //the only other option is that the box terminates in the body of the panel
+
+                    //generate geometry (triangle) frontMin to frontMax
+                    //generate quad bound from (end of triangle) to subBoxEnd
+                }
+            }
+
+            {
+                while (subBoxStart + width < backMin) {
+                    subBoxStart += width;
+                    subBoxEnd += width;
+
+                    //generate intermediate quads
+                }
+            }
+
+            {
+                subBoxStart += width;
+                subBoxEnd += width;
+                //generate quad from subBoxStart to backMin
+
+                if (subBoxEnd > lowerPts[1].X && subBoxEnd < upperPts[1].X ||
+                    subBoxEnd < lowerPts[1].X && subBoxEnd > upperPts[1].X) {
+
+                    //generate partial quad from backMin to subBoxEnd
+                    //generate triangle from subBoxEnd to backMax
+
+                }
+                else{
+                    //the box terminates in the next panel
+                    //generate triangle from backMin to backMax
+                }
+
+            }
+
+
+        }
+
+        List<VertexPositionNormalTexture> GenEdgeQuad(
+            VertexPositionNormalTexture[] upperPts, //0 is lower, 1 is higher
+            VertexPositionNormalTexture[] lowerPts,
+            float cuttingLine,
+            bool useNearPts = true){
+
+            var ret = new List<VertexPositionNormalTexture>();
+            Vector3 p1, p2, p3, p4;
+            if (useNearPts) {
+                if (lowerPts[0].Position.X < upperPts[0].Position.X) {
+                    p1 = lowerPts[0].Position;
+                    p2 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, lowerPts[0].Position.X);
+                    p3 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
+                    p4 = Lerp.Trace3X(lowerPts[0].Position, upperPts[0].Position, cuttingLine);
+                }
+                else {
+                    p1 = upperPts[0].Position;
+                    p2 = Lerp.Trace3X(upperPts[0].Position, lowerPts[0].Position, cuttingLine);
+                    p3 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, cuttingLine);
+                    p4 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, upperPts[0].Position.X);
+                }
+            }
+            else{
+                if (lowerPts[1].Position.X < upperPts[1].Position.X) {
+                    p1 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
+                    p2 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, lowerPts[0].Position.X);
+                    p3 = lowerPts[1].Position;
+                    p4 = Lerp.Trace3X(upperPts[1].Position, lowerPts[1].Position, cuttingLine);
+                }
+                else{
+                    p1 = upperPts[1].Position;
+                    p2 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, upperPts[1].Position.X);
+                    p3 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, cuttingLine);
+                    p4 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
+                }
+            }
+
+            ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p2, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p4, new Vector3(), new Vector2()));
+            return ret;
+        }
+
+
 
         public CullMode CullMode{
             set { _structureBuffer.CullMode = value; }
@@ -58,390 +247,37 @@ namespace Gondola.GameState.ObjectEditor{
 
         #endregion
 
-        public void Cut(Vector3 v1, Vector3 v2){
-            var toremove = new List<SectionIdentifier>();
-            var totVerts = new List<VertexPositionNormalTexture>();
-            var verts2 = new List<VertexPositionNormalTexture>();
 
-            foreach (SectionIdentifier section in _structureBuffer){
-                var verts = new List<VertexPositionNormalTexture>();
-                var bb = new BoundingBox(v1, v2);
-                section.SlicedSections.Clear();
-                if (section.ContainsPoint(new Vector2(v1.X, v1.Y))) {
-                    section.SlicedSections.Add(bb);
-                }
-                else{
-                    if (section.ContainsPoint(new Vector2(v2.X, v2.Y))){
-                        section.SlicedSections.Add(bb);
-                    }
-                }
-                if (section.CutRectangle(verts, verts2)){
-                    totVerts.AddRange(verts);
-                    toremove.Add(section);
-                }
+        #region Nested type: HullSection
+
+        public class HullSection : IEquatable<HullSection>{
+            public enum Side{
+                Left,
+                Right
             }
 
-            if (totVerts.Count > 0) {
-                var inds = MeshHelper.CreateTriangleIndiceArray(totVerts.Count / 3);
-                if (_fillBuffer != null) {
-                    _fillBuffer.Dispose();
-                }
-                _fillBuffer = new ObjectBuffer<int>(1, totVerts.Count / 3, totVerts.Count, inds.Count(), "Shader_AirshipHull");
-                _fillBuffer.AddObject(0, inds, totVerts.ToArray());
+            readonly float _xStart;
+            readonly float _xEnd;
+            readonly Side _side;
+
+            public HullSection(Side side, float xStart, float xEnd){
+                _xStart = xStart;
+                _xEnd = xEnd;
+                _side = side;
             }
 
-            if (verts2.Count > 0) {
-                var inds = MeshHelper.CreateTriangleIndiceArray(verts2.Count / 3);
-                if (_buff != null) {
-                    _buff.Dispose();
-                }
-                _buff = new ObjectBuffer<int>(1, verts2.Count / 3, verts2.Count, inds.Count(), "Shader_TintedModel");
-                _buff.AddObject(1, inds, verts2.ToArray());
-            }
-            foreach (var identifier in toremove){
-                _structureBuffer.DisableObject(identifier);
-            }
-        }
+            #region IEquatable<HullSection> Members
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            public bool Equals(HullSection other){
 
-        #region Nested type: SectionIdentifier
-
-        public class SectionIdentifier : IEquatable<SectionIdentifier>{
-            readonly OverlapState _farOverlap;
-            readonly Vector3[] _lowerPts;
-
-            readonly OverlapState _nearOverlap;
-            readonly Vector3[] _upperPts;
-
-            readonly public List<BoundingBox> SlicedSections; 
-
-            public SectionIdentifier(VertexPositionNormalTexture[] verts){
-                _upperPts = new Vector3[2];
-                _lowerPts = new Vector3[2];
-                SlicedSections = new List<BoundingBox>();
-
-                if (verts[0].Position.X < verts[1].Position.X){
-                    _upperPts[0] = verts[0].Position;
-                    _upperPts[1] = verts[1].Position;
-                }
-                else{
-                    _upperPts[0] = verts[1].Position;
-                    _upperPts[1] = verts[0].Position;
-                }
-                if (verts[2].Position.X < verts[3].Position.X){
-                    _lowerPts[0] = verts[2].Position;
-                    _lowerPts[1] = verts[3].Position;
-                }
-                else{
-                    _lowerPts[0] = verts[3].Position;
-                    _lowerPts[1] = verts[2].Position;
-                }
-
-                //case: (this is hanging)
-                // -------/ 
-                //       /
-                //      /
-                // ----/
-                //case: (this is building)
-                // ----\
-                //      \
-                //       \
-                // -------\
-                _farOverlap = _upperPts[1].X > _lowerPts[1].X ? OverlapState.Hanging : OverlapState.Building;
-                _nearOverlap = _upperPts[0].X > _lowerPts[0].X ? OverlapState.Building : OverlapState.Hanging;
-
-                //bool b = ContainsPoint(new Vector2(41.0f, -0.5f));
-                //int f = 4;
-            }
-
-            #region IEquatable<SectionIdentifier> Members
-
-            public bool Equals(SectionIdentifier other){
-                if (_lowerPts.SequenceEqual(other._lowerPts) && _upperPts.SequenceEqual(other._upperPts)){
+                if (_xStart == other._xStart && _xEnd == other._xEnd && _side == other._side) {
                     return true;
                 }
                 return false;
             }
-
+            // ReSharper restore CompareOfFloatsByEqualityOperator
             #endregion
 
-            public bool ContainsPoint(Vector2 p1){
-                /*
-                if (p1.Y > _upperPts[0].Y)
-                    return false;
-                if (p1.Y < _lowerPts[0].Y)
-                    return false;
-                */
-
-                if (p1.X < _lowerPts[0].X && p1.X < _upperPts[0].X)
-                    return false;
-
-                if (p1.X > _lowerPts[1].X && p1.X > _upperPts[1].X)
-                    return false;
-
-                //at this point we know that the segment is within the orthogonal projection of this section
-
-                if (p1.X > _lowerPts[0].X && p1.X > _upperPts[0].X && p1.X < _lowerPts[1].X && p1.X < _upperPts[1].X)
-                    return true; //it's within the inner bounds
-
-                var nearSample = DeterminePointPos(_lowerPts[0], _upperPts[0], p1, _nearOverlap);
-                var farSample = DeterminePointPos(_lowerPts[1], _upperPts[1], p1, _farOverlap);
-
-                if (nearSample == Side.RightSide && farSample == Side.LeftSide)
-                    return true;
-                return false;
-            }
-
-            Side DeterminePointPos(Vector3 v1, Vector3 v2, Vector2 p1, OverlapState state){
-                var linePt = Lerp.Trace3X(v1, v2, p1.X);
-                switch (state){
-                    case OverlapState.Building:
-                        if (linePt.Y < p1.Y)
-                            return Side.RightSide;
-                        return Side.LeftSide;
-                    case OverlapState.Hanging:
-                        if (linePt.Y < p1.Y)
-                            return Side.RightSide;
-                        return Side.LeftSide;
-                }
-                throw new Exception();
-            }
-
-            public bool CutRectangle(List<VertexPositionNormalTexture> verts, List<VertexPositionNormalTexture> verts2) {
-                if (SlicedSections.Count == 0){
-                    return false;
-                }
-                var vertsLi = new List<VertexPositionNormalTexture>();
-
-                var orderedBoxes = from b in SlicedSections
-                                   orderby b.Min.X
-                                   select b;
-
-                int boxesHandled = 0;
-
-                int startIdx = 0;
-                float nearStartPt = -1;
-                float sliceMin = orderedBoxes.ElementAt(0).Min.X;
-                float sliceMax = orderedBoxes.ElementAt(0).Max.X;
-                if (sliceMin < _lowerPts[0].X && sliceMin < _upperPts[0].X) {
-                    nearStartPt = NearBasedCut(sliceMin, sliceMax, vertsLi);
-                    startIdx++;
-                    boxesHandled++;
-                }
-
-                int endIdx = 0;
-                float farStartPt = -1;
-                sliceMin = orderedBoxes.Last().Min.X;
-                sliceMax = orderedBoxes.Last().Max.X;
-                if (sliceMax > _lowerPts[1].X && sliceMax > _upperPts[1].X) {
-                    farStartPt = FarBasedCut(sliceMin, sliceMax, verts2);
-                    endIdx++;
-                    boxesHandled++;
-                }
-
-                if (boxesHandled == orderedBoxes.Count()){
-                    //return;
-                }
-
-                var midBoxes = orderedBoxes.Skip(startIdx).Take(orderedBoxes.Count() - endIdx - startIdx);
-                GenerateMidGeometry(nearStartPt, farStartPt, midBoxes.ToList(), vertsLi, verts2);
-
-                verts.AddRange(vertsLi);
-                return true;
-            }
-
-            void GenerateMidGeometry(
-                float centSliceStart,
-                float centSliceEnd,
-                List<BoundingBox> boxes,
-                List<VertexPositionNormalTexture> verts, List<VertexPositionNormalTexture> verts2 ){
-                // ReSharper disable CompareOfFloatsByEqualityOperator
-                if (centSliceStart == -1){
-                    //need to generate the near section
-                    float pSliceStart = _upperPts[0].X < _lowerPts[0].X ? _upperPts[0].X : _lowerPts[0].X;
-
-                    //potential slice end
-                    float pSliceEnd = _upperPts[0].X > _lowerPts[0].X ? _upperPts[0].X : _lowerPts[0].X;
-                    centSliceStart = pSliceEnd;
-                    BoundingBox? bboxToRemove = null;
-                    foreach (var box in boxes){
-                        if (box.Min.X < pSliceEnd){
-                            centSliceStart = box.Max.X;//might have to reverse
-                            pSliceEnd = box.Min.X;
-                            bboxToRemove = box;
-                            break;
-                        }
-                    }
-                    if (bboxToRemove != null){
-                        boxes.Remove((BoundingBox)bboxToRemove);
-                    }
-                    //gentri
-                    
-                    verts2.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    var v = Lerp.Trace3X(_upperPts[0], _upperPts[1], pSliceEnd);
-                    verts2.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _upperPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts2.Add(new VertexPositionNormalTexture(new Vector3(pSliceStart, _upperPts[0].Y, _upperPts[0].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    
-                }
-                if (centSliceEnd == -1) {
-                    //need to generate the far section
-                    float pSliceEnd = _upperPts[1].X > _lowerPts[1].X ? _upperPts[1].X : _lowerPts[1].X;
-
-                    float pSliceBegin = _upperPts[1].X < _lowerPts[1].X ? _upperPts[1].X : _lowerPts[1].X;
-                    centSliceEnd = pSliceBegin;
-
-                    BoundingBox? bboxToRemove = null;
-                    foreach (var box in boxes) {
-                        if (box.Max.X > pSliceBegin) {
-                            centSliceEnd = box.Min.X;
-                            pSliceBegin = box.Max.X;
-                            bboxToRemove = box;
-                            break;
-                        }
-                    }
-                    if (bboxToRemove != null) {
-                        boxes.Remove((BoundingBox)bboxToRemove);
-                    }
-                    //gentri
-                    
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceEnd, _lowerPts[0].Y, _lowerPts[1].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    var v = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], pSliceBegin);
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceBegin, _lowerPts[0].Y, v.Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts.Add(new VertexPositionNormalTexture(new Vector3(pSliceBegin, _upperPts[0].Y, _upperPts[1].Z), new Vector3(0, 0, 0), new Vector2(0, 0)));
-                     
-                }
-
-                float leftBound = centSliceStart;
-                float rightBound = centSliceEnd;
-
-                Func<float, float, bool> generateQuad = (rBound, lBound) => {
-                    var bottomRight = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], rBound);
-                    var upperRight = Lerp.Trace3X(_upperPts[0], _upperPts[1], rBound);
-                    var upperLeft = Lerp.Trace3X(_upperPts[0], _upperPts[1], lBound);
-                    var bottomLeft = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], lBound);
-                    
-                    verts.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts.Add(new VertexPositionNormalTexture(upperRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
-
-                    verts.Add(new VertexPositionNormalTexture(upperLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts.Add(new VertexPositionNormalTexture(bottomLeft, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    verts.Add(new VertexPositionNormalTexture(bottomRight, new Vector3(0, 0, 0), new Vector2(0, 0)));
-                    
-                    return true;
-                };
-                while (boxes.Count > 0){
-                    float min = boxes.Min(bo => bo.Min.X);
-                    var minBox = (
-                                     from b in boxes
-                                     where b.Min.X == min
-                                     select b).First();
-                    boxes.Remove(minBox);
-                    rightBound = minBox.Min.X;
-                    generateQuad(leftBound, rightBound);
-                    leftBound = minBox.Max.X;
-                    if (boxes.Count == 0){
-                        rightBound = centSliceEnd;
-                    }
-                }
-                generateQuad(leftBound, rightBound);
-                // ReSharper restore CompareOfFloatsByEqualityOperator
-            }
-
-
-            float NearBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts) {
-                //we know sliceMin is out of the picture
-                //left to right
-                
-                if (sliceMax > _lowerPts[0].X && sliceMax < _upperPts[0].X ||
-                    sliceMax < _lowerPts[0].X && sliceMax > _upperPts[0].X){
-                    //near end clipped off
-                    //verts.Add(new VertexPositionNormalTexture(new Vector3(0,0,0), new Vector3(0,0,0), new Vector2(0,0));
-                    float cutEndPt = _lowerPts[0].X < _upperPts[0].X ? _lowerPts[0].X : _upperPts[0].X;
-                    float cutStartPt = sliceMax;
-                    var v1 = Lerp.Intersection(_lowerPts[0], _upperPts[0], new Vector3(sliceMin, 5, 0), new Vector3(sliceMin, 0, 0));
-
-                                
-                    //generate intermediate
-                    return cutEndPt;
-                }
-                if (sliceMax > _lowerPts[0].X && sliceMax > _upperPts[0].X &&
-                    sliceMax < _lowerPts[1].X && sliceMax < _upperPts[1].X){
-                    //near half clipped off
-                    //generate intermediate
-                    return sliceMax;
-                }
-                if (sliceMax > _lowerPts[1].X && sliceMax < _upperPts[1].X ||
-                    sliceMax < _lowerPts[1].X && sliceMax > _upperPts[1].X){
-                    //near half engulfed
-                    return sliceMax;
-                }
-                //entire engulfed?
-                throw new Exception();
-            }
-
-            float FarBasedCut(float sliceMin, float sliceMax, List<VertexPositionNormalTexture> verts) {
-                //we know sliceMax is out of the picture
-                //right to left
-                if (sliceMin > _lowerPts[1].X && sliceMin < _upperPts[1].X ||
-                    sliceMin < _lowerPts[1].X && sliceMin > _upperPts[1].X){
-                    //far end clipped off
-                    //generate intermediate
-                    float cutEndPt = sliceMin;
-                    float cutStartPt = _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
-                    var v1 = Lerp.Trace3X(_lowerPts[1], _upperPts[1], cutEndPt);
-                    Vector3 v2, v3, v4;
-                    if (_lowerPts[1].X > _upperPts[1].X) {
-                        //building
-                        v2 = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], cutEndPt);
-                        var v3Z = Lerp.Trace3X(_lowerPts[0], _lowerPts[1], _upperPts[1].X).Z;
-                        v3 = new Vector3(_upperPts[1].X, _lowerPts[1].Y, v3Z);
-                        v4 = _upperPts[1];
-                    }
-                    else{
-                        v2 = _lowerPts[1];
-                        v3 = new Vector3(_lowerPts[1].X, _upperPts[1].Y, _upperPts[1].Z);
-                        v4 = Lerp.Trace3X(_upperPts[0], _upperPts[1], cutStartPt);
-                    }
-                    
-                    verts.Add(new VertexPositionNormalTexture(v1, new Vector3(), new Vector2()));
-                    verts.Add(new VertexPositionNormalTexture(v2, new Vector3(), new Vector2()));
-                    verts.Add(new VertexPositionNormalTexture(v3, new Vector3(), new Vector2()));
-                    verts.Add(new VertexPositionNormalTexture(v3, new Vector3(), new Vector2()));
-                    verts.Add(new VertexPositionNormalTexture(v4, new Vector3(), new Vector2()));
-                    verts.Add(new VertexPositionNormalTexture(v1, new Vector3(), new Vector2()));
-                    
-                    return _lowerPts[1].X < _upperPts[1].X ? _lowerPts[1].X : _upperPts[1].X;
-                }
-                if (sliceMin < _lowerPts[1].X && sliceMin < _upperPts[1].X &&
-                    sliceMin > _lowerPts[0].X && sliceMin > _upperPts[0].X ) {
-                    //far half clipped off
-                    return sliceMin;
-                }
-                if (sliceMin > _lowerPts[1].X && sliceMin < _upperPts[1].X ||
-                    sliceMin < _lowerPts[1].X && sliceMin > _upperPts[1].X){
-                    //far half engulfed
-                    return sliceMin;
-                }
-                throw new Exception();
-            }
-
-            #region Nested type: OverlapState
-
-            enum OverlapState{
-                Hanging,
-                Building
-            }
-
-            #endregion
-
-            #region Nested type: Side
-
-            enum Side{
-                LeftSide,
-                RightSide
-            }
-
-            #endregion
         }
 
         #endregion
