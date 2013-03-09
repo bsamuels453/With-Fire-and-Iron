@@ -200,7 +200,7 @@ namespace Gondola.GameState.ObjectEditor{
             p1 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, begin);
             p2 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, end);
             p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, end);
-            p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, begin);
+            p4 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, begin);
 
             ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
             ret.Add(new VertexPositionNormalTexture(p2, new Vector3(), new Vector2()));
