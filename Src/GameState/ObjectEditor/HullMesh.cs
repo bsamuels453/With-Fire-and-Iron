@@ -188,9 +188,33 @@ namespace Gondola.GameState.ObjectEditor{
 
 
         }
+        List<VertexPositionNormalTexture> GenIntermediateQuad(
+            VertexPositionNormalTexture[] upperPts,
+            VertexPositionNormalTexture[] lowerPts,
+            float begin,
+            float end){
+
+            var ret = new List<VertexPositionNormalTexture>();
+            Vector3 p1, p2, p3, p4;
+
+            p1 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, begin);
+            p2 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, end);
+            p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, end);
+            p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, begin);
+
+            ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p2, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p4, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
+
+            return ret;
+        }
+
 
         List<VertexPositionNormalTexture> GenEdgeQuad(
-            VertexPositionNormalTexture[] upperPts, //0 is lower, 1 is higher
+            VertexPositionNormalTexture[] upperPts,
             VertexPositionNormalTexture[] lowerPts,
             float cuttingLine,
             bool useNearPts = true){
@@ -225,15 +249,54 @@ namespace Gondola.GameState.ObjectEditor{
                     p4 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
                 }
             }
+            //1 2 3 3 4 1
+            ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p2, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p4, new Vector3(), new Vector2()));
+            ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
+            return ret;
+        }
+
+        List<VertexPositionNormalTexture> GenEdgeTriangle(
+            VertexPositionNormalTexture[] upperPts,
+            VertexPositionNormalTexture[] lowerPts,
+            float cuttingLine,
+            bool useNearPts = true){
+
+            var ret = new List<VertexPositionNormalTexture>();
+            Vector3 p1, p2, p3;
+            if (useNearPts) {
+                if (lowerPts[0].Position.X < upperPts[0].Position.X) {
+                    p1 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
+                    p2 = upperPts[0].Position;
+                    p3 = Lerp.Trace3X(lowerPts[0].Position, upperPts[0].Position, cuttingLine);
+                }
+                else {
+                    p1 = Lerp.Trace3X(upperPts[0].Position, lowerPts[0].Position, cuttingLine);
+                    p2 = lowerPts[1].Position;
+                    p3 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, cuttingLine);
+                }
+            }
+            else {
+                if (lowerPts[1].Position.X < upperPts[1].Position.X) {
+                    p1 = upperPts[1].Position;
+                    p2 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
+                    p3 = Lerp.Trace3X(upperPts[1].Position, lowerPts[1].Position, cuttingLine);
+                }
+                else {
+                    p1 = lowerPts[1].Position;
+                    p2 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
+                    p3 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, cuttingLine);
+                }
+            }
 
             ret.Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
             ret.Add(new VertexPositionNormalTexture(p2, new Vector3(), new Vector2()));
             ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
-            ret.Add(new VertexPositionNormalTexture(p4, new Vector3(), new Vector2()));
             return ret;
         }
-
-
 
         public CullMode CullMode{
             set { _structureBuffer.CullMode = value; }
@@ -269,7 +332,6 @@ namespace Gondola.GameState.ObjectEditor{
             #region IEquatable<HullSection> Members
             // ReSharper disable CompareOfFloatsByEqualityOperator
             public bool Equals(HullSection other){
-
                 if (_xStart == other._xStart && _xEnd == other._xEnd && _side == other._side) {
                     return true;
                 }
