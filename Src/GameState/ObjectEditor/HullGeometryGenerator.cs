@@ -35,7 +35,14 @@ namespace Gondola.GameState.ObjectEditor {
             var normalGenResults = GenerateHullNormals(genResults.LayerSilhouetteVerts);
             var deckFloorPlates = GenerateDeckPlates(genResults.LayerSilhouetteVerts, genResults.NumDecks, primHeightPerDeck);
             var boundingBoxResults = GenerateDeckBoundingBoxes(bBoxWidth, deckFloorPlates);
-            var hullBuffers = GenerateDeckWallBuffers(genResults.DeckSilhouetteVerts, normalGenResults.NormalMesh, genResults.NumDecks, primHeightPerDeck);
+            var hullBuffers = GenerateDeckWallBuffers(
+                genResults.DeckSilhouetteVerts, 
+                normalGenResults.NormalMesh, 
+                genResults.NumDecks, 
+                primHeightPerDeck,
+                boundingBoxResults.BoxMin,
+                boundingBoxResults.BoxMax
+            );
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
 
             var resultant = new HullGeometryInfo();
@@ -389,7 +396,7 @@ namespace Gondola.GameState.ObjectEditor {
             return ret;
         }
 
-        static List<HullMesh>[] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck) {
+        static List<HullMesh>[] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck, float boxMin, float boxMax) {
             int vertsInSilhouette = deckSVerts[0][0].Length;
 
             var hullMeshBuffs = new List<HullMesh>[numDecks];
@@ -424,7 +431,10 @@ namespace Gondola.GameState.ObjectEditor {
                     MeshHelper.Encode2DListIntoArray(primitivesPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
                     //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
                     MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
-                    return new HullMesh(3, hullIndicies, hullVerticies);
+                    if (i != deckSVerts.Length-1) {
+                        return new HullMesh(0.5f, hullVerticies);
+                    }
+                    return null;
                 };
                 // ReSharper restore AccessToModifiedClosure
 
@@ -532,6 +542,20 @@ namespace Gondola.GameState.ObjectEditor {
             }
             ret.DeckBoundingBoxes = deckBoundingBoxes;
 
+            ret.BoxMin = ret.DeckBoundingBoxes.Min(
+                layer => layer.Min(
+                    box => box.Min.X
+                    )
+            );
+
+            ret.BoxMax = ret.DeckBoundingBoxes.Max(
+                layer => layer.Max(
+                    box => box.Max.X
+                    )
+             );
+
+
+
             var wallSelectionBoxes = deckBoundingBoxes;
             var wallSelectionPoints = new List<List<Vector3>>();
             //generate vertexes of the bounding boxes
@@ -571,6 +595,8 @@ namespace Gondola.GameState.ObjectEditor {
         struct BoundingBoxResult{
             public List<BoundingBox>[] DeckBoundingBoxes;
             public List<Vector3>[] DeckVertexes;
+            public float BoxMin;
+            public float BoxMax;
         }
 
         #endregion
