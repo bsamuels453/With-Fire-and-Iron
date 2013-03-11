@@ -30,184 +30,207 @@ namespace Gondola.GameState.ObjectEditor{
                                 group grp by grp.ElementAt(0).Position.Y into layers
                                 select layers.ToArray()).ToArray();
 
-            //sortedPanels = sortedPanels.Take(sortedPanels.Count() - 3);
             //xxx need better estimation for number of objects
             var tempBuff = new ObjectBuffer<HullSection>((int)(400*5/boundingWidth), 1, 3, 3, "Shader_AirshipHull");
             tempBuff.UpdateBufferManually = true;
 
-            //foreach (var layer in sortedPanels){
-            //var layer = sortedPanels[2];
-            //SubdividePanel(tempBuff, layer[2].ToArray(), boundingWidth);
-
             foreach (var layer in sortedPanels){
-
-
                 foreach (var quad in layer){
                     SubdividePanel(tempBuff, quad.ToArray(), boundingWidth);
                 }
             }
-            //break;
-            //}
-           // tempBuff.CullMode = CullMode.None;
-            //tempBuff.UpdateBuffers();
 
             _hullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
             _hullBuff.CullMode = CullMode.None;
             _hullBuff.AbsorbBuffer(tempBuff, true);
         }
 
-        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, float width) {
-            HullSection.Side side = panelVerts[0].Position.Z > 0 ? HullSection.Side.Right : HullSection.Side.Left;
-            var idxWinding = new int[] { 0, 1, 2 };
-
+        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, float width){
+            var side = panelVerts[0].Position.Z > 0 ? HullSection.Side.Right : HullSection.Side.Left;
             var upperPts = new VertexPositionNormalTexture[2];
             var lowerPts = new VertexPositionNormalTexture[2];
 
-            if (panelVerts[0].Position.X < panelVerts[1].Position.X) {
+            if (panelVerts[0].Position.X < panelVerts[1].Position.X){
                 upperPts[0] = panelVerts[0];
                 upperPts[1] = panelVerts[1];
             }
-            else {
+            else{
                 upperPts[0] = panelVerts[1];
                 upperPts[1] = panelVerts[0];
             }
-            if (panelVerts[2].Position.X < panelVerts[3].Position.X) {
+            if (panelVerts[2].Position.X < panelVerts[3].Position.X){
                 lowerPts[0] = panelVerts[2];
                 lowerPts[1] = panelVerts[3];
             }
-            else {
+            else{
                 lowerPts[0] = panelVerts[3];
                 lowerPts[1] = panelVerts[2];
             }
 
             float frontMin = lowerPts[0].Position.X < upperPts[0].Position.X ?
                 lowerPts[0].Position.X : upperPts[0].Position.X;
-            float frontMax = lowerPts[0].Position.X > upperPts[0].Position.X ?
-                lowerPts[0].Position.X : upperPts[0].Position.X;
 
             float backMin = lowerPts[1].Position.X < upperPts[1].Position.X ?
                 lowerPts[1].Position.X : upperPts[1].Position.X;
-            float backMax = lowerPts[1].Position.X > upperPts[1].Position.X ?
-                lowerPts[1].Position.X : upperPts[1].Position.X;
 
             float subBoxStart = 0;
-            while (subBoxStart + width < frontMin) {
+            while (subBoxStart + width < frontMin){
                 subBoxStart += width;
             }
             float subBoxEnd = subBoxStart + width;
 
-
-            var prevBox = new HullSection(
-                side: side,
-                xStart: subBoxStart - width,
-                xEnd: subBoxStart
+            GenerateFrontSection(
+                side,
+                buff,
+                ref subBoxStart,
+                ref subBoxEnd,
+                width,
+                lowerPts,
+                upperPts
                 );
 
-            var curBox = new HullSection(
-                side: side,
-                xStart: subBoxStart,
-                xEnd: subBoxStart + width
-                );
-            {
-                if (subBoxEnd > lowerPts[0].Position.X && subBoxEnd < upperPts[0].Position.X ||
-                    subBoxEnd < lowerPts[0].Position.X && subBoxEnd > upperPts[0].Position.X) {
-                    //box terminates between the near points
+            while (subBoxEnd + width < backMin){
+                subBoxStart += width;
+                subBoxEnd += width;
+                GenerateMidQuads(buff, side, width, upperPts, lowerPts, subBoxStart, subBoxEnd);
+            }
+            GenerateMidQuads(buff, side, width, upperPts, lowerPts, subBoxEnd, backMin);
 
-                    //generate geometry (triangle) :bound to subBoxend
+            GenerateEndSection(
+                side,
+                buff,
+                ref subBoxStart,
+                ref subBoxEnd,
+                width,
+                lowerPts,
+                upperPts
+                );
+        }
+
+        void GenerateFrontSection(
+            HullSection.Side side,
+            ObjectBuffer<HullSection> buff, 
+            ref float subBoxStart, 
+            ref float subBoxEnd, 
+            float width,
+            VertexPositionNormalTexture[] lowerPts,
+            VertexPositionNormalTexture[] upperPts) {
+
+            float frontMin = lowerPts[0].Position.X < upperPts[0].Position.X ?
+                lowerPts[0].Position.X : upperPts[0].Position.X;
+            float frontMax = lowerPts[0].Position.X > upperPts[0].Position.X ?
+                lowerPts[0].Position.X : upperPts[0].Position.X;
+
+            Func<float, float, HullSection> genSection = (f, f1) =>
+                new HullSection(
+                    side: side,
+                    xStart: f,
+                    xEnd: f1
+                );
+
+            var curBox = genSection(subBoxStart, subBoxEnd);
+            var nextBox = genSection(subBoxEnd, subBoxEnd + width);
+
+            var idxWinding = new[] { 0, 1, 2 };
+            if (subBoxEnd > lowerPts[0].Position.X && subBoxEnd < upperPts[0].Position.X ||
+                subBoxEnd < lowerPts[0].Position.X && subBoxEnd > upperPts[0].Position.X) {
+                //box terminates between the near points
+
+                //generate triangle bound to subBoxend
+                var edgeTri = GenEdgeTriangle(upperPts, lowerPts, subBoxEnd, true);
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
+
+                //generate partial quad bound from subBoxEnd to frontMax
+                var edgeQuad = GenEdgeQuad(upperPts, lowerPts, subBoxEnd, true);
+                buff.AddObject(nextBox, (int[])idxWinding.Clone(), edgeQuad[0].ToArray());
+                buff.AddObject(nextBox, (int[])idxWinding.Clone(), edgeQuad[1].ToArray());
+            }
+            else {
+                //the only other option is that the box terminates in the body of the panel
+                //generate triangle frontMin to frontMax
+
+                Debug.Assert(subBoxEnd > frontMax);
+                var edgeTri = GenEdgeTriangle(upperPts, lowerPts, frontMax, true);
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
+
+                //generate quad bound from (end of triangle) to subBoxEnd
+                var quad = GenIntermediateQuad(upperPts, lowerPts, frontMax, subBoxEnd);
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), quad[0].ToArray());
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), quad[1].ToArray());
+            }
+
+            bool first = true;
+            //move subBoxEnd to after frontMax
+            while (subBoxEnd < frontMax) {
+                if (first) {
                     var edgeTri = GenEdgeTriangle(upperPts, lowerPts, subBoxEnd, true);
-                    buff.AddObject(prevBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
-
-                    //generate partial quad bound from subBoxEnd to frontMax
+                    buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
+                    first = false;
+                }
+                else {
+                    //xx this will give overlapping geometry to multiple boxes because bounds for genedgeQuad cant be specified
                     var edgeQuad = GenEdgeQuad(upperPts, lowerPts, subBoxEnd, true);
                     buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeQuad[0].ToArray());
                     buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeQuad[1].ToArray());
                 }
-                else{
-                    //the only other option is that the box terminates in the body of the panel
-                    //generate triangle frontMin to frontMax
-
-                    Debug.Assert(subBoxEnd > frontMax);
-                    var edgeTri = GenEdgeTriangle(upperPts, lowerPts, frontMax, true);
-                    buff.AddObject(prevBox, (int[]) idxWinding.Clone(), edgeTri.ToArray());
-
-                    //generate quad bound from (end of triangle) to subBoxEnd
-                    var quad = GenIntermediateQuad(upperPts, lowerPts, frontMax, subBoxEnd);
-                    buff.AddObject(prevBox, (int[]) idxWinding.Clone(), quad[0].ToArray());
-                    buff.AddObject(prevBox, (int[]) idxWinding.Clone(), quad[1].ToArray());
-                }
-
-                bool first = true;
-                //move subBoxEnd to after frontMax
-                while (subBoxEnd < frontMax){
-                    if (first){
-                        var edgeTri = GenEdgeTriangle(upperPts, lowerPts, subBoxEnd, true);
-                        buff.AddObject(curBox, (int[]) idxWinding.Clone(), edgeTri.ToArray());
-                        first = false;
-                    }
-                    else{
-                        //xx this will give overlapping geometry to multiple boxes because bounds for genedgeQuad cant be specified
-                        var edgeQuad = GenEdgeQuad(upperPts, lowerPts, subBoxEnd, true);
-                        buff.AddObject(prevBox, (int[]) idxWinding.Clone(), edgeQuad[0].ToArray());
-                        buff.AddObject(prevBox, (int[]) idxWinding.Clone(), edgeQuad[1].ToArray());
-                    }
-                    subBoxStart += width;
-                    subBoxEnd += width;
-                }
-                if (subBoxEnd > frontMax && subBoxStart < frontMax && subBoxStart > frontMin){
-                    //generate cross boxes
-                    var eedgeQuad = GenEdgeQuad(upperPts, lowerPts, frontMax, true);
-                    buff.AddObject(prevBox, (int[]) idxWinding.Clone(), eedgeQuad[0].ToArray());
-                    buff.AddObject(prevBox, (int[]) idxWinding.Clone(), eedgeQuad[1].ToArray());
-                    GenerateMidQuads(buff, side, width, upperPts, lowerPts, frontMax, subBoxEnd);
-                }
+                subBoxStart += width;
+                subBoxEnd += width;
+                curBox = genSection(subBoxStart, subBoxEnd);
             }
 
-            {
-                while (subBoxEnd + width < backMin) {
-                    subBoxStart += width;
-                    subBoxEnd += width;
-                    GenerateMidQuads(buff, side, width, upperPts, lowerPts, subBoxStart, subBoxEnd);
-                }
-                GenerateMidQuads(buff, side, width, upperPts, lowerPts, subBoxEnd, backMin);
-            }
-
-            {
-
-                curBox = new HullSection(
-                    side: side,
-                    xStart: subBoxStart,
-                    xEnd: subBoxStart + width
-                    );
-
-                var nextBox = new HullSection(
-                    side: side,
-                    xStart: subBoxEnd,
-                    xEnd: subBoxEnd + width
-                    );
-
-                if (subBoxEnd > lowerPts[1].Position.X && subBoxEnd < upperPts[1].Position.X ||
-                    subBoxEnd < lowerPts[1].Position.X && subBoxEnd > upperPts[1].Position.X) {
-
-                    //generate partial quad from backMin to subBoxEnd
-                    var quad = this.GenEdgeQuad(upperPts, lowerPts, subBoxEnd, false);
-                    buff.AddObject(curBox, (int[])idxWinding.Clone(), quad[0].ToArray());
-                    buff.AddObject(curBox, (int[])idxWinding.Clone(), quad[1].ToArray());
-
-                    //generate triangle from subBoxEnd to backMax
-                    var edgeTri = this.GenEdgeTriangle(upperPts, lowerPts, subBoxEnd, false);
-                    buff.AddObject(nextBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
-                }
-                else {
-                    //the box terminates in the next panel
-                    //generate triangle from backMin to backMax
-                    var edgeTri = this.GenEdgeTriangle(upperPts, lowerPts, backMin, false);
-                    buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
-
-                }
-                 
+            if (subBoxEnd > frontMax && subBoxStart < frontMax && subBoxStart > frontMin) {
+                //generate cross boxes
+                var eedgeQuad = GenEdgeQuad(upperPts, lowerPts, frontMax, true);
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), eedgeQuad[0].ToArray());
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), eedgeQuad[1].ToArray());
+                GenerateMidQuads(buff, side, width, upperPts, lowerPts, frontMax, subBoxEnd);
             }
         }
 
+        void GenerateEndSection(
+            HullSection.Side side,
+            ObjectBuffer<HullSection> buff,
+            ref float subBoxStart,
+            ref float subBoxEnd,
+            float width,
+            VertexPositionNormalTexture[] lowerPts,
+            VertexPositionNormalTexture[] upperPts) {
+
+            var idxWinding = new[] { 0, 1, 2 };
+            float backMin = lowerPts[1].Position.X < upperPts[1].Position.X ?
+                lowerPts[1].Position.X : upperPts[1].Position.X;
+
+            Func<float, float, HullSection> genSection = (f, f1) =>
+                new HullSection(
+                    side: side,
+                    xStart: f,
+                    xEnd: f1
+                );
+
+            var curBox = genSection(subBoxStart, subBoxEnd);
+            var nextBox = genSection(subBoxEnd, subBoxEnd + width);
+
+            if (subBoxEnd > lowerPts[1].Position.X && subBoxEnd < upperPts[1].Position.X ||
+                subBoxEnd < lowerPts[1].Position.X && subBoxEnd > upperPts[1].Position.X) {
+
+                //generate partial quad from backMin to subBoxEnd
+                var quad = GenEdgeQuad(upperPts, lowerPts, subBoxEnd, false);
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), quad[0].ToArray());
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), quad[1].ToArray());
+
+                //generate triangle from subBoxEnd to backMax
+                var edgeTri = GenEdgeTriangle(upperPts, lowerPts, subBoxEnd, false);
+                buff.AddObject(nextBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
+            }
+            else {
+                //the box terminates in the next panel
+                //generate triangle from backMin to backMax
+                var edgeTri = GenEdgeTriangle(upperPts, lowerPts, backMin, false);
+                buff.AddObject(curBox, (int[])idxWinding.Clone(), edgeTri.ToArray());
+            }
+        }
+
+        #region primitive interpolation/generation
         void GenerateMidQuads(
             ObjectBuffer<HullSection> buff, 
             HullSection.Side side, 
@@ -217,8 +240,7 @@ namespace Gondola.GameState.ObjectEditor{
             float start, 
             float end){
 
-                var idxWinding = new int[] { 0, 1, 2 };
-
+            var idxWinding = new [] { 0, 1, 2 };
             var curBox = new HullSection(
                 side: side,
                 xStart: start,
@@ -229,10 +251,7 @@ namespace Gondola.GameState.ObjectEditor{
             var quad = GenIntermediateQuad(upperPts, lowerPts, start, end);
             buff.AddObject(curBox, (int[]) idxWinding.Clone(), quad[0].ToArray());
             buff.AddObject(curBox, (int[]) idxWinding.Clone(), quad[1].ToArray());
-
-
         }
-
 
         List<VertexPositionNormalTexture>[] GenIntermediateQuad(
             VertexPositionNormalTexture[] upperPts,
@@ -248,7 +267,7 @@ namespace Gondola.GameState.ObjectEditor{
             Vector3 p2 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, end);
             Vector3 p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, end);
             Vector3 p4 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, begin);
-
+            /*
             if (p1.Z > 0){
                 if (p2.Z < 0 || p3.Z < 0 || p4.Z < 0){
                     int f = 3;
@@ -259,7 +278,7 @@ namespace Gondola.GameState.ObjectEditor{
                     int f = 3;
                 }
             }
-
+             */
             ret[0].Add(new VertexPositionNormalTexture(p1, new Vector3(), new Vector2()));
             ret[0].Add(new VertexPositionNormalTexture(p2, new Vector3(), new Vector2()));
             ret[0].Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
@@ -275,7 +294,7 @@ namespace Gondola.GameState.ObjectEditor{
             VertexPositionNormalTexture[] upperPts,
             VertexPositionNormalTexture[] lowerPts,
             float cuttingLine,
-            bool useNearPts = true){
+            bool useNearPts){
 
             var ret = new List<VertexPositionNormalTexture>[2];
             ret[0] = new List<VertexPositionNormalTexture>();
@@ -324,17 +343,12 @@ namespace Gondola.GameState.ObjectEditor{
             VertexPositionNormalTexture[] upperPts,
             VertexPositionNormalTexture[] lowerPts,
             float cuttingLine,
-            bool useNearPts = true){
+            bool useNearPts){
 
             var ret = new List<VertexPositionNormalTexture>();
             Vector3 p1, p2, p3;
             if (useNearPts) {
                 if (lowerPts[0].Position.X < upperPts[0].Position.X) {
-                    /*
-                    p1 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
-                    p2 = upperPts[0].Position;
-                    p3 = Lerp.Trace3X(lowerPts[0].Position, upperPts[0].Position, cuttingLine);
-                     */
                     p1 = lowerPts[0].Position;
                     p2 = Lerp.Trace3X(lowerPts[0].Position, upperPts[0].Position, cuttingLine);
                     p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, cuttingLine);
@@ -342,8 +356,7 @@ namespace Gondola.GameState.ObjectEditor{
                 else {
                     p1 = Lerp.Trace3X(upperPts[0].Position, lowerPts[0].Position, cuttingLine);
                     p2 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, cuttingLine);
-                    p3 = upperPts[0].Position;
-                    
+                    p3 = upperPts[0].Position; 
                 }
             }
             else {
@@ -356,8 +369,6 @@ namespace Gondola.GameState.ObjectEditor{
                     p1 = lowerPts[1].Position;
                     p2 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
                     p3 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, cuttingLine);
-                    
-                    
                 }
             }
 
@@ -366,6 +377,7 @@ namespace Gondola.GameState.ObjectEditor{
             ret.Add(new VertexPositionNormalTexture(p3, new Vector3(), new Vector2()));
             return ret;
         }
+        #endregion
 
         public CullMode CullMode{
             set { _hullBuff.CullMode = value; }
@@ -378,7 +390,6 @@ namespace Gondola.GameState.ObjectEditor{
         }
 
         #endregion
-
 
         #region Nested type: HullSection
 
