@@ -291,6 +291,7 @@ namespace Gondola.GameState.ObjectEditor{
                 }
             }
              */
+            
             ret[0].Add(new VertexPositionNormalTexture(p1, n1, u1));
             ret[0].Add(new VertexPositionNormalTexture(p2, n2, u2));
             ret[0].Add(new VertexPositionNormalTexture(p3, n3, u3));
@@ -329,14 +330,14 @@ namespace Gondola.GameState.ObjectEditor{
                     p4 = Lerp.Trace3X(upperPts[0].Position, lowerPts[0].Position, cuttingLine);
                     
                     n1 = upperPts[0].Normal;
-                    n2 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p4);
+                    n2 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p2);
                     n3 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p3);
-                    n4 = InterpolateNorm(upperPts[0].Normal, lowerPts[0].Normal, upperPts[0].Position, lowerPts[0].Position, p2);
+                    n4 = InterpolateNorm(upperPts[0].Normal, lowerPts[0].Normal, upperPts[0].Position, lowerPts[0].Position, p4);
                     
                     u1 = upperPts[0].TextureCoordinate;
-                    u2 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p4);
+                    u2 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p2);
                     u3 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p3);
-                    u4 = InterpolateUV(upperPts[0].TextureCoordinate, lowerPts[0].TextureCoordinate, upperPts[0].Position, lowerPts[0].Position, p2);
+                    u4 = InterpolateUV(upperPts[0].TextureCoordinate, lowerPts[0].TextureCoordinate, upperPts[0].Position, lowerPts[0].Position, p4);
                 }
                 else {
                     p1 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, lowerPts[0].Position.X);
@@ -344,15 +345,15 @@ namespace Gondola.GameState.ObjectEditor{
                     p3 = Lerp.Trace3X(lowerPts[0].Position, upperPts[0].Position, cuttingLine);
                     p4 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
 
-                    n1 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p2);
+                    n1 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p1);
                     n2 = lowerPts[0].Normal;
-                    n3 = InterpolateNorm(lowerPts[0].Normal, upperPts[0].Normal, lowerPts[0].Position, upperPts[0].Position, p4);
-                    n4 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p3);
+                    n3 = InterpolateNorm(lowerPts[0].Normal, upperPts[0].Normal, lowerPts[0].Position, upperPts[0].Position, p3);
+                    n4 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p4);
 
-                    u1 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p2);
+                    u1 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p1);
                     u2 = lowerPts[0].TextureCoordinate;
-                    u3 = InterpolateUV(lowerPts[0].TextureCoordinate, upperPts[0].TextureCoordinate, lowerPts[0].Position, upperPts[0].Position, p4);
-                    u4 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, lowerPts[1].Position, p3);
+                    u3 = InterpolateUV(lowerPts[0].TextureCoordinate, upperPts[0].TextureCoordinate, lowerPts[0].Position, upperPts[0].Position, p3);
+                    u4 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, lowerPts[1].Position, p4);
                 }
             }
             else{
@@ -398,6 +399,7 @@ namespace Gondola.GameState.ObjectEditor{
             ret[1].Add(new VertexPositionNormalTexture(p3, n3, u3));
             ret[1].Add(new VertexPositionNormalTexture(p4, n4, u4));
             ret[1].Add(new VertexPositionNormalTexture(p1, n1, u1));
+            
             /*
             ret[0].Add(new VertexPositionNormalTexture(p1, Vector3.Zero, Vector2.Zero));
             ret[0].Add(new VertexPositionNormalTexture(p2, Vector3.Zero, Vector2.Zero));
@@ -417,8 +419,10 @@ namespace Gondola.GameState.ObjectEditor{
 
             var ret = new List<VertexPositionNormalTexture>();
             Vector3 p1, p2, p3;
-            Vector3 n1 = Vector3.Zero, n2 = Vector3.Zero, n3 = Vector3.Zero;
-            Vector2 u1, u2, u3;
+            Vector3 n1 = Vector3.Right, n2 = Vector3.Right, n3 = Vector3.Right;
+            Vector2 u1 = new Vector2(1,0);
+            Vector2 u2 = new Vector2(1, 1);
+            Vector2 u3 = new Vector2(0, 0);
             if (useNearPts) {
                 if (lowerPts[0].Position.X < upperPts[0].Position.X) {
                     p1 = lowerPts[0].Position;
@@ -427,24 +431,29 @@ namespace Gondola.GameState.ObjectEditor{
                     
                     n1 = lowerPts[0].Normal;
                     n2 = InterpolateNorm(lowerPts[0].Normal, upperPts[0].Normal, lowerPts[0].Position, upperPts[0].Position, p2);
-                    n3 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p2);
+                    n3 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p3);
+                    
                     
                     u1 = lowerPts[0].TextureCoordinate;
                     u2 = InterpolateUV(lowerPts[0].TextureCoordinate, upperPts[0].TextureCoordinate, lowerPts[0].Position, upperPts[0].Position, p2);
-                    u3 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p2);
+                    u3 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p3);
+                     
+                    int f = 5;
                 }
                 else {
                     p1 = Lerp.Trace3X(upperPts[0].Position, lowerPts[0].Position, cuttingLine);
                     p2 = upperPts[0].Position;
                     p3 = Lerp.Trace3X(upperPts[0].Position, upperPts[1].Position, cuttingLine);
-
-                    n1 = InterpolateNorm(upperPts[0].Normal, lowerPts[0].Normal, upperPts[0].Position, lowerPts[0].Position, p2);
-                    n2 = upperPts[0].Normal;
-                    n3 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p2);
                     
-                    u1 = InterpolateUV(upperPts[0].TextureCoordinate, lowerPts[0].TextureCoordinate, upperPts[0].Position, lowerPts[0].Position, p2);
+                    n1 = InterpolateNorm(upperPts[0].Normal, lowerPts[0].Normal, upperPts[0].Position, lowerPts[0].Position, p1);
+                    n2 = upperPts[0].Normal;
+                    n3 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p3);
+                    
+                    u1 = InterpolateUV(upperPts[0].TextureCoordinate, lowerPts[0].TextureCoordinate, upperPts[0].Position, lowerPts[0].Position, p1);
                     u2 = upperPts[0].TextureCoordinate;
-                    u3 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p2);
+                    u3 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p3);
+                     
+                    int f = 5;
                 }
             }
             else {
@@ -454,31 +463,51 @@ namespace Gondola.GameState.ObjectEditor{
                     p3 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
                     
                     n1 = upperPts[1].Normal;
-                    n2 = InterpolateNorm(upperPts[1].Normal, lowerPts[1].Normal, upperPts[1].Position, lowerPts[1].Position, p2);
-                    n3 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p2);
+                    n2 = InterpolateNorm(lowerPts[1].Normal, upperPts[1].Normal, lowerPts[1].Position, upperPts[1].Position, p2);
+                    n3 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p3);
+
+                    //n2 = InterpolateNorm(upperPts[1].Normal, lowerPts[1].Normal, upperPts[1].Position, lowerPts[1].Position, p2);
+                    //n3 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p3);
+
                     
                     u1 = upperPts[1].TextureCoordinate;
                     u2 = InterpolateUV(upperPts[1].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[1].Position, lowerPts[1].Position, p2);
-                    u3 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p2);
+                    u3 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p3);
+                     
+                    /*
+                    u1 = upperPts[1].TextureCoordinate;
+                    u2 = InterpolateUV(lowerPts[1].TextureCoordinate, upperPts[1].TextureCoordinate, lowerPts[1].Position, upperPts[1].Position, p2);
+                    u3 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p3);
+                     */
+                    int f = 5;
                 }
                 else {
                     p1 = lowerPts[1].Position;
                     p2 = Lerp.Trace3X(lowerPts[0].Position, lowerPts[1].Position, cuttingLine);
                     p3 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
-
+                    
                     n1 = lowerPts[1].Normal;
                     n2 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p2);
-                    n3 = InterpolateNorm(lowerPts[1].Normal, upperPts[1].Normal, lowerPts[1].Position, upperPts[1].Position, p2);
+                    n3 = InterpolateNorm(lowerPts[1].Normal, upperPts[1].Normal, lowerPts[1].Position, upperPts[1].Position, p3);
+                    
                     
                     u1 = lowerPts[1].TextureCoordinate;
                     u2 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p2);
-                    u3 = InterpolateUV(lowerPts[1].TextureCoordinate, upperPts[1].TextureCoordinate, lowerPts[1].Position, upperPts[1].Position, p2);
+                    u3 = InterpolateUV(lowerPts[1].TextureCoordinate, upperPts[1].TextureCoordinate, lowerPts[1].Position, upperPts[1].Position, p3);
+                     
+                    /*
+                    u1 = lowerPts[1].TextureCoordinate;
+                    u2 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p2);
+                    u3 = InterpolateUV(upperPts[1].TextureCoordinate, lowerPts[1].TextureCoordinate, upperPts[1].Position, lowerPts[1].Position, p3);
+                     */
+                    int f = 5;
                 }
             }
             
             ret.Add(new VertexPositionNormalTexture(p1, n1, u1));
             ret.Add(new VertexPositionNormalTexture(p2, n2, u2));
             ret.Add(new VertexPositionNormalTexture(p3, n3, u3));
+            
             /*
             ret.Add(new VertexPositionNormalTexture(p1, Vector3.Zero, Vector2.Zero));
             ret.Add(new VertexPositionNormalTexture(p2, Vector3.Zero, Vector2.Zero));
@@ -498,7 +527,30 @@ namespace Gondola.GameState.ObjectEditor{
             float d1 = Vector3.Distance(p1, p2);
             float d2 = Vector3.Distance(p1, mid);
             float t = d2 / d1;
-            return u1 * t + u2 * (1 - t);
+            
+            float s1 = (p2.Y - p1.Y) / (p2.X - p1.X);
+            float s2 = (p2.Y - p1.Y) / (p2.X - p1.X);
+
+            Vector2 ret = u1 * (1-t) + u2 * (t);
+
+            if (ret.X > 1)
+                ret.X = 1;
+            if (ret.Y > 1)
+                ret.Y = 1;
+            if (ret.X < 0)
+                ret.X = 0;
+            if(ret.Y < 0)
+                ret.Y = 0;
+
+            if (Math.Abs(s1 - s2) > 0.0001f) {
+                int k = 4;
+            }
+
+            if (ret.X < -0.000001f || ret.Y < -0.000001f || ret.X > 1.000001 || ret.Y > 1.000001) {
+                int h = 5;
+            }
+
+            return ret;
         }
 
 
