@@ -140,5 +140,24 @@ namespace Gondola.Util {
 
             return uVec * dist + start;
         }
+
+        //todo: this belongs in another class (UNTESTED)
+        static public Vector3 Intersection(Vector3 p1, Vector3 p2, Vector3 v1, Vector3 v2, int resolution = 100){
+            var vec1Step = (p2 - p1).Length()/resolution;
+            var vec2Step = (v2 - v1).Length()/resolution;
+
+            var uVec1 = (p2 - p1);
+            uVec1.Normalize();
+            var uVec2 = (v2 - v1);
+            uVec2.Normalize();
+
+            var distTable = new List<float>(resolution);
+            for (int i = 0; i < resolution; i++){
+                distTable.Add(Vector3.Distance(p1 + uVec1*(i*vec1Step), v1 + uVec2*(i*vec2Step)));
+            }
+            float min = distTable.Min();
+            int stepIdx = distTable.IndexOf(min);
+            return p1 + uVec1*stepIdx*vec1Step;
+        }
     }
 }
