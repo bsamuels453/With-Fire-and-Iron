@@ -141,18 +141,20 @@ namespace Gondola.Draw{
         /// <summary>
         ///   really cool method that will take another objectbuffer and absorb its objects into this objectbuffer. also clears the other buffer afterwards.
         /// </summary>
-        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer) {
+        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer, bool allowDuplicateIDs = false) {
             bool buffUpdateState = UpdateBufferManually;
             UpdateBufferManually = true; //temporary for this heavy copy algo
 
             foreach (var objectData in buffer._objectData) {
-                bool isDuplicate = false;
-                foreach (var data in _objectData) {
-                    if (data.Identifier.Equals(objectData.Identifier))
-                        isDuplicate = true;
+                if (!allowDuplicateIDs) {
+                    bool isDuplicate = false;
+                    foreach (var data in _objectData){
+                        if (data.Identifier.Equals(objectData.Identifier))
+                            isDuplicate = true;
+                    }
+                    if (isDuplicate)
+                        continue;
                 }
-                if (isDuplicate)
-                    continue;
 
                 int offset = objectData.ObjectOffset * _verticiesPerObject;
                 var indicies = from index in objectData.Indicies
@@ -164,6 +166,8 @@ namespace Gondola.Draw{
             UpdateBufferManually = buffUpdateState;
             buffer.ClearObjects();
         }
+
+        public int ActiveObjects{get { return _objectData.Count(data => data.Enabled); }}
 
         public ObjectData[] DumpObjectData() {
             return _objectData.ToArray();
