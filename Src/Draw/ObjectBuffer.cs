@@ -101,38 +101,43 @@ namespace Gondola.Draw{
             base.BaseIndexBuffer.SetData(_indicies);
         }
 
-        public bool EnableObject(IEquatable<TIdentifier> identifier) {
-            ObjectData objToEnable = null;
-            foreach (var obj in _objectData) {
-                if (obj.Identifier.Equals(identifier)) {
-                    objToEnable = obj;
+        public bool EnableObject(IEquatable<TIdentifier> identifier){
+            var objToEnable = new List<ObjectData>();
+            foreach (var obj in _objectData){
+                if (obj.Identifier.Equals(identifier)){
+                    objToEnable.Add(obj);
                 }
             }
-            if (objToEnable == null)
+            if (objToEnable.Count == 0)
                 return false;
 
-            objToEnable.Enabled = true;
-            objToEnable.Indicies.CopyTo(_indicies, objToEnable.ObjectOffset * _indiciesPerObject);
-            if (!UpdateBufferManually) {
+            objToEnable.ForEach(o => o.Enabled = true);
+            foreach (var obj in objToEnable){
+                obj.Indicies.CopyTo(_indicies, obj.ObjectOffset*_indiciesPerObject);
+            }
+            if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
             }
             return true;
         }
 
-        public bool DisableObject(TIdentifier identifier) {
-            ObjectData objToDisable = null;
-            foreach (var obj in _objectData) {
-                if (obj.Identifier.Equals(identifier)) {
-                    objToDisable = obj;
+        public bool DisableObject(TIdentifier identifier){
+            var objToDisable = new List<ObjectData>();
+            foreach (var obj in _objectData){
+                if (obj.Identifier.Equals(identifier)){
+                    objToDisable.Add(obj);
                 }
             }
-            if (objToDisable == null)
+            if (objToDisable.Count == 0)
                 return false;
 
-            objToDisable.Enabled = false;
+            objToDisable.ForEach(o => o.Enabled = false);
             var indicies = new int[_indiciesPerObject];
-            indicies.CopyTo(_indicies, objToDisable.ObjectOffset * _indiciesPerObject);
-            if (!UpdateBufferManually) {
+
+            foreach (var obj in objToDisable){
+                indicies.CopyTo(_indicies, obj.ObjectOffset*_indiciesPerObject);
+            }
+            if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
             }
             return true;
