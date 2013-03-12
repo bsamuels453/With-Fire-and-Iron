@@ -39,7 +39,7 @@ namespace Gondola.GameState.HullEditor {
                 );
 
             _renderTarget.Bind();
-            _indicies = MeshHelper.CreateIndiceArray((_meshVertexWidth) * (_meshVertexWidth));
+            _indicies = MeshHelper.CreateQuadIndiceArray((_meshVertexWidth) * (_meshVertexWidth));
             _verticies = MeshHelper.CreateTexcoordedVertexList((_meshVertexWidth) * (_meshVertexWidth));
 
             _geometryBuffer = new GeometryBuffer<VertexPositionNormalTexture>(

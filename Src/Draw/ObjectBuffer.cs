@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -9,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Gondola.Draw{
-    internal class ObjectBuffer<TIdentifier> : BaseGeometryBuffer<VertexPositionNormalTexture> where TIdentifier : IEquatable<TIdentifier> {
+    internal class ObjectBuffer<TIdentifier> : GeometryBuffer<VertexPositionNormalTexture>, IEnumerable where TIdentifier : IEquatable<TIdentifier> {
         readonly int[] _indicies;
         readonly int _indiciesPerObject;
         readonly bool[] _isSlotOccupied;
@@ -70,23 +71,23 @@ namespace Gondola.Draw{
         }
 
         public void RemoveObject(TIdentifier identifier) {
-            ObjectData objectToRemove = (
-                                            from obj in _objectData
-                                            where obj.Identifier.Equals(identifier)
-                                            select obj
-                                        ).FirstOrDefault();
+            var objectToRemove =
+                from obj in _objectData
+                where obj.Identifier.Equals(identifier)
+                select obj;                          
 
-            if (objectToRemove == null)
+            if (!objectToRemove.Any())
                 return;
-
-            _isSlotOccupied[objectToRemove.ObjectOffset] = false;
-            for (int i = 0; i < _indiciesPerObject; i++) {
-                _indicies[objectToRemove.ObjectOffset * _indiciesPerObject + i] = 0;
+            foreach (var obj in objectToRemove){
+                _isSlotOccupied[obj.ObjectOffset] = false;
+                for (int i = 0; i < _indiciesPerObject; i++){
+                    _indicies[obj.ObjectOffset*_indiciesPerObject + i] = 0;
+                }
+                if (!UpdateBufferManually){
+                    base.BaseIndexBuffer.SetData(_indicies);
+                }
+                _objectData.Remove(obj);
             }
-            if (!UpdateBufferManually) {
-                base.BaseIndexBuffer.SetData(_indicies);
-            }
-            _objectData.Remove(objectToRemove);
         }
 
         public void ClearObjects() {
@@ -100,38 +101,43 @@ namespace Gondola.Draw{
             base.BaseIndexBuffer.SetData(_indicies);
         }
 
-        public bool EnableObject(IEquatable<TIdentifier> identifier) {
-            ObjectData objToEnable = null;
-            foreach (var obj in _objectData) {
-                if (obj.Identifier.Equals(identifier)) {
-                    objToEnable = obj;
+        public bool EnableObject(IEquatable<TIdentifier> identifier){
+            var objToEnable = new List<ObjectData>();
+            foreach (var obj in _objectData){
+                if (obj.Identifier.Equals(identifier)){
+                    objToEnable.Add(obj);
                 }
             }
-            if (objToEnable == null)
+            if (objToEnable.Count == 0)
                 return false;
 
-            objToEnable.Enabled = true;
-            objToEnable.Indicies.CopyTo(_indicies, objToEnable.ObjectOffset * _indiciesPerObject);
-            if (!UpdateBufferManually) {
+            objToEnable.ForEach(o => o.Enabled = true);
+            foreach (var obj in objToEnable){
+                obj.Indicies.CopyTo(_indicies, obj.ObjectOffset*_indiciesPerObject);
+            }
+            if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
             }
             return true;
         }
 
-        public bool DisableObject(TIdentifier identifier) {
-            ObjectData objToDisable = null;
-            foreach (var obj in _objectData) {
-                if (obj.Identifier.Equals(identifier)) {
-                    objToDisable = obj;
+        public bool DisableObject(TIdentifier identifier){
+            var objToDisable = new List<ObjectData>();
+            foreach (var obj in _objectData){
+                if (obj.Identifier.Equals(identifier)){
+                    objToDisable.Add(obj);
                 }
             }
-            if (objToDisable == null)
+            if (objToDisable.Count == 0)
                 return false;
 
-            objToDisable.Enabled = false;
+            objToDisable.ForEach(o => o.Enabled = false);
             var indicies = new int[_indiciesPerObject];
-            indicies.CopyTo(_indicies, objToDisable.ObjectOffset * _indiciesPerObject);
-            if (!UpdateBufferManually) {
+
+            foreach (var obj in objToDisable){
+                indicies.CopyTo(_indicies, obj.ObjectOffset*_indiciesPerObject);
+            }
+            if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
             }
             return true;
@@ -140,18 +146,20 @@ namespace Gondola.Draw{
         /// <summary>
         ///   really cool method that will take another objectbuffer and absorb its objects into this objectbuffer. also clears the other buffer afterwards.
         /// </summary>
-        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer) {
+        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer, bool allowDuplicateIDs = false) {
             bool buffUpdateState = UpdateBufferManually;
             UpdateBufferManually = true; //temporary for this heavy copy algo
 
             foreach (var objectData in buffer._objectData) {
-                bool isDuplicate = false;
-                foreach (var data in _objectData) {
-                    if (data.Identifier.Equals(objectData.Identifier))
-                        isDuplicate = true;
+                if (!allowDuplicateIDs) {
+                    bool isDuplicate = false;
+                    foreach (var data in _objectData){
+                        if (data.Identifier.Equals(objectData.Identifier))
+                            isDuplicate = true;
+                    }
+                    if (isDuplicate)
+                        continue;
                 }
-                if (isDuplicate)
-                    continue;
 
                 int offset = objectData.ObjectOffset * _verticiesPerObject;
                 var indicies = from index in objectData.Indicies
@@ -163,6 +171,8 @@ namespace Gondola.Draw{
             UpdateBufferManually = buffUpdateState;
             buffer.ClearObjects();
         }
+
+        public int ActiveObjects{get { return _objectData.Count(data => data.Enabled); }}
 
         public ObjectData[] DumpObjectData() {
             return _objectData.ToArray();
@@ -201,5 +211,11 @@ namespace Gondola.Draw{
         }
 
         #endregion
+
+        public IEnumerator GetEnumerator(){
+            var enumLi = from data in _objectData
+                         select data.Identifier;
+            return enumLi.GetEnumerator();
+        }
     }
 }

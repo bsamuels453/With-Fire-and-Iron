@@ -1,16 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Gondola.Draw;
-using Gondola.GameState.ObjectEditor;
 using Gondola.Logic;
 using Gondola.UI.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-namespace Gondola.GameState.HullEditor.Tools {
+namespace Gondola.GameState.ObjectEditor.Tools {
     internal abstract class DeckPlacementBase : IToolbarTool {
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
         protected readonly HullDataManager HullData;

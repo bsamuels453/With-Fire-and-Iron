@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Gondola.Draw;
-using Gondola.GameState.ObjectEditor;
 using Gondola.Logic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gondola.GameState.HullEditor.Tools {
+namespace Gondola.GameState.ObjectEditor.Tools {
     internal class LadderBuildTool : DeckPlacementBase {
         const float _ladderWidth = 1f;
         const float _gridWidth = 0.5f;
@@ -49,6 +45,15 @@ namespace Gondola.GameState.HullEditor.Tools {
         }
 
         protected override void HandleCursorRelease() {
+            
+            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 0));
+            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
+            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
+            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
+             
+            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(1, 2, 1));
+            //_hullData.CurHullBuffer[0].Cut(CursorPosition, CursorPosition + new Vector3(0.5f, 0, 0));
+
             var identifier = new ObjectIdentifier(ObjectType.Ladder, CursorPosition);
 
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2) * Matrix.CreateTranslation(CursorPosition);

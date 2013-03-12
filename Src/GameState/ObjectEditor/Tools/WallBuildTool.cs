@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Gondola.Draw;
-using Gondola.GameState.ObjectEditor;
 using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gondola.GameState.HullEditor.Tools {
+namespace Gondola.GameState.ObjectEditor.Tools {
     internal class WallBuildTool : DeckPlacementBase {
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         readonly List<WallSegmentIdentifier> _tempWallIdentifiers;
