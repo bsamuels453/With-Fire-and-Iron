@@ -20,6 +20,8 @@ namespace Gondola.GameState.ObjectEditor{
         readonly ObjectBuffer<HullSection> _hullBuff;
         readonly int[] _idxWinding;
         readonly Side _side;
+        readonly float _boxWidth;
+        readonly Dictionary<float, int> _panelLookup; 
 
         enum Side{
             Left,
@@ -35,7 +37,7 @@ namespace Gondola.GameState.ObjectEditor{
                 _idxWinding = new[] { 0, 2, 1};
                 _side = Side.Left;
             }
-
+            _boxWidth = boundingWidth;
 
             var groupedPanels = new List<IEnumerable<VertexPositionNormalTexture>>();
             for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4){
@@ -47,13 +49,18 @@ namespace Gondola.GameState.ObjectEditor{
                                 group grp by grp.ElementAt(0).Position.Y into layers
                                 select layers.ToArray()).ToArray();
 
+            _panelLookup = new Dictionary<float, int>(5);
+            foreach (var layer in sortedPanels.Reverse()) {
+                _panelLookup.Add(layer[0].ElementAt(2).Position.Y, _panelLookup.Count);
+            }
+
             //xxx need better estimation for number of objects
             var tempBuff = new ObjectBuffer<HullSection>((int)(400*5/boundingWidth), 1, 3, 3, "Shader_AirshipHull");
             tempBuff.UpdateBufferManually = true;
 
             foreach (var layer in sortedPanels){
                 foreach (var quad in layer){
-                    SubdividePanel(tempBuff, quad.ToArray(), boundingWidth);
+                    SubdividePanel(tempBuff, quad.ToArray());
                 }
             }
 
@@ -62,39 +69,31 @@ namespace Gondola.GameState.ObjectEditor{
             _hullBuff.AbsorbBuffer(tempBuff, true);
         }
 
-        public void DisablePanel(Vector3 start, Vector3 end){
-            if (start.Z > 0 && _side != Side.Right)
+        public void DisablePanel(float xPos, float zPos, int yPanel){
+            if (zPos > 0 && _side != Side.Right)
                 return;
-            if (start.Z < 0 && _side != Side.Left)
+            if (zPos < 0 && _side != Side.Left)
                 return;
             
-            _hullBuff.DisableObject(
-                new HullSection(
-                    xStart: start.X,
-                    xEnd: end.X,
-                    yStart: start.Y,
-                    yEnd: end.Y
-                    )
-                    );
+            if(!_hullBuff.DisableObject(
+                new HullSection(xPos, xPos+_boxWidth, yPanel))){
+                    throw new Exception("bad disable request, panel doesnt exist");
+            }
         }
 
-        public void EnablePanel(Vector3 start, Vector3 end) {
-            if (start.Z > 0 && _side != Side.Right)
+        public void EnablePanel(float xPos, float zPos, int yPanel) {
+            if (zPos > 0 && _side != Side.Right)
                 return;
-            if (start.Z < 0 && _side != Side.Left)
+            if (zPos < 0 && _side != Side.Left)
                 return;
 
-            _hullBuff.EnableObject(
-                new HullSection(
-                    xStart: start.X,
-                    xEnd: end.X,
-                    yStart: start.Y,
-                    yEnd: end.Y
-                    )
-                    );
+            if (!_hullBuff.EnableObject(
+                new HullSection(xPos, xPos + _boxWidth, yPanel))) {
+                    throw new Exception("bad enable request, panel doesnt exist");
+            }
         }
 
-        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, float width){
+        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts){
             var upperPts = new VertexPositionNormalTexture[2];
             var lowerPts = new VertexPositionNormalTexture[2];
 
@@ -122,32 +121,31 @@ namespace Gondola.GameState.ObjectEditor{
                 lowerPts[1].Position.X : upperPts[1].Position.X;
 
             float subBoxStart = 0;
-            while (subBoxStart + width < frontMin){
-                subBoxStart += width;
+            while (subBoxStart + _boxWidth < frontMin){
+                subBoxStart += _boxWidth;
             }
-            float subBoxEnd = subBoxStart + width;
+            float subBoxEnd = subBoxStart + _boxWidth;
 
             GenerateFrontSection(
                 buff,
                 ref subBoxStart,
                 ref subBoxEnd,
-                width,
                 lowerPts,
                 upperPts
                 );
 
-            while (subBoxEnd + width < backMin){
-                subBoxStart += width;
-                subBoxEnd += width;
-                GenerateMidQuads(buff, width, upperPts, lowerPts, subBoxStart, subBoxEnd);
+            while (subBoxEnd + _boxWidth < backMin){
+                subBoxStart += _boxWidth;
+                subBoxEnd += _boxWidth;
+                GenerateMidQuads(buff, upperPts, lowerPts, subBoxStart, subBoxEnd);
             }
-            GenerateMidQuads(buff, width, upperPts, lowerPts, subBoxEnd, backMin);
+
+            GenerateMidQuads(buff, upperPts, lowerPts, subBoxEnd, backMin);
 
             GenerateEndSection(
                 buff,
                 ref subBoxStart,
                 ref subBoxEnd,
-                width,
                 lowerPts,
                 upperPts
                 );
@@ -158,7 +156,6 @@ namespace Gondola.GameState.ObjectEditor{
             ObjectBuffer<HullSection> buff, 
             ref float subBoxStart, 
             ref float subBoxEnd, 
-            float width,
             VertexPositionNormalTexture[] lowerPts,
             VertexPositionNormalTexture[] upperPts) {
 
@@ -171,12 +168,11 @@ namespace Gondola.GameState.ObjectEditor{
                 new HullSection(
                     xStart: f,
                     xEnd: f1,
-                    yStart: lowerPts[0].Position.Y,
-                    yEnd: upperPts[0].Position.Y
+                    yPanel: _panelLookup[lowerPts[0].Position.Y]
                 );
 
             var curBox = genSection(subBoxStart, subBoxEnd);
-            var nextBox = genSection(subBoxEnd, subBoxEnd + width);
+            var nextBox = genSection(subBoxEnd, subBoxEnd + _boxWidth);
 
             if (subBoxEnd > lowerPts[0].Position.X && subBoxEnd < upperPts[0].Position.X ||
                 subBoxEnd < lowerPts[0].Position.X && subBoxEnd > upperPts[0].Position.X) {
@@ -188,8 +184,8 @@ namespace Gondola.GameState.ObjectEditor{
 
                 //generate partial quad bound from subBoxEnd to frontMax
                 var edgeQuad = GenEdgeQuad(upperPts, lowerPts, subBoxEnd, true);
-                buff.AddObject(nextBox, (int[])_idxWinding.Clone(), edgeQuad[0].ToArray());
-                buff.AddObject(nextBox, (int[])_idxWinding.Clone(), edgeQuad[1].ToArray());
+                buff.AddObject(nextBox, (int[])_idxWinding.Clone(), edgeQuad[0].ToArray());//next
+                buff.AddObject(nextBox, (int[])_idxWinding.Clone(), edgeQuad[1].ToArray());//next
             }
             else {
                 //the only other option is that the box terminates in the body of the panel
@@ -219,17 +215,18 @@ namespace Gondola.GameState.ObjectEditor{
                     buff.AddObject(curBox, (int[])_idxWinding.Clone(), edgeQuad[0].ToArray());
                     buff.AddObject(curBox, (int[])_idxWinding.Clone(), edgeQuad[1].ToArray());
                 }
-                subBoxStart += width;
-                subBoxEnd += width;
+                subBoxStart += _boxWidth;
+                subBoxEnd += _boxWidth;
                 curBox = genSection(subBoxStart, subBoxEnd);
             }
 
             if (subBoxEnd > frontMax && subBoxStart < frontMax && subBoxStart > frontMin) {
                 //generate cross boxes
+                //nextBox = genSection(subBoxEnd, subBoxEnd + _boxWidth);
                 var eedgeQuad = GenEdgeQuad(upperPts, lowerPts, frontMax, true);
                 buff.AddObject(curBox, (int[])_idxWinding.Clone(), eedgeQuad[0].ToArray());
                 buff.AddObject(curBox, (int[])_idxWinding.Clone(), eedgeQuad[1].ToArray());
-                GenerateMidQuads(buff, width, upperPts, lowerPts, frontMax, subBoxEnd);
+                GenerateMidQuads(buff, upperPts, lowerPts, frontMax, subBoxEnd, false);
             }
         }
 
@@ -237,27 +234,30 @@ namespace Gondola.GameState.ObjectEditor{
             ObjectBuffer<HullSection> buff,
             ref float subBoxStart,
             ref float subBoxEnd,
-            float width,
             VertexPositionNormalTexture[] lowerPts,
             VertexPositionNormalTexture[] upperPts) {
 
-            float backMin = lowerPts[1].Position.X < upperPts[1].Position.X ?
-                lowerPts[1].Position.X : upperPts[1].Position.X;
+            subBoxStart += _boxWidth;
+            subBoxEnd += _boxWidth;
 
+            var backMin = lowerPts[1].Position.X < upperPts[1].Position.X ?
+                lowerPts[1].Position.X : upperPts[1].Position.X;
+            /*
+            float backMax = lowerPts[1].Position.X > upperPts[1].Position.X ?
+                lowerPts[1].Position.X : upperPts[1].Position.X;
+            */
             Func<float, float, HullSection> genSection = (f, f1) =>
                 new HullSection(
                     xStart: f,
                     xEnd: f1,
-                    yStart: lowerPts[0].Position.Y,
-                    yEnd: upperPts[0].Position.Y
+                    yPanel: _panelLookup[lowerPts[0].Position.Y]
                 );
-
+            
             var curBox = genSection(subBoxStart, subBoxEnd);
-            var nextBox = genSection(subBoxEnd, subBoxEnd + width);
+            var nextBox = genSection(subBoxEnd, subBoxEnd + _boxWidth);
 
             if (subBoxEnd > lowerPts[1].Position.X && subBoxEnd < upperPts[1].Position.X ||
                 subBoxEnd < lowerPts[1].Position.X && subBoxEnd > upperPts[1].Position.X) {
-
                 //generate partial quad from backMin to subBoxEnd
                 var quad = GenEdgeQuad(upperPts, lowerPts, subBoxEnd, false);
                 buff.AddObject(curBox, (int[])_idxWinding.Clone(), quad[0].ToArray());
@@ -267,9 +267,7 @@ namespace Gondola.GameState.ObjectEditor{
                 var edgeTri = GenEdgeTriangle(upperPts, lowerPts, subBoxEnd, false);
                 buff.AddObject(nextBox, (int[])_idxWinding.Clone(), edgeTri.ToArray());
             }
-            else {
-                //the box terminates in the next panel
-                //generate triangle from backMin to backMax
+            else{
                 var edgeTri = GenEdgeTriangle(upperPts, lowerPts, backMin, false);
                 buff.AddObject(curBox, (int[])_idxWinding.Clone(), edgeTri.ToArray());
             }
@@ -279,18 +277,27 @@ namespace Gondola.GameState.ObjectEditor{
         #region primitive interpolation
         void GenerateMidQuads(
             ObjectBuffer<HullSection> buff, 
-            float width, 
             VertexPositionNormalTexture[] upperPts,
             VertexPositionNormalTexture[] lowerPts, 
             float start, 
-            float end){
-
-            var curBox = new HullSection(
-                xStart: start,
-                xEnd: start + width,
-                yStart: lowerPts[0].Position.Y,
-                yEnd: upperPts[0].Position.Y
-                );
+            float end,
+            bool useStartForId=true){
+            
+            HullSection curBox;
+            if (useStartForId) {
+                curBox = new HullSection(
+                    xStart: start,
+                    xEnd: start + _boxWidth,
+                    yPanel: _panelLookup[lowerPts[0].Position.Y]
+                    );
+            }
+            else{
+                curBox = new HullSection(
+                    xStart: end-_boxWidth,
+                    xEnd: end,
+                    yPanel: _panelLookup[lowerPts[0].Position.Y]
+                    );
+            }
 
             //generate intermediate quads
             var quad = GenIntermediateQuad(upperPts, lowerPts, start, end);
@@ -389,36 +396,36 @@ namespace Gondola.GameState.ObjectEditor{
             }
             else{
                 if (lowerPts[1].Position.X < upperPts[1].Position.X) {
-                    p1 = upperPts[1].Position;
-                    p2 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, upperPts[1].Position.X);
-                    p3 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, cuttingLine);
-                    p4 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
-
-                    n1 = upperPts[1].Normal;
-                    n2 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p2);
-                    n3 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p3);
-                    n4 = InterpolateNorm(lowerPts[0].Normal, upperPts[1].Normal, lowerPts[0].Position, upperPts[1].Position, p4);
-
-                    u1 = upperPts[1].TextureCoordinate;
-                    u2 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p2);
-                    u3 = InterpolateUV(lowerPts[0].TextureCoordinate, lowerPts[1].TextureCoordinate, lowerPts[0].Position, lowerPts[1].Position, p3);
-                    u4 = InterpolateUV(lowerPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, lowerPts[0].Position, upperPts[1].Position, p4);
-                }
-                else{
                     p1 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, cuttingLine);
-                    p2 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, lowerPts[0].Position.X);
+                    p2 = Lerp.Trace3X(upperPts[1].Position, lowerPts[1].Position, cuttingLine);
                     p3 = lowerPts[1].Position;
-                    p4 = Lerp.Trace3X(upperPts[1].Position, lowerPts[1].Position, cuttingLine);
+                    p4 = Lerp.Trace3X(upperPts[1].Position, upperPts[0].Position, lowerPts[1].Position.X);
 
                     n1 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p1);
-                    n2 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p2);
+                    n2 = InterpolateNorm(upperPts[1].Normal, lowerPts[1].Normal, upperPts[1].Position, lowerPts[1].Position, p2);
                     n3 = lowerPts[1].Normal;
-                    n4 = InterpolateNorm(upperPts[1].Normal, lowerPts[1].Normal, upperPts[1].Position, lowerPts[1].Position, p4);
+                    n4 = InterpolateNorm(upperPts[0].Normal, upperPts[1].Normal, upperPts[0].Position, upperPts[1].Position, p4);
 
                     u1 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p1);
-                    u2 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p2);
+                    u2 = InterpolateUV(upperPts[1].TextureCoordinate, lowerPts[1].TextureCoordinate, upperPts[1].Position, lowerPts[1].Position, p2);
                     u3 = lowerPts[1].TextureCoordinate;
-                    u4 = InterpolateUV(upperPts[1].TextureCoordinate, lowerPts[1].TextureCoordinate, upperPts[1].Position, lowerPts[1].Position, p4);
+                    u4 = InterpolateUV(upperPts[0].TextureCoordinate, upperPts[1].TextureCoordinate, upperPts[0].Position, upperPts[1].Position, p4);
+                }
+                else{
+                    p1 = upperPts[1].Position;
+                    p2 = Lerp.Trace3X(lowerPts[1].Position, upperPts[1].Position, cuttingLine);
+                    p3 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, cuttingLine);
+                    p4 = Lerp.Trace3X(lowerPts[1].Position, lowerPts[0].Position, upperPts[1].Position.X);
+
+                    n1 = upperPts[1].Normal;
+                    n2 = InterpolateNorm(lowerPts[0].Normal, upperPts[1].Normal, lowerPts[0].Position, upperPts[1].Position, p2);
+                    n3 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p3);
+                    n4 = InterpolateNorm(lowerPts[0].Normal, lowerPts[1].Normal, lowerPts[0].Position, lowerPts[1].Position, p4);
+                    
+                    u1 = upperPts[1].TextureCoordinate;
+                    u2 = InterpolateUV(lowerPts[1].TextureCoordinate, upperPts[1].TextureCoordinate, lowerPts[1].Position, upperPts[1].Position, p2);
+                    u3 = InterpolateUV(lowerPts[1].TextureCoordinate, lowerPts[0].TextureCoordinate, lowerPts[1].Position, lowerPts[0].Position, p3);
+                    u4 = InterpolateUV(lowerPts[1].TextureCoordinate, lowerPts[0].TextureCoordinate, lowerPts[1].Position, lowerPts[0].Position, p4);
                 }
             }
 
@@ -536,7 +543,7 @@ namespace Gondola.GameState.ObjectEditor{
             float d2 = Vector3.Distance(p1, mid);
             float t = d2 / d1;
             Vector2 ret = u1 * (1-t) + u2 * (t);
-
+            /*
             if (ret.X > 1)
                 ret.X = 1;
             if (ret.Y > 1)
@@ -545,6 +552,7 @@ namespace Gondola.GameState.ObjectEditor{
                 ret.X = 0;
             if(ret.Y < 0)
                 ret.Y = 0;
+             */
             return ret;
         }
 
@@ -567,29 +575,28 @@ namespace Gondola.GameState.ObjectEditor{
         public class HullSection : IEquatable<HullSection>{
             readonly float _xStart;
             readonly float _xEnd;
-            readonly float _yStart;
-            readonly float _yEnd;
+            readonly int _yPanel;
 
-            public HullSection(float xStart, float xEnd, float yStart, float yEnd){
+            public HullSection(float xStart, float xEnd, int yPanel){
                 _xStart = xStart;
                 _xEnd = xEnd;
-                _yStart = yStart;
-                _yEnd = yEnd;
+                _yPanel = yPanel;
             }
 
             #region IEquatable<HullSection> Members
-            // ReSharper disable CompareOfFloatsByEqualityOperator
+
             public bool Equals(HullSection other){
-                if (_xStart == other._xStart && _xEnd == other._xEnd && _yStart == other._yStart && _yEnd == other._yEnd) {
+                if (Math.Abs(_xStart - other._xStart) < 0.01f &&
+                    Math.Abs(_xEnd - other._xEnd) < 0.01f &&
+                    _yPanel == other._yPanel) {
                     return true;
                 }
                 return false;
             }
-            // ReSharper restore CompareOfFloatsByEqualityOperator
+
             #endregion
         }
 
         #endregion
     }
 }
-    
