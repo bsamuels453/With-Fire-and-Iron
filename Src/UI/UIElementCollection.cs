@@ -139,9 +139,6 @@ namespace Gondola.UI {
                     _curElementCollection.AddElementToCollection(elementToAdd);
                 }
             }
-            else {
-                //throw new Exception("no uielementcollection bound");
-            }
         }
 
         public static void BindCollection(UIElementCollection collection) {
