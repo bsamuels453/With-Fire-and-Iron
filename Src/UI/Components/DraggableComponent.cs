@@ -20,7 +20,7 @@ namespace Gondola.UI.Components{
         bool _Enabled;
         bool _isMoving;
         Vector2 _mouseOffset;
-        IUIInteractiveElement _owner;
+        Button _owner;
 
         #region properties
 
@@ -33,7 +33,7 @@ namespace Gondola.UI.Components{
         }
 
         public void ComponentCtor(IUIElement owner, ButtonEventDispatcher ownerEventDispatcher) {
-            _owner = (IUIInteractiveElement)owner;
+            _owner = (Button)owner;
             _Enabled = true;
             _isMoving = false;
             ownerEventDispatcher.OnGlobalLeftPress.Add(this);
@@ -47,7 +47,7 @@ namespace Gondola.UI.Components{
 
         public void OnLeftButtonPress(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
             if (!_isMoving && _Enabled) {
-                if (_owner.BoundingBox.Contains(mousePos.X, mousePos.Y)) {
+                if (_owner.Contains(mousePos.X, mousePos.Y)) {
                     _isMoving = true;
                     UIElementCollection.Collection.DisableEntryHandlers = true;
                     _mouseOffset.X = _owner.X - mousePos.X;
@@ -87,7 +87,7 @@ namespace Gondola.UI.Components{
                 }
 
                 //this block checks if a drag clamp is preventing the owner from moving, if thats the case then kill the drag
-                var tempRect = new Rectangle(x - (int)_owner.BoundingBox.Width * 2, y - (int)_owner.BoundingBox.Height * 2, (int)_owner.BoundingBox.Width * 6, (int)_owner.BoundingBox.Height * 6);
+                var tempRect = new Rectangle(x - (int)_owner.Width * 2, y - (int)_owner.Height * 2, (int)_owner.Width * 6, (int)_owner.Height * 6);
                 if (!tempRect.Contains(mousePos.X, mousePos.Y)) {
                     //_isMoving = false;
                     //_owner.Owner.DisableEntryHandlers = false;

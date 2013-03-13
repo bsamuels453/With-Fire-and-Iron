@@ -450,8 +450,8 @@ namespace Gondola.GameState.HullEditor {
             RawPrevTranslate(dx, dy);
             _nextLine.Angle = (float)(_prevLine.Angle + Math.PI);
 
-            _nextButton.X = _nextLine.DestPoint.X - _nextButton.BoundingBox.Width / 2;
-            _nextButton.Y = _nextLine.DestPoint.Y - _nextButton.BoundingBox.Height / 2;
+            _nextButton.X = _nextLine.DestPoint.X - _nextButton.Width / 2;
+            _nextButton.Y = _nextLine.DestPoint.Y - _nextButton.Height / 2;
         }
 
         void RawNextTranslate(int dx, int dy) {
@@ -464,8 +464,8 @@ namespace Gondola.GameState.HullEditor {
             RawNextTranslate(dx, dy);
             _prevLine.Angle = (float)(_nextLine.Angle + Math.PI);
 
-            _prevButton.X = _prevLine.DestPoint.X - _prevButton.BoundingBox.Width / 2;
-            _prevButton.Y = _prevLine.DestPoint.Y - _prevButton.BoundingBox.Height / 2;
+            _prevButton.X = _prevLine.DestPoint.X - _prevButton.Width / 2;
+            _prevButton.Y = _prevLine.DestPoint.Y - _prevButton.Height / 2;
         }
 
         void TranslateToLinks(object caller, int dx, int dy) {
@@ -500,8 +500,8 @@ namespace Gondola.GameState.HullEditor {
                     else {
                         _nextLine.Angle = (float)(_prevLine.Angle + Math.PI);
 
-                        _nextButton.X = _nextLine.DestPoint.X - _nextButton.BoundingBox.Width / 2;
-                        _nextButton.Y = _nextLine.DestPoint.Y - _nextButton.BoundingBox.Height / 2;
+                        _nextButton.X = _nextLine.DestPoint.X - _nextButton.Width / 2;
+                        _nextButton.Y = _nextLine.DestPoint.Y - _nextButton.Height / 2;
                     }
 
                     if (SymmetricHandle != null && !_dontTranslateHandles) {
@@ -517,8 +517,8 @@ namespace Gondola.GameState.HullEditor {
                     else {
                         _prevLine.Angle = (float)(_nextLine.Angle - Math.PI);
 
-                        _prevButton.X = _prevLine.DestPoint.X - _prevButton.BoundingBox.Width / 2;
-                        _prevButton.Y = _prevLine.DestPoint.Y - _prevButton.BoundingBox.Height / 2;
+                        _prevButton.X = _prevLine.DestPoint.X - _prevButton.Width / 2;
+                        _prevButton.Y = _prevLine.DestPoint.Y - _prevButton.Height / 2;
                     }
 
                     if (SymmetricHandle != null && !_dontTranslateHandles) {

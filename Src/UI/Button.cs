@@ -2,23 +2,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Gondola.Draw;
 using Gondola.Logic;
-using Gondola.UI.Components;
 using Gondola.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 #endregion
 
 namespace Gondola.UI{
-    internal class Button : IUIInteractiveElement {
-        #region properties and fields
-
+    internal class Button : IUIInteractiveElement{
         public const int DefaultTexRepeat = 1;
         public const int DefaultIdentifier = 1;
 
@@ -27,80 +20,85 @@ namespace Gondola.UI{
         readonly int _identifier; //non-function based identifier that can be used to differentiate buttons
         readonly Sprite2D _sprite; //the button's sprite
         Vector2 _centPosition; //represents the approximate center of the button
-        bool _Enabled;
+        bool _enabled;
         string _texture;
 
-        public Vector2 CentPosition {
+        public Vector2 CentPosition{
             get { return _centPosition; }
-            set {
+            set{
                 _centPosition = value;
-                _boundingBox.X = _centPosition.X - _boundingBox.Width / 2;
-                _boundingBox.Y = _centPosition.Y - _boundingBox.Height / 2;
+                _boundingBox.X = _centPosition.X - _boundingBox.Width/2;
+                _boundingBox.Y = _centPosition.Y - _boundingBox.Height/2;
             }
         }
 
         public IUIComponent[] Components { get; set; }
 
-        public String Texture {
+        public String Texture{
             get { return _texture; }
-            set {
+            set{
                 _texture = value;
                 _sprite.SetTextureFromString(value);
             }
         }
 
-        public int Identifier {
+        public int Identifier{
             get { return _identifier; }
         }
 
-        public float X {
+        public float X{
             get { return _boundingBox.X; }
-            set {
+            set{
                 _boundingBox.X = value;
-                _centPosition.X = _boundingBox.X + _boundingBox.Width / 2;
-                _sprite.X = (int)value;
+                _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
+                _sprite.X = (int) value;
             }
         }
 
-        public float Y {
+        public float Y{
             get { return _boundingBox.Y; }
-            set {
+            set{
                 _boundingBox.Y = value;
-                _centPosition.Y = _boundingBox.Y + _boundingBox.Height / 2;
-                _sprite.Y = (int)value;
+                _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;
+                _sprite.Y = (int) value;
             }
         }
 
-        public float Width {
+        public float Width{
             get { return _boundingBox.Width; }
-            set {
+            set{
+                throw new NotImplementedException();
+                //requires center point fixing
                 _boundingBox.Width = value;
-                _sprite.Width = (int)value;
+                _sprite.Width = (int) value;
             }
         }
 
-        public float Height {
+        public float Height{
             get { return _boundingBox.Height; }
-            set {
+            set{
+                throw new NotImplementedException();
+                //requires center point fixing
                 _boundingBox.Height = value;
-                _sprite.Height = (int)value;
+                _sprite.Height = (int) value;
             }
         }
 
-        public FloatingRectangle BoundingBox {
+        /*
+        FloatingRectangle BoundingBox {
             get { return _boundingBox; }
         }
-
+        */
         public event OnBasicMouseEvent OnLeftClickDispatcher;
         public event OnBasicMouseEvent OnLeftPressDispatcher;
         public event OnBasicMouseEvent OnLeftReleaseDispatcher;
 
-        public bool Enabled {
-            get { return _Enabled; }
-            set {
-                _Enabled = value;
+        public bool Enabled{
+            get { return _enabled; }
+            set{
+                _enabled = value;
                 _sprite.Enabled = value;
-                foreach (var component in Components) {
+                foreach (var component in Components){
                     component.Enabled = value;
                 }
             }
@@ -108,37 +106,39 @@ namespace Gondola.UI{
 
         public bool ContainsMouse { get; private set; }
 
-        public float Alpha {
+        public float Alpha{
             get { return _sprite.Alpha; }
             set { _sprite.Alpha = value; }
         }
 
-        public float Depth {
+        public float Depth{
             get { return _sprite.Depth; }
             set { _sprite.Depth = value; }
         }
 
-        #endregion
+        public bool Contains(int x, int y){
+            return _boundingBox.Contains(x, y);
+        }
 
         #region ctor
 
-        //xxx why are these position coordinates all floats?
-        public Button(float x, float y, float width, float height, DepthLevel depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null) {
+        //xx why are these position coordinates all floats?
+        public Button(float x, float y, float width, float height, DepthLevel depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
             _identifier = identifier;
-            _Enabled = true;
+            _enabled = true;
             _iEventDispatcher = new ButtonEventDispatcher();
 
             _centPosition = new Vector2();
             _boundingBox = new FloatingRectangle(x, y, width, height);
-            _sprite = new Sprite2D(textureName, (int)x, (int)y, (int)width, (int)height, (float)depth / 10, 1, spriteTexRepeatX, spriteTexRepeatY);
+            _sprite = new Sprite2D(textureName, (int) x, (int) y, (int) width, (int) height, (float) depth/10, 1, spriteTexRepeatX, spriteTexRepeatY);
 
-            _centPosition.X = _boundingBox.X + _boundingBox.Width / 2;
-            _centPosition.Y = _boundingBox.Y + _boundingBox.Height / 2;
+            _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
+            _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;
 
             Components = components;
             Alpha = 1;
-            if (Components != null) {
-                foreach (IUIComponent component in Components) {
+            if (Components != null){
+                foreach (IUIComponent component in Components){
                     component.ComponentCtor(this, _iEventDispatcher);
                 }
             }
@@ -149,29 +149,29 @@ namespace Gondola.UI{
 
         #region other IUIElement derived methods
 
-        public TComponent GetComponent<TComponent>(string identifier = null) {
-            if (Components != null) {
-                foreach (IUIComponent component in Components) {
-                    if (component is TComponent) {
-                        if (identifier != null) {
-                            if (component.Identifier == identifier) {
-                                return (TComponent)component;
+        public TComponent GetComponent<TComponent>(string identifier = null){
+            if (Components != null){
+                foreach (IUIComponent component in Components){
+                    if (component is TComponent){
+                        if (identifier != null){
+                            if (component.Identifier == identifier){
+                                return (TComponent) component;
                             }
                             continue;
                         }
-                        return (TComponent)component;
+                        return (TComponent) component;
                     }
                 }
             }
             throw new Exception("Request made to a Button object for a component that did not exist.");
         }
 
-        public bool DoesComponentExist<TComponent>(string identifier = null) {
-            if (Components != null) {
-                foreach (var component in Components) {
-                    if (component is TComponent) {
-                        if (identifier != null) {
-                            if (component.Identifier == identifier) {
+        public bool DoesComponentExist<TComponent>(string identifier = null){
+            if (Components != null){
+                foreach (var component in Components){
+                    if (component is TComponent){
+                        if (identifier != null){
+                            if (component.Identifier == identifier){
                                 return true;
                             }
                             continue;
@@ -183,66 +183,66 @@ namespace Gondola.UI{
             return false;
         }
 
-        public void UpdateLogic(double timeDelta) {
-            if (Enabled) {
-                if (Components != null) {
-                    foreach (IUIComponent component in Components) {
+        public void UpdateLogic(double timeDelta){
+            if (Enabled){
+                if (Components != null){
+                    foreach (IUIComponent component in Components){
                         component.Update();
                     }
                 }
             }
         }
 
-        public void UpdateInput(ref InputState state) {
-            if (Enabled) {
-                if (state.AllowLeftButtonInterpretation) {
-                    if (state.LeftButtonClick) {
-                        foreach (var @event in _iEventDispatcher.OnGlobalLeftClick) {
+        public void UpdateInput(ref InputState state){
+            if (Enabled){
+                if (state.AllowLeftButtonInterpretation){
+                    if (state.LeftButtonClick){
+                        foreach (var @event in _iEventDispatcher.OnGlobalLeftClick){
                             @event.OnLeftButtonClick(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowLeftButtonInterpretation)
                                 break;
                         }
                     }
                 }
-                if (state.AllowLeftButtonInterpretation) {
-                    if (state.LeftButtonState == ButtonState.Pressed) {
-                        foreach (var @event in _iEventDispatcher.OnGlobalLeftPress) {
+                if (state.AllowLeftButtonInterpretation){
+                    if (state.LeftButtonState == ButtonState.Pressed){
+                        foreach (var @event in _iEventDispatcher.OnGlobalLeftPress){
                             @event.OnLeftButtonPress(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowLeftButtonInterpretation)
                                 break;
                         }
                     }
                 }
-                if (state.AllowLeftButtonInterpretation) {
-                    if (state.LeftButtonState == ButtonState.Released) {
-                        foreach (var @event in _iEventDispatcher.OnGlobalLeftRelease) {
+                if (state.AllowLeftButtonInterpretation){
+                    if (state.LeftButtonState == ButtonState.Released){
+                        foreach (var @event in _iEventDispatcher.OnGlobalLeftRelease){
                             @event.OnLeftButtonRelease(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowLeftButtonInterpretation)
                                 break;
                         }
                     }
                 }
-                if (state.AllowMouseMovementInterpretation) {
-                    foreach (var @event in _iEventDispatcher.OnMouseMovement) {
+                if (state.AllowMouseMovementInterpretation){
+                    foreach (var @event in _iEventDispatcher.OnMouseMovement){
                         @event.OnMouseMovement(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                         if (!state.AllowMouseMovementInterpretation)
                             break;
                     }
                 }
-                if (state.AllowMouseMovementInterpretation) {
-                    if (BoundingBox.Contains(state.MousePos.X, state.MousePos.Y) && !ContainsMouse) {
+                if (state.AllowMouseMovementInterpretation){
+                    if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y) && !ContainsMouse){
                         ContainsMouse = true;
-                        foreach (var @event in _iEventDispatcher.OnMouseEntry) {
+                        foreach (var @event in _iEventDispatcher.OnMouseEntry){
                             @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowMouseMovementInterpretation)
                                 break;
                         }
                     }
                 }
-                if (state.AllowMouseMovementInterpretation) {
-                    if (!BoundingBox.Contains(state.MousePos.X, state.MousePos.Y) && ContainsMouse) {
+                if (state.AllowMouseMovementInterpretation){
+                    if (!_boundingBox.Contains(state.MousePos.X, state.MousePos.Y) && ContainsMouse){
                         ContainsMouse = false;
-                        foreach (var @event in _iEventDispatcher.OnMouseExit) {
+                        foreach (var @event in _iEventDispatcher.OnMouseExit){
                             @event.OnMouseExit(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowMouseMovementInterpretation)
                                 break;
@@ -251,21 +251,21 @@ namespace Gondola.UI{
                 }
 
                 //now dispatch the external delegates
-                if (state.AllowLeftButtonInterpretation) {
-                    if (BoundingBox.Contains(state.MousePos.X, state.MousePos.Y)) {
+                if (state.AllowLeftButtonInterpretation){
+                    if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
                         state.AllowLeftButtonInterpretation = false;
-                        if (state.LeftButtonClick) {
-                            if (OnLeftClickDispatcher != null) {
+                        if (state.LeftButtonClick){
+                            if (OnLeftClickDispatcher != null){
                                 OnLeftClickDispatcher.Invoke(Identifier);
                             }
                         }
-                        if (state.LeftButtonState == ButtonState.Released) {
-                            if (OnLeftReleaseDispatcher != null) {
+                        if (state.LeftButtonState == ButtonState.Released){
+                            if (OnLeftReleaseDispatcher != null){
                                 OnLeftReleaseDispatcher.Invoke(Identifier);
                             }
                         }
-                        if (state.LeftButtonState == ButtonState.Pressed) {
-                            if (OnLeftPressDispatcher != null) {
+                        if (state.LeftButtonState == ButtonState.Pressed){
+                            if (OnLeftPressDispatcher != null){
                                 OnLeftPressDispatcher.Invoke(Identifier);
                             }
                         }
@@ -274,15 +274,15 @@ namespace Gondola.UI{
             }
         }
 
-        public void Dispose() {
+        public void Dispose(){
             throw new NotImplementedException();
         }
 
         #endregion
     }
 
-    internal class ButtonEventDispatcher {
-        public ButtonEventDispatcher() {
+    internal class ButtonEventDispatcher{
+        public ButtonEventDispatcher(){
             OnGlobalLeftClick = new List<IAcceptLeftButtonClickEvent>();
             OnGlobalLeftPress = new List<IAcceptLeftButtonPressEvent>();
             OnGlobalLeftRelease = new List<IAcceptLeftButtonReleaseEvent>();

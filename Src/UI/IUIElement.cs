@@ -11,7 +11,7 @@ namespace Gondola.UI {
         float Y { get; set; }
         float Width { get; set; }
         float Height { get; set; }
-        FloatingRectangle BoundingBox { get; } //move somewhere else?
+        bool Contains(int x, int y);
         float Alpha { get; set; }
         float Depth { get; set; }
         string Texture { get; set; }

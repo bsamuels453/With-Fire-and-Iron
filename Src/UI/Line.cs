@@ -55,6 +55,10 @@ namespace Gondola.UI {
             get { return _lineSprite; }
         }
 
+        public bool Contains(int x, int y){
+            throw new NotImplementedException();
+        }
+
         public float Alpha { get; set; }
         public float Depth { get; set; }
 
