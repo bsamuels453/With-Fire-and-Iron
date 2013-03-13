@@ -36,8 +36,8 @@ namespace Gondola.UI.Components{
             _owner = (IUIInteractiveElement)owner;
             _Enabled = true;
             _isMoving = false;
-            ownerEventDispatcher.OnLeftButtonPress.Add(this);
-            ownerEventDispatcher.OnLeftButtonRelease.Add(this);
+            ownerEventDispatcher.OnGlobalLeftPress.Add(this);
+            ownerEventDispatcher.OnGlobalLeftRelease.Add(this);
             ownerEventDispatcher.OnMouseMovement.Add(this);
         }
 

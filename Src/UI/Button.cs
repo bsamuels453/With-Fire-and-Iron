@@ -106,7 +106,7 @@ namespace Gondola.UI{
             }
         }
 
-        public bool ContainsMouse { get; set; }
+        public bool ContainsMouse { get; private set; }
 
         public float Alpha {
             get { return _sprite.Alpha; }
@@ -197,7 +197,7 @@ namespace Gondola.UI{
             if (Enabled) {
                 if (state.AllowLeftButtonInterpretation) {
                     if (state.LeftButtonClick) {
-                        foreach (var @event in _iEventDispatcher.OnLeftButtonClick) {
+                        foreach (var @event in _iEventDispatcher.OnGlobalLeftClick) {
                             @event.OnLeftButtonClick(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowLeftButtonInterpretation)
                                 break;
@@ -206,7 +206,7 @@ namespace Gondola.UI{
                 }
                 if (state.AllowLeftButtonInterpretation) {
                     if (state.LeftButtonState == ButtonState.Pressed) {
-                        foreach (var @event in _iEventDispatcher.OnLeftButtonPress) {
+                        foreach (var @event in _iEventDispatcher.OnGlobalLeftPress) {
                             @event.OnLeftButtonPress(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowLeftButtonInterpretation)
                                 break;
@@ -215,7 +215,7 @@ namespace Gondola.UI{
                 }
                 if (state.AllowLeftButtonInterpretation) {
                     if (state.LeftButtonState == ButtonState.Released) {
-                        foreach (var @event in _iEventDispatcher.OnLeftButtonRelease) {
+                        foreach (var @event in _iEventDispatcher.OnGlobalLeftRelease) {
                             @event.OnLeftButtonRelease(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowLeftButtonInterpretation)
                                 break;
@@ -247,13 +247,6 @@ namespace Gondola.UI{
                             if (!state.AllowMouseMovementInterpretation)
                                 break;
                         }
-                    }
-                }
-                if (state.AllowKeyboardInterpretation) {
-                    foreach (var @event in _iEventDispatcher.OnKeyboardEvent) {
-                        @event.OnKeyboardEvent(ref state.AllowKeyboardInterpretation, state.KeyboardState);
-                        if (!state.AllowKeyboardInterpretation)
-                            break;
                     }
                 }
 
@@ -288,163 +281,23 @@ namespace Gondola.UI{
         #endregion
     }
 
-    internal class ButtonGenerator {
-        public Dictionary<string, JObject> Components;
-        public DepthLevel? Depth;
-        public float? Height;
-        public int? Identifier;
-        public float? SpriteTexRepeatX;
-        public float? SpriteTexRepeatY;
-        public string TextureName;
-        public float? Width;
-        public float? X;
-        public float? Y;
-
-        public ButtonGenerator() {
-            Components = null;
-            Depth = null;
-            Height = null;
-            Width = null;
-            Identifier = null;
-            SpriteTexRepeatX = null;
-            SpriteTexRepeatY = null;
-            TextureName = null;
-            X = null;
-            Y = null;
-        }
-
-        public ButtonGenerator(string template) {
-            var sr = new StreamReader("Templates/" + template);
-            string str = sr.ReadToEnd();
-
-            JObject obj = JObject.Parse(str);
-            var depthLevelSerializer = new JsonSerializer();
-
-
-            //try{
-            var jComponents = obj["Components"];
-            if (jComponents != null)
-                Components = jComponents.ToObject<Dictionary<string, JObject>>();
-            else
-                Components = null;
-            //}
-            //catch (InvalidCastException){
-            //Components = null;
-            //}
-
-            Depth = obj["Depth"].ToObject<DepthLevel?>(depthLevelSerializer);
-
-            Width = obj["Width"].Value<float>();
-            Height = obj["Height"].Value<float>();
-            Identifier = obj["Identifier"].Value<int>();
-            SpriteTexRepeatX = obj["SpriteTexRepeatX"].Value<float>();
-            SpriteTexRepeatY = obj["SpriteTexRepeatY"].Value<float>();
-            TextureName = obj["TextureName"].Value<string>();
-        }
-
-        public Button GenerateButton() {
-            //make sure we have all the data required
-            if (X == null ||
-                Y == null ||
-                Width == null ||
-                Height == null ||
-                Depth == null ||
-                TextureName == null) {
-                throw new Exception("Template did not contain all of the basic variables required to generate a button.");
-            }
-            //generate component list
-            IUIComponent[] components = null;
-            if (Components != null) {
-                components = GenerateComponents(Components);
-            }
-
-            //now we handle optional parameters
-            float spriteTexRepeatX;
-            float spriteTexRepeatY;
-            int identifier;
-
-            if (SpriteTexRepeatX != null)
-                spriteTexRepeatX = (float)SpriteTexRepeatX;
-            else
-                spriteTexRepeatX = Button.DefaultTexRepeat;
-
-            if (SpriteTexRepeatY != null)
-                spriteTexRepeatY = (float)SpriteTexRepeatY;
-            else
-                spriteTexRepeatY = Button.DefaultTexRepeat;
-
-            if (Identifier != null)
-                identifier = (int)Identifier;
-            else
-                identifier = Button.DefaultIdentifier;
-
-            return new Button(
-                (float)X,
-                (float)Y,
-                (float)Width,
-                (float)Height,
-                (DepthLevel)Depth,
-                TextureName,
-                spriteTexRepeatX,
-                spriteTexRepeatY,
-                identifier,
-                components
-                );
-        }
-
-        IUIComponent[] GenerateComponents(Dictionary<string, JObject> componentCtorData) {
-            var components = new List<IUIComponent>();
-
-            foreach (var data in componentCtorData) {
-                string str = data.Key;
-                //when there are multiple components, they are named "Componentname_n" where n is the number of the component
-                //gotta remove that for the switch, if it exists
-                string identifier = "";
-                if (str.Contains('_')) {
-                    identifier = str.Substring(str.IndexOf('_') + 1, str.Count() - str.IndexOf('_') - 1);
-                    str = str.Substring(0, str.IndexOf('_'));
-                }
-
-                switch (str) {
-                    case "FadeComponent":
-                        components.Add(FadeComponent.ConstructFromObject(data.Value, identifier));
-                        break;
-                    case "DraggableComponent":
-                        components.Add(DraggableComponent.ConstructFromObject(data.Value));
-                        break;
-                    case "PanelComponent":
-                        components.Add(PanelComponent.ConstructFromObject(data.Value));
-                        break;
-                    case "HighlightComponent":
-                        components.Add(HighlightComponent.ConstructFromObject(data.Value, identifier));
-                        break;
-                }
-            }
-
-            return components.ToArray();
-        }
-    }
-
-
     internal class ButtonEventDispatcher {
         public ButtonEventDispatcher() {
-            OnLeftButtonClick = new List<IAcceptLeftButtonClickEvent>();
-            OnLeftButtonPress = new List<IAcceptLeftButtonPressEvent>();
-            OnLeftButtonRelease = new List<IAcceptLeftButtonReleaseEvent>();
+            OnGlobalLeftClick = new List<IAcceptLeftButtonClickEvent>();
+            OnGlobalLeftPress = new List<IAcceptLeftButtonPressEvent>();
+            OnGlobalLeftRelease = new List<IAcceptLeftButtonReleaseEvent>();
             OnMouseEntry = new List<IAcceptMouseEntryEvent>();
             OnMouseExit = new List<IAcceptMouseExitEvent>();
             OnMouseMovement = new List<IAcceptMouseMovementEvent>();
             OnMouseScroll = new List<IAcceptMouseScrollEvent>();
-            OnKeyboardEvent = new List<IAcceptKeyboardEvent>();
         }
 
-        public List<IAcceptLeftButtonClickEvent> OnLeftButtonClick { get; set; }
-        public List<IAcceptLeftButtonPressEvent> OnLeftButtonPress { get; set; }
-        public List<IAcceptLeftButtonReleaseEvent> OnLeftButtonRelease { get; set; }
+        public List<IAcceptLeftButtonClickEvent> OnGlobalLeftClick { get; set; }
+        public List<IAcceptLeftButtonPressEvent> OnGlobalLeftPress { get; set; }
+        public List<IAcceptLeftButtonReleaseEvent> OnGlobalLeftRelease { get; set; }
         public List<IAcceptMouseEntryEvent> OnMouseEntry { get; set; }
         public List<IAcceptMouseExitEvent> OnMouseExit { get; set; }
         public List<IAcceptMouseMovementEvent> OnMouseMovement { get; set; }
         public List<IAcceptMouseScrollEvent> OnMouseScroll { get; set; }
-        public List<IAcceptKeyboardEvent> OnKeyboardEvent { get; set; }
     }
 }

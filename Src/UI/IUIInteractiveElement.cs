@@ -11,7 +11,7 @@ namespace Gondola.UI {
 
     internal interface IUIInteractiveElement : IUIElement, IInputUpdates {
         bool Enabled { get; set; }
-        bool ContainsMouse { get; set; }
+        bool ContainsMouse { get; }
 
         event OnBasicMouseEvent OnLeftClickDispatcher;
         event OnBasicMouseEvent OnLeftPressDispatcher;
@@ -19,7 +19,7 @@ namespace Gondola.UI {
 
     }
 
-    #region internal event handling interfaces
+    #region element-component event handling interfaces
 
     //each mouse based event accepts something along the lines of (ref bool allowInterpretation, Vector2 mousePosition, Vector2 mousePosChange)
     internal interface IAcceptLeftButtonClickEvent {
@@ -48,10 +48,6 @@ namespace Gondola.UI {
 
     internal interface IAcceptMouseScrollEvent {
         void OnMouseScrollwheel(ref bool allowInterpretation, float wheelChange, Point mousePos);
-    }
-
-    internal interface IAcceptKeyboardEvent {
-        void OnKeyboardEvent(ref bool allowInterpretation, KeyboardState state);
     }
 
     #endregion

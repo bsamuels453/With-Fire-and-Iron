@@ -77,7 +77,7 @@ namespace Gondola.UI.Components{
 
                     ownerEventDispatcher.OnMouseEntry.Add(this);
                     ownerEventDispatcher.OnMouseExit.Add(this);
-                    //((IUIInteractiveElement) _owner).OnLeftButtonRelease.Add(ConfirmFadeoutProc);what the fuck was this for
+                    //((IUIInteractiveElement) _owner).OnGlobalLeftRelease.Add(ConfirmFadeoutProc);what the fuck was this for
                     break;
 
                 case FadeTrigger.None:

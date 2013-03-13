@@ -49,6 +49,7 @@ namespace Gondola.UI {
 
         #region collection modification methods
 
+        //unused
         public void EnableComponents<TComponent>() {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<TComponent>()) {
@@ -57,6 +58,7 @@ namespace Gondola.UI {
             }
         }
 
+        //unused
         public void DisableComponents<TComponent>() {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<TComponent>()) {
@@ -65,6 +67,7 @@ namespace Gondola.UI {
             }
         }
 
+        //unused
         public void FadeInAllElements() {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<FadeComponent>()) {
@@ -73,6 +76,7 @@ namespace Gondola.UI {
             }
         }
 
+        //unused
         public void FadeOutAllElements() {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<FadeComponent>()) {
@@ -81,6 +85,7 @@ namespace Gondola.UI {
             }
         }
 
+        //unused
         public void AddFadeCallback(FadeStateChange deleg) {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<FadeComponent>()) {
@@ -89,6 +94,7 @@ namespace Gondola.UI {
             }
         }
 
+        //unused
         public void AddDragCallback(OnComponentDrag deleg) {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<DraggableComponent>()) {
@@ -97,6 +103,7 @@ namespace Gondola.UI {
             }
         }
 
+        //used
         public void AddDragConstraintCallback(DraggableObjectClamp deleg) {
             foreach (var element in _elements) {
                 if (element.DoesComponentExist<DraggableComponent>()) {

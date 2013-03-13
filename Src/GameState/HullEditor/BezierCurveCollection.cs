@@ -299,7 +299,7 @@ namespace Gondola.GameState.HullEditor {
 
         #endregion
 
-        /*public override InterruptState OnLeftButtonClick(MouseState state, MouseState? prevState = null){
+        /*public override InterruptState OnGlobalLeftClick(MouseState state, MouseState? prevState = null){
             //this is broken right now
             /*if (Keyboard.GetState().IsKeyDown(Keys.LeftControl)){
                 Vector2 pos;

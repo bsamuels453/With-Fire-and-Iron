@@ -102,8 +102,8 @@ namespace Gondola.UI.Components{
                     ownerEventDispatcher.OnMouseMovement.Add(this);
                     break;
                 case HighlightTrigger.MousePressRelease:
-                    ownerEventDispatcher.OnLeftButtonPress.Add(this);
-                    ownerEventDispatcher.OnLeftButtonRelease.Add(this);
+                    ownerEventDispatcher.OnGlobalLeftPress.Add(this);
+                    ownerEventDispatcher.OnGlobalLeftRelease.Add(this);
                     break;
                 case HighlightTrigger.InvalidTrigger:
                     throw new Exception("invalid highlight trigger");

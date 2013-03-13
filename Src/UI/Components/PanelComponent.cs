@@ -45,8 +45,8 @@ namespace Gondola.UI.Components{
 
         public void ComponentCtor(IUIElement owner, ButtonEventDispatcher ownerEventDispatcher) {
             _owner = (IUIInteractiveElement)owner;
-            ownerEventDispatcher.OnLeftButtonPress.Add(this);
-            ownerEventDispatcher.OnLeftButtonRelease.Add(this);
+            ownerEventDispatcher.OnGlobalLeftPress.Add(this);
+            ownerEventDispatcher.OnGlobalLeftRelease.Add(this);
             ownerEventDispatcher.OnMouseScroll.Add(this);
         }
 
