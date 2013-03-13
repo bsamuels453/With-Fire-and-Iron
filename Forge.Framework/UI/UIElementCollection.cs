@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Forge.Framework.UI.Components;
 using Microsoft.Xna.Framework;
 
@@ -27,38 +28,44 @@ namespace Forge.Framework.UI{
             _elements = new List<IUIElement>();
             _layerSortedIElements = new UISortedList();
             DisableEntryHandlers = false;
-            _uiElementCollections.Add(this);
+            //_uiElementCollections.Add(this);
             _depthLevel = 0;
-            _collectionDepth = 0;
+            _collectionDepth = 1;
             _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            _parentCollection = this;
         }
 
         public UIElementCollection(UIElementCollection parent, DepthLevel depth){
             _elements = new List<IUIElement>();
             _layerSortedIElements = new UISortedList();
             DisableEntryHandlers = false;
-            _uiElementCollections.Add(this);
+            //_uiElementCollections.Add(this);
             _depthLevel = parent._depthLevel + 1;
             _collectionDepth = parent.GetRelDepth(depth);
             _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            Debug.Assert(_depthLevel < 10);
+            parent.AddElement(this);
         }
 
         public UIElementCollection(UIElementCollection parent, DepthLevel depth, Rectangle boundingBox){
             _elements = new List<IUIElement>();
             _layerSortedIElements = new UISortedList();
             DisableEntryHandlers = false;
-            _uiElementCollections.Add(this);
+            //_uiElementCollections.Add(this);
             _depthLevel = parent._depthLevel + 1;
             _collectionDepth = parent.GetRelDepth(depth);
             _boundingBox = boundingBox;
+            Debug.Assert(_depthLevel < 10);
+            parent.AddElement(this);
         }
 
         #endregion
 
         public float GetRelDepth(DepthLevel depth){
-            float magnitude = 10*(_depthLevel + 1);
-            float d = (float) depth/magnitude;
-            return _collectionDepth + d;
+            float magnitude = (float)Math.Pow(10,(_depthLevel + 1));
+            float d = ((float)depth)/magnitude;
+            var ret = _collectionDepth - d;
+            return ret;
         }
 
         public bool HitTest(int x, int y){
@@ -77,7 +84,17 @@ namespace Forge.Framework.UI{
         }
 
         public void AddElement(IUIElementBase element){
+            Debug.Assert(_boundingBox.Contains(
+                new Rectangle(
+                    (int)element.X,
+                    (int)element.Y,
+                    (int)element.Width,
+                    (int)element.Height
+                    )
+                    )
+                    );
             _layerSortedIElements.Add(element.Depth, element);
+            
         }
 
         #region IInputUpdates Members
@@ -92,6 +109,7 @@ namespace Forge.Framework.UI{
                 }
                 //xxx will this work correctly?
                 state.AllowLeftButtonInterpretation = false;
+                state.AllowMouseMovementInterpretation = false;
             }
         }
 
@@ -204,18 +222,31 @@ namespace Forge.Framework.UI{
             set { throw new NotImplementedException(); }
         }
 
+        public List<IUIElementBase> GetElementStack(int x, int y) {
+            var ret = new List<IUIElementBase>();
+            foreach (var element in _layerSortedIElements){
+                ret.AddRange(element.GetElementStack(x, y));
+            }
+            return ret;
+        }
+
         #region static stuff
 
-        static readonly List<UIElementCollection> _uiElementCollections;
+        //static readonly List<UIElementCollection> _uiElementCollections;
+        static UIElementCollection _parentCollection;
         static readonly List<UIElementCollection> _bindOrder;
 
         static UIElementCollection(){
-            _uiElementCollections = new List<UIElementCollection>();
+            //_uiElementCollections = new List<UIElementCollection>();
             _bindOrder = new List<UIElementCollection>();
         }
 
         public static UIElementCollection BoundCollection{
             get { return _bindOrder[0]; }
+        }
+
+        public static List<IUIElementBase> GetGlobalElementStack(int x, int y){
+            return _parentCollection.GetElementStack(x, y);
         }
 
         #endregion
@@ -237,16 +268,14 @@ namespace Forge.Framework.UI{
     #region uisortedlist
 
     internal class UISortedList : IEnumerable<IUIElementBase>{
-        readonly List<float> _depthList;
-        readonly List<IUIElementBase> _objList;
+        List<IUIElementBase> _objList;
 
         public UISortedList(){
-            _depthList = new List<float>();
             _objList = new List<IUIElementBase>();
         }
 
         public int Count{
-            get { return _depthList.Count; }
+            get { return _objList.Count; }
         }
 
         public IUIElementBase this[int index]{
@@ -254,41 +283,20 @@ namespace Forge.Framework.UI{
         }
 
         public void Add(float depth, IUIElementBase element){
-            _depthList.Add(depth);
             _objList.Add(element);
-
-            for (int i = _depthList.Count - 1; i < 0; i--){
-                if (_depthList[i] < _depthList[i - 1]){
-                    _depthList.RemoveAt(i);
-                    _objList.RemoveAt(i);
-                    _depthList.Insert(i - 2, depth);
-                    _objList.Insert(i - 2, element);
-                }
-                else{
-                    break;
-                }
-            }
+            _objList = _objList.OrderBy(o => o.Depth).ToList();
         }
 
         public void Clear(){
-            _depthList.Clear();
             _objList.Clear();
         }
 
         public void RemoveAt(int index){
-            _depthList.RemoveAt(index);
             _objList.RemoveAt(index);
         }
 
         public void Remove(IUIElement element){
-            int i = 0;
-            while (_objList[i] != element){
-                i++;
-                if (i == _objList.Count){
-                    throw new Exception("element doesnt exist");
-                }
-            }
-            RemoveAt(i);
+            _objList.Remove(element);
         }
 
         public IEnumerator<IUIElementBase> GetEnumerator(){

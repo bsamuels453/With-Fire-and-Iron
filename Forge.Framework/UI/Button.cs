@@ -115,6 +115,14 @@ namespace Forge.Framework.UI{
             return _boundingBox.Contains(x, y);
         }
 
+        public List<IUIElementBase> GetElementStack(int x, int y){
+            var ret = new List<IUIElementBase>(1);
+            if (HitTest(x, y)){
+                ret.Add(this);
+            }
+            return ret;
+        }
+
         #endregion
 
         #region ctor
@@ -234,7 +242,7 @@ namespace Forge.Framework.UI{
                     }
                 }
                 if (state.AllowMouseMovementInterpretation){
-                    if (ContainsMouse && !containedMousePrev){
+                    if (ContainsMouse){
                         foreach (var @event in _iEventDispatcher.OnMouseEntry){
                             @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowMouseMovementInterpretation){
@@ -243,8 +251,14 @@ namespace Forge.Framework.UI{
                         }
                     }
                 }
-                if (state.AllowMouseMovementInterpretation){
-                    if (!ContainsMouse && containedMousePrev){
+                var stack = UIElementCollection.GetGlobalElementStack(state.MousePos.X, state.MousePos.Y);
+                bool thisOnTopOfStack = false;
+                if(stack.Count>0){
+                    if(stack[0] == this){
+                        thisOnTopOfStack = true;
+                    }
+                }
+                if (!thisOnTopOfStack) {
                         foreach (var @event in _iEventDispatcher.OnMouseExit){
                             @event.OnMouseExit(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                             if (!state.AllowMouseMovementInterpretation){
@@ -252,7 +266,6 @@ namespace Forge.Framework.UI{
                             }
                         }
                     }
-                }
 
                 //now dispatch the external delegates
                 if (state.AllowLeftButtonInterpretation){

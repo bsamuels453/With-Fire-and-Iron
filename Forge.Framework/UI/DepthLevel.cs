@@ -1,9 +1,9 @@
 ﻿namespace Forge.Framework.UI{
     public enum DepthLevel{
-        Highlight,
-        High,
-        Medium,
+        Background,
         Low,
-        Background
+        Medium,
+        High,
+        Highlight
     }
 }

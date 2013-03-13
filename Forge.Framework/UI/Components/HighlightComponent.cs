@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Forge.Framework.UI.Components{
-    internal class HighlightComponent : IUIComponent, IAcceptMouseMovementEvent, IAcceptLeftButtonPressEvent, IAcceptLeftButtonReleaseEvent{
+    internal class HighlightComponent : IUIComponent, IAcceptLeftButtonPressEvent, IAcceptLeftButtonReleaseEvent, IAcceptMouseEntryEvent, IAcceptMouseExitEvent{
         #region HighlightTrigger enum
 
         public enum HighlightTrigger{
@@ -61,20 +61,18 @@ namespace Forge.Framework.UI.Components{
 
         #endregion
 
-        #region IAcceptMouseMovementEvent Members
 
-        public void OnMouseMovement(ref bool allowInterpretation, Point mousePos, Point prevMousePos){
-            if (Enabled){
-                if (_owner.ContainsMouse){
-                    ProcHighlight();
-                }
-                else{
-                    UnprocHighlight();
-                }
+        public void OnMouseEntry(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
+            if (Enabled) {
+                ProcHighlight();
             }
         }
 
-        #endregion
+        public void OnMouseExit(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
+            if (Enabled) {
+                UnprocHighlight();
+            }
+        }
 
         #region IUIComponent Members
 
@@ -96,7 +94,9 @@ namespace Forge.Framework.UI.Components{
             }
             switch (_highlightTrigger){
                 case HighlightTrigger.MouseEntryExit:
-                    ownerEventDispatcher.OnMouseMovement.Add(this);
+                    //ownerEventDispatcher.OnMouseMovement.Add(this);
+                    ownerEventDispatcher.OnMouseEntry.Add(this);
+                    ownerEventDispatcher.OnMouseExit.Add(this);
                     break;
                 case HighlightTrigger.MousePressRelease:
                     ownerEventDispatcher.OnGlobalLeftPress.Add(this);
@@ -107,7 +107,7 @@ namespace Forge.Framework.UI.Components{
             }
 
             //create sprite
-            _highlightSprite = new Sprite2D(_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, _owner.Depth - 0.01f, 0);
+            _highlightSprite = new Sprite2D(_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, _owner.Depth - float.Epsilon, 0);
         }
 
         public void Update(){

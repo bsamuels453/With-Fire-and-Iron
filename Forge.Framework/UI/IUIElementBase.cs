@@ -12,5 +12,6 @@ namespace Forge.Framework.UI {
         float Alpha { get; set; }
         float Depth { get; set; }
         bool HitTest(int x, int y);
+        List<IUIElementBase> GetElementStack(int x, int y); 
     }
 }
