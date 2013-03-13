@@ -84,11 +84,6 @@ namespace Gondola.UI{
             }
         }
 
-        /*
-        FloatingRectangle BoundingBox {
-            get { return _boundingBox; }
-        }
-        */
         public event OnBasicMouseEvent OnLeftClickDispatcher;
         public event OnBasicMouseEvent OnLeftPressDispatcher;
         public event OnBasicMouseEvent OnLeftReleaseDispatcher;
@@ -116,7 +111,7 @@ namespace Gondola.UI{
             set { _sprite.Depth = value; }
         }
 
-        public bool Contains(int x, int y){
+        public bool HitTest(int x, int y){
             return _boundingBox.Contains(x, y);
         }
 
@@ -195,12 +190,16 @@ namespace Gondola.UI{
 
         public void UpdateInput(ref InputState state){
             if (Enabled){
+                bool containedMousePrev = ContainsMouse;
+                ContainsMouse = HitTest(state.MousePos.X, state.MousePos.Y);
+
                 if (state.AllowLeftButtonInterpretation){
                     if (state.LeftButtonClick){
                         foreach (var @event in _iEventDispatcher.OnGlobalLeftClick){
                             @event.OnLeftButtonClick(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation)
+                            if (!state.AllowLeftButtonInterpretation){
                                 break;
+                            }
                         }
                     }
                 }
@@ -208,8 +207,9 @@ namespace Gondola.UI{
                     if (state.LeftButtonState == ButtonState.Pressed){
                         foreach (var @event in _iEventDispatcher.OnGlobalLeftPress){
                             @event.OnLeftButtonPress(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation)
+                            if (!state.AllowLeftButtonInterpretation){
                                 break;
+                            }
                         }
                     }
                 }
@@ -217,35 +217,37 @@ namespace Gondola.UI{
                     if (state.LeftButtonState == ButtonState.Released){
                         foreach (var @event in _iEventDispatcher.OnGlobalLeftRelease){
                             @event.OnLeftButtonRelease(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation)
+                            if (!state.AllowLeftButtonInterpretation){
                                 break;
+                            }
                         }
                     }
                 }
                 if (state.AllowMouseMovementInterpretation){
                     foreach (var @event in _iEventDispatcher.OnMouseMovement){
                         @event.OnMouseMovement(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                        if (!state.AllowMouseMovementInterpretation)
+                        if (!state.AllowMouseMovementInterpretation){
                             break;
-                    }
-                }
-                if (state.AllowMouseMovementInterpretation){
-                    if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y) && !ContainsMouse){
-                        ContainsMouse = true;
-                        foreach (var @event in _iEventDispatcher.OnMouseEntry){
-                            @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowMouseMovementInterpretation)
-                                break;
                         }
                     }
                 }
                 if (state.AllowMouseMovementInterpretation){
-                    if (!_boundingBox.Contains(state.MousePos.X, state.MousePos.Y) && ContainsMouse){
-                        ContainsMouse = false;
+                    if(ContainsMouse && !containedMousePrev){
+                        foreach (var @event in _iEventDispatcher.OnMouseEntry){
+                            @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
+                            if (!state.AllowMouseMovementInterpretation){
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (state.AllowMouseMovementInterpretation){
+                    if(!ContainsMouse && containedMousePrev){
                         foreach (var @event in _iEventDispatcher.OnMouseExit){
                             @event.OnMouseExit(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowMouseMovementInterpretation)
+                            if (!state.AllowMouseMovementInterpretation){
                                 break;
+                            }
                         }
                     }
                 }

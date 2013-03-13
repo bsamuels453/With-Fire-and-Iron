@@ -93,7 +93,7 @@ namespace Gondola.UI.Components{
                 if (_Enabled) { //reset the timer
                     _prevUpdateTimeIndex = DateTime.Now.Ticks;
                     //because the mouse may have left the bounding box while this component was disabled
-                    if (!_owner.Contains(state.X, state.Y)) {
+                    if (!_owner.HitTest(state.X, state.Y)) {
                         ForceFadeout();
                     }
                 }

@@ -47,7 +47,7 @@ namespace Gondola.UI.Components{
 
         public void OnLeftButtonPress(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
             if (!_isMoving && _Enabled) {
-                if (_owner.Contains(mousePos.X, mousePos.Y)) {
+                if (_owner.HitTest(mousePos.X, mousePos.Y)) {
                     _isMoving = true;
                     UIElementCollection.Collection.DisableEntryHandlers = true;
                     _mouseOffset.X = _owner.X - mousePos.X;

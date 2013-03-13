@@ -61,7 +61,7 @@ namespace Gondola.UI.Components{
 
         void PreventClickFallthrough(ref bool allowLeftButtonInterpretation, Point mousePos) {
             if (allowLeftButtonInterpretation) {
-                if (_owner.Contains(mousePos.X, mousePos.Y)) {
+                if (_owner.HitTest(mousePos.X, mousePos.Y)) {
                     allowLeftButtonInterpretation = false;
                 }
             }
