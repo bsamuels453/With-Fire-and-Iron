@@ -44,7 +44,7 @@ namespace Forge.Core.GameState{
                         _useGlobalRenderTarget = true;
                         _globalRenderTarget = new RenderTarget();
                         _globalElementCollection = new UIElementCollection();
-                        UIElementCollection.BindCollection(_globalElementCollection);
+                        _globalElementCollection.Bind();
                         _globalRenderTarget.Bind();
                     }
                 }
@@ -67,7 +67,7 @@ namespace Forge.Core.GameState{
             if (_useGlobalRenderTarget){
                 _useGlobalRenderTarget = false;
                 _globalRenderTarget.Unbind();
-                UIElementCollection.UnbindCollection();
+                _globalElementCollection.Unbind();
                 _globalRenderTarget.Dispose();
             }
 

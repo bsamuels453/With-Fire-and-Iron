@@ -26,11 +26,11 @@ namespace Forge.Core.ObjectEditor {
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
 
-            UIElementCollection.BindCollection(_uiElementCollection);
+            _uiElementCollection.Bind();
             var geometryInfo = HullGeometryGenerator.GenerateShip(backCurveInfo, sideCurveInfo, topCurveInfo, 5);
             _hullData = new HullDataManager(geometryInfo);
             _doodadUI = new ObjectEditorUI(_hullData, _renderTarget);
-            UIElementCollection.UnbindCollection();
+            _uiElementCollection.Unbind();
 
             _cameraController.SetCameraTarget(_hullData.CenterPoint);
             _renderTarget.Unbind();
@@ -42,11 +42,11 @@ namespace Forge.Core.ObjectEditor {
 
         public void Update(InputState state, double timeDelta) {
             _renderTarget.Bind();
-            UIElementCollection.BindCollection(_uiElementCollection);
+            _uiElementCollection.Bind();
 
             #region update input
 
-            UIElementCollection.Collection.UpdateInput(ref state);
+            UIElementCollection.BoundCollection.UpdateInput(ref state);
             _doodadUI.UpdateInput(ref state);
             _cameraController.Update(ref state, timeDelta);
 
@@ -54,12 +54,12 @@ namespace Forge.Core.ObjectEditor {
 
             #region update logic
 
-            UIElementCollection.Collection.UpdateLogic(timeDelta);
+            UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
             _doodadUI.UpdateLogic(timeDelta);
 
             #endregion
 
-            UIElementCollection.UnbindCollection();
+            _uiElementCollection.Unbind();
             _renderTarget.Unbind();
         }
 

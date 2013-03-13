@@ -1,11 +1,9 @@
 ﻿namespace Forge.Framework.UI{
-    public enum DepthLevel{ //can have 10 levels max
+    public enum DepthLevel{
         Highlight,
         High,
         Medium,
         Low,
-        Border,
-        Base,
         Background
     }
 }

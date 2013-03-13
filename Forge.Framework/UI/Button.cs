@@ -120,14 +120,14 @@ namespace Forge.Framework.UI{
         #region ctor
 
         //xx why are these position coordinates all floats?
-        public Button(float x, float y, float width, float height, DepthLevel depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
+        public Button(float x, float y, float width, float height, float depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
             _identifier = identifier;
             _enabled = true;
             _iEventDispatcher = new ButtonEventDispatcher();
 
             _centPosition = new Vector2();
             _boundingBox = new FloatingRectangle(x, y, width, height);
-            _sprite = new Sprite2D(textureName, (int) x, (int) y, (int) width, (int) height, (float) depth/10, 1, spriteTexRepeatX, spriteTexRepeatY);
+            _sprite = new Sprite2D(textureName, (int) x, (int) y, (int) width, (int) height, depth, 1, spriteTexRepeatX, spriteTexRepeatY);
 
             _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
             _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;
@@ -139,7 +139,7 @@ namespace Forge.Framework.UI{
                     component.ComponentCtor(this, _iEventDispatcher);
                 }
             }
-            UIElementCollection.AddElement(this);
+            UIElementCollection.BoundCollection.AddElement(this);
         }
 
         #endregion

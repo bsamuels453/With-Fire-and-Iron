@@ -47,7 +47,7 @@ namespace Forge.Framework.UI.Components{
             if (!_isMoving && _Enabled){
                 if (_owner.HitTest(mousePos.X, mousePos.Y)){
                     _isMoving = true;
-                    UIElementCollection.Collection.DisableEntryHandlers = true;
+                    UIElementCollection.BoundCollection.DisableEntryHandlers = true;
                     _mouseOffset.X = _owner.X - mousePos.X;
                     _mouseOffset.Y = _owner.Y - mousePos.Y;
                 }
@@ -61,7 +61,7 @@ namespace Forge.Framework.UI.Components{
         public void OnLeftButtonRelease(ref bool allowInterpretation, Point mousePos, Point prevMousePos){
             if (_isMoving){
                 _isMoving = false;
-                UIElementCollection.Collection.DisableEntryHandlers = false;
+                UIElementCollection.BoundCollection.DisableEntryHandlers = false;
             }
         }
 

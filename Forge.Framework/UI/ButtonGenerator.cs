@@ -101,12 +101,14 @@ namespace Forge.Framework.UI{
             else
                 identifier = Button.DefaultIdentifier;
 
+            float depth = UIElementCollection.BoundCollection.GetRelDepth((DepthLevel)Depth);
+
             return new Button(
                 (float) X,
                 (float) Y,
                 (float) Width,
                 (float) Height,
-                (DepthLevel) Depth,
+                depth,
                 TextureName,
                 spriteTexRepeatX,
                 spriteTexRepeatY,

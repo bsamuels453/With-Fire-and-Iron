@@ -19,7 +19,7 @@ namespace Forge.Core.HullEditor {
 
         public HullEditorState() {
             _elementCollection = new UIElementCollection();
-            UIElementCollection.BindCollection(_elementCollection);
+            _elementCollection.Bind();
 
             _sidepanel = new SideEditorPanel(0, 0, Gbl.ScreenSize.GetScreenValueX(0.5f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
             _toppanel = new TopEditorPanel(0, Gbl.ScreenSize.GetScreenValueY(0.5f), Gbl.ScreenSize.GetScreenValueX(0.5f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/top.xml");
@@ -36,16 +36,7 @@ namespace Forge.Core.HullEditor {
 
             _previewRenderer = new PreviewRenderer(_sidepanel.Curves, _toppanel.Curves, _backpanel.Curves);
 
-            UIElementCollection.UnbindCollection();
-            /*
-            //force end early
-            var sideInfo = _sidepanel.Curves.GetControllerInfo();
-            var backInfo = _backpanel.Curves.GetControllerInfo();
-            var topInfo = _toppanel.Curves.GetControllerInfo();
-
-            GamestateManager.ClearAllStates();
-            GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
-             */
+            _elementCollection.Unbind();
         }
 
 
@@ -221,14 +212,24 @@ namespace Forge.Core.HullEditor {
         }
 
         public void Update(InputState state, double timeDelta) {
-            UIElementCollection.BindCollection(_elementCollection);
+
+            //force end early
+            var sideInfo = _sidepanel.Curves.GetControllerInfo();
+            var backInfo = _backpanel.Curves.GetControllerInfo();
+            var topInfo = _toppanel.Curves.GetControllerInfo();
+
+            GamestateManager.ClearAllStates();
+            GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
+
+
+            _elementCollection.Bind();
             _sidepanel.Update();
             _toppanel.Update();
             _backpanel.Update();
             _previewRenderer.Update(ref state);
-            UIElementCollection.Collection.UpdateInput(ref state);
-            UIElementCollection.Collection.UpdateLogic(timeDelta);
-            UIElementCollection.UnbindCollection();
+            UIElementCollection.BoundCollection.UpdateInput(ref state);
+            UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
+            _elementCollection.Unbind();
             HandleEditorKeyboardInput(ref state);
         }
 

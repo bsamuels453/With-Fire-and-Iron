@@ -52,14 +52,14 @@ namespace Forge.Core.HullEditor {
                     ),
                 panelType: panelType
                 );
-            UIElementCollection.Collection.AddDragConstraintCallback(ClampChildElements);
+            UIElementCollection.BoundCollection.AddDragConstraintCallback(ClampChildElements);
             Background =
                 new Button(
                     x: x,
                     y: y,
                     width: width,
                     height: height,
-                    depth: DepthLevel.Background,
+                    depth: UIElementCollection.BoundCollection.GetRelDepth(DepthLevel.Background),
                     textureName: "Materials/BlueBox",
                     spriteTexRepeatX: width / (Curves.PixelsPerMeter * 1),
                     spriteTexRepeatY: height / (Curves.PixelsPerMeter * 1),

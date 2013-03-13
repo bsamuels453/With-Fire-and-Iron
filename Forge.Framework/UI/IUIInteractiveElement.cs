@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 namespace Forge.Framework.UI{
     public delegate void OnBasicMouseEvent(int identifier);
 
-    public interface IUIInteractiveElement : IUIElement, IInputUpdates{
+    public interface IUIInteractiveElement : IUIElement{
         bool Enabled { get; set; }
         bool ContainsMouse { get; }
 

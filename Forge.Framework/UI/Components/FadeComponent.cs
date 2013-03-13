@@ -123,7 +123,7 @@ namespace Forge.Framework.UI.Components{
         #region IAcceptMouseEntryEvent Members
 
         public void OnMouseEntry(ref bool allowInterpretation, Point mousePos, Point prevMousePos){
-            UIElementCollection.Collection.DisableEntryHandlers = true;
+            UIElementCollection.BoundCollection.DisableEntryHandlers = true;
             if (Enabled){
                 _isInTransition = true;
                 _isFadingOut = false;
@@ -138,7 +138,7 @@ namespace Forge.Framework.UI.Components{
         #region IAcceptMouseExitEvent Members
 
         public void OnMouseExit(ref bool allowInterpretation, Point mousePos, Point prevMousePos){
-            UIElementCollection.Collection.DisableEntryHandlers = false;
+            UIElementCollection.BoundCollection.DisableEntryHandlers = false;
             if (Enabled){
                 _isInTransition = true;
                 _isFadingOut = true;
@@ -183,7 +183,7 @@ namespace Forge.Framework.UI.Components{
         #region modification methods
 
         public void ForceFadeout(){
-            UIElementCollection.Collection.DisableEntryHandlers = false;
+            UIElementCollection.BoundCollection.DisableEntryHandlers = false;
             if (Enabled){
                 _isInTransition = true;
                 _isFadingOut = true;
@@ -194,7 +194,7 @@ namespace Forge.Framework.UI.Components{
         }
 
         public void ForceFadein(){
-            UIElementCollection.Collection.DisableEntryHandlers = true;
+            UIElementCollection.BoundCollection.DisableEntryHandlers = true;
             if (Enabled){
                 _isInTransition = true;
                 _isFadingOut = false;

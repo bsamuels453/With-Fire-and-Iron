@@ -120,7 +120,7 @@ namespace Forge.Framework.UI{
             LineWidth = 1;
             Identifier = identifier;
             CalculateInfoFromPoints();
-            UIElementCollection.AddElement(this);
+            UIElementCollection.BoundCollection.AddNonInteractivElem(this);
 
             Components = components;
             if (Components != null){
@@ -202,6 +202,10 @@ namespace Forge.Framework.UI{
         public void Dispose(){
             Sprite.Dispose();
             _lineSprite.Dispose();
+        }
+
+        public void UpdateInput(ref InputState state){
+            throw new NotImplementedException();
         }
     }
 
