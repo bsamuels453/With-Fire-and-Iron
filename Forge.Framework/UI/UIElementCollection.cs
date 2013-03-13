@@ -87,6 +87,9 @@ namespace Forge.Framework.UI{
                 t.UpdateInput(ref state);
             }
             if (HitTest(state.MousePos.X, state.MousePos.Y)){
+                if (state.AllowLeftButtonInterpretation){
+                    int f = 4;
+                }
                 //xxx will this work correctly?
                 state.AllowLeftButtonInterpretation = false;
             }
@@ -191,7 +194,10 @@ namespace Forge.Framework.UI{
             set { throw new NotImplementedException(); }
         }
 
-        public float Alpha { get; set; }
+        public float Alpha { 
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
 
         public float Depth{
             get { return _collectionDepth; }
