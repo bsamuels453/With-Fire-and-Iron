@@ -280,6 +280,28 @@
       <ProcessorParameters_RotationY>-90</ProcessorParameters_RotationY>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Icons\CheckboxBG.png">
+      <Name>CheckboxBG</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Icons\CheckboxMark.png">
+      <Name>CheckboxMark</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Icons\RadiobuttonBG.png">
+      <Name>RadiobuttonBG</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Icons\RadiobuttonIndicator.png">
+      <Name>RadiobuttonIndicator</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <PropertyGroup>
     <PreBuildEvent>xcopy /s /y $(SolutionDir)\HLSL $(SolutionDir)\Forge.Content\HLSL</PreBuildEvent>

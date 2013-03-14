@@ -1,0 +1,12 @@
+{
+  "Inherits": [
+	"StandardHighlighting.json"
+  ],
+  "Depth": "Medium",
+  "Width": 13,
+  "Height": 13,
+  "Identifier": 0,
+  "SpriteTexRepeatX": 1,
+  "SpriteTexRepeatY": 1,
+  "TextureName": "Icons/CheckboxBG"
+}

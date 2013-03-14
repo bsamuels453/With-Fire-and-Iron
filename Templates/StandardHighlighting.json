@@ -1,0 +1,14 @@
+{
+  "Components": {
+	"HighlightComponent_HoverMask":{
+      "HighlightTexture": "Materials/SolidYellow",
+	  "HighlightTrigger": "MouseEntryExit",
+	  "HighlightTexOpacity": 0.15
+	},
+	"HighlightComponent_ClickEffect":{
+      "HighlightTexture": "Materials/SolidBlack",
+	  "HighlightTrigger": "MousePressRelease",
+	  "HighlightTexOpacity": 0.3
+	}
+	}
+}

@@ -120,6 +120,9 @@ namespace Forge.Framework.UI{
 
         public List<IUIElementBase> GetElementStack(int x, int y){
             var ret = new List<IUIElementBase>(1);
+            if (!Enabled){
+                return ret;
+            }
             if (HitTest(x, y)){
                 ret.Add(this);
             }
@@ -147,6 +150,30 @@ namespace Forge.Framework.UI{
             Alpha = 1;
             if (Components != null){
                 foreach (IUIComponent component in Components){
+                    component.ComponentCtor(this, _iEventDispatcher);
+                }
+            }
+            UIElementCollection.BoundCollection.AddElement(this);
+        }
+
+        public Button(float x, float y, float width, float height, DepthLevel depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null) {
+            _identifier = identifier;
+            _enabled = true;
+            _iEventDispatcher = new ButtonEventDispatcher();
+
+            _centPosition = new Vector2();
+            float fDepth = UIElementCollection.BoundCollection.GetRelDepth(depth);
+
+            _boundingBox = new FloatingRectangle(x, y, width, height);
+            _sprite = new Sprite2D(textureName, (int)x, (int)y, (int)width, (int)height, fDepth, 1, spriteTexRepeatX, spriteTexRepeatY);
+
+            _centPosition.X = _boundingBox.X + _boundingBox.Width / 2;
+            _centPosition.Y = _boundingBox.Y + _boundingBox.Height / 2;
+
+            Components = components;
+            Alpha = 1;
+            if (Components != null) {
+                foreach (IUIComponent component in Components) {
                     component.ComponentCtor(this, _iEventDispatcher);
                 }
             }
