@@ -24,7 +24,7 @@ namespace Forge.Framework.UI.Components{
         readonly string _highlightTexture;
         readonly HighlightTrigger _highlightTrigger;
 
-        bool _Enabled;
+        bool _enabled;
         Sprite2D _highlightSprite;
         IUIInteractiveElement _owner;
 
@@ -33,7 +33,7 @@ namespace Forge.Framework.UI.Components{
             _highlightTrigger = highlightTrigger;
             _highlightTexOpacity = highlightTexOpacity;
             Identifier = identifier;
-            _Enabled = true;
+            _enabled = true;
         }
 
         #region IAcceptLeftButtonPressEvent Members
@@ -77,9 +77,9 @@ namespace Forge.Framework.UI.Components{
         #region IUIComponent Members
 
         public bool Enabled{
-            get { return _Enabled; }
+            get { return _enabled; }
             set{
-                _Enabled = value;
+                _enabled = value;
                 _highlightSprite.Enabled = value;
             }
         }
@@ -92,13 +92,14 @@ namespace Forge.Framework.UI.Components{
                 var dcomponent = _owner.GetComponent<DraggableComponent>();
                 dcomponent.DragMovementDispatcher += OnOwnerDrag;
             }
+            
             switch (_highlightTrigger){
                 case HighlightTrigger.MouseEntryExit:
-                    //ownerEventDispatcher.OnMouseMovement.Add(this);
-                    ownerEventDispatcher.OnMouseEntry.Add(this);
                     ownerEventDispatcher.OnMouseExit.Add(this);
+                    ownerEventDispatcher.OnMouseEntry.Add(this);
                     break;
                 case HighlightTrigger.MousePressRelease:
+                    ownerEventDispatcher.OnMouseExit.Add(this);
                     ownerEventDispatcher.OnGlobalLeftPress.Add(this);
                     ownerEventDispatcher.OnGlobalLeftRelease.Add(this);
                     break;
@@ -107,7 +108,7 @@ namespace Forge.Framework.UI.Components{
             }
 
             //create sprite
-            _highlightSprite = new Sprite2D(_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, _owner.Depth - float.Epsilon, 0);
+            _highlightSprite = new Sprite2D(_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, _owner.Depth - 0.000001f, 0);
         }
 
         public void Update(){

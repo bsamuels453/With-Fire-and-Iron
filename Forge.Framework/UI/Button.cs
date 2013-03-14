@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -69,8 +70,8 @@ namespace Forge.Framework.UI{
             set{
                 throw new NotImplementedException();
                 //requires center point fixing
-                _boundingBox.Width = value;
-                _sprite.Width = (int) value;
+                //_boundingBox.Width = value;
+                //_sprite.Width = (int) value;
             }
         }
 
@@ -79,8 +80,8 @@ namespace Forge.Framework.UI{
             set{
                 throw new NotImplementedException();
                 //requires center point fixing
-                _boundingBox.Height = value;
-                _sprite.Height = (int) value;
+                //_boundingBox.Height = value;
+                //_sprite.Height = (int) value;
             }
         }
 
@@ -114,6 +115,8 @@ namespace Forge.Framework.UI{
         public bool HitTest(int x, int y){
             return _boundingBox.Contains(x, y);
         }
+
+        bool _hasMouseFocus;
 
         public List<IUIElementBase> GetElementStack(int x, int y){
             var ret = new List<IUIElementBase>(1);
@@ -199,41 +202,59 @@ namespace Forge.Framework.UI{
         }
 
         public void UpdateInput(ref InputState state){
+            //todo: some way for components to report back that they've modified the bounding box of this or other elements so that the element stack can be rebuilt
             if (Enabled){
-                bool containedMousePrev = ContainsMouse;
+                //bool containedMousePrev = ContainsMouse;
                 ContainsMouse = HitTest(state.MousePos.X, state.MousePos.Y);
 
-                if (state.AllowLeftButtonInterpretation){
-                    if (state.LeftButtonClick){
-                        foreach (var @event in _iEventDispatcher.OnGlobalLeftClick){
-                            @event.OnLeftButtonClick(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation){
-                                break;
-                            }
+                var stack = UIElementCollection.GetGlobalElementStack(state.MousePos.X, state.MousePos.Y);
+                stack = stack.OrderBy(o => o.Depth).ToList();
+                if (stack.Count > 0){
+                    // ReSharper disable CompareOfFloatsByEqualityOperator
+                    if (stack[0].Depth == Depth &&
+                        stack[0].X == X &&
+                            stack[0].Y == Y &&
+                                stack[0].Width == Width &&
+                                    stack[0].Height == Height){
+                        _hasMouseFocus = true;
+                    }
+                    else{
+                        _hasMouseFocus = false;
+                    }
+                    // ReSharper restore CompareOfFloatsByEqualityOperator
+                }
+                else{
+                    _hasMouseFocus = false;
+                }
+
+                if (state.LeftButtonClick && _hasMouseFocus){
+                    foreach (var @event in _iEventDispatcher.OnGlobalLeftClick){
+                        @event.OnLeftButtonClick(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
+                        if (!state.AllowLeftButtonInterpretation){
+                            break;
                         }
                     }
                 }
-                if (state.AllowLeftButtonInterpretation){
-                    if (state.LeftButtonState == ButtonState.Pressed){
-                        foreach (var @event in _iEventDispatcher.OnGlobalLeftPress){
-                            @event.OnLeftButtonPress(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation){
-                                break;
-                            }
+
+                if (state.LeftButtonState == ButtonState.Pressed && _hasMouseFocus){
+                    foreach (var @event in _iEventDispatcher.OnGlobalLeftPress){
+                        @event.OnLeftButtonPress(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
+                        if (!state.AllowLeftButtonInterpretation){
+                            break;
                         }
                     }
                 }
-                if (state.AllowLeftButtonInterpretation){
-                    if (state.LeftButtonState == ButtonState.Released){
-                        foreach (var @event in _iEventDispatcher.OnGlobalLeftRelease){
-                            @event.OnLeftButtonRelease(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowLeftButtonInterpretation){
-                                break;
-                            }
+
+                if (state.LeftButtonState == ButtonState.Released && _hasMouseFocus){
+                    foreach (var @event in _iEventDispatcher.OnGlobalLeftRelease){
+                        @event.OnLeftButtonRelease(ref state.AllowLeftButtonInterpretation, state.MousePos, state.PrevState.MousePos);
+                        if (!state.AllowLeftButtonInterpretation){
+                            break;
                         }
                     }
                 }
-                if (state.AllowMouseMovementInterpretation){
+
+                if (_hasMouseFocus){
                     foreach (var @event in _iEventDispatcher.OnMouseMovement){
                         @event.OnMouseMovement(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                         if (!state.AllowMouseMovementInterpretation){
@@ -241,35 +262,25 @@ namespace Forge.Framework.UI{
                         }
                     }
                 }
-                if (state.AllowMouseMovementInterpretation){
-                    if (ContainsMouse){
-                        foreach (var @event in _iEventDispatcher.OnMouseEntry){
-                            @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowMouseMovementInterpretation){
-                                break;
-                            }
+
+                if (_hasMouseFocus){
+                    foreach (var @event in _iEventDispatcher.OnMouseEntry){
+                        @event.OnMouseEntry(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
+                        if (!state.AllowMouseMovementInterpretation){
+                            break;
                         }
                     }
                 }
-                var stack = UIElementCollection.GetGlobalElementStack(state.MousePos.X, state.MousePos.Y);
-                bool thisOnTopOfStack = false;
-                if(stack.Count>0){
-                    if(stack[0] == this){
-                        thisOnTopOfStack = true;
+
+                if (!_hasMouseFocus){
+                    foreach (var @event in _iEventDispatcher.OnMouseExit){
+                        @event.OnMouseExit(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
                     }
                 }
-                if (!thisOnTopOfStack) {
-                        foreach (var @event in _iEventDispatcher.OnMouseExit){
-                            @event.OnMouseExit(ref state.AllowMouseMovementInterpretation, state.MousePos, state.PrevState.MousePos);
-                            if (!state.AllowMouseMovementInterpretation){
-                                break;
-                            }
-                        }
-                    }
 
                 //now dispatch the external delegates
                 if (state.AllowLeftButtonInterpretation){
-                    if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
+                    if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y) && _hasMouseFocus){
                         state.AllowLeftButtonInterpretation = false;
                         if (state.LeftButtonClick){
                             if (OnLeftClickDispatcher != null){

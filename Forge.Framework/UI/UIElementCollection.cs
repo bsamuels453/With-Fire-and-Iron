@@ -20,7 +20,7 @@ namespace Forge.Framework.UI{
         public bool DisableEntryHandlers;
         readonly int _depthLevel;
         readonly float _collectionDepth;
-        readonly Rectangle _boundingBox;
+        Rectangle _boundingBox;
 
         #region ctor
 
@@ -104,12 +104,9 @@ namespace Forge.Framework.UI{
                 t.UpdateInput(ref state);
             }
             if (HitTest(state.MousePos.X, state.MousePos.Y)){
-                if (state.AllowLeftButtonInterpretation){
-                    int f = 4;
-                }
-                //xxx will this work correctly?
-                state.AllowLeftButtonInterpretation = false;
-                state.AllowMouseMovementInterpretation = false;
+                //this may not be neccessary anymore with the possible depreciation of allow
+                //state.AllowLeftButtonInterpretation = false;
+                //state.AllowMouseMovementInterpretation = false;
             }
         }
 
