@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Forge.Framework.Draw{
     public class Text2D : IDrawableSprite{
-        readonly SpriteFont _font;
+        public SpriteFont Font { get; private set; }
         public Color Color;
         public Vector2 Position;
         public string Str;
@@ -18,10 +18,10 @@ namespace Forge.Framework.Draw{
             Str = str;
             Color = Color.Black;
             try{
-                _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
+                Font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
             }
             catch{
-                _font = Gbl.ContentManager.Load<SpriteFont>(font);
+                Font = Gbl.ContentManager.Load<SpriteFont>(font);
             }
             RenderTarget.Sprites.Add(this);
         }
@@ -35,7 +35,7 @@ namespace Forge.Framework.Draw{
 
         public void Draw(){
             RenderTarget.CurSpriteBatch.DrawString(
-                _font,
+                Font,
                 Str,
                 Position,
                 Color

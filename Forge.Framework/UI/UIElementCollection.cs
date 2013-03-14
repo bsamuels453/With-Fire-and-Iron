@@ -41,7 +41,7 @@ namespace Forge.Framework.UI{
             DisableEntryHandlers = false;
             //_uiElementCollections.Add(this);
             _depthLevel = parent._depthLevel + 1;
-            _collectionDepth = parent.GetRelDepth(depth);
+            _collectionDepth = parent.GetAbsoluteDepth(depth);
             _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
             Debug.Assert(_depthLevel < 10);
             parent.AddElement(this);
@@ -53,7 +53,7 @@ namespace Forge.Framework.UI{
             DisableEntryHandlers = false;
             //_uiElementCollections.Add(this);
             _depthLevel = parent._depthLevel + 1;
-            _collectionDepth = parent.GetRelDepth(depth);
+            _collectionDepth = parent.GetAbsoluteDepth(depth);
             _boundingBox = boundingBox;
             Debug.Assert(_depthLevel < 10);
             parent.AddElement(this);
@@ -61,7 +61,7 @@ namespace Forge.Framework.UI{
 
         #endregion
 
-        public float GetRelDepth(DepthLevel depth){
+        public float GetAbsoluteDepth(DepthLevel depth){
             float magnitude = (float)Math.Pow(10,(_depthLevel + 1));
             float d = ((float)depth)/magnitude;
             var ret = _collectionDepth - d;
