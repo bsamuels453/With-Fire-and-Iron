@@ -120,6 +120,9 @@ namespace Forge.Framework.UI{
 
         public List<IUIElementBase> GetElementStack(int x, int y){
             var ret = new List<IUIElementBase>(1);
+            if (!Enabled){
+                return ret;
+            }
             if (HitTest(x, y)){
                 ret.Add(this);
             }
