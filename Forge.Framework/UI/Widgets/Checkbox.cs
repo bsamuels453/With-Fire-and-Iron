@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Forge.Framework.UI.Widgets {
-    public class Checkbox {
-        readonly Button _checkSprite;
+﻿namespace Forge.Framework.UI.Widgets{
+    public class Checkbox{
         readonly Button _boxSprite;
-        public int Identifier { get; private set; }
+        readonly Button _checkSprite;
 
-        public Checkbox(int x, int y, bool startChecked, int identifier=0){
+        public Checkbox(int x, int y, bool startChecked, int identifier = 0){
             var buttonGen = new ButtonGenerator("CheckboxBG.json");
             buttonGen.X = x;
             buttonGen.Y = y;
@@ -31,7 +25,9 @@ namespace Forge.Framework.UI.Widgets {
             Identifier = identifier;
         }
 
-        public void Check() {
+        public int Identifier { get; private set; }
+
+        public void Check(){
             _checkSprite.Alpha = 1;
             _checkSprite.Enabled = true;
         }
