@@ -13,11 +13,6 @@ using Microsoft.Xna.Framework.Input;
 namespace Forge.Core.GameState{
     internal class PlayerState : IGameState{
         readonly SubmarineCamera _cameraController;
-        readonly Text2D _x;
-        readonly Text2D _y;
-        readonly Text2D _z;
-        readonly Text2D _pitch;
-        readonly Text2D _yaw;
         readonly Point _viewportSize;
         bool _clampMouse;
         bool _skipNextMouseUpdate;
@@ -31,16 +26,11 @@ namespace Forge.Core.GameState{
             _clampMouse = true;
             _skipNextMouseUpdate = true;
 
-            _x = new Text2D(0, 0, "hi");
-            _y = new Text2D(0, 10, "hi");
-            _z = new Text2D(0, 20, "hi");
-            _pitch = new Text2D(0, 30, "hi");
-            _yaw = new Text2D(0, 40, "hi");
-            _x.Color = Color.Wheat;
-            _y.Color = Color.Wheat;
-            _z.Color = Color.Wheat;
-            _pitch.Color = Color.Wheat;
-            _yaw.Color = Color.Wheat;
+            DebugText.CreateText("x", 0, 0);
+            DebugText.CreateText("y", 0, 10);
+            DebugText.CreateText("z", 0, 20);
+            DebugText.CreateText("pitch", 0, 30);
+            DebugText.CreateText("yaw", 0, 40);
         }
 
         #region IGameState Members
@@ -73,9 +63,10 @@ namespace Forge.Core.GameState{
                 _cameraController.MoveRight(movementspeed);
             }
 
-            _x.Str = "x: " + _cameraController.Position.X;
-            _y.Str = "y: " + _cameraController.Position.Y;
-            _z.Str = "z: " + _cameraController.Position.Z;
+            DebugText.SetText("x", "x: " + _cameraController.Position.X);
+            DebugText.SetText("y", "y: " + _cameraController.Position.Y);
+            DebugText.SetText("z", "z: " + _cameraController.Position.Z);
+
             //xx block wasd from further interpretation?
             #endregion
 
@@ -115,8 +106,8 @@ namespace Forge.Core.GameState{
                         _skipNextMouseUpdate = true;
                     }
                 }
-                _pitch.Str = "pitch: " + _cameraController.LookAng.Pitch;
-                _yaw.Str = "yaw: " + _cameraController.LookAng.Yaw;
+                DebugText.SetText("pitch", "pitch: " + _cameraController.LookAng.Pitch);
+                DebugText.SetText("yaw", "yaw: " + _cameraController.LookAng.Yaw);
             }
 
             #endregion
