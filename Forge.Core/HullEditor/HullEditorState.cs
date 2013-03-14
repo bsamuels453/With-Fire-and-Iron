@@ -217,10 +217,10 @@ namespace Forge.Core.HullEditor {
             var sideInfo = _sidepanel.Curves.GetControllerInfo();
             var backInfo = _backpanel.Curves.GetControllerInfo();
             var topInfo = _toppanel.Curves.GetControllerInfo();
-
+            
             GamestateManager.ClearAllStates();
             GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
-
+            return;
 
             _elementCollection.Bind();
             _sidepanel.Update();
