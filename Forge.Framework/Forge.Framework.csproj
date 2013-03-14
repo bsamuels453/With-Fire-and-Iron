@@ -146,6 +146,7 @@
     <Compile Include="UI\IUIInteractiveElement.cs" />
     <Compile Include="UI\Line.cs" />
     <Compile Include="UI\UIElementCollection.cs" />
+    <Compile Include="UI\Widgets\CheckboxBase.cs" />
     <Compile Include="UI\Widgets\IToolbarTool.cs" />
     <Compile Include="UI\Widgets\NullTool.cs" />
     <Compile Include="UI\Widgets\Toolbar.cs" />
