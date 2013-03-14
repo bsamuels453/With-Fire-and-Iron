@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 
 namespace Forge.Framework.UI.Widgets {
-    public class CheckboxBase {
+    public class Checkbox {
         readonly Button _checkSprite;
         readonly Button _boxSprite;
         public int Identifier { get; private set; }
 
-        public CheckboxBase(int x, int y, bool startChecked, int identifier=0){
+        public Checkbox(int x, int y, bool startChecked, int identifier=0){
             var buttonGen = new ButtonGenerator("CheckboxBG.json");
             buttonGen.X = x;
             buttonGen.Y = y;
