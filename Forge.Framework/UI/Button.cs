@@ -162,7 +162,7 @@ namespace Forge.Framework.UI{
             _iEventDispatcher = new ButtonEventDispatcher();
 
             _centPosition = new Vector2();
-            float fDepth = UIElementCollection.BoundCollection.GetRelDepth(depth);
+            float fDepth = UIElementCollection.BoundCollection.GetAbsoluteDepth(depth);
 
             _boundingBox = new FloatingRectangle(x, y, width, height);
             _sprite = new Sprite2D(textureName, (int)x, (int)y, (int)width, (int)height, fDepth, 1, spriteTexRepeatX, spriteTexRepeatY);
