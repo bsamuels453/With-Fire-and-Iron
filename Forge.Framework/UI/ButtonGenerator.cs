@@ -39,10 +39,26 @@ namespace Forge.Framework.UI{
         public ButtonGenerator(string template){
             var sr = new StreamReader("Templates/" + template);
             string str = sr.ReadToEnd();
+            sr.Close();
 
             JObject obj = JObject.Parse(str);
             var depthLevelSerializer = new JsonSerializer();
 
+            var inherits = obj["Inherits"];
+            if (inherits != null){
+                var inheritList = inherits.ToObject<string[]>();
+                foreach (var parent in inheritList){
+                    sr = new StreamReader("Templates/" + parent);
+                    str = sr.ReadToEnd();
+
+                    var parentObj = JObject.Parse(str);
+
+                    foreach (var entry in parentObj){
+                        obj.Add(entry.Key, entry.Value);
+                    }
+                    //obj.Add(parentObj);
+                }
+            }
 
             //try{
             var jComponents = obj["Components"];
@@ -55,7 +71,10 @@ namespace Forge.Framework.UI{
             //Components = null;
             //}
 
-            Depth = obj["Depth"].ToObject<DepthLevel?>(depthLevelSerializer);
+            var tDepth = obj["Depth"];
+            if (tDepth != null){
+                Depth = tDepth.ToObject<DepthLevel?>(depthLevelSerializer);
+            }
 
             Width = obj["Width"].Value<float>();
             Height = obj["Height"].Value<float>();
