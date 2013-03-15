@@ -18,6 +18,7 @@ namespace Forge.Framework.UI.Widgets {
         Stopwatch _blinkTimer;
         int _cursorPosition;
         int _xAnchor;
+        int _width;
         
         
         public InputBox(int x, int y, int width, string defaultText = ""){
@@ -43,6 +44,7 @@ namespace Forge.Framework.UI.Widgets {
             _left.Alpha = 0.70f;
             _right.Alpha = 0.70f;
             _center.Alpha = 0.70f;
+            _width = width;
             UIElementCollection.BoundCollection.AddElement(this);
         }
 
@@ -81,7 +83,8 @@ namespace Forge.Framework.UI.Widgets {
             }
         }
 
-        public void UpdateInput(ref InputState state){
+        public void UpdateInput(ref InputState state) {
+            #region containment check
             bool containsMouse = false;
             if (state.LeftButtonChange && state.LeftButtonState == ButtonState.Pressed){
                 if (_center.HitTest(state.MousePos.X, state.MousePos.Y)){
@@ -102,9 +105,174 @@ namespace Forge.Framework.UI.Widgets {
                     _center.Alpha = 0.70f;
                 }
             }
+            #endregion
+
+            #region character addition
+            char c;
+            if (!ParseAlphabet(state.KeyboardState, state.PrevState.KeyboardState, out c)){
+                ParseNumeric(state.KeyboardState, state.PrevState.KeyboardState, out c);
+            }
+            if (c != '`'){
+                string tempStr = _text.Insert(_cursorPosition, Char.ToString(c));
+
+                if (_textBox.Font.MeasureString(tempStr).X < _width){
+                    _text = tempStr;
+                    _textBox.SetText(_text);
+                    _cursorPosition++;
+                    float diff = _textBox.Font.MeasureString(Char.ToString(c)).X;
+                    _cursor.X += diff;
+                }
+            }
+            #endregion
+
+            #region key navigation
+            if (_cursorPosition > 0){
+                if (state.KeyboardState.IsKeyDown(Keys.Left) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Left)){
+                    float diff = _textBox.Font.MeasureString(Char.ToString(_text[_cursorPosition - 1])).X;
+                    _cursorPosition--;
+                    _cursor.X -= diff;
+                }
+            }
+            if (_cursorPosition < _text.Length){
+                if (state.KeyboardState.IsKeyDown(Keys.Right) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Right)){
+                    float diff = _textBox.Font.MeasureString(Char.ToString(_text[_cursorPosition])).X;
+                    _cursorPosition++;
+                    _cursor.X += diff;
+                }
+            }
+
+            #endregion
         }
 
+        bool ParseNumeric(KeyboardState state, KeyboardState prevState, out char result){
+            result = '`'; //default
+            if (state.IsKeyDown(Keys.D0) && !prevState.IsKeyDown(Keys.D0)) {
+                result = '0';
+            }
+            if (state.IsKeyDown(Keys.D1) && !prevState.IsKeyDown(Keys.D1)) {
+                result = '1';
+            }
+            if (state.IsKeyDown(Keys.D2) && !prevState.IsKeyDown(Keys.D2)) {
+                result = '2';
+            }
+            if (state.IsKeyDown(Keys.D3) && !prevState.IsKeyDown(Keys.D3)) {
+                result = '3';
+            }
+            if (state.IsKeyDown(Keys.D4) && !prevState.IsKeyDown(Keys.D4)) {
+                result = '4';
+            }
+            if (state.IsKeyDown(Keys.D5) && !prevState.IsKeyDown(Keys.D5)) {
+                result = '5';
+            }
+            if (state.IsKeyDown(Keys.D6) && !prevState.IsKeyDown(Keys.D6)) {
+                result = '6';
+            }
+            if (state.IsKeyDown(Keys.D7) && !prevState.IsKeyDown(Keys.D7)) {
+                result = '7';
+            }
+            if (state.IsKeyDown(Keys.D8) && !prevState.IsKeyDown(Keys.D8)) {
+                result = '8';
+            }
+            if (state.IsKeyDown(Keys.D9) && !prevState.IsKeyDown(Keys.D9)) {
+                result = '9';
+            }
+            if (result == '`')
+                return false;
+            return true;
+        }
 
+        bool ParseAlphabet(KeyboardState state, KeyboardState prevState, out char result){
+            result = '`'; //default
+
+            if (state.IsKeyDown(Keys.A) && !prevState.IsKeyDown(Keys.A)) {
+                result = 'a';
+            }
+            if (state.IsKeyDown(Keys.B) && !prevState.IsKeyDown(Keys.B)) {
+                result = 'b';
+            }
+            if (state.IsKeyDown(Keys.C) && !prevState.IsKeyDown(Keys.C)) {
+                result = 'c';
+            }
+            if (state.IsKeyDown(Keys.D) && !prevState.IsKeyDown(Keys.D)) {
+                result = 'd';
+            }
+            if (state.IsKeyDown(Keys.E) && !prevState.IsKeyDown(Keys.E)) {
+                result = 'e';
+            }
+            if (state.IsKeyDown(Keys.F) && !prevState.IsKeyDown(Keys.F)) {
+                result = 'f';
+            }
+            if (state.IsKeyDown(Keys.G) && !prevState.IsKeyDown(Keys.G)) {
+                result = 'g';
+            }
+            if (state.IsKeyDown(Keys.H) && !prevState.IsKeyDown(Keys.H)) {
+                result = 'h';
+            }
+            if (state.IsKeyDown(Keys.I) && !prevState.IsKeyDown(Keys.I)) {
+                result = 'i';
+            }
+            if (state.IsKeyDown(Keys.J) && !prevState.IsKeyDown(Keys.J)) {
+                result = 'j';
+            }
+            if (state.IsKeyDown(Keys.K) && !prevState.IsKeyDown(Keys.K)) {
+                result = 'k';
+            }
+            if (state.IsKeyDown(Keys.L) && !prevState.IsKeyDown(Keys.L)) {
+                result = 'l';
+            }
+            if (state.IsKeyDown(Keys.M) && !prevState.IsKeyDown(Keys.M)) {
+                result = 'm';
+            }
+            if (state.IsKeyDown(Keys.N) && !prevState.IsKeyDown(Keys.N)) {
+                result = 'n';
+            }
+            if (state.IsKeyDown(Keys.O) && !prevState.IsKeyDown(Keys.O)) {
+                result = 'o';
+            }
+            if (state.IsKeyDown(Keys.P) && !prevState.IsKeyDown(Keys.P)) {
+                result = 'p';
+            }
+            if (state.IsKeyDown(Keys.Q) && !prevState.IsKeyDown(Keys.Q)) {
+                result = 'q';
+            }
+            if (state.IsKeyDown(Keys.R) && !prevState.IsKeyDown(Keys.R)) {
+                result = 'r';
+            }
+            if (state.IsKeyDown(Keys.S) && !prevState.IsKeyDown(Keys.S)) {
+                result = 's';
+            }
+            if (state.IsKeyDown(Keys.T) && !prevState.IsKeyDown(Keys.T)) {
+                result = 't';
+            }
+            if (state.IsKeyDown(Keys.U) && !prevState.IsKeyDown(Keys.U)) {
+                result = 'u';
+            }
+            if (state.IsKeyDown(Keys.V) && !prevState.IsKeyDown(Keys.V)) {
+                result = 'v';
+            }
+            if (state.IsKeyDown(Keys.W) && !prevState.IsKeyDown(Keys.W)) {
+                result = 'w';
+            }
+            if (state.IsKeyDown(Keys.X) && !prevState.IsKeyDown(Keys.X)) {
+                result = 'x';
+            }
+            if (state.IsKeyDown(Keys.Y) && !prevState.IsKeyDown(Keys.Y)) {
+                result = 'y';
+            }
+            if (state.IsKeyDown(Keys.Z) && !prevState.IsKeyDown(Keys.Z)) {
+                result = 'z';
+            }
+            if (state.IsKeyDown(Keys.Space) && !prevState.IsKeyDown(Keys.Space)) {
+                result = ' ';
+            }
+            if (result == '`')
+                return false;
+
+            if (state.IsKeyDown(Keys.LeftShift) || state.IsKeyDown(Keys.RightShift))
+                result = Char.ToUpper(result);
+
+            return true;
+        }
 
         public float X{
             get { return _left.X; }
