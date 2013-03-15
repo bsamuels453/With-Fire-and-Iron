@@ -15,8 +15,11 @@ namespace Forge.Framework.UI.Widgets {
 
         readonly List<Button> _dropdownHighlights;
         readonly List<TextBox> _dropdownText;
+        Rectangle _strayMouseBounds;
 
         readonly string[] _options;
+
+        bool _submenuVisible;
 
         public DropdownMenu(int x, int y, string startingOption, string[] options){
             const int width = 100;
@@ -26,6 +29,12 @@ namespace Forge.Framework.UI.Widgets {
             const string dropdownParentButTex = "Materials/DarkTextBoxMid";
             const string dropdownBGTex = "Materials/TextBoxMid";
             _options = options;
+            _strayMouseBounds = new Rectangle(
+                x - 25,
+                y - 25,
+                width + 60,
+                baseHeight * options.Length + baseHeight + 50
+                );
 
             #region generate top
 
@@ -115,57 +124,73 @@ namespace Forge.Framework.UI.Widgets {
         }
 
         void ShowSubmenu(){
-
+            foreach (var button in _dropdownHighlights){
+                button.Enabled = true;
+            }
+            foreach (var textBox in _dropdownText){
+                textBox.Enabled = true;
+            }
+            _submenuVisible = true;
         }
 
         void HideSubmenu(){
-
+            foreach (var button in _dropdownHighlights) {
+                button.Enabled = false;
+            }
+            foreach (var textBox in _dropdownText) {
+                textBox.Enabled = false;
+            }
+            _submenuVisible = false;
         }
 
         public void UpdateLogic(double timeDelta){
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
 
         public void UpdateInput(ref InputState state){
-            throw new NotImplementedException();
+            if (_submenuVisible){
+                if (!_strayMouseBounds.Contains(state.MousePos.X, state.MousePos.Y)){
+                    HideSubmenu();
+                }
+            }
         }
 
         public float X{
-            get { throw new NotImplementedException(); }
+            get { return _dropdownTopElem.X; }
             set { throw new NotImplementedException(); }
         }
 
         public float Y{
-            get { throw new NotImplementedException(); }
+            get { return _dropdownTopElem.Y; }
             set { throw new NotImplementedException(); }
         }
 
         public float Width{
-            get { throw new NotImplementedException(); }
+            get { return _dropdownTopElem.Width; }
             set { throw new NotImplementedException(); }
         }
 
         public float Height{
-            get { throw new NotImplementedException(); }
+            get { return _dropdownTopElem.Height; }
             set { throw new NotImplementedException(); }
         }
 
         public float Alpha{
-            get { throw new NotImplementedException(); }
+            get { return 1; }
             set { throw new NotImplementedException(); }
         }
 
         public float Depth{
-            get { throw new NotImplementedException(); }
+            get { return _dropdownTopElem.Depth; }
             set { throw new NotImplementedException(); }
         }
 
         public bool HitTest(int x, int y){
-            throw new NotImplementedException();
+            return false;
         }
 
         public List<IUIElementBase> GetElementStack(int x, int y){
-            throw new NotImplementedException();
+            return new List<IUIElementBase>();
         }
     }
 }
