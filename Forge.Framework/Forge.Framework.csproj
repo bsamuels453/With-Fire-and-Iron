@@ -147,6 +147,7 @@
     <Compile Include="UI\Line.cs" />
     <Compile Include="UI\UIElementCollection.cs" />
     <Compile Include="UI\Widgets\Checkbox.cs" />
+    <Compile Include="UI\Widgets\DropdownMenu.cs" />
     <Compile Include="UI\Widgets\InputBox.cs" />
     <Compile Include="UI\Widgets\IToolbarTool.cs" />
     <Compile Include="UI\Widgets\TextBox.cs" />

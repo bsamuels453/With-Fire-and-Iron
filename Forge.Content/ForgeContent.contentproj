@@ -335,6 +335,13 @@
       <Processor>TextureProcessor</Processor>
     </Compile>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Materials\DarkTextboxMid.png">
+      <Name>DarkTextboxMid</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <PropertyGroup>
     <PreBuildEvent>xcopy /s /y $(SolutionDir)\HLSL $(SolutionDir)\Forge.Content\HLSL</PreBuildEvent>
