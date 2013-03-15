@@ -1,12 +1,12 @@
 {
   "Inherits": [
-	"ToggleButtonHighlighting.json"
+	"StandardHighlighting.json"
   ],
   "Depth": "High",
-  "Width": 64,
-  "Height": 64,
+  "Width": 13,
+  "Height": 13,
   "Identifier": 0,
   "SpriteTexRepeatX": 1,
   "SpriteTexRepeatY": 1,
-  "TextureName": "Icons/CrossIcon"
+  "TextureName": "Icons/CheckboxMark"
 }

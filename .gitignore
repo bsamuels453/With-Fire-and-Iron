@@ -38,4 +38,5 @@ content*/
 *.lastcodeanalysissucceeded
 [Rr]elease*/
 _ReSharper*/
+Debug*/
 x86*/
