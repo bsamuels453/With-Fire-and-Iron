@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Forge.Framework.UI.Widgets {
     public class TextBox : IDrawableSprite {
         public readonly SpriteFont Font;
+        public bool Enabled;
         readonly int _maxLines;
         readonly int _width;
         readonly Vector2 _position;
@@ -29,6 +30,7 @@ namespace Forge.Framework.UI.Widgets {
             _width = width;
             _builder = new StringBuilder();
             _fontColor = fontColor;
+            Enabled = true;
             RenderTarget.Sprites.Add(this);
         }
 
@@ -83,17 +85,19 @@ namespace Forge.Framework.UI.Widgets {
         }
 
         public void Draw(){
-            RenderTarget.CurSpriteBatch.DrawString(
-                Font,
-                _builder,
-                _position,
-                _fontColor,
-                0,
-                Vector2.Zero,
-                1,
-                SpriteEffects.None,
-                _absoluteDepth
-                );
+            if (Enabled){
+                RenderTarget.CurSpriteBatch.DrawString(
+                    Font,
+                    _builder,
+                    _position,
+                    _fontColor,
+                    0,
+                    Vector2.Zero,
+                    1,
+                    SpriteEffects.None,
+                    _absoluteDepth
+                    );
+            }
         }
 
         public void SetTextureFromString(string textureName){
