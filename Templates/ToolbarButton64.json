@@ -1,21 +1,7 @@
 {
-  "Components": {
-	"HighlightComponent_HoverMask":{
-      "HighlightTexture": "Materials/SolidYellow",
-	  "HighlightTrigger": "MouseEntryExit",
-	  "HighlightTexOpacity": 0.3
-	},
-	"HighlightComponent_ClickEffect":{
-      "HighlightTexture": "Materials/SolidBlack",
-	  "HighlightTrigger": "MousePressRelease",
-	  "HighlightTexOpacity": 0.7
-	},
-	"HighlightComponent_ClickHoldEffect":{
-      "HighlightTexture": "Materials/SolidBlack",
-	  "HighlightTrigger": "None",
-	  "HighlightTexOpacity": 0.7
-	}
-  },
+  "Inherits": [
+	"ToggleButtonHighlighting.json"
+  ],
   "Depth": "High",
   "Width": 64,
   "Height": 64,
