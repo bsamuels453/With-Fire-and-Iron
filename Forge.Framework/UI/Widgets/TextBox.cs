@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Forge.Framework.UI.Widgets {
     public class TextBox : IDrawableSprite {
-        readonly SpriteFont _font;
+        public readonly SpriteFont Font;
         readonly int _maxLines;
         readonly int _width;
         readonly Vector2 _position;
@@ -18,10 +18,10 @@ namespace Forge.Framework.UI.Widgets {
 
         public TextBox(int x, int y, DepthLevel depth, Color fontColor, int width=999999, string font = "Fonts/Monospace10", int maxLines = 99999999) {
             try {
-                _font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
+                Font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
             }
             catch {
-                _font = Gbl.ContentManager.Load<SpriteFont>(font);
+                Font = Gbl.ContentManager.Load<SpriteFont>(font);
             }
             _absoluteDepth = UIElementCollection.BoundCollection.GetAbsoluteDepth(depth);
             _position = new Vector2(x, y);
@@ -55,7 +55,7 @@ namespace Forge.Framework.UI.Widgets {
             while (end <= splitText.Length) {
                 string phrase = genPhrase(start,end);
 
-                if (_font.MeasureString(phrase).X > _width) {
+                if (Font.MeasureString(phrase).X > _width) {
                     phrase = genPhrase(start, end - 1);
                     lines.Add(phrase);
                     start = end - 1;
@@ -84,7 +84,7 @@ namespace Forge.Framework.UI.Widgets {
 
         public void Draw(){
             RenderTarget.CurSpriteBatch.DrawString(
-                _font,
+                Font,
                 _builder,
                 _position,
                 _fontColor,

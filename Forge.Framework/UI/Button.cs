@@ -94,8 +94,10 @@ namespace Forge.Framework.UI{
             set{
                 _enabled = value;
                 _sprite.Enabled = value;
-                foreach (var component in Components){
-                    component.Enabled = value;
+                if (Components != null){
+                    foreach (var component in Components){
+                        component.Enabled = value;
+                    }
                 }
             }
         }

@@ -29,7 +29,7 @@ namespace Forge.Core{
             Gbl.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                 fieldOfView: 3.14f/4,
                 aspectRatio: aspectRatio,
-                nearPlaneDistance: 1,
+                nearPlaneDistance: 0.01f,
                 farPlaneDistance: 50000
                 );
             /*
