@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -13,16 +12,17 @@ namespace Forge.Framework.UI.Widgets {
         readonly Button _center;
         readonly Button _cursor;
         readonly TextBox _textBox;
-        string _text;
+        readonly Stopwatch _blinkTimer;
+        readonly int _xAnchor;
+        readonly int _width;
+        public string Text { get; private set; }
         bool _boxFocused;
-        Stopwatch _blinkTimer;
         int _cursorPosition;
-        int _xAnchor;
-        int _width;
-        
-        
+
+        public event Action<string> OnTextEntryFinalize;
+
         public InputBox(int x, int y, int width, string defaultText = ""){
-            _text = defaultText;
+            Text = defaultText;
             _boxFocused = false;
 
             _left = new Button(x, y, 2, 17, DepthLevel.Medium, "Materials/TextBoxLeft");
@@ -33,7 +33,7 @@ namespace Forge.Framework.UI.Widgets {
             _cursor.Enabled = false;
 
             _textBox = new TextBox(x + 2, y + 2, DepthLevel.High, Color.Black, width);
-            _textBox.SetText(_text);
+            _textBox.SetText(Text);
 
             _left.OnLeftClickDispatcher += identifier => OnClick();
             _center.OnLeftClickDispatcher += identifier => OnClick();
@@ -60,7 +60,7 @@ namespace Forge.Framework.UI.Widgets {
 
             wordDists.Add(0, 0);
             int chrIdx = 1;
-            foreach (var word in _text){
+            foreach (var word in Text){
                 str += word;
                 wordDists.Add(chrIdx, _textBox.Font.MeasureString(str).X);
                 chrIdx++;
@@ -113,11 +113,11 @@ namespace Forge.Framework.UI.Widgets {
                 ParseNumeric(state.KeyboardState, state.PrevState.KeyboardState, out c);
             }
             if (c != '`'){
-                string tempStr = _text.Insert(_cursorPosition, Char.ToString(c));
+                string tempStr = Text.Insert(_cursorPosition, Char.ToString(c));
 
                 if (_textBox.Font.MeasureString(tempStr).X < _width){
-                    _text = tempStr;
-                    _textBox.SetText(_text);
+                    Text = tempStr;
+                    _textBox.SetText(Text);
                     _cursorPosition++;
                     float diff = _textBox.Font.MeasureString(Char.ToString(c)).X;
                     _cursor.X += diff;
@@ -128,20 +128,58 @@ namespace Forge.Framework.UI.Widgets {
             #region key navigation
             if (_cursorPosition > 0){
                 if (state.KeyboardState.IsKeyDown(Keys.Left) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Left)){
-                    float diff = _textBox.Font.MeasureString(Char.ToString(_text[_cursorPosition - 1])).X;
+                    float diff = _textBox.Font.MeasureString(Char.ToString(Text[_cursorPosition - 1])).X;
                     _cursorPosition--;
                     _cursor.X -= diff;
                 }
             }
-            if (_cursorPosition < _text.Length){
+            if (_cursorPosition < Text.Length){
                 if (state.KeyboardState.IsKeyDown(Keys.Right) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Right)){
-                    float diff = _textBox.Font.MeasureString(Char.ToString(_text[_cursorPosition])).X;
+                    float diff = _textBox.Font.MeasureString(Char.ToString(Text[_cursorPosition])).X;
                     _cursorPosition++;
                     _cursor.X += diff;
                 }
             }
 
             #endregion
+
+            #region backspace
+
+            if (_cursorPosition > 0){
+                if (state.KeyboardState.IsKeyDown(Keys.Back) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Back)) {
+                    try {
+                        Text = Text.Substring(0, _cursorPosition - 1) + Text.Substring(_cursorPosition, Text.Length - _cursorPosition);
+                    }
+                    catch{
+                        Text = Text.Substring(0, _cursorPosition - 1);
+                    }
+                    _cursorPosition--;
+                    _cursor.X = (int)GetCursorPos(Text, _cursorPosition);
+                    _textBox.SetText(Text);
+                }
+            }
+
+            #endregion
+
+            #region entry-finalization
+
+            if (state.KeyboardState.IsKeyDown(Keys.Enter) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Enter)){
+                _cursor.Enabled = false;
+                _boxFocused = false;
+                _left.Alpha = 0.70f;
+                _right.Alpha = 0.70f;
+                _center.Alpha = 0.70f;
+                if (OnTextEntryFinalize != null){
+                    OnTextEntryFinalize(Text);
+                }
+            }
+
+            #endregion
+        }
+
+        float GetCursorPos(string str, int pos){
+            string sub = new string(str.Take(pos).ToArray());
+            return _xAnchor + _textBox.Font.MeasureString(sub).X;
         }
 
         bool ParseNumeric(KeyboardState state, KeyboardState prevState, out char result){
