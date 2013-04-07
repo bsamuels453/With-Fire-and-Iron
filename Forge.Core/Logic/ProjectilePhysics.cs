@@ -60,7 +60,7 @@ namespace Forge.Core.Logic{
         }
 
         public Projectile AddProjectile(Vector3 position, Vector3 angle, ObjectVariant collisionFilter){
-            var worldMatrix = Common.GetWorldMatrix(position, angle, _shotRadius*2);
+            var worldMatrix = Common.GetWorldTranslation(position, angle, _shotRadius*2);
             _defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
 
             var body = new RigidBody(_defaultShotCtor);

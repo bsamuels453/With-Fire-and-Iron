@@ -156,7 +156,7 @@ namespace Forge.Core.Airship {
         }
 
         void SetAirshipPosition(Vector3 position, Vector3 angle){
-            var worldMatrix = Common.GetWorldMatrix(position, angle, Length);
+            var worldMatrix = Common.GetWorldTranslation(position, angle, Length);
 
             foreach (var deck in Decks){
                 deck.WorldMatrix = worldMatrix;
