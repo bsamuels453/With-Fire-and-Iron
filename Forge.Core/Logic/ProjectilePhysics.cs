@@ -21,7 +21,7 @@ namespace Forge.Core.Logic{
             throw new Exception();
         }
 
-        public Projectile AddProjectile(Vector3 position, Vector3 velocity, float mass, ObjectVariant collisionFilter){
+        public Projectile AddProjectile(Vector3 position, Vector3 velocity, ObjectVariant collisionFilter){
             throw new NotImplementedException();
         }
 
@@ -30,7 +30,7 @@ namespace Forge.Core.Logic{
         public struct BoundingObject{
             public Action<Matrix> SetObjectMatrix;
             public Action Terminate;
-            public event Action<float, Vector3, Vector3> OnCollision;
+            public event Action<Vector3, Vector3> OnCollision;
         }
 
         #endregion
