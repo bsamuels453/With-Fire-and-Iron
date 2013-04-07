@@ -169,5 +169,13 @@ namespace Forge.Framework{
             }
             return retList;
         }
+
+        public static Matrix GetWorldMatrix(Vector3 position, Vector3 angle, float objLength){
+            var worldMatrix = Matrix.Identity;
+            worldMatrix *= Matrix.CreateTranslation(objLength / 2, 0, 0);
+            worldMatrix *= Matrix.CreateRotationX(angle.X)*Matrix.CreateRotationY(angle.Y)*Matrix.CreateRotationZ(angle.Z);
+            worldMatrix *= Matrix.CreateTranslation(position.X, position.Y, position.Z);
+            return worldMatrix;
+        }
     }
 }
