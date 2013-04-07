@@ -16,6 +16,8 @@ namespace Forge.Core.Airship {
         public Vector3 Angle;
         int _curDeck;
         int _numDecks;
+        Hardpoint[] _hardPoints;
+        HullIntegrityMesh _integrityMesh;
 
         public Vector3 Centroid;
         public GeometryBuffer<VertexPositionNormalTexture>[] Decks;

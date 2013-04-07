@@ -23,5 +23,10 @@ namespace Forge.Core.Airship {
         public void Terminate(){
             throw new NotImplementedException();
         }
+
+        //target will need to be converted to local coords
+        public void AimAt(Vector3 target){
+            throw new NotImplementedException();
+        }
     }
 }
