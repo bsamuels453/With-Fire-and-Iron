@@ -83,6 +83,10 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="BulletSharp, Version=2.81.0.0, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Bin\BulletSharp.dll</HintPath>
+    </Reference>
     <Reference Include="Cloo">
       <HintPath>..\lib\Cloo.dll</HintPath>
     </Reference>
