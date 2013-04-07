@@ -145,6 +145,9 @@
     <Compile Include="Airship\AirshipManagerState.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
+    <Compile Include="Airship\HullIntegrityMesh.cs" />
+    <Compile Include="Airship\HullSection.cs" />
+    <Compile Include="Logic\ProjectilePathTracer.cs" />
     <Compile Include="Logic\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
     <Compile Include="HullEditor\BezierCurve.cs" />
