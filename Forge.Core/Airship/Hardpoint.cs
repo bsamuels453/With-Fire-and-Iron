@@ -12,7 +12,7 @@ namespace Forge.Core.Airship {
         public Matrix WorldMatrix;
 
         //should side be inferred from aimdir?
-        public Hardpoint(Vector3 position, Vector3 aimDir, Side side, ProjectilePhysics.ObjectVariant enemyVariant){
+        public Hardpoint(Vector3 position, Vector3 aimDir, ProjectilePhysics.ObjectVariant enemyVariant){
             throw new NotImplementedException();
         }
 
@@ -22,11 +22,6 @@ namespace Forge.Core.Airship {
 
         public void Terminate(){
             throw new NotImplementedException();
-        }
-
-        public enum Side{
-            Port,
-            Starboard
         }
     }
 }
