@@ -144,6 +144,11 @@
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\AirshipManagerState.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
+    <Compile Include="Airship\Hardpoint.cs" />
+    <Compile Include="Airship\HullIntegrityMesh.cs" />
+    <Compile Include="Airship\HullSection.cs" />
+    <Compile Include="Logic\ProjectilePathTracer.cs" />
+    <Compile Include="Logic\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
     <Compile Include="HullEditor\BezierCurve.cs" />
     <Compile Include="HullEditor\BezierCurveCollection.cs" />
@@ -171,7 +176,7 @@
     <Compile Include="Util\Vec3Ref.cs" />
     <Compile Include="Util\XZPair.cs" />
     <Compile Include="GameState\PlayerState.cs" />
-    <Compile Include="TerrainManager\TerrainManager.cs" />
+    <Compile Include="TerrainManager\TerrainManagerState.cs" />
     <Compile Include="Logic\SharedStateData.cs" />
     <Compile Include="TerrainManager\TerrainChunk.cs" />
     <Compile Include="TerrainManager\TerrainGen.cs" />
