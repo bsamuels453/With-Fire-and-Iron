@@ -1,8 +1,10 @@
 #region
 
+using Forge.Core.Airship;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.HullEditor;
+using Forge.Core.TerrainManager;
 using Forge.Core.GameState;
 using Microsoft.Xna.Framework;
 
@@ -32,13 +34,13 @@ namespace Forge.Core{
                 nearPlaneDistance: 0.01f,
                 farPlaneDistance: 50000
                 );
-            /*
+            
             GamestateManager.UseGlobalRenderTarget = true;
             GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
-            GamestateManager.AddGameState(new TerrainManager());
+            GamestateManager.AddGameState(new TerrainManagerState());
             GamestateManager.AddGameState(new AirshipManagerState());
-            */
-            GamestateManager.AddGameState(new HullEditorState());
+            
+            //GamestateManager.AddGameState(new HullEditorState());
 
             IsMouseVisible = true;
             base.Initialize();

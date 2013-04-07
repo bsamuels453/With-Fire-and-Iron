@@ -8,10 +8,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Forge.Core.TerrainManager {
-    class TerrainManager : IGameState {
+    class TerrainManagerState : IGameState {
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
-        public TerrainManager(){
+        public TerrainManagerState(){
             GamestateManager.UseGlobalRenderTarget = true;
             _loadedChunks = new List<TerrainChunk>();
             /*
