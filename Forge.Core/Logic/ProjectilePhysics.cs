@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using BulletSharp;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
@@ -32,6 +33,7 @@ namespace Forge.Core.Logic{
         readonly RigidBodyConstructionInfo _defaultShotCtor;
         readonly List<RigidBody> _projectiles;
         readonly DiscreteDynamicsWorld _worldDynamics;
+        readonly Stopwatch _updateInterval;
 
         public ProjectilePhysics(){
             const float gravity = -10;
@@ -49,6 +51,8 @@ namespace Forge.Core.Logic{
             var shape = new SphereShape(_shotRadius);
             var nullMotion = new DefaultMotionState(Matrix.Identity);
             _defaultShotCtor = new RigidBodyConstructionInfo(_shotMass, nullMotion, shape);
+            _updateInterval = new Stopwatch();
+            _updateInterval.Start();
         }
 
         public BoundingObjectHandle AddBoundingObject(BoundingObject[] boundingObjects, ObjectVariant variant, CollisionCallback collisionCallback){
@@ -77,14 +81,26 @@ namespace Forge.Core.Logic{
 
             var retInterface = new Projectile(
                 getPosition: () => body.CenterOfMassPosition,
-                terminate: () => _projectiles.Remove(body)
+                terminate: () =>{
+                               _projectiles.Remove(body);
+                               _worldDynamics.RemoveRigidBody(body);
+                               body.Dispose();
+                           }
                 );
 
             return retInterface;
         }
 
-        public void Update(double timeDelta){
-            _worldDynamics.StepSimulation((float) timeDelta, 10);
+        public void Dispose(){
+            _defaultShotCtor.Dispose();
+            _worldDynamics.Dispose();
+        }
+
+        public void Update(){
+            _updateInterval.Stop();
+            float timeDelta = _updateInterval.ElapsedMilliseconds * 0.001f;
+            _worldDynamics.StepSimulation(timeDelta, 100);
+            _updateInterval.Restart();
 
             //check for collisions
             foreach (var projectileDat in _projectiles){
@@ -94,7 +110,6 @@ namespace Forge.Core.Logic{
 
                     var invShipMtx = Matrix.Invert(shipMtx);
                     var projectilePos = Common.MultMatrix(invShipMtx, projectileMtx.Translation);
-
 
                     foreach (var boundingObj in shipDat.BoundingObjects){
                         //fast check to see if the projectile is in same area as the object
@@ -184,13 +199,19 @@ namespace Forge.Core.Logic{
 
         #region Nested type: Projectile
 
-        public class Projectile{
+        public class Projectile : IEquatable<Projectile> {
+            //why these delegates? remove them later
             public readonly Func<Vector3> GetPosition;
             public readonly Action Terminate; //not sure when this is actually needed. might be better to do a timeout
             //public event Action<float, Vector3, Vector3> OnCollision; //theres no real reason for the projectile to care about OnCollision (yet)
             public Projectile(Func<Vector3> getPosition, Action terminate){
                 GetPosition = getPosition;
                 Terminate = terminate;
+            }
+
+            public bool Equals(Projectile other){
+                //kinda hacky
+                return GetPosition == other.GetPosition && Terminate == other.Terminate;
             }
         }
 
