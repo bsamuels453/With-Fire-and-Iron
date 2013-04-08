@@ -15,7 +15,7 @@ namespace Forge.Core.Airship{
         //acts as the maanger of the boundingobject for physics
         //generates boundingobject spheres
 
-        ProjectilePhysics.BoundingObject _boundingObject;
+        ProjectilePhysics.BoundingObjectHandle _boundingObjectHandle;
         Func<HullSection, bool> _disableHullSection;
         Func<HullSection, bool> _enableHullSection;
         ObjectBuffer<HullSection> _hullDamageOverlay;
