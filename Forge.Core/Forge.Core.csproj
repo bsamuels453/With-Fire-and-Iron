@@ -173,6 +173,7 @@
     <Compile Include="Logic\ICamera.cs" />
     <Compile Include="Logic\ObjectIdentifier.cs" />
     <Compile Include="Logic\SubmarineCamera.cs" />
+    <None Include="Scrap.cs" />
     <Compile Include="Util\Bezier.cs" />
     <Compile Include="Util\Interpolate.cs" />
     <Compile Include="Util\MeshHelper.cs" />
