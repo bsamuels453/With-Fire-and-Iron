@@ -192,6 +192,14 @@ namespace Forge.Framework{
                 );
         }
 
+        /// <summary>
+        /// these references are to prevent CLR from calling Vector3/Ray's copy constructor
+        /// </summary>
+        /// <param name="ray"></param>
+        /// <param name="vertex1"></param>
+        /// <param name="vertex2"></param>
+        /// <param name="vertex3"></param>
+        /// <param name="result">this is the only reference type that actually has reference operations performed on it</param>
         public static void RayIntersectsTriangle(
             ref Ray ray,
             ref Vector3 vertex1,
