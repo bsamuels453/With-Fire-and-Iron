@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Forge.Core.Logic;
 using Forge.Framework.Draw;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
@@ -6,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace Forge.Core.Airship {
-    internal class Airship{
+    internal class Airship : IDisposable{
         public float Length;
         public float MaxAscentSpeed;
         public float MaxMovementSpeed;
@@ -16,8 +19,8 @@ namespace Forge.Core.Airship {
         public Vector3 Angle;
         int _curDeck;
         int _numDecks;
-        Hardpoint[] _hardPoints;
-        HullIntegrityMesh _integrityMesh;
+        List<Hardpoint> _hardPoints;
+        ProjectilePhysics _projectilePhysics;
 
         public Vector3 Centroid;
         public GeometryBuffer<VertexPositionNormalTexture>[] Decks;
@@ -45,6 +48,11 @@ namespace Forge.Core.Airship {
             MaxTurnSpeed = 0.005f;
             Angle = new Vector3(0, 0, 0);
             Position = new Vector3(Length/3, 1000, 0);
+
+            _projectilePhysics = new ProjectilePhysics();
+
+            _hardPoints = new List<Hardpoint>();
+            _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.ObjectVariant.EnemyShip));
         }
 
         public enum TurnState{
@@ -114,7 +122,19 @@ namespace Forge.Core.Airship {
             Position.X += unitVec.X * engineDutyCycle* MaxMovementSpeed;
             Position.Z += -unitVec.Y * engineDutyCycle* MaxMovementSpeed;
             Position.Y += altitudeDutyCycle * MaxAscentSpeed;
-            SetAirshipPosition(Position, Angle);
+            var worldMatrix = SetAirshipPosition(Position, Angle);
+
+            foreach (var hardPoint in _hardPoints){
+                hardPoint.Update(timeDelta, worldMatrix);
+            }
+
+            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space)){
+                foreach (var hardpoint in _hardPoints){
+                    hardpoint.Fire();
+                }
+            }
+            _projectilePhysics.Update();
+
         }
 
         public void AddVisibleLayer(int _){
@@ -155,7 +175,7 @@ namespace Forge.Core.Airship {
             }
         }
 
-        void SetAirshipPosition(Vector3 position, Vector3 angle){
+        Matrix SetAirshipPosition(Vector3 position, Vector3 angle){
             var worldMatrix = Common.GetWorldTranslation(position, angle, Length);
 
             foreach (var deck in Decks){
@@ -164,7 +184,11 @@ namespace Forge.Core.Airship {
             foreach (var layer in HullLayers){
                 layer.WorldMatrix = worldMatrix;
             }
+            return worldMatrix;
         }
 
+        public void Dispose(){
+            _projectilePhysics.Dispose();
+        }
     }
 }
