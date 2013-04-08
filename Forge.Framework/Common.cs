@@ -177,5 +177,87 @@ namespace Forge.Framework{
             worldMatrix *= Matrix.CreateTranslation(position.X, position.Y, position.Z);
             return worldMatrix;
         }
+
+        /// <summary>
+        /// multiplies a 4x4 and 1x3 matrix together for use in projection calcs
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static Vector3 MultMatrix(Matrix m, Vector3 v) {
+            return new Vector3(
+                v.X * m.M11 + v.Y * m.M21 + v.Z * m.M31 + m.M41,
+                v.X * m.M12 + v.Y * m.M22 + v.Z * m.M32 + m.M42,
+                v.X * m.M13 + v.Y * m.M23 + v.Z * m.M33 + m.M43
+                );
+        }
+
+        public static void RayIntersectsTriangle(
+            ref Ray ray,
+            ref Vector3 vertex1,
+            ref Vector3 vertex2,
+            ref Vector3 vertex3, out float? result) {
+            // Compute vectors along two edges of the triangle.
+            Vector3 edge1, edge2;
+
+            Vector3.Subtract(ref vertex2, ref vertex1, out edge1);
+            Vector3.Subtract(ref vertex3, ref vertex1, out edge2);
+
+            // Compute the determinant.
+            Vector3 directionCrossEdge2;
+            Vector3.Cross(ref ray.Direction, ref edge2, out directionCrossEdge2);
+
+            float determinant;
+            Vector3.Dot(ref edge1, ref directionCrossEdge2, out determinant);
+
+            // If the ray is parallel to the triangle plane, there is no collision.
+            if (determinant > -float.Epsilon && determinant < float.Epsilon) {
+                result = null;
+                return;
+            }
+
+            float inverseDeterminant = 1.0f / determinant;
+
+            // Calculate the U parameter of the intersection point.
+            Vector3 distanceVector;
+            Vector3.Subtract(ref ray.Position, ref vertex1, out distanceVector);
+
+            float triangleU;
+            Vector3.Dot(ref distanceVector, ref directionCrossEdge2, out triangleU);
+            triangleU *= inverseDeterminant;
+
+            // Make sure it is inside the triangle.
+            if (triangleU < 0 || triangleU > 1) {
+                result = null;
+                return;
+            }
+
+            // Calculate the V parameter of the intersection point.
+            Vector3 distanceCrossEdge1;
+            Vector3.Cross(ref distanceVector, ref edge1, out distanceCrossEdge1);
+
+            float triangleV;
+            Vector3.Dot(ref ray.Direction, ref distanceCrossEdge1, out triangleV);
+            triangleV *= inverseDeterminant;
+
+            // Make sure it is inside the triangle.
+            if (triangleV < 0 || triangleU + triangleV > 1) {
+                result = null;
+                return;
+            }
+
+            // Compute the distance along the ray to the triangle.
+            float rayDistance;
+            Vector3.Dot(ref edge2, ref distanceCrossEdge1, out rayDistance);
+            rayDistance *= inverseDeterminant;
+
+            // Is the triangle behind the ray origin?
+            if (rayDistance < 0) {
+                result = null;
+                return;
+            }
+
+            result = rayDistance;
+        }
     }
 }
