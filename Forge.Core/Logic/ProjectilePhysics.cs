@@ -6,11 +6,12 @@ using System.Diagnostics;
 using BulletSharp;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
+using IDisposable = System.IDisposable;
 
 #endregion
 
 namespace Forge.Core.Logic{
-    internal class ProjectilePhysics{
+    internal class ProjectilePhysics : IDisposable{
         #region Delegates
 
         public delegate void CollisionCallback(Vector3 intersectPos, Vector3 velocity);
@@ -92,6 +93,10 @@ namespace Forge.Core.Logic{
         }
 
         public void Dispose(){
+            foreach (var body in _projectiles) {
+                _worldDynamics.RemoveRigidBody(body);
+                body.Dispose();
+            }
             _defaultShotCtor.Dispose();
             _worldDynamics.Dispose();
         }

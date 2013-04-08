@@ -79,7 +79,7 @@ namespace Forge.Core.Airship {
         }
 
         public void Dispose() {
-            //throw new NotImplementedException();
+            _airship.Dispose();
         }
     }
 }
