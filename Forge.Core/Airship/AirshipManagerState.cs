@@ -67,7 +67,10 @@ namespace Forge.Core.Airship {
             _airship.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_airship.Position);
             _cameraController.Update(ref state, timeDelta);
-            int absSpeed = 6 - (_airship.EngineSpeed + 3);
+
+            int incremental = (int)((_airship.Velocity / _airship.ModelAttributes.MaxForwardSpeed) * 3);
+
+            int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
                 button.Alpha = 0.65f;
             }
@@ -79,7 +82,7 @@ namespace Forge.Core.Airship {
         }
 
         public void Dispose() {
-            //throw new NotImplementedException();
+            _airship.Dispose();
         }
     }
 }

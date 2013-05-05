@@ -120,6 +120,7 @@
   <ItemGroup>
     <Compile Include="Angle3.cs" />
     <Compile Include="Common.cs" />
+    <Compile Include="DebugConsole.cs" />
     <Compile Include="Draw\BaseGeometryBuffer.cs" />
     <Compile Include="Draw\DebugText.cs" />
     <Compile Include="Draw\GeometryBuffer.cs" />

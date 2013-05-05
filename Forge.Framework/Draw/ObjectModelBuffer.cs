@@ -144,6 +144,16 @@ namespace Forge.Framework.Draw{
             buffer.ClearObjects();
         }
 
+        public void SetObjectTransform(IEquatable<T> identifier, Matrix transform){
+            var objLi = from t in _objectData
+                where t.Identifier == identifier
+                select t;
+
+            foreach (var obj in objLi){
+                obj.Transform = transform;
+            }
+        }
+
         public void Dispose(){
             if (!_disposed){
                 //RenderTarget.Buffers.Remove(this);
@@ -158,13 +168,11 @@ namespace Forge.Framework.Draw{
         #region Nested type: ObjectData
 
         class ObjectData{
-            // ReSharper disable MemberCanBePrivate.Local
             public readonly IEquatable<T> Identifier;
             public readonly Model Model;
             public readonly int ObjectOffset;
-            public readonly Matrix Transform;
+            public Matrix Transform;
             public bool Enabled;
-            // ReSharper restore MemberCanBePrivate.Local
 
             public ObjectData(IEquatable<T> identifier, int objectOffset, Matrix transform, Model model){
                 Enabled = true;

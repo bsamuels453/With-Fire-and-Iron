@@ -58,7 +58,7 @@ namespace Forge.Framework.Draw{
 
         public void Dispose(){
             if (!_isDisposed){
-                RenderTarget.Buffers.Remove(this);
+                //RenderTarget.Buffers.Remove(this);
                 BaseIndexBuffer.Dispose();
                 BaseVertexBuffer.Dispose();
                 _isDisposed = true;
