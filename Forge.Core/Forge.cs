@@ -69,6 +69,7 @@ namespace Forge.Core{
         protected override void UnloadContent(){
             Gbl.CommitHashChanges();
             GamestateManager.ClearAllStates();
+            DebugConsole.Dispose();
         }
 
         protected override void Update(GameTime gameTime){

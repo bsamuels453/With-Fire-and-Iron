@@ -1,40 +1,71 @@
 ﻿#region
 
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Net.Sockets;
+using System.Threading;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using XNAGameConsole;
 
 #endregion
 
 namespace Forge.Framework{
     public static class DebugConsole{
-        static SpriteBatch _target;
-        static GameConsole _console;
+        static TcpClient _client;
+        static StreamWriter _consoleWriter;
+        static StreamWriter _fileWriter;
+        static bool _externConsoleEnabled;
+        static Process _consoleProcess;
 
         public static void InitalizeConsole(Game game){
-            _target = new SpriteBatch(Gbl.Device);
+            _consoleProcess = new Process();
+            _consoleProcess.StartInfo.FileName = "DebugConsole.exe";
+            _consoleProcess.StartInfo.UseShellExecute = true;
+            _consoleProcess.Start();
+            Thread.Sleep(20); //takes a bit of time for console to initalize, so hold it here so none of the startup debug info is lost
 
-            var options = new GameConsoleOptions();
-            options.OpenOnWrite = true;
-            _console = new GameConsole(game, _target, new GameConsoleOptions{
-                Font = Gbl.ContentManager.Load<SpriteFont>("Fonts/SpriteFont"),
-                FontColor = Color.LawnGreen,
-                Prompt = ">",
-                PromptColor = new Color(0, 0, 0, 0),
-                CursorColor = new Color(0, 0, 0, 0),
-                BackgroundColor = new Color(0, 0, 0, 70), //Color.BLACK with transparency
-                PastCommandOutputColor = Color.White,
-                BufferColor = new Color(0, 0, 0, 0)
-            });
-            _console.Options.Padding = 1;
-            _console.Options.Margin = 200;
-            _console.Options.ToggleKey = Keys.OemTilde;
-            _console.Options.Height = 80;
+            _fileWriter = new StreamWriter("debuglog.txt");
+            _fileWriter.AutoFlush = true;
+
+            _client = new TcpClient();
+            AsyncCallback callback = ar => { };
+            var asyncResult = _client.BeginConnect("127.0.0.1", 10965, callback, null);
+
+            asyncResult.AsyncWaitHandle.WaitOne(200);
+            if (asyncResult.IsCompleted){
+                _externConsoleEnabled = true;
+                _consoleWriter = new StreamWriter(_client.GetStream());
+                _consoleWriter.AutoFlush = true;
+            }
+            else{
+                _externConsoleEnabled = false;
+            }
         }
 
         public static void WriteLine(string s){
-            _console.WriteLine(s);
+            if (_externConsoleEnabled){
+                try{
+                    _consoleWriter.WriteLine(s);
+                }
+                catch{
+                    _externConsoleEnabled = false;
+                }
+            }
+            _fileWriter.WriteLine(s);
+        }
+
+        public static void Dispose(){
+            if (_externConsoleEnabled){
+                try{
+                    _consoleWriter.WriteLine("KILLCONSOLE");
+                }
+                catch{
+
+                }
+                _consoleWriter.Close();
+                _client.Close();
+            }
+            _fileWriter.Close();
         }
     }
 }

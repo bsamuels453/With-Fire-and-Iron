@@ -26,11 +26,11 @@ namespace Forge.Core.GameState{
             _clampMouse = true;
             _skipNextMouseUpdate = true;
 
-            DebugText.CreateText("x", 0, 300);
-            DebugText.CreateText("y", 0, 310);
-            DebugText.CreateText("z", 0, 320);
-            DebugText.CreateText("pitch", 0, 330);
-            DebugText.CreateText("yaw", 0, 340);
+            DebugText.CreateText("x", 0, 0);
+            DebugText.CreateText("y", 0, 10);
+            DebugText.CreateText("z", 0, 20);
+            DebugText.CreateText("pitch", 0, 30);
+            DebugText.CreateText("yaw", 0, 40);
         }
 
         #region IGameState Members
