@@ -27,9 +27,8 @@ namespace Forge.Core.Logic{
 
         #endregion
 
-        const float _firingForce = 5000;
-        const float _shotRadius = 0.1f;
-        const float _shotMass = 1;
+        ProjectileAttributes _defProjectile;
+
         readonly List<CollisionObjectCollection> _boundingObjData;
         readonly RigidBodyConstructionInfo _defaultShotCtor;
         readonly List<RigidBody> _projectiles;
@@ -37,6 +36,7 @@ namespace Forge.Core.Logic{
         readonly Stopwatch _updateInterval;
 
         public ProjectilePhysics(){
+            _defProjectile = new ProjectileAttributes(113832, 0.0285f, 2f);
             const float gravity = -10;
             var broadphase = new DbvtBroadphase();
             var collisionConfig = new DefaultCollisionConfiguration();
@@ -49,9 +49,9 @@ namespace Forge.Core.Logic{
             _boundingObjData = new List<CollisionObjectCollection>();
             _projectiles = new List<RigidBody>();
 
-            var shape = new SphereShape(_shotRadius);
+            var shape = new SphereShape(_defProjectile.Radius);
             var nullMotion = new DefaultMotionState(Matrix.Identity);
-            _defaultShotCtor = new RigidBodyConstructionInfo(_shotMass, nullMotion, shape);
+            _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
             _updateInterval = new Stopwatch();
             _updateInterval.Start();
         }
@@ -71,11 +71,11 @@ namespace Forge.Core.Logic{
         }
 
         public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
-            var worldMatrix = Common.GetWorldTranslation(position, angle, _shotRadius*2);
+            var worldMatrix = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
             _defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
 
             var body = new RigidBody(_defaultShotCtor);
-            body.ApplyCentralForce(angle*_firingForce);
+            body.ApplyCentralForce(angle*_defProjectile.FiringForce);
             _worldDynamics.AddRigidBody(body);
 
             _projectiles.Add(body);
@@ -119,7 +119,7 @@ namespace Forge.Core.Logic{
                     foreach (var boundingObj in shipDat.CollisionObjects){
                         //fast check to see if the projectile is in same area as the object
                         foreach (var point in boundingObj.IntersectPoints){
-                            if (Vector3.Distance(projectilePos, point) < _shotRadius){
+                            if (Vector3.Distance(projectilePos, point) < _defProjectile.Radius){
                                 //object confirmed to be in general area
                                 //now check to see if its movement path intersects the object's triangles
                                 var worldPt = Common.MultMatrix(shipMtx, point);
@@ -221,5 +221,16 @@ namespace Forge.Core.Logic{
         }
 
         #endregion
+
+        public struct ProjectileAttributes{
+            public readonly float FiringForce;
+            public readonly float Radius;
+            public readonly float Mass;
+            public ProjectileAttributes(float firingForce, float radius, float mass){
+                FiringForce = firingForce;
+                Radius = radius;
+                Mass = mass;
+            }
+        }
     }
 }
