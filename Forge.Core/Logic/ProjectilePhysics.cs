@@ -167,7 +167,9 @@ namespace Forge.Core.Logic{
         #endregion
 
         #region Nested type: CollisionObjectCollection
-
+        /// <summary>
+        /// Internal class that's used to group together collision objects, such as the plates on the side of an airship, into one class.
+        /// </summary>
         class CollisionObjectCollection{
             public readonly CollisionObject[] CollisionObjects;
             public readonly EntityVariant Type;
@@ -189,7 +191,10 @@ namespace Forge.Core.Logic{
         #endregion
 
         #region Nested type: CollisionObjectHandle
-
+        
+        /// <summary>
+        /// Returned on the creation of a collision object. This class allows external classes to manipulate the collision object it created.
+        /// </summary>
         public class CollisionObjectHandle{
             public readonly Action<Matrix> SetObjectMatrix;
             public readonly Action Terminate;
@@ -203,7 +208,9 @@ namespace Forge.Core.Logic{
         #endregion
 
         #region Nested type: Projectile
-
+        /// <summary>
+        /// Returned on the creation of a projectile. This class is a handle used by external gamestates to manipulate and read data on the projectile it created.
+        /// </summary>
         public class Projectile : IEquatable<Projectile> {
             //why these delegates? remove them later
             public readonly Func<Vector3> GetPosition;
@@ -222,6 +229,9 @@ namespace Forge.Core.Logic{
 
         #endregion
 
+        /// <summary>
+        /// This class is used to define the attributes of each projectile.
+        /// </summary>
         public struct ProjectileAttributes{
             public readonly float FiringForce;
             public readonly float Radius;
