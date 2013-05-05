@@ -16,6 +16,7 @@ using Microsoft.Xna.Framework;
 namespace Forge.Core{
     public class Forge : Game{
         readonly GraphicsDeviceManager _graphics;
+
         public Forge(){
             Content.RootDirectory = "Content";
             _graphics = new GraphicsDeviceManager(this){
@@ -37,6 +38,8 @@ namespace Forge.Core{
                 nearPlaneDistance: 0.01f,
                 farPlaneDistance: 50000
                 );
+            DebugConsole.InitalizeConsole(this);
+
             /*
             var p = new ProjectilePhysics();
             var proj = p.AddProjectile(new Vector3(0, 0, 200), new Vector3(0, 0, 0), ProjectilePhysics.EntityVariant.EnemyShip);
@@ -57,6 +60,7 @@ namespace Forge.Core{
 
             IsMouseVisible = true;
             base.Initialize();
+            DebugConsole.WriteLine("Game initalized");
         }
 
         protected override void LoadContent(){
