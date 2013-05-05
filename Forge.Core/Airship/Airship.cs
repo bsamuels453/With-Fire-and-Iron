@@ -52,7 +52,7 @@ namespace Forge.Core.Airship {
             _projectilePhysics = new ProjectilePhysics();
 
             _hardPoints = new List<Hardpoint>();
-            _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.ObjectVariant.EnemyShip));
+            _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
         }
 
         public enum TurnState{

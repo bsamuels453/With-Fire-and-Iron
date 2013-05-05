@@ -14,7 +14,7 @@ namespace Forge.Core.Airship{
     internal class Hardpoint{
         readonly List<ProjectilePhysics.Projectile> _activeProjectiles;
         readonly Vector3 _aimDir;
-        readonly ProjectilePhysics.ObjectVariant _enemyVariant;
+        readonly ProjectilePhysics.EntityVariant _enemyVariant;
         readonly Vector3 _localPosition;
         readonly ProjectilePhysics _projectileEngine;
         readonly ObjectModelBuffer<ProjectilePhysics.Projectile> _projectileBuff;
@@ -26,7 +26,7 @@ namespace Forge.Core.Airship{
         /// <param name="aimDir"> Direction in which the cannon fires. </param>
         /// <param name="projectileEngine"> </param>
         /// <param name="enemyVariant"> The kind of enemy that this hardpoint can damage </param>
-        public Hardpoint(Vector3 position, Vector3 aimDir, ProjectilePhysics projectileEngine, ProjectilePhysics.ObjectVariant enemyVariant){
+        public Hardpoint(Vector3 position, Vector3 aimDir, ProjectilePhysics projectileEngine, ProjectilePhysics.EntityVariant enemyVariant){
             _localPosition = position;
             _aimDir = aimDir;
             _projectileEngine = projectileEngine;

@@ -18,9 +18,9 @@ namespace Forge.Core.Logic{
 
         #endregion
 
-        #region ObjectVariant enum
+        #region EntityVariant enum
 
-        public enum ObjectVariant{
+        public enum EntityVariant{
             EnemyShip,
             AllyShip
         }
@@ -28,9 +28,9 @@ namespace Forge.Core.Logic{
         #endregion
 
         const float _firingForce = 5000;
-        const float _shotRadius = 0.5f;
+        const float _shotRadius = 0.1f;
         const float _shotMass = 1;
-        readonly List<BoundingObjectCollection> _boundingObjData;
+        readonly List<CollisionObjectCollection> _boundingObjData;
         readonly RigidBodyConstructionInfo _defaultShotCtor;
         readonly List<RigidBody> _projectiles;
         readonly DiscreteDynamicsWorld _worldDynamics;
@@ -46,7 +46,7 @@ namespace Forge.Core.Logic{
 
             _worldDynamics.Gravity = new Vector3(0, gravity, 0);
 
-            _boundingObjData = new List<BoundingObjectCollection>();
+            _boundingObjData = new List<CollisionObjectCollection>();
             _projectiles = new List<RigidBody>();
 
             var shape = new SphereShape(_shotRadius);
@@ -56,10 +56,10 @@ namespace Forge.Core.Logic{
             _updateInterval.Start();
         }
 
-        public BoundingObjectHandle AddBoundingObject(BoundingObject[] boundingObjects, ObjectVariant variant, CollisionCallback collisionCallback){
-            var objInternalData = new BoundingObjectCollection(boundingObjects, variant);
+        public CollisionObjectHandle AddCollisionObject(CollisionObject[] collisionObjects, EntityVariant variant, CollisionCallback collisionCallback){
+            var objInternalData = new CollisionObjectCollection(collisionObjects, variant);
 
-            var objPublicInterface = new BoundingObjectHandle(
+            var objPublicInterface = new CollisionObjectHandle(
                 setObjectMatrix: matrix => objInternalData.WorldMatrix = matrix,
                 terminate: () => _boundingObjData.Remove(objInternalData)
                 );
@@ -70,7 +70,7 @@ namespace Forge.Core.Logic{
             return objPublicInterface;
         }
 
-        public Projectile AddProjectile(Vector3 position, Vector3 angle, ObjectVariant collisionFilter){
+        public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
             var worldMatrix = Common.GetWorldTranslation(position, angle, _shotRadius*2);
             _defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
 
@@ -116,7 +116,7 @@ namespace Forge.Core.Logic{
                     var invShipMtx = Matrix.Invert(shipMtx);
                     var projectilePos = Common.MultMatrix(invShipMtx, projectileMtx.Translation);
 
-                    foreach (var boundingObj in shipDat.BoundingObjects){
+                    foreach (var boundingObj in shipDat.CollisionObjects){
                         //fast check to see if the projectile is in same area as the object
                         foreach (var point in boundingObj.IntersectPoints){
                             if (Vector3.Distance(projectilePos, point) < _shotRadius){
@@ -154,23 +154,23 @@ namespace Forge.Core.Logic{
             }
         }
 
-        #region Nested type: BoundingObject
+        #region Nested type: CollisionObject
 
         /// <summary>
         ///   Used to define a collision object. IntersectPoints are used for fast-checking whether or not projectiles intersect this object.
         /// </summary>
-        public class BoundingObject{
+        public class CollisionObject{
             public Vector3[] IntersectPoints;
             public Vector3[] Vertexes;
         }
 
         #endregion
 
-        #region Nested type: BoundingObjectCollection
+        #region Nested type: CollisionObjectCollection
 
-        class BoundingObjectCollection{
-            public readonly BoundingObject[] BoundingObjects;
-            public readonly ObjectVariant Type;
+        class CollisionObjectCollection{
+            public readonly CollisionObject[] CollisionObjects;
+            public readonly EntityVariant Type;
 
             /// <summary>
             ///   Position of target sphere, velocity of projectile relative to sphere Implement projectile relative speed multiplier here
@@ -179,8 +179,8 @@ namespace Forge.Core.Logic{
 
             public Matrix WorldMatrix;
 
-            public BoundingObjectCollection(BoundingObject[] boundingObjects, ObjectVariant type){
-                BoundingObjects = boundingObjects;
+            public CollisionObjectCollection(CollisionObject[] collisionObjects, EntityVariant type){
+                CollisionObjects = collisionObjects;
                 Type = type;
                 WorldMatrix = Matrix.Identity;
             }
@@ -188,13 +188,13 @@ namespace Forge.Core.Logic{
 
         #endregion
 
-        #region Nested type: BoundingObjectHandle
+        #region Nested type: CollisionObjectHandle
 
-        public class BoundingObjectHandle{
+        public class CollisionObjectHandle{
             public readonly Action<Matrix> SetObjectMatrix;
             public readonly Action Terminate;
 
-            public BoundingObjectHandle(Action<Matrix> setObjectMatrix, Action terminate){
+            public CollisionObjectHandle(Action<Matrix> setObjectMatrix, Action terminate){
                 SetObjectMatrix = setObjectMatrix;
                 Terminate = terminate;
             }
