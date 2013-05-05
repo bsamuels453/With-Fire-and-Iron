@@ -148,10 +148,13 @@
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\AirshipController.cs" />
     <Compile Include="Airship\AirshipManagerState.cs" />
+    <Compile Include="Airship\AirshipMovementState.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
     <Compile Include="Airship\HullIntegrityMesh.cs" />
     <Compile Include="Airship\HullSection.cs" />
+    <Compile Include="Airship\ModelAttributes.cs" />
+    <Compile Include="Airship\PlayerAirshipController.cs" />
     <Compile Include="Logic\ProjectilePathTracer.cs" />
     <Compile Include="Logic\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
