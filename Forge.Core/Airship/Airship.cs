@@ -15,124 +15,68 @@ namespace Forge.Core.Airship {
         public float MaxMovementSpeed;
         public float MaxTurnSpeed;
 
-        public Vector3 Position;
-        public Vector3 Angle;
+        public ModelAttributes ModelAttributes { get; private set; }
+
         int _curDeck;
-        int _numDecks;
-        List<Hardpoint> _hardPoints;
-        ProjectilePhysics _projectilePhysics;
+        readonly int _numDecks;
+        readonly List<Hardpoint> _hardPoints;
+        readonly ProjectilePhysics _projectilePhysics;
+        readonly AirshipController _controller;
 
         public Vector3 Centroid;
         public GeometryBuffer<VertexPositionNormalTexture>[] Decks;
         public GeometryBuffer<VertexPositionNormalTexture>[] HullLayers;
 
-        public TurnState CurTurnState;
+        public Vector3 Position{
+            get { return _controller.Position; }
+        }
 
-        int _engineSpeed;
-
-        public int EngineSpeed{
-            get { return _engineSpeed; }
-            set{
-                if (value <= 3 && value >= -2){
-                    _engineSpeed = value;
-                }
-            }
+        public float Velocity{
+            get { return _controller.Velocity; }
         }
 
         public Airship(){
             _curDeck = 0;
             _numDecks = 4;
-            Length = 50;
-            MaxAscentSpeed = 1;
-            MaxMovementSpeed = 1;
-            MaxTurnSpeed = 0.005f;
-            Angle = new Vector3(0, 0, 0);
-            Position = new Vector3(Length/3, 1000, 0);
 
             _projectilePhysics = new ProjectilePhysics();
 
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
-        }
 
-        public enum TurnState{
-            TurningLeft,
-            TurningRight,
-            Stable
+            var modelAttribs = new ModelAttributes();
+            modelAttribs.Length = 50;
+            modelAttribs.MaxAscentSpeed = 10;
+            modelAttribs.MaxForwardSpeed = 30;
+            modelAttribs.MaxReverseSpeed = 10;
+            modelAttribs.MaxTurnSpeed = 4f;
+            ModelAttributes = modelAttribs;
+
+            var movementState = new AirshipMovementState();
+            movementState.Angle = new Vector3(0, 0, 0);
+            movementState.CurPosition = new Vector3(Length / 3, 1000, 0);
+
+            _controller = new PlayerAirshipController(
+                SetAirshipWMatrix,
+                modelAttribs,
+                movementState
+            );
         }
 
         public void Update(ref InputState state, double timeDelta){
-            #region input
+            _controller.Update(ref state, timeDelta);
 
-            var keyState = state.KeyboardState;
-            var prevKeyState = state.PrevState.KeyboardState;
 
-            if (keyState.IsKeyUp(Keys.W) && prevKeyState.IsKeyDown(Keys.W)){
-                EngineSpeed++;
-            }
-            if (keyState.IsKeyUp(Keys.S) && prevKeyState.IsKeyDown(Keys.S)){
-                if (EngineSpeed > 0) {
-                    EngineSpeed = 0;
-                }
-                else{
-                    EngineSpeed--;
-                }
-            }
-
-            int altitudeSpeed = 0;
-            if (keyState.IsKeyDown(Keys.LeftShift)) {
-                altitudeSpeed = 1;
-            }
-            if (keyState.IsKeyDown(Keys.LeftControl)) {
-                altitudeSpeed = -1;
-            }
-            bool isTurning = false;
-            if (keyState.IsKeyDown(Keys.A)) {
-                CurTurnState = TurnState.TurningLeft;
-                isTurning = true;
-            }
-            if (keyState.IsKeyDown(Keys.D)) {
-                CurTurnState = TurnState.TurningRight;
-                isTurning = true;
-            }
-            if (!isTurning){
-                CurTurnState = TurnState.Stable;
-            }
-
-            #endregion
-
-            float engineDutyCycle = (float) _engineSpeed/3;
-            float altitudeDutyCycle = altitudeSpeed;
-
-            int turnValue = 0;
-            switch (CurTurnState){
-                case TurnState.Stable:
-                    turnValue = 0;
-                    break;
-                case TurnState.TurningLeft:
-                    turnValue = 1;
-                    break;
-                case TurnState.TurningRight:
-                    turnValue = -1;
-                    break;
-            }
-
-            Angle.Y += turnValue * MaxTurnSpeed;
-            var unitVec = Common.GetComponentFromAngle(Angle.Y, 1);
-            Position.X += unitVec.X * engineDutyCycle* MaxMovementSpeed;
-            Position.Z += -unitVec.Y * engineDutyCycle* MaxMovementSpeed;
-            Position.Y += altitudeDutyCycle * MaxAscentSpeed;
-            var worldMatrix = SetAirshipPosition(Position, Angle);
 
             foreach (var hardPoint in _hardPoints){
-                hardPoint.Update(timeDelta, worldMatrix);
+                hardPoint.Update(timeDelta);
             }
-
-            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space)){
-                foreach (var hardpoint in _hardPoints){
+            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space)) {
+                foreach (var hardpoint in _hardPoints) {
                     hardpoint.Fire();
                 }
             }
+
             _projectilePhysics.Update();
 
         }
@@ -175,16 +119,17 @@ namespace Forge.Core.Airship {
             }
         }
 
-        Matrix SetAirshipPosition(Vector3 position, Vector3 angle){
-            var worldMatrix = Common.GetWorldTranslation(position, angle, Length);
-
-            foreach (var deck in Decks){
+        void SetAirshipWMatrix(Matrix worldMatrix) {
+            foreach (var deck in Decks) {
                 deck.WorldMatrix = worldMatrix;
             }
-            foreach (var layer in HullLayers){
+            foreach (var layer in HullLayers) {
                 layer.WorldMatrix = worldMatrix;
             }
-            return worldMatrix;
+
+            foreach (var hardPoint in _hardPoints) {
+                hardPoint.ShipTranslationMtx = worldMatrix;
+            }
         }
 
         public void Dispose(){
