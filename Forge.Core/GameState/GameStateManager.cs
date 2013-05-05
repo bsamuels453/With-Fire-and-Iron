@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Framework.UI;
@@ -23,6 +24,7 @@ namespace Forge.Core.GameState{
         static RenderTarget _globalRenderTarget;
         static UIElementCollection _globalElementCollection;
         static ICamera _cameraController;
+        static Stopwatch _stopwatch;
         
 
         public static ICamera CameraController{
@@ -58,6 +60,8 @@ namespace Forge.Core.GameState{
             _activeStates = new List<IGameState>();
             _inputHandler = new InputHandler();
             _sharedData = new Dictionary<SharedStateData, object>();//todo-optimize: might be able to make this into a list instead
+            _stopwatch = new Stopwatch();
+            _stopwatch.Start();
         }
 
         public static void ClearAllStates() {
@@ -105,9 +109,12 @@ namespace Forge.Core.GameState{
             if (_useGlobalRenderTarget){
             }
             for (int i = 0; i < _activeStates.Count; i++){
-                    _activeStates[i].Update(_inputHandler.CurrentInputState, 0);
+                    _stopwatch.Stop();
+                    double d = _stopwatch.ElapsedMilliseconds;
+                    _stopwatch.Start();
+                    _activeStates[i].Update(_inputHandler.CurrentInputState, d);
                 }
-            
+            _stopwatch.Restart();
             if (_useGlobalRenderTarget){
                 _globalElementCollection.UpdateLogic(0);
                 _globalElementCollection.UpdateInput(ref _inputHandler.CurrentInputState);
