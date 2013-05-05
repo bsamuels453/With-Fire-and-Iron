@@ -146,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Airship\Airship.cs" />
+    <Compile Include="Airship\AirshipController.cs" />
     <Compile Include="Airship\AirshipManagerState.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
