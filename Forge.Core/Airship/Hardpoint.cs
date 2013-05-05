@@ -18,7 +18,7 @@ namespace Forge.Core.Airship{
         readonly Vector3 _localPosition;
         readonly ProjectilePhysics _projectileEngine;
         readonly ObjectModelBuffer<ProjectilePhysics.Projectile> _projectileBuff;
-        Matrix _shipTranslationMtx;
+        public Matrix ShipTranslationMtx;
 
         /// <summary>
         /// </summary>
@@ -37,13 +37,13 @@ namespace Forge.Core.Airship{
         }
 
         public void Fire(){
-            var globalPosition = Common.MultMatrix(_shipTranslationMtx, _localPosition);
+            var globalPosition = Common.MultMatrix(ShipTranslationMtx, _localPosition);
 
             
 
             Vector3 _, __;
             Quaternion q;
-            _shipTranslationMtx.Decompose(out _, out q, out __);
+            ShipTranslationMtx.Decompose(out _, out q, out __);
             var rotate = Matrix.CreateFromQuaternion(q);
             var globalAim = Common.MultMatrix(rotate, _aimDir);
 
@@ -59,8 +59,7 @@ namespace Forge.Core.Airship{
             }
         }
 
-        public void Update(double timeDelta, Matrix shipTranslationMtx){
-            _shipTranslationMtx = shipTranslationMtx;
+        public void Update(double timeDelta){
             foreach (var projectile in _activeProjectiles){
                 var translation = Matrix.CreateTranslation(projectile.GetPosition.Invoke());
                 _projectileBuff.SetObjectTransform(projectile, translation);
