@@ -12,20 +12,19 @@ using Microsoft.Xna.Framework;
 namespace Forge.Framework{
     public static class DebugConsole{
         static TcpClient _client;
-        static StreamWriter _consoleWriter;
-        static StreamWriter _fileWriter;
-        static bool _externConsoleEnabled;
+        static IOWrapper _wrapper;
         static Process _consoleProcess;
 
         public static void InitalizeConsole(Game game){
+            _wrapper = new IOWrapper();
             _consoleProcess = new Process();
             _consoleProcess.StartInfo.FileName = "DebugConsole.exe";
             _consoleProcess.StartInfo.UseShellExecute = true;
             _consoleProcess.Start();
             Thread.Sleep(20); //takes a bit of time for console to initalize, so hold it here so none of the startup debug info is lost
 
-            _fileWriter = new StreamWriter("debuglog.txt");
-            _fileWriter.AutoFlush = true;
+            _wrapper.FileWriter = new StreamWriter("debuglog.txt");
+            _wrapper.FileWriter.AutoFlush = true;
 
             _client = new TcpClient();
             AsyncCallback callback = ar => { };
@@ -33,39 +32,67 @@ namespace Forge.Framework{
 
             asyncResult.AsyncWaitHandle.WaitOne(200);
             if (asyncResult.IsCompleted){
-                _externConsoleEnabled = true;
-                _consoleWriter = new StreamWriter(_client.GetStream());
-                _consoleWriter.AutoFlush = true;
+                _wrapper.ExternConsoleEnabled = true;
+                _wrapper.ConsoleWriter = new StreamWriter(_client.GetStream());
+                _wrapper.ConsoleWriter.AutoFlush = true;
             }
             else{
-                _externConsoleEnabled = false;
+                _wrapper.ExternConsoleEnabled = false;
             }
         }
 
         public static void WriteLine(string s){
-            if (_externConsoleEnabled){
+            if (_wrapper.ExternConsoleEnabled) {
                 try{
-                    _consoleWriter.WriteLine(s);
+                    _wrapper.ConsoleWriter.WriteLine(s);
                 }
                 catch{
-                    _externConsoleEnabled = false;
+                    _wrapper.ExternConsoleEnabled = false;
                 }
             }
-            _fileWriter.WriteLine(s);
+            _wrapper.FileWriter.WriteLine(s);
         }
 
         public static void Dispose(){
-            if (_externConsoleEnabled){
-                try{
-                    _consoleWriter.WriteLine("KILLCONSOLE");
-                }
-                catch{
+            _wrapper.Dispose();
+        }
 
-                }
-                _consoleWriter.Close();
-                _client.Close();
+        /// <summary>
+        /// this is used for hackish destructor
+        /// </summary>
+        internal class IOWrapper : IDisposable{
+            public StreamWriter ConsoleWriter;
+            public StreamWriter FileWriter;
+            public bool ExternConsoleEnabled;
+            public Process ConsoleProcess;
+            bool _disposed;
+
+            public IOWrapper(){
+                _disposed = false;
             }
-            _fileWriter.Close();
+
+            public void Dispose(){
+                if (ExternConsoleEnabled) {
+                    try {
+                        ConsoleWriter.WriteLine("KILLCONSOLE");
+                    }
+                    catch {
+
+                    }
+                    ConsoleWriter.Close();
+                    _client.Close();
+                }
+                FileWriter.Close();
+                _disposed = true;
+            }
+
+            ~IOWrapper(){
+                if (!_disposed){
+                    Dispose();
+                }
+            }
         }
     }
+
+
 }
