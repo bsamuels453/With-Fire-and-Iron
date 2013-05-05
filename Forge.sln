@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ForgeContent", "Forge.Conte
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7627DC40-0818-4322-84AC-65C727734628}"
 	ProjectSection(SolutionItems) = preProject
-		Gondola.vsmdi = Gondola.vsmdi
+		Forge.vsmdi = Forge.vsmdi
 		Local.testsettings = Local.testsettings
 		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
@@ -16,7 +16,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Forge.Framework", "Forge.Fr
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Gondola.vsmdi
+		CategoryFile = Forge.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		BuildFrameworkDebug|Any CPU = BuildFrameworkDebug|Any CPU

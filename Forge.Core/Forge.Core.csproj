@@ -230,7 +230,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Forge.Content\ForgeContent.contentproj">
       <Project>{1F468827-3319-4FEC-946C-B4BE79CB7CC7}</Project>
-      <Name>GondolaContent %28Content%29</Name>
+      <Name>ForgeContent %28Content%29</Name>
       <XnaReferenceType>Content</XnaReferenceType>
     </ProjectReference>
     <ProjectReference Include="..\Forge.Framework\Forge.Framework.csproj">
