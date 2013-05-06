@@ -2,8 +2,10 @@
 
 using System;
 using Forge.Core.Logic;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
@@ -20,16 +22,63 @@ namespace Forge.Core.Airship{
         Func<HullSection, bool> _enableHullSection;
         ObjectBuffer<HullSection> _hullDamageOverlay;
 
-        public HullIntegrityMesh(HullSection[][] hull, Func<HullSection, bool> enableHullSection, Func<HullSection, bool> disableHullSection){
-            //create boundingobject
+        readonly GeometryBuffer<VertexPositionNormalTexture> _redBuff;
+        readonly GeometryBuffer<VertexPositionNormalTexture> _orangeBuff;
+        readonly GeometryBuffer<VertexPositionNormalTexture> _greenBuff;
 
-            //hulldamageoverlay eats vertexes from airship.cs
-            //dont forget to resize+offset to make it slightly bigger
+        const float meshOffsetRed = 1.005f;
+        const float meshOffsetOrange = 1.010f;
+        const float meshOffsetGreen = 1.015f;
+        public HullIntegrityMesh(
+            VertexPositionNormalTexture[] verts,
+            int[] indicieDump,
+            float length){
 
-            throw new NotImplementedException();
+            var greenVerts = (VertexPositionNormalTexture[])verts.Clone();
+            var redVerts = (VertexPositionNormalTexture[])verts.Clone();
+            var orangeVerts = (VertexPositionNormalTexture[])verts.Clone();
+
+            float lenOffset = (length * meshOffsetGreen - length) / 2;
+            for (int i = 0; i < verts.Length; i++){
+                Vector3 newPos = verts[i].Position * meshOffsetGreen;
+                newPos.X += lenOffset;
+                greenVerts[i].Position = newPos;
+            }
+
+            lenOffset = (length * meshOffsetOrange - length) / 2;
+            for (int i = 0; i < verts.Length; i++) {
+                Vector3 newPos = verts[i].Position * meshOffsetOrange;
+                newPos.X += lenOffset;
+                orangeVerts[i].Position = newPos;
+            }
+
+            lenOffset = (length * meshOffsetRed - length) / 2;
+            for (int i = 0; i < verts.Length; i++) {
+                Vector3 newPos = verts[i].Position * meshOffsetRed;
+                newPos.X += lenOffset;
+                redVerts[i].Position = newPos;
+            }
+
+            _redBuff = new GeometryBuffer<VertexPositionNormalTexture>(indicieDump.Length, verts.Length, indicieDump.Length/3, "Shader_DamageMeshRed");
+            _orangeBuff = new GeometryBuffer<VertexPositionNormalTexture>(indicieDump.Length, verts.Length, indicieDump.Length / 3, "Shader_DamageMeshOrange");
+            _greenBuff = new GeometryBuffer<VertexPositionNormalTexture>(indicieDump.Length, verts.Length, indicieDump.Length / 3, "Shader_DamageMeshGreen");
+            _redBuff.IndexBuffer.SetData(indicieDump);
+            _orangeBuff.IndexBuffer.SetData(indicieDump);
+            _greenBuff.IndexBuffer.SetData(indicieDump);
+
+            _redBuff.VertexBuffer.SetData(redVerts);
+            _orangeBuff.VertexBuffer.SetData(orangeVerts);
+            _greenBuff.VertexBuffer.SetData(greenVerts);
         }
 
-        public Matrix WorldMatrix { get; set; } //propagate to boundingobject
+        public Matrix WorldMatrix{
+            set {
+                _redBuff.WorldMatrix = value;
+                _orangeBuff.WorldMatrix = value;
+                _greenBuff.WorldMatrix = value;
+            }
+
+        }
 
         void OnCollision(Vector3 position, Vector3 velocity){
             throw new NotImplementedException();
