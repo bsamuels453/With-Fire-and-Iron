@@ -10,11 +10,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Forge.Core.Airship {
     internal class Airship : IDisposable{
-        public float Length;
-        public float MaxAscentSpeed;
-        public float MaxMovementSpeed;
-        public float MaxTurnSpeed;
-
         public ModelAttributes ModelAttributes { get; private set; }
 
         int _curDeck;
@@ -22,10 +17,11 @@ namespace Forge.Core.Airship {
         readonly List<Hardpoint> _hardPoints;
         readonly ProjectilePhysics _projectilePhysics;
         readonly AirshipController _controller;
+        readonly HullIntegrityMesh _hullIntegrityMesh;
 
-        public Vector3 Centroid;
-        public GeometryBuffer<VertexPositionNormalTexture>[] Decks;
-        public GeometryBuffer<VertexPositionNormalTexture>[] HullLayers;
+        public Vector3 Centroid { get; private set; }
+        public GeometryBuffer<VertexPositionNormalTexture>[] Decks { get; private set; }
+        public GeometryBuffer<VertexPositionNormalTexture>[] HullLayers { get; private set; }
 
         public Vector3 Position{
             get { return _controller.Position; }
@@ -35,32 +31,51 @@ namespace Forge.Core.Airship {
             get { return _controller.Velocity; }
         }
 
-        public Airship(){
+        public Airship(
+            ModelAttributes airshipModel,
+            GeometryBuffer<VertexPositionNormalTexture>[] deckBuffers,
+            GeometryBuffer<VertexPositionNormalTexture>[] hullBuffers
+            ){
             _curDeck = 0;
-            _numDecks = 4;
-
+            _numDecks = airshipModel.NumDecks;
+            ModelAttributes = airshipModel;
             _projectilePhysics = new ProjectilePhysics();
+
+            HullLayers = hullBuffers;
+            Decks = deckBuffers;
+
+            int idxOffset = 0;
+            
+            var totalIndicies = new List<int>();
+            var totalVertexes = new List<VertexPositionNormalTexture>();
+            foreach (var layer in HullLayers){
+                var inds = layer.DumpIndicies();
+                for (int indIdx = 0; indIdx < inds.Length; indIdx++){
+                    inds[indIdx] += idxOffset;
+                }
+                totalIndicies.AddRange(inds);
+
+                var verts = layer.DumpVerticies();
+                totalVertexes.AddRange(verts);
+                idxOffset += verts.Length;
+    
+            }
+            
+            _hullIntegrityMesh = new HullIntegrityMesh(totalVertexes.ToArray(), totalIndicies.ToArray(), ModelAttributes.Length);
+            //_hullIntegrityMesh = new HullIntegrityMesh(hullBuffers[0].DumpVerticies(), hullBuffers[0].DumpIndicies(), ModelAttributes.Length);
 
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
 
-            var modelAttribs = new ModelAttributes();
-            modelAttribs.Length = 50;
-            modelAttribs.MaxAscentSpeed = 10;
-            modelAttribs.MaxForwardSpeed = 30;
-            modelAttribs.MaxReverseSpeed = 10;
-            modelAttribs.MaxTurnSpeed = 4f;
-            ModelAttributes = modelAttribs;
-
             var movementState = new AirshipMovementState();
             movementState.Angle = new Vector3(0, 0, 0);
-            movementState.CurPosition = new Vector3(Length / 3, 1000, 0);
+            movementState.CurPosition = new Vector3(airshipModel.Length/ 3, 1000, 0);
 
             _controller = new PlayerAirshipController(
                 SetAirshipWMatrix,
-                modelAttribs,
+                ModelAttributes,
                 movementState
-            );
+                );
         }
 
         public void Update(ref InputState state, double timeDelta){
@@ -77,7 +92,7 @@ namespace Forge.Core.Airship {
                 }
             }
 
-            _projectilePhysics.Update();
+            _projectilePhysics.Update(timeDelta);
 
         }
 
@@ -120,6 +135,8 @@ namespace Forge.Core.Airship {
         }
 
         void SetAirshipWMatrix(Matrix worldMatrix) {
+            _hullIntegrityMesh.WorldMatrix = worldMatrix;
+
             foreach (var deck in Decks) {
                 deck.WorldMatrix = worldMatrix;
             }

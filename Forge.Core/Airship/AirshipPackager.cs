@@ -227,10 +227,19 @@ namespace Forge.Core.Airship{
             var jObj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
 
-            var ret = new Airship();
-            ret.Length = 50;
+            var modelAttribs = new ModelAttributes();
+            modelAttribs.Length = 50f;
+            modelAttribs.MaxAscentSpeed = 10;
+            modelAttribs.MaxForwardSpeed = 30;
+            modelAttribs.MaxReverseSpeed = 10;
+            modelAttribs.MaxTurnSpeed = 4f;
+            modelAttribs.Berth = 13.95f;
+            
+
+
             int numDecks = jObj["NumDecks"].ToObject<int>();
-            ret.Centroid = jObj["Centroid"].ToObject<Vector3>();
+            modelAttribs.NumDecks = numDecks;
+            modelAttribs.Centroid = jObj["Centroid"].ToObject<Vector3>();
 
             var hullVerts = jObj["HullVerticies"].ToObject<VertexPositionNormalTexture[][]>();
             var hullInds = jObj["HullIndicies"].ToObject<int[][]>();
@@ -238,8 +247,8 @@ namespace Forge.Core.Airship{
             var deckVerts = jObj["DeckVerticies"].ToObject<VertexPositionNormalTexture[][]>();
             var deckInds = jObj["DeckIndicies"].ToObject<int[][]>();
 
-            ret.Decks = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
-            ret.HullLayers = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
+            var deckBuffs = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
+            var hullBuffs = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
 
             //reflect vertexes to fix orientation
             //xxx THIS BREAKS THE NORMALS
@@ -255,16 +264,17 @@ namespace Forge.Core.Airship{
 
 
             for (int i = 0; i < numDecks; i++){
-                ret.Decks[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
-                ret.Decks[i].IndexBuffer.SetData(deckInds[i]);
-                ret.Decks[i].VertexBuffer.SetData(deckVerts[i]);
+                deckBuffs[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
+                deckBuffs[i].IndexBuffer.SetData(deckInds[i]);
+                deckBuffs[i].VertexBuffer.SetData(deckVerts[i]);
 
 
-                ret.HullLayers[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
-                ret.HullLayers[i].IndexBuffer.SetData(hullInds[i]);
-                ret.HullLayers[i].VertexBuffer.SetData(hullVerts[i]);
+                hullBuffs[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
+                hullBuffs[i].IndexBuffer.SetData(hullInds[i]);
+                hullBuffs[i].VertexBuffer.SetData(hullVerts[i]);
             }
 
+            var ret = new Airship(modelAttribs, deckBuffs, hullBuffs);
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
 
