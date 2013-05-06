@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 #endregion
@@ -12,12 +13,12 @@ using Microsoft.Xna.Framework.Graphics;
 namespace Forge.Framework.Draw{
     public class ObjectBuffer<TIdentifier> : GeometryBuffer<VertexPositionNormalTexture>, IEnumerable where TIdentifier : IEquatable<TIdentifier>{
         readonly int[] _indicies;
-        readonly int _indiciesPerObject;
         readonly bool[] _isSlotOccupied;
-        readonly int _maxObjects;
+        public readonly int MaxObjects;
+        public readonly int VerticiesPerObject;
+        public readonly int IndiciesPerObject;
         readonly List<ObjectData> _objectData;
         readonly VertexPositionNormalTexture[] _verticies;
-        readonly int _verticiesPerObject;
 
         public bool UpdateBufferManually;
 
@@ -29,9 +30,9 @@ namespace Forge.Framework.Draw{
             _indicies = new int[maxObjects*indiciesPerObject];
             _verticies = new VertexPositionNormalTexture[maxObjects*verticiesPerObject];
 
-            _indiciesPerObject = indiciesPerObject;
-            _verticiesPerObject = verticiesPerObject;
-            _maxObjects = maxObjects;
+            IndiciesPerObject = indiciesPerObject;
+            VerticiesPerObject = verticiesPerObject;
+            MaxObjects = maxObjects;
             _isSlotOccupied = new bool[maxObjects];
             UpdateBufferManually = false;
         }
@@ -57,15 +58,15 @@ namespace Forge.Framework.Draw{
         }
 
         public void AddObject(IEquatable<TIdentifier> identifier, int[] indicies, VertexPositionNormalTexture[] verticies){
-            Debug.Assert(indicies.Length == _indiciesPerObject);
-            Debug.Assert(verticies.Length == _verticiesPerObject);
+            Debug.Assert(indicies.Length == IndiciesPerObject);
+            Debug.Assert(verticies.Length == VerticiesPerObject);
 
             int index = -1;
-            for (int i = 0; i < _maxObjects; i++){
+            for (int i = 0; i < MaxObjects; i++){
                 if (_isSlotOccupied[i] == false){
                     //add buffer offset to the indice list
                     for (int indice = 0; indice < indicies.Length; indice++){
-                        indicies[indice] += i*_verticiesPerObject;
+                        indicies[indice] += i*VerticiesPerObject;
                     }
 
                     _objectData.Add(new ObjectData(identifier, i, indicies, verticies));
@@ -76,8 +77,8 @@ namespace Forge.Framework.Draw{
             }
             Debug.Assert(index != -1, "not enough space in object buffer to add new object");
 
-            indicies.CopyTo(_indicies, index*_indiciesPerObject);
-            verticies.CopyTo(_verticies, index*_verticiesPerObject);
+            indicies.CopyTo(_indicies, index*IndiciesPerObject);
+            verticies.CopyTo(_verticies, index*VerticiesPerObject);
             if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
                 base.BaseVertexBuffer.SetData(_verticies);
@@ -94,8 +95,8 @@ namespace Forge.Framework.Draw{
                 return;
             foreach (var obj in objectToRemove){
                 _isSlotOccupied[obj.ObjectOffset] = false;
-                for (int i = 0; i < _indiciesPerObject; i++){
-                    _indicies[obj.ObjectOffset*_indiciesPerObject + i] = 0;
+                for (int i = 0; i < IndiciesPerObject; i++){
+                    _indicies[obj.ObjectOffset*IndiciesPerObject + i] = 0;
                 }
                 if (!UpdateBufferManually){
                     base.BaseIndexBuffer.SetData(_indicies);
@@ -106,10 +107,10 @@ namespace Forge.Framework.Draw{
 
         public void ClearObjects(){
             _objectData.Clear();
-            for (int i = 0; i < _maxObjects; i++){
+            for (int i = 0; i < MaxObjects; i++){
                 _isSlotOccupied[i] = false;
             }
-            for (int i = 0; i < _maxObjects*_indiciesPerObject; i++){
+            for (int i = 0; i < MaxObjects*IndiciesPerObject; i++){
                 _indicies[i] = 0;
             }
             base.BaseIndexBuffer.SetData(_indicies);
@@ -127,7 +128,7 @@ namespace Forge.Framework.Draw{
 
             objToEnable.ForEach(o => o.Enabled = true);
             foreach (var obj in objToEnable){
-                obj.Indicies.CopyTo(_indicies, obj.ObjectOffset*_indiciesPerObject);
+                obj.Indicies.CopyTo(_indicies, obj.ObjectOffset*IndiciesPerObject);
             }
             if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
@@ -146,10 +147,10 @@ namespace Forge.Framework.Draw{
                 return false;
 
             objToDisable.ForEach(o => o.Enabled = false);
-            var indicies = new int[_indiciesPerObject];
+            var indicies = new int[IndiciesPerObject];
 
             foreach (var obj in objToDisable){
-                indicies.CopyTo(_indicies, obj.ObjectOffset*_indiciesPerObject);
+                indicies.CopyTo(_indicies, obj.ObjectOffset*IndiciesPerObject);
             }
             if (!UpdateBufferManually){
                 base.BaseIndexBuffer.SetData(_indicies);
@@ -157,10 +158,36 @@ namespace Forge.Framework.Draw{
             return true;
         }
 
+        public void ConstructFromObjectDump(ObjectData[] objData){
+            Debug.Assert(objData[0].Indicies.Length == IndiciesPerObject);
+            Debug.Assert(objData[0].Verticies.Length == VerticiesPerObject);
+            Debug.Assert(objData[0].Identifier.GetType() == typeof(TIdentifier));
+
+            foreach (var data in objData){
+                int offset = data.ObjectOffset * VerticiesPerObject;
+                var fixedInds = from index in data.Indicies
+                                select index - offset;
+                AddObject(data.Identifier, fixedInds.ToArray(), data.Verticies);
+            }
+        }
+
+        public void ApplyTransform(Func<VertexPositionNormalTexture, VertexPositionNormalTexture> transform) {
+            for (int i = 0; i < _verticies.Length; i++){
+                _verticies[i] = transform.Invoke(_verticies[i]);
+            }
+            foreach (var objectData in _objectData){
+                int offset = objectData.ObjectOffset * VerticiesPerObject;
+                for (int i = 0; i < VerticiesPerObject; i++){
+                    objectData.Verticies[i] = _verticies[offset + i];
+                }
+            }
+            VertexBuffer.SetData(_verticies);
+        }
+
         /// <summary>
         ///   really cool method that will take another objectbuffer and absorb its objects into this objectbuffer. also clears the other buffer afterwards.
         /// </summary>
-        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer, bool allowDuplicateIDs = false){
+        public void AbsorbBuffer(ObjectBuffer<TIdentifier> buffer, bool allowDuplicateIDs = false, bool clearOtherbuff = true) {
             bool buffUpdateState = UpdateBufferManually;
             UpdateBufferManually = true; //temporary for this heavy copy algo
 
@@ -175,7 +202,7 @@ namespace Forge.Framework.Draw{
                         continue;
                 }
 
-                int offset = objectData.ObjectOffset*_verticiesPerObject;
+                int offset = objectData.ObjectOffset*VerticiesPerObject;
                 var indicies = from index in objectData.Indicies
                     select index - offset;
 
@@ -183,7 +210,9 @@ namespace Forge.Framework.Draw{
             }
             UpdateBuffers();
             UpdateBufferManually = buffUpdateState;
-            buffer.ClearObjects();
+            if (clearOtherbuff){
+                buffer.ClearObjects();
+            }
         }
 
         public ObjectData[] DumpObjectData(){
