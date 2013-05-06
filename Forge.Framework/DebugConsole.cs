@@ -1,4 +1,6 @@
-﻿#region
+﻿//a#define ENABLE_DEBUG_CONSOLE
+
+#region
 
 using System;
 using System.Diagnostics;
@@ -17,28 +19,38 @@ namespace Forge.Framework{
 
         public static void InitalizeConsole(Game game){
             _wrapper = new IOWrapper();
-            _consoleProcess = new Process();
-            _consoleProcess.StartInfo.FileName = "DebugConsole.exe";
-            _consoleProcess.StartInfo.UseShellExecute = true;
-            _consoleProcess.Start();
-            Thread.Sleep(20); //takes a bit of time for console to initalize, so hold it here so none of the startup debug info is lost
 
             _wrapper.FileWriter = new StreamWriter("debuglog.txt");
             _wrapper.FileWriter.AutoFlush = true;
 
+#if ENABLE_DEBUG_CONSOLE
+            _consoleProcess = new Process();
+            _consoleProcess.StartInfo.FileName = "DebugConsole.exe";
+            _consoleProcess.StartInfo.UseShellExecute = false;
+            _consoleProcess.Start();
             _client = new TcpClient();
-            AsyncCallback callback = ar => { };
-            var asyncResult = _client.BeginConnect("127.0.0.1", 10965, callback, null);
 
-            asyncResult.AsyncWaitHandle.WaitOne(200);
+            var asyncResult = _client.BeginConnect("127.0.0.1", 10964, null, null);
+
+            int numSleeps = 0;
+            while (!asyncResult.IsCompleted && numSleeps<150){
+                Thread.Sleep(10);
+                numSleeps++;
+            }
             if (asyncResult.IsCompleted){
                 _wrapper.ExternConsoleEnabled = true;
                 _wrapper.ConsoleWriter = new StreamWriter(_client.GetStream());
                 _wrapper.ConsoleWriter.AutoFlush = true;
+                WriteLine("Debug console connection established");
             }
             else{
                 _wrapper.ExternConsoleEnabled = false;
+                WriteLine("Debug console not responding, text log only");
             }
+#else
+            _wrapper.ExternConsoleEnabled = false;
+            WriteLine("Debug console not responding, text log only");
+#endif
         }
 
         public static void WriteLine(string s){
@@ -77,7 +89,7 @@ namespace Forge.Framework{
                         ConsoleWriter.WriteLine("KILLCONSOLE");
                     }
                     catch {
-
+                        int f = 3;
                     }
                     ConsoleWriter.Close();
                     _client.Close();
