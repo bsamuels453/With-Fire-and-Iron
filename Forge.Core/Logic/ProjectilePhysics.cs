@@ -33,7 +33,6 @@ namespace Forge.Core.Logic{
         readonly RigidBodyConstructionInfo _defaultShotCtor;
         readonly List<RigidBody> _projectiles;
         readonly DiscreteDynamicsWorld _worldDynamics;
-        readonly Stopwatch _updateInterval;
 
         public ProjectilePhysics(){
             _defProjectile = new ProjectileAttributes(113832, 0.0285f, 2f);
@@ -52,8 +51,6 @@ namespace Forge.Core.Logic{
             var shape = new SphereShape(_defProjectile.Radius);
             var nullMotion = new DefaultMotionState(Matrix.Identity);
             _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
-            _updateInterval = new Stopwatch();
-            _updateInterval.Start();
         }
 
         public CollisionObjectHandle AddCollisionObject(CollisionObject[] collisionObjects, EntityVariant variant, CollisionCallback collisionCallback){
@@ -101,11 +98,9 @@ namespace Forge.Core.Logic{
             _worldDynamics.Dispose();
         }
 
-        public void Update(){
-            _updateInterval.Stop();
-            float timeDelta = _updateInterval.ElapsedMilliseconds * 0.001f;
-            _worldDynamics.StepSimulation(timeDelta, 100);
-            _updateInterval.Restart();
+        public void Update(double timeDelta){
+            float timeDeltaSec = (float)timeDelta / 1000f;
+            _worldDynamics.StepSimulation(timeDeltaSec, 100);
 
             //check for collisions
             foreach (var projectileDat in _projectiles){
@@ -118,8 +113,8 @@ namespace Forge.Core.Logic{
 
                     foreach (var boundingObj in shipDat.CollisionObjects){
                         //fast check to see if the projectile is in same area as the object
-                        foreach (var point in boundingObj.IntersectPoints){
-                            if (Vector3.Distance(projectilePos, point) < _defProjectile.Radius){
+                        foreach (var point in boundingObj.Vertexes){
+                            if (Vector3.Distance(projectilePos, point) < 10f){
                                 //object confirmed to be in general area
                                 //now check to see if its movement path intersects the object's triangles
                                 var worldPt = Common.MultMatrix(shipMtx, point);
@@ -142,7 +137,7 @@ namespace Forge.Core.Logic{
                                 }
 
                                 if (intersectionConfirmed){
-                                    //xxxx these params are not correct (point)
+                                    //xxxx these params are not correct (point transform)
                                     shipDat.CollisionEventDispatcher.Invoke(point, velocity);
                                 }
 
@@ -160,7 +155,6 @@ namespace Forge.Core.Logic{
         ///   Used to define a collision object. IntersectPoints are used for fast-checking whether or not projectiles intersect this object.
         /// </summary>
         public class CollisionObject{
-            public Vector3[] IntersectPoints;
             public Vector3[] Vertexes;
         }
 
