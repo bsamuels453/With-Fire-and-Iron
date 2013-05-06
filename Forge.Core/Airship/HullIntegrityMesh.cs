@@ -1,7 +1,10 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Forge.Core.Logic;
+using Forge.Core.ObjectEditor;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
@@ -20,55 +23,74 @@ namespace Forge.Core.Airship{
         ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
         Func<HullSection, bool> _disableHullSection;
         Func<HullSection, bool> _enableHullSection;
-        ObjectBuffer<HullSection> _hullDamageOverlay;
 
-        readonly GeometryBuffer<VertexPositionNormalTexture> _redBuff;
-        readonly GeometryBuffer<VertexPositionNormalTexture> _orangeBuff;
-        readonly GeometryBuffer<VertexPositionNormalTexture> _greenBuff;
+        readonly ObjectBuffer<HullSection> _redBuff;
+        readonly ObjectBuffer<HullSection> _orangeBuff;
+        readonly ObjectBuffer<HullSection> _greenBuff;
 
-        const float meshOffsetRed = 1.005f;
-        const float meshOffsetOrange = 1.010f;
-        const float meshOffsetGreen = 1.015f;
+        const float _meshOffsetRed = 1.005f;
+        const float _meshOffsetOrange = 1.010f;
+        const float _meshOffsetGreen = 1.015f;
         public HullIntegrityMesh(
-            VertexPositionNormalTexture[] verts,
-            int[] indicieDump,
+            ObjectBuffer<HullSection>[] hullBuffers,
             float length){
 
-            var greenVerts = (VertexPositionNormalTexture[])verts.Clone();
-            var redVerts = (VertexPositionNormalTexture[])verts.Clone();
-            var orangeVerts = (VertexPositionNormalTexture[])verts.Clone();
+            int f = 4;
+            int numObjs = hullBuffers[0].MaxObjects*hullBuffers.Length;
 
-            float lenOffset = (length * meshOffsetGreen - length) / 2;
-            for (int i = 0; i < verts.Length; i++){
-                Vector3 newPos = verts[i].Position * meshOffsetGreen;
-                newPos.X += lenOffset;
-                greenVerts[i].Position = newPos;
+            _redBuff = new ObjectBuffer<HullSection>(
+                numObjs,
+                hullBuffers[0].IndiciesPerObject/3,
+                hullBuffers[0].VerticiesPerObject,
+                hullBuffers[0].IndiciesPerObject,
+                "Shader_DamageMeshRed"
+                );
+            _orangeBuff = new ObjectBuffer<HullSection>(
+                numObjs,
+                hullBuffers[0].IndiciesPerObject/3,
+                hullBuffers[0].VerticiesPerObject,
+                hullBuffers[0].IndiciesPerObject,
+                "Shader_DamageMeshOrange"
+                );
+            _greenBuff = new ObjectBuffer<HullSection>(
+                numObjs,
+                hullBuffers[0].IndiciesPerObject/3,
+                hullBuffers[0].VerticiesPerObject,
+                hullBuffers[0].IndiciesPerObject,
+                "Shader_DamageMeshGreen"
+                );
+
+            foreach (var buffer in hullBuffers){
+                _redBuff.AbsorbBuffer(buffer, true, false);
             }
+            _orangeBuff.AbsorbBuffer(_redBuff, true, false);
+            _greenBuff.AbsorbBuffer(_redBuff, true, false);
 
-            lenOffset = (length * meshOffsetOrange - length) / 2;
-            for (int i = 0; i < verts.Length; i++) {
-                Vector3 newPos = verts[i].Position * meshOffsetOrange;
-                newPos.X += lenOffset;
-                orangeVerts[i].Position = newPos;
-            }
+            float lenOffset = (length*_meshOffsetRed - length)/2;
 
-            lenOffset = (length * meshOffsetRed - length) / 2;
-            for (int i = 0; i < verts.Length; i++) {
-                Vector3 newPos = verts[i].Position * meshOffsetRed;
-                newPos.X += lenOffset;
-                redVerts[i].Position = newPos;
-            }
+            _redBuff.ApplyTransform((vertex) =>{
+                                        vertex.Position *= _meshOffsetRed;
+                                        vertex.Position.X += lenOffset;
+                                        return vertex;
+                                    }
+                );
 
-            _redBuff = new GeometryBuffer<VertexPositionNormalTexture>(indicieDump.Length, verts.Length, indicieDump.Length/3, "Shader_DamageMeshRed");
-            _orangeBuff = new GeometryBuffer<VertexPositionNormalTexture>(indicieDump.Length, verts.Length, indicieDump.Length / 3, "Shader_DamageMeshOrange");
-            _greenBuff = new GeometryBuffer<VertexPositionNormalTexture>(indicieDump.Length, verts.Length, indicieDump.Length / 3, "Shader_DamageMeshGreen");
-            _redBuff.IndexBuffer.SetData(indicieDump);
-            _orangeBuff.IndexBuffer.SetData(indicieDump);
-            _greenBuff.IndexBuffer.SetData(indicieDump);
+            lenOffset = (length*_meshOffsetOrange - length)/2;
+            _orangeBuff.ApplyTransform((vertex) =>{
+                                           vertex.Position *= _meshOffsetOrange;
+                                           vertex.Position.X += lenOffset;
+                                           return vertex;
+                                       }
+                );
 
-            _redBuff.VertexBuffer.SetData(redVerts);
-            _orangeBuff.VertexBuffer.SetData(orangeVerts);
-            _greenBuff.VertexBuffer.SetData(greenVerts);
+            lenOffset = (length*_meshOffsetGreen - length)/2;
+            _greenBuff.ApplyTransform((vertex) =>{
+                                          vertex.Position *= _meshOffsetGreen;
+                                          vertex.Position.X += lenOffset;
+                                          return vertex;
+                                      }
+                );
+
         }
 
         public Matrix WorldMatrix{
