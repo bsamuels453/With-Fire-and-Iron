@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Forge.Core.ObjectEditor;
+using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Microsoft.Xna.Framework;
@@ -18,9 +19,13 @@ namespace Forge.Core.Airship{
     internal static class AirshipPackager{
         const int _version = 0;
 
-        public static void Export(string fileName, HullDataManager hullData){
+        public static void Export(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo) {
             JObject jObj = new JObject();
             jObj["Version"] = _version;
+            jObj["FrontBezierSurf"] = JToken.FromObject(backCurveInfo);
+            jObj["SideBezierSurf"] = JToken.FromObject(sideCurveInfo);
+            jObj["TopBezierSurf"] = JToken.FromObject(topCurveInfo);
+            /*
             jObj["NumDecks"] = hullData.NumDecks;
 
             var hullInds = new int[hullData.NumDecks][];
@@ -54,6 +59,7 @@ namespace Forge.Core.Airship{
             jObj["DeckVerticies"] = JToken.FromObject(deckPlateVerts);
             jObj["DeckIndicies"] = JToken.FromObject(deckPlateInds);
 
+             */
             var sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
             sw.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             sw.Close();
@@ -227,8 +233,19 @@ namespace Forge.Core.Airship{
             var jObj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
 
+            var backInfo = jObj["FrontBezierSurf"].ToObject<List<BezierInfo>>();
+            var sideInfo = jObj["SideBezierSurf"].ToObject<List<BezierInfo>>();
+            var topInfo = jObj["TopBezierSurf"].ToObject<List<BezierInfo>>();
+
+            var hullData = HullGeometryGenerator.GenerateShip(
+                backInfo,
+                sideInfo,
+                topInfo
+                );
+
             var modelAttribs = new ModelAttributes();
-            modelAttribs.Length = 50f;
+            //in the future these attributes will be defined based off analyzing the hull
+            modelAttribs.Length = 50;
             modelAttribs.MaxAscentSpeed = 10;
             modelAttribs.MaxForwardSpeed = 30;
             modelAttribs.MaxReverseSpeed = 10;
@@ -237,6 +254,9 @@ namespace Forge.Core.Airship{
             
 
 
+
+
+            /*
             int numDecks = jObj["NumDecks"].ToObject<int>();
             modelAttribs.NumDecks = numDecks;
             modelAttribs.Centroid = jObj["Centroid"].ToObject<Vector3>();
@@ -273,8 +293,8 @@ namespace Forge.Core.Airship{
                 hullBuffs[i].IndexBuffer.SetData(hullInds[i]);
                 hullBuffs[i].VertexBuffer.SetData(hullVerts[i]);
             }
-
-            var ret = new Airship(modelAttribs, deckBuffs, hullBuffs);
+            */
+            var ret = new Airship(modelAttribs, hullData.DeckFloorBuffers, hullData.HullMeshes);
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
 

@@ -18,9 +18,11 @@ namespace Forge.Core.ObjectEditor {
     /// thing because it isnt going to be updating every tick like previewrenderer does.
     /// </summary>
     internal static class HullGeometryGenerator{
+        const int primHeightPerDeck = 5;
+
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
-        public static HullGeometryInfo GenerateShip(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo, int primHeightPerDeck){
+        public static HullGeometryInfo GenerateShip(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo){
             const float deckHeight = 2.13f;
             const float bBoxWidth = 0.5f;
             var genResults = GenerateHull(new GenerateHullParams{

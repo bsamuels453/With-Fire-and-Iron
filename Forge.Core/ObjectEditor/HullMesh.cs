@@ -18,7 +18,7 @@ namespace Forge.Core.ObjectEditor{
     ///   This class handles the meshes that make up the hull on each deck of the airship. This class is used for projecting shapes into the mesh to allow for objects such as portholes. Each deck's hull is broken in two parts split down the center.
     /// </summary>
     internal class HullMesh : IEnumerable{
-        readonly ObjectBuffer<HullSection> _hullBuff;
+        public ObjectBuffer<HullSection> HullBuff { get; private set; }
         readonly int[] _idxWinding;
         readonly Side _side;
         readonly float _boxWidth;
@@ -65,9 +65,9 @@ namespace Forge.Core.ObjectEditor{
                 }
             }
 
-            _hullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
-            _hullBuff.CullMode = CullMode.None;
-            _hullBuff.AbsorbBuffer(tempBuff, true);
+            HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
+            HullBuff.CullMode = CullMode.None;
+            HullBuff.AbsorbBuffer(tempBuff, true);
         }
 
         public void DisablePanel(float xPos, float zPos, int yPanel){
@@ -76,7 +76,7 @@ namespace Forge.Core.ObjectEditor{
             if (zPos < 0 && _side != Side.Left)
                 return;
             
-            if(!_hullBuff.DisableObject(
+            if(!HullBuff.DisableObject(
                 new HullSection(xPos, xPos+_boxWidth, yPanel))){
                     throw new Exception("bad disable request, panel doesnt exist");
             }
@@ -88,7 +88,7 @@ namespace Forge.Core.ObjectEditor{
             if (zPos < 0 && _side != Side.Left)
                 return;
 
-            if (!_hullBuff.EnableObject(
+            if (!HullBuff.EnableObject(
                 new HullSection(xPos, xPos + _boxWidth, yPanel))) {
                     throw new Exception("bad enable request, panel doesnt exist");
             }
@@ -560,13 +560,13 @@ namespace Forge.Core.ObjectEditor{
         #endregion
 
         public CullMode CullMode{
-            set { _hullBuff.CullMode = value; }
+            set { HullBuff.CullMode = value; }
         }
 
         #region IEnumerable Members
 
         public IEnumerator GetEnumerator(){
-            return _hullBuff.GetEnumerator();
+            return HullBuff.GetEnumerator();
         }
 
         #endregion

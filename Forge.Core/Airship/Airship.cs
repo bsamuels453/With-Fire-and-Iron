@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Forge.Core.Logic;
+using Forge.Core.ObjectEditor;
 using Forge.Framework.Draw;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
@@ -20,8 +21,8 @@ namespace Forge.Core.Airship {
         readonly HullIntegrityMesh _hullIntegrityMesh;
 
         public Vector3 Centroid { get; private set; }
-        public GeometryBuffer<VertexPositionNormalTexture>[] Decks { get; private set; }
-        public GeometryBuffer<VertexPositionNormalTexture>[] HullLayers { get; private set; }
+        public ObjectBuffer<ObjectIdentifier>[] DeckBuffers { get; private set; }
+        public ObjectBuffer<HullSection>[] HullBuffers { get; private set; }
 
         public Vector3 Position{
             get { return _controller.Position; }
@@ -33,36 +34,51 @@ namespace Forge.Core.Airship {
 
         public Airship(
             ModelAttributes airshipModel,
-            GeometryBuffer<VertexPositionNormalTexture>[] deckBuffers,
-            GeometryBuffer<VertexPositionNormalTexture>[] hullBuffers
+            ObjectBuffer<ObjectIdentifier>[] deckBuffers,
+            List<HullMesh>[] hullBuffers
             ){
             _curDeck = 0;
             _numDecks = airshipModel.NumDecks;
             ModelAttributes = airshipModel;
             _projectilePhysics = new ProjectilePhysics();
+            DeckBuffers = deckBuffers;
 
-            HullLayers = hullBuffers;
-            Decks = deckBuffers;
+            HullBuffers = new ObjectBuffer<HullSection>[hullBuffers.Length-1];
 
-            int idxOffset = 0;
-            
-            var totalIndicies = new List<int>();
-            var totalVertexes = new List<VertexPositionNormalTexture>();
-            foreach (var layer in HullLayers){
-                var inds = layer.DumpIndicies();
-                for (int indIdx = 0; indIdx < inds.Length; indIdx++){
-                    inds[indIdx] += idxOffset;
+            //this minus 1 is because of the faux lowest layer
+            for(int i=0; i<hullBuffers.Length-1; i++){
+                var layerBuffs = (from mesh in hullBuffers[i]
+                                    select  mesh.HullBuff).ToList();
+
+                HullBuffers[i] = new ObjectBuffer<HullSection>(
+                    layerBuffs.Count * layerBuffs[0].MaxObjects,
+                    layerBuffs[0].IndiciesPerObject / 3,
+                    layerBuffs[0].VerticiesPerObject,
+                    layerBuffs[0].IndiciesPerObject,
+                    "Shader_AirshipHull"
+                    );
+                foreach (var buffer in layerBuffs){
+                    HullBuffers[i].AbsorbBuffer(buffer, true);
                 }
-                totalIndicies.AddRange(inds);
-
-                var verts = layer.DumpVerticies();
-                totalVertexes.AddRange(verts);
-                idxOffset += verts.Length;
-    
             }
-            
-            _hullIntegrityMesh = new HullIntegrityMesh(totalVertexes.ToArray(), totalIndicies.ToArray(), ModelAttributes.Length);
-            //_hullIntegrityMesh = new HullIntegrityMesh(hullBuffers[0].DumpVerticies(), hullBuffers[0].DumpIndicies(), ModelAttributes.Length);
+
+            foreach (var buffer in HullBuffers){
+                buffer.ApplyTransform((vert) => {
+                    vert.Position.X *= -1;
+                    return vert;
+                }
+                );
+            }
+
+            foreach (var buffer in DeckBuffers) {
+                buffer.ApplyTransform((vert) => {
+                    vert.Position.X *= -1;
+                    return vert;
+                }
+                );
+            }
+
+            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, ModelAttributes.Length);
 
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
@@ -98,8 +114,8 @@ namespace Forge.Core.Airship {
 
         public void AddVisibleLayer(int _){
             if (_curDeck != 0){
-                var tempFloorBuff = Decks.Reverse().ToArray();
-                var tempWallBuff = HullLayers.Reverse().ToArray();
+                var tempFloorBuff = DeckBuffers.Reverse().ToArray();
+                var tempWallBuff = HullBuffers.Reverse().ToArray();
                 //var tempWWallBuff = WallBuffers.Reverse().ToArray();
                 for (int i = 0; i < tempFloorBuff.Count(); i++){
                     if (tempFloorBuff[i].Enabled == false){
@@ -119,13 +135,13 @@ namespace Forge.Core.Airship {
 
         public void RemoveVisibleLayer(int _){
             if (_curDeck < _numDecks - 1){
-                for (int i = 0; i < Decks.Count(); i++){
-                    if (Decks[i].Enabled){
+                for (int i = 0; i < DeckBuffers.Count(); i++){
+                    if (DeckBuffers[i].Enabled){
                         _curDeck++;
-                        Decks[i].Enabled = false;
-                        HullLayers[i].CullMode = CullMode.CullCounterClockwiseFace;
+                        DeckBuffers[i].Enabled = false;
+                        HullBuffers[i].CullMode = CullMode.CullCounterClockwiseFace;
                         if (i > 0){
-                            HullLayers[i - 1].Enabled = false;
+                            HullBuffers[i - 1].Enabled = false;
                         }
                         //WallBuffers[i].Enabled = false;
                         break;
@@ -137,10 +153,10 @@ namespace Forge.Core.Airship {
         void SetAirshipWMatrix(Matrix worldMatrix) {
             _hullIntegrityMesh.WorldMatrix = worldMatrix;
 
-            foreach (var deck in Decks) {
+            foreach (var deck in DeckBuffers) {
                 deck.WorldMatrix = worldMatrix;
             }
-            foreach (var layer in HullLayers) {
+            foreach (var layer in HullBuffers) {
                 layer.WorldMatrix = worldMatrix;
             }
 

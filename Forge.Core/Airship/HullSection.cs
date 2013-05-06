@@ -13,7 +13,7 @@ namespace Forge.Core.Airship {
         readonly float _width;//notimpl
 
         public HullSection(float xStart, float xEnd, int yPanel) {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
             _xStart = xStart;
             _xEnd = xEnd;
             _yPanel = yPanel;
