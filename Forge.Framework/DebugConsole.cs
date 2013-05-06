@@ -1,4 +1,4 @@
-﻿//a#define ENABLE_DEBUG_CONSOLE
+﻿//#define ENABLE_DEBUG_CONSOLE
 
 #region
 
