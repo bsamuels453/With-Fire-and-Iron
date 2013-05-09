@@ -147,7 +147,7 @@ namespace Forge.Core.ObjectEditor{
             int f = 4;
         }
 
-        List<VertexPositionNormalTexture[]>[] SortTriangles(
+        static List<VertexPositionNormalTexture[]>[] SortTriangles(
             VertexPositionNormalTexture[][] groupedTriangles,
             float subBoxBegin,
             float subBoxEnd){
@@ -199,7 +199,7 @@ namespace Forge.Core.ObjectEditor{
             return retList;
         }
 
-        void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+        static void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
@@ -210,7 +210,7 @@ namespace Forge.Core.ObjectEditor{
                 var side2 = from vert in triangle
                             where vert.Position.X < subBoxBegin
                             select vert;
-                // ReSharper disable PossibleMultipleEnumeration
+                // ReSharper disable PossibleMultipleEnumeration db query too lightweight to care
                 if (side1.Count() == 1) {
                     anchor = side1.First();
                     satellites = side2.ToArray();
