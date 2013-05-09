@@ -95,30 +95,66 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts){
-            //sort the panelVerts into triangles
-            var groupedTris = new VertexPositionNormalTexture[panelVerts.Length/3][];
-            int srcIdx = 0;
-            for (int i = 0; i < groupedTris.Length; i++){
-                groupedTris[i] = new VertexPositionNormalTexture[3];
-                for (int triIdx = 0; triIdx < 3; triIdx++){
-                    groupedTris[i][triIdx] = panelVerts[srcIdx + triIdx];
-                }
-                srcIdx += 3;
-            }
+        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts) {
             var sw = new Stopwatch();
             sw.Start();
-            float minX = panelVerts.Min(x => x.Position.X);
-            float maxX = panelVerts.Max(x => x.Position.X);
-            float topY = panelVerts.Max(y => y.Position.Y);
-            float bottomY = panelVerts.Min(y => y.Position.Y);
 
-            float subBoxStartX = 0;
-            while (subBoxStartX + _boxWidth < minX){
-                subBoxStartX += _boxWidth;
+            var groupedTris = new VertexPositionNormalTexture[panelVerts.Length / 3][];
+            float subBoxBeginX;
+            float subBoxEndX;
+            float maxX;
+            {
+                //sort the panelVerts into triangles
+                int srcIdx = 0;
+                for (int i = 0; i < groupedTris.Length; i++) {
+                    groupedTris[i] = new VertexPositionNormalTexture[3];
+                    for (int triIdx = 0; triIdx < 3; triIdx++) {
+                        groupedTris[i][triIdx] = panelVerts[srcIdx + triIdx];
+                    }
+                    srcIdx += 3;
+                }
             }
-            float subBoxEndX = subBoxStartX + _boxWidth;
+            {
+                //generate  statistics on this layer
+                float minX = panelVerts.Min(x => x.Position.X);
+                maxX = panelVerts.Max(x => x.Position.X);
+                float topY = panelVerts.Max(y => y.Position.Y);
+                float bottomY = panelVerts.Min(y => y.Position.Y);
 
+                subBoxBeginX = 0;
+                while (subBoxBeginX + _boxWidth < minX){
+                    subBoxBeginX += _boxWidth;
+                }
+                subBoxEndX = subBoxBeginX + _boxWidth;
+            }
+
+
+
+            while (subBoxBeginX < maxX){
+                var sortedTris = SortTriangles(groupedTris, subBoxBeginX, subBoxEndX);
+
+                //handling zero enclosed verts cases
+                foreach (var triangle in sortedTris[0]){
+                    SliceZeroEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
+                }
+
+
+                subBoxBeginX += _boxWidth;
+                subBoxEndX += _boxWidth;
+            }
+
+            double d = sw.ElapsedMilliseconds;
+            int f = 4;
+        }
+
+        List<VertexPositionNormalTexture[]>[] SortTriangles(
+            VertexPositionNormalTexture[][] groupedTriangles,
+            float subBoxBegin,
+            float subBoxEnd){
+
+            var retList = new List<VertexPositionNormalTexture[]>[3];
+
+            #region anon methods
             Func<VertexPositionNormalTexture[], float, float, int> numEnclosedVerts =
                 (triangle, start, end) => {
                     int tot = 0;
@@ -130,14 +166,14 @@ namespace Forge.Core.ObjectEditor{
                 };
 
             Func<VertexPositionNormalTexture[], float, float, bool> isTriRelevant =
-                (triangle, end, start) =>{
+                (triangle, end, start) => {
                     //test to see if any of the points of the triangle fall within decal area
                     if (numEnclosedVerts(triangle, end, start) > 0)
                         return true;
-                    
+
                     //test to see if the triangle engulfs the decal area
-                    foreach (var v1 in triangle){
-                        foreach (var v2 in triangle){
+                    foreach (var v1 in triangle) {
+                        foreach (var v2 in triangle) {
                             //through the magic of looping only one if statement is required
                             if (v1.Position.X > end && v2.Position.X < start)
                                 return true;
@@ -146,30 +182,51 @@ namespace Forge.Core.ObjectEditor{
 
                     return false;
                 };
+            #endregion
 
-            while (subBoxStartX < maxX){
-                //get rid of irrelevant triangles
-                var filteredTris = (from triangle in groupedTris
-                    where isTriRelevant(triangle, subBoxStartX, subBoxEndX)
-                    select triangle).ToList();
+            //get rid of irrelevant triangles
+            var filteredTris = (from triangle in groupedTriangles
+                                where isTriRelevant(triangle, subBoxBegin, subBoxEnd)
+                                select triangle).ToList();
 
-                //sorting triangles by number of points enclosed within the decal
-                var sortedTris = new List<VertexPositionNormalTexture[]>[3];
-                for (int i = 0; i < sortedTris.Length; i++){
-                    sortedTris[i] = new List<VertexPositionNormalTexture[]>();
+            //sorting triangles by number of points enclosed within the decal
+            for (int i = 0; i < retList.Length; i++) {
+                retList[i] = new List<VertexPositionNormalTexture[]>();
+            }
+            foreach (var triangle in filteredTris) {
+                retList[numEnclosedVerts(triangle, subBoxBegin, subBoxEnd)].Add(triangle);
+            }
+            return retList;
+        }
+
+        void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+            //first have to figure out the "anchor vertex"
+            VertexPositionNormalTexture anchor;
+            VertexPositionNormalTexture[] satellites;
+            {
+                var side1 = from vert in triangle
+                            where vert.Position.X > subBoxEnd
+                            select vert;
+                var side2 = from vert in triangle
+                            where vert.Position.X < subBoxBegin
+                            select vert;
+                // ReSharper disable PossibleMultipleEnumeration
+                if (side1.Count() == 1) {
+                    anchor = side1.First();
+                    satellites = side2.ToArray();
                 }
-
-                foreach (var triangle in filteredTris){
-                    sortedTris[numEnclosedVerts(triangle, subBoxStartX, subBoxEndX)].Add(triangle);
+                else {
+                    anchor = side2.Single();
+                    satellites = side1.ToArray();
                 }
-
-                subBoxStartX += _boxWidth;
-                subBoxEndX += _boxWidth;
+                // ReSharper restore PossibleMultipleEnumeration
             }
 
-            double d = sw.ElapsedMilliseconds;
-            int f = 4;
+
+
+            int af = 4;
         }
+
 
         Vector3 InterpolateNorm(Vector3 n1, Vector3 n2, Vector3 p1, Vector3 p2, Vector3 mid){
             float d1 = Vector3.Distance(p1, p2);
