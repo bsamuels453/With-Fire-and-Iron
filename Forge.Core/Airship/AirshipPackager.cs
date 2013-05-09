@@ -251,6 +251,7 @@ namespace Forge.Core.Airship{
             modelAttribs.MaxReverseSpeed = 10;
             modelAttribs.MaxTurnSpeed = 4f;
             modelAttribs.Berth = 13.95f;
+            modelAttribs.NumDecks = hullData.NumDecks;
             
 
 

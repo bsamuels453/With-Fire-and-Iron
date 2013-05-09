@@ -23,7 +23,6 @@ namespace Forge.Core.Airship{
         ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
         Func<HullSection, bool> _disableHullSection;
         Func<HullSection, bool> _enableHullSection;
-
         readonly ObjectBuffer<HullSection> _redBuff;
         readonly ObjectBuffer<HullSection> _orangeBuff;
         readonly ObjectBuffer<HullSection> _greenBuff;
@@ -61,10 +60,10 @@ namespace Forge.Core.Airship{
                 );
 
             foreach (var buffer in hullBuffers){
-                _redBuff.AbsorbBuffer(buffer, true, false);
+                //_redBuff.AbsorbBuffer(buffer, true, false);
             }
-            _orangeBuff.AbsorbBuffer(_redBuff, true, false);
-            _greenBuff.AbsorbBuffer(_redBuff, true, false);
+            //_orangeBuff.AbsorbBuffer(_redBuff, true, false);
+            //_greenBuff.AbsorbBuffer(_redBuff, true, false);
 
             float lenOffset = (length*_meshOffsetRed - length)/2;
 

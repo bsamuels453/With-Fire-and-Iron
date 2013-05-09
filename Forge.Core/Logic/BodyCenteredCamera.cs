@@ -24,9 +24,9 @@ namespace Forge.Core.Logic{
         /// </summary>
         /// <param name="boundingBox"> </param>
         public BodyCenteredCamera(Rectangle? boundingBox = null){
-            _cameraPhi = 1.2f;
-            _cameraTheta = 1.93f;
-            _cameraDistance = 60;
+            _cameraPhi = 1.799999f;
+            _cameraTheta = 3.169999f;
+            _cameraDistance = 16.79999f;
             if (boundingBox != null){
                 _boundingBox = (Rectangle) boundingBox;
             }
@@ -86,7 +86,7 @@ namespace Forge.Core.Logic{
 
             if (state.AllowMouseScrollInterpretation){
                 if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
-                    _cameraDistance += -state.MouseScrollChange/20f;
+                    _cameraDistance += -state.MouseScrollChange/200f;
                     if (_cameraDistance < 5){
                         _cameraDistance = 5;
                     }

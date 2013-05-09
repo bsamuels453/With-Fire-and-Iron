@@ -44,7 +44,7 @@ namespace Forge.Core.ObjectEditor {
         }
 
         public void Dispose() {
-            throw new System.NotImplementedException();
+            //throw new System.NotImplementedException();
         }
 
         public void Update(InputState state, double timeDelta) {

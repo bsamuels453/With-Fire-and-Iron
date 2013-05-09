@@ -78,7 +78,7 @@ namespace Forge.Core.Airship {
                 );
             }
 
-            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, ModelAttributes.Length);
+            //_hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, ModelAttributes.Length);
 
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
@@ -115,7 +115,7 @@ namespace Forge.Core.Airship {
         public void AddVisibleLayer(int _){
             if (_curDeck != 0){
                 var tempFloorBuff = DeckBuffers.Reverse().ToArray();
-                var tempWallBuff = HullBuffers.Reverse().ToArray();
+                var tempHullBuff = HullBuffers.Reverse().ToArray();
                 //var tempWWallBuff = WallBuffers.Reverse().ToArray();
                 for (int i = 0; i < tempFloorBuff.Count(); i++){
                     if (tempFloorBuff[i].Enabled == false){
@@ -124,9 +124,9 @@ namespace Forge.Core.Airship {
                         //tempWWallBuff[i].Enabled = true;
 
                         if (i < _numDecks - 1){
-                            tempWallBuff[i + 1].Enabled = true;
+                            tempHullBuff[i].Enabled = true;
                         }
-                        tempWallBuff[i].CullMode = CullMode.None;
+                        tempHullBuff[i-1].CullMode = CullMode.None;
                         break;
                     }
                 }
@@ -151,7 +151,7 @@ namespace Forge.Core.Airship {
         }
 
         void SetAirshipWMatrix(Matrix worldMatrix) {
-            _hullIntegrityMesh.WorldMatrix = worldMatrix;
+//_hullIntegrityMesh.WorldMatrix = worldMatrix;
 
             foreach (var deck in DeckBuffers) {
                 deck.WorldMatrix = worldMatrix;

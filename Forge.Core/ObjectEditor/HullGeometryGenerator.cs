@@ -18,7 +18,8 @@ namespace Forge.Core.ObjectEditor {
     /// thing because it isnt going to be updating every tick like previewrenderer does.
     /// </summary>
     internal static class HullGeometryGenerator{
-        const int primHeightPerDeck = 5;
+        const int _primHeightPerDeck = 5;
+        const int _horizontalPrimDivisor = 2;
 
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
@@ -31,17 +32,17 @@ namespace Forge.Core.ObjectEditor {
                 TopCurveInfo = topCurveInfo,
                 DeckHeight = deckHeight,
                 BoundingBoxWidth = bBoxWidth,
-                PrimitivesPerDeck = primHeightPerDeck
+                PrimitivesPerDeck = _primHeightPerDeck
             }
                 );
             var normalGenResults = GenerateHullNormals(genResults.LayerSilhouetteVerts);
-            var deckFloorPlates = GenerateDeckPlates(genResults.LayerSilhouetteVerts, genResults.NumDecks, primHeightPerDeck);
+            var deckFloorPlates = GenerateDeckPlates(genResults.LayerSilhouetteVerts, genResults.NumDecks, _primHeightPerDeck);
             var boundingBoxResults = GenerateDeckBoundingBoxes(bBoxWidth, deckFloorPlates);
             var hullBuffers = GenerateDeckWallBuffers(
                 genResults.DeckSilhouetteVerts, 
                 normalGenResults.NormalMesh, 
                 genResults.NumDecks, 
-                primHeightPerDeck,
+                _primHeightPerDeck,
                 boundingBoxResults.BoxMin,
                 boundingBoxResults.BoxMax
             );
@@ -114,9 +115,9 @@ namespace Forge.Core.ObjectEditor {
             //ironically enough, x and y of the vectors involve map correctly
 
             //this list contains slices of the airship which contain all the vertexes for the specific layer of the airship
-            var ySliceVerts = new List<List<Vector3>>(); 
+            var ySliceVerts = new List<List<Vector3>>();
 
-            int numHorizontalPrimitives = (int) (results.Length/boundingBoxWidth + 1)/8;
+            int numHorizontalPrimitives = (int)(results.Length / boundingBoxWidth + 1) / _horizontalPrimDivisor;
             if (numHorizontalPrimitives%2 != 0){
                 numHorizontalPrimitives++;
             }
