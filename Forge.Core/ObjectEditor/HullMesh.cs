@@ -60,9 +60,10 @@ namespace Forge.Core.ObjectEditor{
             tempBuff.UpdateBufferManually = true;
 
             foreach (var layer in sortedPanels){
-                foreach (var quad in layer){
-                    SubdividePanel(tempBuff, quad.ToArray());
-                }
+                var totalLayerVerts = from quad in layer//todo(cleaning) this can be removed with modification of the above linq
+                                      from vert in quad
+                                      select vert;
+                SubdividePanel(tempBuff, totalLayerVerts.ToArray());
             }
 
             HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
@@ -95,10 +96,59 @@ namespace Forge.Core.ObjectEditor{
         }
 
         void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts){
+            //sort the panelVerts into triangles
+            var groupedTris = new VertexPositionNormalTexture[panelVerts.Length/3][];
+            int srcIdx = 0;
+            for (int i = 0; i < groupedTris.Length; i++){
+                groupedTris[i] = new VertexPositionNormalTexture[3];
+                for (int triIdx = 0; triIdx < 3; triIdx++){
+                    groupedTris[i][triIdx] = panelVerts[srcIdx + triIdx];
+                }
+                srcIdx += 3;
+            }
 
+            float minX = panelVerts.Min(x => x.Position.X);
+            float maxX = panelVerts.Max(x => x.Position.X);
+            float topY = panelVerts.Max(y => y.Position.Y);
+            float bottomY = panelVerts.Min(y => y.Position.Y);
+
+            float subBoxStartX = 0;
+            while (subBoxStartX + _boxWidth < minX){
+                subBoxStartX += _boxWidth;
+            }
+            float subBoxEndX = subBoxStartX + _boxWidth;
+            
+            Func<Vector3[], float, float, bool> isTriRelevant =
+                (triangle, end, start) =>{
+                    //test to see if any of the points of the triangle fall within decal area
+                    foreach (var vert in triangle){
+                        if (vert.X < end && vert.X > start)
+                            return true;
+                    }
+                    //test to see if the triangle engulfs the decal area
+                    foreach (var v1 in triangle){
+                        foreach (var v2 in triangle){
+                            //through the magic of looping only one if statement is required
+                            if (v1.X > end && v2.X < start)
+                                return true;
+                        }
+                    }
+
+                    return false;
+                };
+            while (subBoxStartX < maxX){
+                //get rid of irrelevant triangles
+                var filteredTris = (from triangle in groupedTris
+                    where isTriRelevant((from vert in triangle select vert.Position).ToArray(), subBoxStartX, subBoxEndX)
+                    select triangle).ToList();
+
+
+
+                subBoxStartX += _boxWidth;
+                subBoxEndX += _boxWidth;
+            }
         }
 
-     
         Vector3 InterpolateNorm(Vector3 n1, Vector3 n2, Vector3 p1, Vector3 p2, Vector3 mid){
             float d1 = Vector3.Distance(p1, p2);
             float d2 = Vector3.Distance(p1, mid);
