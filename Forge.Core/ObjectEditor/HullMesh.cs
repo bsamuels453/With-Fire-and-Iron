@@ -66,9 +66,9 @@ namespace Forge.Core.ObjectEditor{
                 SubdividePanel(tempBuff, totalLayerVerts.ToArray());
             }
 
-            HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
-            HullBuff.CullMode = CullMode.None;
-            HullBuff.AbsorbBuffer(tempBuff, true);
+            //HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
+            //HullBuff.CullMode = CullMode.None;
+            //HullBuff.AbsorbBuffer(tempBuff, true);
         }
 
         public void DisablePanel(float xPos, float zPos, int yPanel){
@@ -106,7 +106,8 @@ namespace Forge.Core.ObjectEditor{
                 }
                 srcIdx += 3;
             }
-
+            var sw = new Stopwatch();
+            sw.Start();
             float minX = panelVerts.Min(x => x.Position.X);
             float maxX = panelVerts.Max(x => x.Position.X);
             float topY = panelVerts.Max(y => y.Position.Y);
@@ -117,36 +118,57 @@ namespace Forge.Core.ObjectEditor{
                 subBoxStartX += _boxWidth;
             }
             float subBoxEndX = subBoxStartX + _boxWidth;
-            
-            Func<Vector3[], float, float, bool> isTriRelevant =
+
+            Func<VertexPositionNormalTexture[], float, float, int> numEnclosedVerts =
+                (triangle, start, end) => {
+                    int tot = 0;
+                    foreach (var vert in triangle) {
+                        if (vert.Position.X <= end && vert.Position.X >= start)
+                            tot++;
+                    }
+                    return tot;
+                };
+
+            Func<VertexPositionNormalTexture[], float, float, bool> isTriRelevant =
                 (triangle, end, start) =>{
                     //test to see if any of the points of the triangle fall within decal area
-                    foreach (var vert in triangle){
-                        if (vert.X < end && vert.X > start)
-                            return true;
-                    }
+                    if (numEnclosedVerts(triangle, end, start) > 0)
+                        return true;
+                    
                     //test to see if the triangle engulfs the decal area
                     foreach (var v1 in triangle){
                         foreach (var v2 in triangle){
                             //through the magic of looping only one if statement is required
-                            if (v1.X > end && v2.X < start)
+                            if (v1.Position.X > end && v2.Position.X < start)
                                 return true;
                         }
                     }
 
                     return false;
                 };
+
             while (subBoxStartX < maxX){
                 //get rid of irrelevant triangles
                 var filteredTris = (from triangle in groupedTris
-                    where isTriRelevant((from vert in triangle select vert.Position).ToArray(), subBoxStartX, subBoxEndX)
+                    where isTriRelevant(triangle, subBoxStartX, subBoxEndX)
                     select triangle).ToList();
 
+                //sorting triangles by number of points enclosed within the decal
+                var sortedTris = new List<VertexPositionNormalTexture[]>[3];
+                for (int i = 0; i < sortedTris.Length; i++){
+                    sortedTris[i] = new List<VertexPositionNormalTexture[]>();
+                }
 
+                foreach (var triangle in filteredTris){
+                    sortedTris[numEnclosedVerts(triangle, subBoxStartX, subBoxEndX)].Add(triangle);
+                }
 
                 subBoxStartX += _boxWidth;
                 subBoxEndX += _boxWidth;
             }
+
+            double d = sw.ElapsedMilliseconds;
+            int f = 4;
         }
 
         Vector3 InterpolateNorm(Vector3 n1, Vector3 n2, Vector3 p1, Vector3 p2, Vector3 mid){
