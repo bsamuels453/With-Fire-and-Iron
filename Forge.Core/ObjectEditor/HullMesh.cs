@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Forge.Core.Airship;
 using Forge.Framework.Draw;
@@ -42,14 +43,14 @@ namespace Forge.Core.ObjectEditor{
 
             var groupedPanels = new List<IEnumerable<VertexPositionNormalTexture>>();
             for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4){
-                groupedPanels.Add(verts.Skip(panelIdx).Take(4));
+                groupedPanels.Add(verts.Skip(panelIdx).Take(3));
+                groupedPanels.Add(verts.Skip(panelIdx+1).Take(3));
             }
 
             var sortedPanels = (from grp in groupedPanels
-                                orderby grp.Min(vert => vert.Position.X) ascending
-                                group grp by grp.ElementAt(0).Position.Y into layers
+                                group grp by grp.Min(x => x.Position.Y) into layers
                                 select layers.ToArray()).ToArray();
-
+            
             _panelLookup = new Dictionary<float, int>(5);
             foreach (var layer in sortedPanels.Reverse()) {
                 _panelLookup.Add(layer[0].ElementAt(2).Position.Y, _panelLookup.Count);
@@ -60,15 +61,33 @@ namespace Forge.Core.ObjectEditor{
             tempBuff.UpdateBufferManually = true;
 
             foreach (var layer in sortedPanels){
-                var totalLayerVerts = from quad in layer//todo(cleaning) this can be removed with modification of the above linq
-                                      from vert in quad
+                var totalLayerVerts = from tri in layer
+                                      from vert in tri
                                       select vert;
                 SubdividePanel(tempBuff, totalLayerVerts.ToArray());
+
             }
 
-            //HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
-            //HullBuff.CullMode = CullMode.None;
-            //HullBuff.AbsorbBuffer(tempBuff, true);
+            foreach (var layer in sortedPanels){
+                foreach (var quad in layer){
+                    var q = quad.ToArray();
+                    var va1 = new []{q[0],q[1],q[2]};
+                    va1[0].Normal = Vector3.Zero;
+                    va1[1].Normal = Vector3.Zero;
+                    va1[2].Normal = Vector3.Zero;
+
+                    var hullid = new HullSection(-1, -1, 1);
+                    //tempBuff.AddObject(hullid, new int[]{0,1,2}, va1);
+                    //tempBuff.AddObject(hullid, _idxWinding, va2);
+                }
+            }
+
+            if (tempBuff.ActiveObjects == 0)
+                return;
+
+            HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
+            HullBuff.CullMode = CullMode.None;
+            HullBuff.AbsorbBuffer(tempBuff, true);
         }
 
         public void DisablePanel(float xPos, float zPos, int yPanel){
@@ -128,16 +147,14 @@ namespace Forge.Core.ObjectEditor{
                 subBoxEndX = subBoxBeginX + _boxWidth;
             }
 
-
-
             while (subBoxBeginX < maxX){
+
                 var sortedTris = SortTriangles(groupedTris, subBoxBeginX, subBoxEndX);
 
                 //handling zero enclosed verts cases
                 foreach (var triangle in sortedTris[0]){
                     SliceZeroEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
                 }
-
 
                 subBoxBeginX += _boxWidth;
                 subBoxEndX += _boxWidth;
@@ -199,34 +216,89 @@ namespace Forge.Core.ObjectEditor{
             return retList;
         }
 
-        static void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+        void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
-            {
-                var side1 = from vert in triangle
-                            where vert.Position.X > subBoxEnd
-                            select vert;
-                var side2 = from vert in triangle
-                            where vert.Position.X < subBoxBegin
-                            select vert;
-                // ReSharper disable PossibleMultipleEnumeration db query too lightweight to care
-                if (side1.Count() == 1) {
-                    anchor = side1.First();
-                    satellites = side2.ToArray();
-                }
-                else {
-                    anchor = side2.Single();
-                    satellites = side1.ToArray();
-                }
-                // ReSharper restore PossibleMultipleEnumeration
+            float anchorBoundary, satelliteBoundary;
+
+            ////if (triangle[0].Position.X > 3)
+            //    return;
+
+            var side1 = from vert in triangle
+                where vert.Position.X > subBoxEnd
+                select vert;
+            var side2 = from vert in triangle
+                where vert.Position.X < subBoxBegin
+                select vert;
+            // ReSharper disable PossibleMultipleEnumeration db query too lightweight to care
+            if (side1.Count() == 1){
+                anchor = side1.Single();
+                satellites = side2.ToArray();
+                anchorBoundary = subBoxEnd;
+                satelliteBoundary = subBoxBegin;
             }
+            else{
+                anchor = side2.Single();
+                satellites = side1.ToArray();
+                anchorBoundary = subBoxBegin;
+                satelliteBoundary = subBoxEnd;
+            }
+            // ReSharper restore PossibleMultipleEnumeration
 
+            var s1Pos = Lerp.Trace3X(satellites[0].Position, anchor.Position, satelliteBoundary);//idx=satt[0].val
+            var s2Pos = Lerp.Trace3X(satellites[1].Position, anchor.Position, satelliteBoundary);//idx=satt[1].val
 
+            var a1Pos = Lerp.Trace3X(satellites[0].Position, anchor.Position, anchorBoundary);//idx=anch.val
+            var a2Pos = Lerp.Trace3X(satellites[1].Position, anchor.Position, anchorBoundary);//idx=anch.val
 
-            int af = 4;
+            var s1Norm = InterpolateNorm(satellites[0].Normal, anchor.Normal, satellites[0].Position, anchor.Position, s1Pos);
+            var s2Norm = InterpolateNorm(satellites[1].Normal, anchor.Normal, satellites[1].Position, anchor.Position, s2Pos);
+
+            var a1Norm = InterpolateNorm(satellites[0].Normal, anchor.Normal, satellites[0].Position, anchor.Position, a1Pos);
+            var a2Norm = InterpolateNorm(satellites[1].Normal, anchor.Normal, satellites[1].Position, anchor.Position, a2Pos);
+
+            var s1UV = InterpolateUV(satellites[0].TextureCoordinate, anchor.TextureCoordinate, satellites[0].Position, anchor.Position, s1Pos);
+            var s2UV = InterpolateUV(satellites[1].TextureCoordinate, anchor.TextureCoordinate, satellites[1].Position, anchor.Position, s2Pos);
+
+            var a1UV = InterpolateUV(satellites[0].TextureCoordinate, anchor.TextureCoordinate, satellites[0].Position, anchor.Position, a1Pos);
+            var a2UV = InterpolateUV(satellites[1].TextureCoordinate, anchor.TextureCoordinate, satellites[1].Position, anchor.Position, a2Pos);
+
+            HullSection id = new HullSection(subBoxBegin, subBoxEnd, 2);
+            var s1 = new VertexPositionNormalTexture(s1Pos, s1Norm, s1UV);
+            var s2 = new VertexPositionNormalTexture(s2Pos, s2Norm, s2UV);
+
+            var a1 = new VertexPositionNormalTexture(a1Pos, a1Norm, a1UV);
+            var a2 = new VertexPositionNormalTexture(a2Pos, a2Norm, a2UV);
+            
+            var t1 = new[] { s1, a1, s2 };
+            var t2 = new[] { a2, s2, a1 };
+
+            var t1I = GenerateIndiceList(t1);
+            var t2I = GenerateIndiceList(t2);
+
+            buff.AddObject(id, t1I, t1);
+            buff.AddObject(id, t2I, t2);
         }
 
+        int[] GenerateIndiceList(VertexPositionNormalTexture[] verts) {
+            var cross = Vector3.Cross(verts[1].Position - verts[0].Position, verts[2].Position - verts[0].Position);
+
+            switch (_side) {
+                case Side.Right:
+                    if (cross.Z > 0) {
+                        return new[] { 0,2, 1 };
+                    }
+                    return new[] { 0, 1, 2 };
+                case Side.Left:
+                    if (cross.Z > 0) {
+                        return new[] { 0,1, 2 };
+                    }
+                    return new[] { 0, 2, 1 };
+            }
+            Debug.Assert(false);
+            return null;
+        }
 
         Vector3 InterpolateNorm(Vector3 n1, Vector3 n2, Vector3 p1, Vector3 p2, Vector3 mid){
             float d1 = Vector3.Distance(p1, p2);
