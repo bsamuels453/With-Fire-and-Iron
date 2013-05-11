@@ -246,6 +246,12 @@ namespace Forge.Core.ObjectEditor{
             }
             // ReSharper restore PossibleMultipleEnumeration
 
+            if (satellites[0].Position.Y < satellites[1].Position.Y){
+                var temp = satellites[0];
+                satellites[0] = satellites[1];
+                satellites[1] = temp;
+            }
+
             var s1Pos = Lerp.Trace3X(satellites[0].Position, anchor.Position, satelliteBoundary);//idx=satt[0].val
             var s2Pos = Lerp.Trace3X(satellites[1].Position, anchor.Position, satelliteBoundary);//idx=satt[1].val
 
@@ -274,6 +280,7 @@ namespace Forge.Core.ObjectEditor{
             var t1 = new[] { s1, a1, s2 };
             var t2 = new[] { a2, s2, a1 };
 
+
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
@@ -299,6 +306,7 @@ namespace Forge.Core.ObjectEditor{
             Debug.Assert(false);
             return null;
         }
+
 
         Vector3 InterpolateNorm(Vector3 n1, Vector3 n2, Vector3 p1, Vector3 p2, Vector3 mid){
             float d1 = Vector3.Distance(p1, p2);
