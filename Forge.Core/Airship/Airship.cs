@@ -35,7 +35,7 @@ namespace Forge.Core.Airship {
         public Airship(
             ModelAttributes airshipModel,
             ObjectBuffer<ObjectIdentifier>[] deckBuffers,
-            List<HullMesh>[] hullBuffers
+            List<ObjectBuffer<HullSection>>[] hullBuffers
             ){
             _curDeck = 0;
             _numDecks = airshipModel.NumDecks;
@@ -47,19 +47,16 @@ namespace Forge.Core.Airship {
 
             //this minus 1 is because of the faux lowest layer
             for(int i=0; i<hullBuffers.Length-1; i++){
-                var layerBuffs = (from mesh in hullBuffers[i]
-                                    select  mesh.HullBuff).ToList();
-
-                var maxObjects = layerBuffs.Sum(b => b.MaxObjects);
+                var maxObjects = HullBuffers.Sum(b => b.MaxObjects);
 
                 HullBuffers[i] = new ObjectBuffer<HullSection>(
                     maxObjects,
-                    layerBuffs[0].IndiciesPerObject / 3,
-                    layerBuffs[0].VerticiesPerObject,
-                    layerBuffs[0].IndiciesPerObject,
+                    HullBuffers[0].IndiciesPerObject / 3,
+                    HullBuffers[0].VerticiesPerObject,
+                    HullBuffers[0].IndiciesPerObject,
                     "Shader_AirshipHull"
                     );
-                foreach (var buffer in layerBuffs){
+                foreach (var buffer in HullBuffers) {
                     HullBuffers[i].AbsorbBuffer(buffer, true);
                 }
             }
@@ -80,7 +77,7 @@ namespace Forge.Core.Airship {
                 );
             }
 
-            //_hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, ModelAttributes.Length);
+            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, ModelAttributes.Length);
 
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
@@ -153,7 +150,7 @@ namespace Forge.Core.Airship {
         }
 
         void SetAirshipWMatrix(Matrix worldMatrix) {
-//_hullIntegrityMesh.WorldMatrix = worldMatrix;
+            _hullIntegrityMesh.WorldMatrix = worldMatrix;
 
             foreach (var deck in DeckBuffers) {
                 deck.WorldMatrix = worldMatrix;

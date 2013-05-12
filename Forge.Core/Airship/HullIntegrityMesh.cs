@@ -60,10 +60,10 @@ namespace Forge.Core.Airship{
                 );
 
             foreach (var buffer in hullBuffers){
-                //_redBuff.AbsorbBuffer(buffer, true, false);
+                _redBuff.AbsorbBuffer(buffer, true, false);
             }
-            //_orangeBuff.AbsorbBuffer(_redBuff, true, false);
-            //_greenBuff.AbsorbBuffer(_redBuff, true, false);
+            _orangeBuff.AbsorbBuffer(_redBuff, true, false);
+            _greenBuff.AbsorbBuffer(_redBuff, true, false);
 
             float lenOffset = (length*_meshOffsetRed - length)/2;
 

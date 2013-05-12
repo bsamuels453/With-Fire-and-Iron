@@ -48,9 +48,9 @@ namespace Forge.Core.ObjectEditor.Tools {
         protected override void HandleCursorRelease() {
             
             //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 0));
-            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
-            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
-            _hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
+            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
+            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
+            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
             //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 4)); 
 
             //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(1, 2, 1));

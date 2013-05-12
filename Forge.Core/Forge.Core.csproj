@@ -166,7 +166,7 @@
     <Compile Include="HullEditor\HullEditorState.cs" />
     <Compile Include="HullEditor\HullEditorPanels.cs" />
     <Compile Include="HullEditor\PreviewRenderer.cs" />
-    <Compile Include="ObjectEditor\HullMesh.cs" />
+    <Compile Include="ObjectEditor\HullSplitter.cs" />
     <Compile Include="ObjectEditor\Tools\DeckPlacementBase.cs" />
     <Compile Include="ObjectEditor\Tools\LadderBuildTool.cs" />
     <Compile Include="ObjectEditor\Tools\WallBuildTool.cs" />

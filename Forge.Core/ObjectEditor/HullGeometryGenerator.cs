@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Core.Airship;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
@@ -411,17 +412,17 @@ namespace Forge.Core.ObjectEditor {
             return ret;
         }
 
-        static List<HullMesh>[] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck, float boxMin, float boxMax) {
+        static List<ObjectBuffer<HullSection>>[] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck, float boxMin, float boxMax) {
             int vertsInSilhouette = deckSVerts[0][0].Length;
 
-            var hullMeshBuffs = new List<HullMesh>[numDecks];
+            var hullMeshBuffs = new List<ObjectBuffer<HullSection>>[numDecks];
             for (int i = 0; i < numDecks; i++)
-                hullMeshBuffs[i] = new List<HullMesh>(2);
+                hullMeshBuffs[i] = new List<ObjectBuffer<HullSection>>(2);
 
             //now set up the display buffer for each deck's wall
             for (int i = 0; i < deckSVerts.Length; i++){
                 // ReSharper disable AccessToModifiedClosure
-                Func<int, int, HullMesh> generateBuff = (start, end) => {
+                Func<int, int, ObjectBuffer<HullSection>> generateBuff = (start, end) => {
                     var hullMesh = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
                     var hullNormals = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
                     int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
@@ -447,7 +448,7 @@ namespace Forge.Core.ObjectEditor {
                     //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
                     MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
                     if (i != deckSVerts.Length-1) {
-                        return new HullMesh(0.5f, hullVerticies);
+                        return HullSplitter.SplitLayerGeometry(0.5f, hullVerticies);
                     }
                     return null;
                 };
@@ -659,7 +660,7 @@ namespace Forge.Core.ObjectEditor {
         public List<Vector3>[] FloorVertexes;
         public GeometryBuffer<VertexPositionNormalTexture>[] HullWallTexBuffers;
         public Vector2 MaxBoundingBoxDims;
-        public List<HullMesh>[] HullMeshes;
+        public List<ObjectBuffer<HullSection>>[] HullMeshes;
         public int NumDecks;
         public float WallResolution;
     }

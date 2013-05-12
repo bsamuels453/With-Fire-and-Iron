@@ -15,26 +15,25 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Forge.Core.ObjectEditor{
     /// <summary>
-    ///   This class handles the meshes that make up the hull on each deck of the airship. This class is used for projecting shapes into the mesh to allow for objects such as portholes. Each deck's hull is broken in two parts split down the center.
+    /// This class is used to subdivide sections of hull into pieces of a static size. These hull pieces can be toggled on and off through the objectbuffer that is returned.
     /// </summary>
-    internal class HullMesh : IEnumerable{
-        public ObjectBuffer<HullSection> HullBuff { get; private set; }
-        readonly Quadrant.Side _side;
-        readonly float _boxWidth;
+    internal static class HullSplitter{
+        static Quadrant.Side _side;
+        static float _boxWidth;
 
-        public HullMesh( float boundingWidth, VertexPositionNormalTexture[] verts) {
+        public static ObjectBuffer<HullSection> SplitLayerGeometry(float boundingWidth, VertexPositionNormalTexture[] verts) {
             if (verts[1].Position.Z > 0) {
                 _side = Quadrant.Side.Port;
             }
-            else{
+            else {
                 _side = Quadrant.Side.Starboard;
             }
             _boxWidth = boundingWidth;
 
             var groupedPanels = new List<IEnumerable<VertexPositionNormalTexture>>();
-            for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4){
+            for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4) {
                 var temp = verts.Skip(panelIdx).Take(4).ToArray();
-                groupedPanels.Add(new []{temp[0], temp[1], temp[2]});
+                groupedPanels.Add(new[] { temp[0], temp[1], temp[2] });
                 groupedPanels.Add(new[] { temp[2], temp[3], temp[0] });
             }
 
@@ -43,14 +42,14 @@ namespace Forge.Core.ObjectEditor{
                                 select layers.ToArray()).ToArray();
 
             //xxx need better estimation for number of objects
-            var tempBuff = new ObjectBuffer<HullSection>((int)(400*5/boundingWidth), 1, 3, 3, "Shader_AirshipHull");
+            var tempBuff = new ObjectBuffer<HullSection>((int)(400 * 5 / boundingWidth), 1, 3, 3, "Shader_AirshipHull");
             tempBuff.UpdateBufferManually = true;
 
             int layerIdx = 0;
-            foreach (var layer in sortedPanels){
+            foreach (var layer in sortedPanels) {
                 var totalLayerVerts = (from tri in layer
-                                      from vert in tri
-                                      select vert).ToArray();
+                                       from vert in tri
+                                       select vert).ToArray();
                 SubdividePanel(tempBuff, totalLayerVerts, layerIdx);
                 layerIdx++;
             }
@@ -72,40 +71,13 @@ namespace Forge.Core.ObjectEditor{
             */
             Debug.Assert(tempBuff.ActiveObjects != 0);
 
-            HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
-            HullBuff.CullMode = CullMode.None;
-            HullBuff.AbsorbBuffer(tempBuff, true);
+            var retHullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
+            retHullBuff.CullMode = CullMode.None;
+            retHullBuff.AbsorbBuffer(tempBuff, true);
+            return retHullBuff;
         }
 
-        public void DisablePanel(float xPos, float zPos, int yPanel){
-            /*
-            if (!(zPos > 0 && _side == Quadrant.Side.Port))
-                return;
-            if (!(zPos < 0 && _side == Quadrant.Side.Starboard))
-                return;
-             */
-
-            var side = Quadrant.PointToSide(zPos);
-            
-            if(!HullBuff.DisableObject(
-                new HullSection(xPos, xPos + _boxWidth, yPanel, side))) {
-                    //throw new Exception("bad disable request, panel doesnt exist");
-            }
-        }
-
-        public void EnablePanel(float xPos, float zPos, int yPanel) {
-            if ((zPos > 0 && _side == Quadrant.Side.Starboard))
-                return;
-            if ((zPos < 0 && _side == Quadrant.Side.Port))
-                return;
-
-            if (!HullBuff.EnableObject(
-                new HullSection(xPos, xPos + _boxWidth, yPanel, _side))) {
-                    throw new Exception("bad enable request, panel doesnt exist");
-            }
-        }
-
-        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, int panelLayer) {
+        static void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, int panelLayer) {
             var groupedTris = new VertexPositionNormalTexture[panelVerts.Length / 3][];
             float subBoxBeginX;
             float subBoxEndX;
@@ -161,7 +133,7 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier){
+        static void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
@@ -229,7 +201,7 @@ namespace Forge.Core.ObjectEditor{
             buff.AddObject(identifier, t2I, t2);
         }
 
-        void SliceSingleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
+        static void SliceSingleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
             var leftSide = (from vert in triangle
                             where vert.Position.X > subBoxEnd
                             select vert).ToArray();
@@ -317,7 +289,7 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void SliceDoubleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
+        static void SliceDoubleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
             var sideVert = (from vert in triangle
                             where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
                             select vert).Single();
@@ -356,7 +328,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="subBoxBegin"></param>
         /// <param name="subBoxEnd"></param>
         /// <returns></returns>
-        List<VertexPositionNormalTexture[]>[] CullTriangles(
+        static List<VertexPositionNormalTexture[]>[] CullTriangles(
             VertexPositionNormalTexture[][] groupedTriangles,
             float subBoxBegin,
             float subBoxEnd) {
@@ -413,7 +385,7 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         /// <param name="verts"></param>
         /// <returns></returns>
-        int[] GenerateIndiceList(VertexPositionNormalTexture[] verts) {
+        static int[] GenerateIndiceList(VertexPositionNormalTexture[] verts) {
             Debug.Assert(verts != null);
             var cross = Vector3.Cross(verts[1].Position - verts[0].Position, verts[2].Position - verts[0].Position);
 
@@ -457,18 +429,5 @@ namespace Forge.Core.ObjectEditor{
              */
             return ret;
         }
-
-        public CullMode CullMode{
-            set { HullBuff.CullMode = value; }
-        }
-
-        #region IEnumerable Members
-
-        public IEnumerator GetEnumerator(){
-            return HullBuff.GetEnumerator();
-        }
-
-        #endregion
-
     }
 }
