@@ -1,7 +1,10 @@
-﻿using System;
+﻿#define OUTPUT_GENERATION_TIMINGS
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Core.Util;
@@ -24,6 +27,10 @@ namespace Forge.Core.ObjectEditor {
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
         public static HullGeometryInfo GenerateShip(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo){
+#if OUTPUT_GENERATION_TIMINGS
+            var sw = new Stopwatch();
+            sw.Start();
+#endif
             const float deckHeight = 2.13f;
             const float bBoxWidth = 0.5f;
             var genResults = GenerateHull(new GenerateHullParams{
@@ -59,6 +66,11 @@ namespace Forge.Core.ObjectEditor {
             resultant.WallResolution = bBoxWidth;
             resultant.DeckHeight = deckHeight;
             resultant.MaxBoundingBoxDims = new Vector2((int) (genResults.Length/bBoxWidth), (int) (genResults.Berth/bBoxWidth));
+
+#if OUTPUT_GENERATION_TIMINGS
+            double d = sw.ElapsedMilliseconds;
+            DebugConsole.WriteLine("Airship generated in " + d + " ms");
+#endif
             return resultant;
         }
 
