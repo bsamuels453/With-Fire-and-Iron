@@ -24,9 +24,9 @@ namespace Forge.Core.Logic{
         /// </summary>
         /// <param name="boundingBox"> </param>
         public BodyCenteredCamera(Rectangle? boundingBox = null){
-            _cameraPhi = 1.799999f;
-            _cameraTheta = 3.169999f;
-            _cameraDistance = 16.79999f;
+            _cameraPhi = 1.19f;
+            _cameraTheta = -3.65f;
+            _cameraDistance = 29.4f;
             if (boundingBox != null){
                 _boundingBox = (Rectangle) boundingBox;
             }
@@ -43,10 +43,10 @@ namespace Forge.Core.Logic{
                     if (!state.KeyboardState.IsKeyDown(Keys.LeftControl)){
                         int dx = state.MousePos.X - state.PrevState.MousePos.X;
                         int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
-
+                        const float camAngularSpeed = 0.003f;//0.01f
                         if (state.RightButtonState == ButtonState.Pressed){
-                            _cameraPhi -= dy*0.01f;
-                            _cameraTheta += dx*0.01f;
+                            _cameraPhi -= dy * camAngularSpeed;
+                            _cameraTheta += dx * camAngularSpeed;
 
                             if (_cameraPhi > (float) Math.PI - 0.01f){
                                 _cameraPhi = (float) Math.PI - 0.01f;
@@ -106,6 +106,7 @@ namespace Forge.Core.Logic{
 
         public void SetCameraTarget(Vector3 target){
             CameraTarget = target;
+            //CameraTarget = new Vector3(-10.65f, -1.68f, -0.488f);
 
             CameraPosition.X = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Cos(_cameraTheta)) + CameraTarget.X;
             CameraPosition.Z = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Sin(_cameraTheta)) + CameraTarget.Z;
