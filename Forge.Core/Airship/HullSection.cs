@@ -11,12 +11,14 @@ namespace Forge.Core.Airship {
         readonly int _yPanel;
         readonly Vector3 _centroid;//notimpl
         readonly float _width;//notimpl
+        readonly Quadrant.Side _side;
 
-        public HullSection(float xStart, float xEnd, int yPanel) {
+        public HullSection(float xStart, float xEnd, int yPanel, Quadrant.Side side) {
             //throw new NotImplementedException();
             _xStart = xStart;
             _xEnd = xEnd;
             _yPanel = yPanel;
+            _side = side;
         }
 
         #region IEquatable<HullSection> Members
@@ -24,7 +26,8 @@ namespace Forge.Core.Airship {
         public bool Equals(HullSection other) {
             if (Math.Abs(_xStart - other._xStart) < 0.01f &&
                 Math.Abs(_xEnd - other._xEnd) < 0.01f &&
-                _yPanel == other._yPanel) {
+                _yPanel == other._yPanel &&
+                _side == other._side) {
                 return true;
             }
             return false;

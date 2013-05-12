@@ -19,20 +19,15 @@ namespace Forge.Core.ObjectEditor{
     /// </summary>
     internal class HullMesh : IEnumerable{
         public ObjectBuffer<HullSection> HullBuff { get; private set; }
-        readonly Side _side;
+        readonly Quadrant.Side _side;
         readonly float _boxWidth;
-
-        enum Side{
-            Left,
-            Right
-        }
 
         public HullMesh( float boundingWidth, VertexPositionNormalTexture[] verts) {
             if (verts[1].Position.Z > 0) {
-                _side = Side.Right;
+                _side = Quadrant.Side.Port;
             }
             else{
-                _side = Side.Left;
+                _side = Quadrant.Side.Starboard;
             }
             _boxWidth = boundingWidth;
 
@@ -83,25 +78,29 @@ namespace Forge.Core.ObjectEditor{
         }
 
         public void DisablePanel(float xPos, float zPos, int yPanel){
-            if (zPos > 0 && _side != Side.Right)
+            /*
+            if (!(zPos > 0 && _side == Quadrant.Side.Port))
                 return;
-            if (zPos < 0 && _side != Side.Left)
+            if (!(zPos < 0 && _side == Quadrant.Side.Starboard))
                 return;
+             */
+
+            var side = Quadrant.PointToSide(zPos);
             
             if(!HullBuff.DisableObject(
-                new HullSection(xPos, xPos+_boxWidth, yPanel))){
-                    throw new Exception("bad disable request, panel doesnt exist");
+                new HullSection(xPos, xPos + _boxWidth, yPanel, side))) {
+                    //throw new Exception("bad disable request, panel doesnt exist");
             }
         }
 
         public void EnablePanel(float xPos, float zPos, int yPanel) {
-            if (zPos > 0 && _side != Side.Right)
+            if ((zPos > 0 && _side == Quadrant.Side.Starboard))
                 return;
-            if (zPos < 0 && _side != Side.Left)
+            if ((zPos < 0 && _side == Quadrant.Side.Port))
                 return;
 
             if (!HullBuff.EnableObject(
-                new HullSection(xPos, xPos + _boxWidth, yPanel))) {
+                new HullSection(xPos, xPos + _boxWidth, yPanel, _side))) {
                     throw new Exception("bad enable request, panel doesnt exist");
             }
         }
@@ -140,7 +139,7 @@ namespace Forge.Core.ObjectEditor{
 
                 var sortedTris = CullTriangles(groupedTris, subBoxBeginX, subBoxEndX);
 
-                var id = new HullSection(subBoxBeginX, subBoxEndX, panelLayer);
+                var id = new HullSection(subBoxBeginX, subBoxEndX, panelLayer, _side);
 
                 //handling zero enclosed verts cases
                 foreach (var triangle in sortedTris[0]){
@@ -419,12 +418,12 @@ namespace Forge.Core.ObjectEditor{
             var cross = Vector3.Cross(verts[1].Position - verts[0].Position, verts[2].Position - verts[0].Position);
 
             switch (_side) {
-                case Side.Right:
+                case Quadrant.Side.Port:
                     if (cross.Z > 0) {
                         return new[] { 0,2, 1 };
                     }
                     return new[] { 0, 1, 2 };
-                case Side.Left:
+                case Quadrant.Side.Starboard:
                     if (cross.Z > 0) {
                         return new[] { 0,1, 2 };
                     }
