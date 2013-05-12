@@ -20,7 +20,6 @@ namespace Forge.Core.ObjectEditor{
     /// </summary>
     internal class HullMesh : IEnumerable{
         public ObjectBuffer<HullSection> HullBuff { get; private set; }
-        readonly int[] _idxWinding;
         readonly Side _side;
         readonly float _boxWidth;
         readonly Dictionary<float, int> _panelLookup; 
@@ -32,11 +31,9 @@ namespace Forge.Core.ObjectEditor{
 
         public HullMesh( float boundingWidth, VertexPositionNormalTexture[] verts) {
             if (verts[1].Position.Z > 0) {
-                _idxWinding = new []{ 0, 1, 2 };
                 _side = Side.Right;
             }
             else{
-                _idxWinding = new[] { 0, 2, 1};
                 _side = Side.Left;
             }
             _boxWidth = boundingWidth;
@@ -68,6 +65,8 @@ namespace Forge.Core.ObjectEditor{
 
             }
 
+            //used for rendering reference geometry
+            /*
             foreach (var layer in sortedPanels){
                 foreach (var quad in layer){
                     var q = quad.ToArray();
@@ -77,13 +76,16 @@ namespace Forge.Core.ObjectEditor{
                     va1[2].Normal = Vector3.Zero;
 
                     var hullid = new HullSection(-1, -1, 1);
-                    //tempBuff.AddObject(hullid, new int[]{0,1,2}, va1);
-                    //tempBuff.AddObject(hullid, _idxWinding, va2);
+                    tempBuff.AddObject(hullid, new int[]{0,1,2}, va1);
                 }
-            }
+            }*/
 
-            if (tempBuff.ActiveObjects == 0)
+            Debug.Assert(tempBuff.ActiveObjects != 0);
+            /*
+            if (tempBuff.ActiveObjects == 0){
                 return;
+            }
+            */
 
             HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
             HullBuff.CullMode = CullMode.None;
@@ -137,8 +139,8 @@ namespace Forge.Core.ObjectEditor{
                 //generate  statistics on this layer
                 float minX = panelVerts.Min(x => x.Position.X);
                 maxX = panelVerts.Max(x => x.Position.X);
-                float topY = panelVerts.Max(y => y.Position.Y);
-                float bottomY = panelVerts.Min(y => y.Position.Y);
+                //float topY = panelVerts.Max(y => y.Position.Y);
+                //float bottomY = panelVerts.Min(y => y.Position.Y);
 
                 subBoxBeginX = 0;
                 while (subBoxBeginX + _boxWidth < minX){
@@ -159,6 +161,11 @@ namespace Forge.Core.ObjectEditor{
                 //handling case where one vert is enclosed within the box
                 foreach (var triangle in sortedTris[1]) {
                     SliceSingleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
+                }
+
+                //handling case where two verts are enclosed within the box
+                foreach (var triangle in sortedTris[2]) {
+                    SliceDoubleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
                 }
 
                 subBoxBeginX += _boxWidth;
@@ -327,8 +334,42 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
+        void SliceDoubleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+            var sideVert = (from vert in triangle
+                            where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
+                            select vert).Single();
+            var middle = (from vert in triangle
+                          where vert.Position.X > subBoxBegin && vert.Position.X < subBoxEnd
+                          select vert).ToArray();
+
+            float interpLimit = sideVert.Position.X > subBoxEnd ? subBoxEnd : subBoxBegin;
+
+            var interpPos1 = Lerp.Trace3X(sideVert.Position, middle[0].Position, interpLimit);
+            var interpPos2 = Lerp.Trace3X(sideVert.Position, middle[1].Position, interpLimit);
+
+            var interpNorm1 = InterpolateNorm(sideVert.Normal, middle[0].Normal, sideVert.Position, middle[0].Position, interpPos1);
+            var interpNorm2 = InterpolateNorm(sideVert.Normal, middle[1].Normal, sideVert.Position, middle[1].Position, interpPos2);
+
+            var interpUV1 = InterpolateUV(sideVert.TextureCoordinate, middle[0].TextureCoordinate, sideVert.Position, middle[0].Position, interpPos1);
+            var interpUV2 = InterpolateUV(sideVert.TextureCoordinate, middle[1].TextureCoordinate, sideVert.Position, middle[1].Position, interpPos2);
+
+            var interpVert1 = new VertexPositionNormalTexture(interpPos1, interpNorm1, interpUV1);
+            var interpVert2 = new VertexPositionNormalTexture(interpPos2, interpNorm2, interpUV2);
+
+            var t1 = new [] { interpVert1, interpVert2, middle[0] };
+            var t2 = new[] { middle[0], middle[1], interpVert2 };
+
+            var t1I = GenerateIndiceList(t1);
+            var t2I = GenerateIndiceList(t2);
+
+            var id = new HullSection(subBoxBegin, subBoxEnd, 2);
+
+            buff.AddObject(id, t1I, t1);
+            buff.AddObject(id, t2I, t2);
+        }
+
         /// <summary>
-        /// Culls the triangles that don't cross the x-region defined by subboxbegin and subboxend
+        /// Culls the triangles that don't cross the x-region defined by subboxbegin and subboxend. Then sorts these triangles into arrays based on how many of their verts intersect the bounding region.
         /// </summary>
         /// <param name="groupedTriangles"></param>
         /// <param name="subBoxBegin"></param>
@@ -386,6 +427,11 @@ namespace Forge.Core.ObjectEditor{
             return retList;
         }
 
+        /// <summary>
+        /// Generates correctly wound indice list for the provided vertexes. Only actually requires the position of the VertexPositionNormalTexture to be defined.
+        /// </summary>
+        /// <param name="verts"></param>
+        /// <returns></returns>
         int[] GenerateIndiceList(VertexPositionNormalTexture[] verts) {
             Debug.Assert(verts != null);
             var cross = Vector3.Cross(verts[1].Position - verts[0].Position, verts[2].Position - verts[0].Position);
@@ -430,7 +476,6 @@ namespace Forge.Core.ObjectEditor{
              */
             return ret;
         }
-
 
         public CullMode CullMode{
             set { HullBuff.CullMode = value; }
