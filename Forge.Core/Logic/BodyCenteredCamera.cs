@@ -18,7 +18,8 @@ namespace Forge.Core.Logic{
         float _cameraDistance;
         float _cameraPhi;
         float _cameraTheta;
-
+        const float _camAngularSpeed = 0.005f;//0.01f
+        const float _camScrollSpeedDivisor = 100f;
         /// <summary>
         ///   default constructor makes it recieve from entire screen
         /// </summary>
@@ -43,10 +44,10 @@ namespace Forge.Core.Logic{
                     if (!state.KeyboardState.IsKeyDown(Keys.LeftControl)){
                         int dx = state.MousePos.X - state.PrevState.MousePos.X;
                         int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
-                        const float camAngularSpeed = 0.003f;//0.01f
+                        
                         if (state.RightButtonState == ButtonState.Pressed){
-                            _cameraPhi -= dy * camAngularSpeed;
-                            _cameraTheta += dx * camAngularSpeed;
+                            _cameraPhi -= dy * _camAngularSpeed;
+                            _cameraTheta += dx * _camAngularSpeed;
 
                             if (_cameraPhi > (float) Math.PI - 0.01f){
                                 _cameraPhi = (float) Math.PI - 0.01f;
@@ -86,7 +87,7 @@ namespace Forge.Core.Logic{
 
             if (state.AllowMouseScrollInterpretation){
                 if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
-                    _cameraDistance += -state.MouseScrollChange/200f;
+                    _cameraDistance += -state.MouseScrollChange / _camScrollSpeedDivisor;
                     if (_cameraDistance < 5){
                         _cameraDistance = 5;
                     }
