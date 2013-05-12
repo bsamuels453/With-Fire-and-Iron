@@ -76,11 +76,6 @@ namespace Forge.Core.ObjectEditor{
             }
             */
             Debug.Assert(tempBuff.ActiveObjects != 0);
-            /*
-            if (tempBuff.ActiveObjects == 0){
-                return;
-            }
-            */
 
             HullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
             HullBuff.CullMode = CullMode.None;
