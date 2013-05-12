@@ -4,7 +4,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Forge.Core.Airship;
 using Forge.Framework.Draw;
@@ -22,7 +21,6 @@ namespace Forge.Core.ObjectEditor{
         public ObjectBuffer<HullSection> HullBuff { get; private set; }
         readonly Side _side;
         readonly float _boxWidth;
-        readonly Dictionary<float, int> _panelLookup; 
 
         enum Side{
             Left,
@@ -46,24 +44,20 @@ namespace Forge.Core.ObjectEditor{
             }
 
             var sortedPanels = (from grp in groupedPanels
-                                group grp by grp.Min(x => x.Position.Y) into layers
+                                group grp by grp.Max(x => x.Position.Y) into layers
                                 select layers.ToArray()).ToArray();
-            
-            _panelLookup = new Dictionary<float, int>(5);
-            foreach (var layer in sortedPanels.Reverse()) {
-                _panelLookup.Add(layer[0].ElementAt(2).Position.Y, _panelLookup.Count);
-            }
 
             //xxx need better estimation for number of objects
             var tempBuff = new ObjectBuffer<HullSection>((int)(400*5/boundingWidth), 1, 3, 3, "Shader_AirshipHull");
             tempBuff.UpdateBufferManually = true;
 
+            int layerIdx = 0;
             foreach (var layer in sortedPanels){
-                var totalLayerVerts = from tri in layer
+                var totalLayerVerts = (from tri in layer
                                       from vert in tri
-                                      select vert;
-                SubdividePanel(tempBuff, totalLayerVerts.ToArray());
-
+                                      select vert).ToArray();
+                SubdividePanel(tempBuff, totalLayerVerts, layerIdx);
+                layerIdx++;
             }
 
             //used for rendering reference geometry. not taking this out after done debugging because it produces a really cool z fighting effect.
@@ -117,10 +111,7 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts) {
-            var sw = new Stopwatch();
-            sw.Start();
-
+        void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, int panelLayer) {
             var groupedTris = new VertexPositionNormalTexture[panelVerts.Length / 3][];
             float subBoxBeginX;
             float subBoxEndX;
@@ -154,30 +145,29 @@ namespace Forge.Core.ObjectEditor{
 
                 var sortedTris = CullTriangles(groupedTris, subBoxBeginX, subBoxEndX);
 
+                var id = new HullSection(subBoxBeginX, subBoxEndX, panelLayer);
+
                 //handling zero enclosed verts cases
                 foreach (var triangle in sortedTris[0]){
-                    SliceZeroEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
+                    SliceZeroEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
                 }
 
                 //handling case where one vert is enclosed within the box
                 foreach (var triangle in sortedTris[1]) {
-                    SliceSingleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
+                    SliceSingleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
                 }
 
                 //handling case where two verts are enclosed within the box
                 foreach (var triangle in sortedTris[2]) {
-                    SliceDoubleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX);
+                    SliceDoubleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
                 }
 
                 subBoxBeginX += _boxWidth;
                 subBoxEndX += _boxWidth;
             }
-
-            double d = sw.ElapsedMilliseconds;
-            int f = 4;
         }
 
-        void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+        void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier){
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
@@ -228,7 +218,6 @@ namespace Forge.Core.ObjectEditor{
             var a1UV = InterpolateUV(satellites[0].TextureCoordinate, anchor.TextureCoordinate, satellites[0].Position, anchor.Position, a1Pos);
             var a2UV = InterpolateUV(satellites[1].TextureCoordinate, anchor.TextureCoordinate, satellites[1].Position, anchor.Position, a2Pos);
 
-            HullSection id = new HullSection(subBoxBegin, subBoxEnd, 2);
             var s1 = new VertexPositionNormalTexture(s1Pos, s1Norm, s1UV);
             var s2 = new VertexPositionNormalTexture(s2Pos, s2Norm, s2UV);
 
@@ -242,11 +231,11 @@ namespace Forge.Core.ObjectEditor{
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
-            buff.AddObject(id, t1I, t1);
-            buff.AddObject(id, t2I, t2);
+            buff.AddObject(identifier, t1I, t1);
+            buff.AddObject(identifier, t2I, t2);
         }
 
-        void SliceSingleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+        void SliceSingleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
             var leftSide = (from vert in triangle
                             where vert.Position.X > subBoxEnd
                             select vert).ToArray();
@@ -257,7 +246,6 @@ namespace Forge.Core.ObjectEditor{
                           where vert.Position.X >= subBoxBegin && vert.Position.X <= subBoxEnd
                           select vert).Single();
 
-            var id = new HullSection(subBoxBegin, subBoxEnd, 2);
             if (leftSide.Length == 2 || leftSide.Length == 0) {
                 VertexPositionNormalTexture[] anchorVerts;
                 float interpLimit;
@@ -286,7 +274,7 @@ namespace Forge.Core.ObjectEditor{
 
                 var t1 = new[] { interpVert1, middle, interpVert2 };
                 var t1I = GenerateIndiceList(t1);
-                buff.AddObject(id, t1I, t1);
+                buff.AddObject(identifier, t1I, t1);
                  
             }
             else{
@@ -329,13 +317,13 @@ namespace Forge.Core.ObjectEditor{
                 var t2I = GenerateIndiceList(t2);
                 var t3I = GenerateIndiceList(t3);
 
-                buff.AddObject(id, t1I, t1);
-                buff.AddObject(id, t2I, t2);
-                buff.AddObject(id, t3I, t3);
+                buff.AddObject(identifier, t1I, t1);
+                buff.AddObject(identifier, t2I, t2);
+                buff.AddObject(identifier, t3I, t3);
             }
         }
 
-        void SliceDoubleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
+        void SliceDoubleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
             var sideVert = (from vert in triangle
                             where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
                             select vert).Single();
@@ -363,10 +351,8 @@ namespace Forge.Core.ObjectEditor{
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
-            var id = new HullSection(subBoxBegin, subBoxEnd, 2);
-
-            buff.AddObject(id, t1I, t1);
-            buff.AddObject(id, t2I, t2);
+            buff.AddObject(identifier, t1I, t1);
+            buff.AddObject(identifier, t2I, t2);
         }
 
         /// <summary>
