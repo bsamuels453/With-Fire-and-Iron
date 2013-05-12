@@ -40,8 +40,9 @@ namespace Forge.Core.ObjectEditor{
 
             var groupedPanels = new List<IEnumerable<VertexPositionNormalTexture>>();
             for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4){
-                groupedPanels.Add(verts.Skip(panelIdx).Take(3));
-                groupedPanels.Add(verts.Skip(panelIdx+1).Take(3));
+                var temp = verts.Skip(panelIdx).Take(4).ToArray();
+                groupedPanels.Add(new []{temp[0], temp[1], temp[2]});
+                groupedPanels.Add(new[] { temp[2], temp[3], temp[0] });
             }
 
             var sortedPanels = (from grp in groupedPanels
@@ -65,11 +66,11 @@ namespace Forge.Core.ObjectEditor{
 
             }
 
-            //used for rendering reference geometry
+            //used for rendering reference geometry. not taking this out after done debugging because it produces a really cool z fighting effect.
             /*
             foreach (var layer in sortedPanels){
-                foreach (var quad in layer){
-                    var q = quad.ToArray();
+                foreach (var tri in layer){
+                    var q = tri.ToArray();
                     var va1 = new []{q[0],q[1],q[2]};
                     va1[0].Normal = Vector3.Zero;
                     va1[1].Normal = Vector3.Zero;
@@ -78,8 +79,8 @@ namespace Forge.Core.ObjectEditor{
                     var hullid = new HullSection(-1, -1, 1);
                     tempBuff.AddObject(hullid, new int[]{0,1,2}, va1);
                 }
-            }*/
-
+            }
+            */
             Debug.Assert(tempBuff.ActiveObjects != 0);
             /*
             if (tempBuff.ActiveObjects == 0){
@@ -247,13 +248,13 @@ namespace Forge.Core.ObjectEditor{
 
         void SliceSingleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd){
             var leftSide = (from vert in triangle
-                            where vert.Position.X >= subBoxEnd
+                            where vert.Position.X > subBoxEnd
                             select vert).ToArray();
             var rightSide = (from vert in triangle
-                             where vert.Position.X <= subBoxBegin
+                             where vert.Position.X < subBoxBegin
                              select vert).ToArray();
             var middle = (from vert in triangle
-                          where vert.Position.X > subBoxBegin && vert.Position.X < subBoxEnd
+                          where vert.Position.X >= subBoxBegin && vert.Position.X <= subBoxEnd
                           select vert).Single();
 
             var id = new HullSection(subBoxBegin, subBoxEnd, 2);
@@ -375,7 +376,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="subBoxBegin"></param>
         /// <param name="subBoxEnd"></param>
         /// <returns></returns>
-        static List<VertexPositionNormalTexture[]>[] CullTriangles(
+        List<VertexPositionNormalTexture[]>[] CullTriangles(
             VertexPositionNormalTexture[][] groupedTriangles,
             float subBoxBegin,
             float subBoxEnd) {
@@ -384,10 +385,10 @@ namespace Forge.Core.ObjectEditor{
 
             #region anon methods
             Func<VertexPositionNormalTexture[], float, float, int> numEnclosedVerts =
-                (triangle, start, end) => {
+                (triangle, begin, end) => {
                     int tot = 0;
                     foreach (var vert in triangle) {
-                        if (vert.Position.X < end && vert.Position.X > start)
+                        if (vert.Position.X <= end && vert.Position.X >= begin)
                             tot++;
                     }
                     return tot;
@@ -403,7 +404,7 @@ namespace Forge.Core.ObjectEditor{
                     foreach (var v1 in triangle) {
                         foreach (var v2 in triangle) {
                             //through the magic of looping only one if statement is required
-                            if (v1.Position.X > end && v2.Position.X < start)
+                            if (v1.Position.X >= end && v2.Position.X <= start)
                                 return true;
                         }
                     }
