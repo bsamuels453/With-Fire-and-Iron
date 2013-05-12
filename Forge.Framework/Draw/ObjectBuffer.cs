@@ -86,22 +86,22 @@ namespace Forge.Framework.Draw{
         }
 
         public void RemoveObject(TIdentifier identifier){
-            var objectToRemove =
+            var objectToRemove = (
                 from obj in _objectData
                 where obj.Identifier.Equals(identifier)
-                select obj;
+                select obj).ToArray();
 
             if (!objectToRemove.Any())
                 return;
-            foreach (var obj in objectToRemove){
-                _isSlotOccupied[obj.ObjectOffset] = false;
+            for (int objIdx = 0; objIdx < objectToRemove.Count(); objIdx++){
+                _isSlotOccupied[objectToRemove[objIdx].ObjectOffset] = false;
                 for (int i = 0; i < IndiciesPerObject; i++){
-                    _indicies[obj.ObjectOffset*IndiciesPerObject + i] = 0;
+                    _indicies[objectToRemove[objIdx].ObjectOffset*IndiciesPerObject + i] = 0;
                 }
                 if (!UpdateBufferManually){
                     base.BaseIndexBuffer.SetData(_indicies);
                 }
-                _objectData.Remove(obj);
+                _objectData.Remove(objectToRemove[objIdx]);
             }
         }
 

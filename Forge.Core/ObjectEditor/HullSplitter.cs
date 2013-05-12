@@ -42,7 +42,7 @@ namespace Forge.Core.ObjectEditor{
                                 select layers.ToArray()).ToArray();
 
             //xxx need better estimation for number of objects
-            var tempBuff = new ObjectBuffer<HullSection>((int)(400 * 5 / boundingWidth), 1, 3, 3, "Shader_AirshipHull");
+            var tempBuff = new ObjectBuffer<HullSection>((int)(400 * 7 / boundingWidth), 1, 3, 3, "Shader_AirshipHull");
             tempBuff.UpdateBufferManually = true;
 
             int layerIdx = 0;
@@ -127,6 +127,12 @@ namespace Forge.Core.ObjectEditor{
                 foreach (var triangle in sortedTris[2]) {
                     SliceDoubleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
                 }
+
+                foreach (var triangle in sortedTris[3]) {
+                    var idxLi = GenerateIndiceList(triangle);
+                    buff.AddObject(id, idxLi, triangle);
+                }
+
 
                 subBoxBeginX += _boxWidth;
                 subBoxEndX += _boxWidth;
@@ -333,7 +339,7 @@ namespace Forge.Core.ObjectEditor{
             float subBoxBegin,
             float subBoxEnd) {
 
-            var retList = new List<VertexPositionNormalTexture[]>[3];
+            var retList = new List<VertexPositionNormalTexture[]>[4];
 
             #region anon methods
             Func<VertexPositionNormalTexture[], float, float, int> numEnclosedVerts =
@@ -375,7 +381,8 @@ namespace Forge.Core.ObjectEditor{
                 retList[i] = new List<VertexPositionNormalTexture[]>();
             }
             foreach (var triangle in filteredTris) {
-                retList[numEnclosedVerts(triangle, subBoxBegin, subBoxEnd)].Add(triangle);
+                int numContained = numEnclosedVerts(triangle, subBoxBegin, subBoxEnd);
+                retList[numContained].Add(triangle);
             }
             return retList;
         }

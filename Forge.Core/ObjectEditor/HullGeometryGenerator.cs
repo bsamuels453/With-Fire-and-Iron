@@ -416,16 +416,17 @@ namespace Forge.Core.ObjectEditor {
             int vertsInSilhouette = deckSVerts[0][0].Length;
 
             var hullMeshBuffs = new List<ObjectBuffer<HullSection>>[numDecks];
-            for (int i = 0; i < numDecks; i++)
+            for (int i = 0; i < hullMeshBuffs.Length; i++)
                 hullMeshBuffs[i] = new List<ObjectBuffer<HullSection>>(2);
 
             //now set up the display buffer for each deck's wall
             for (int i = 0; i < deckSVerts.Length; i++){
                 // ReSharper disable AccessToModifiedClosure
+                #region generateBuff
                 Func<int, int, ObjectBuffer<HullSection>> generateBuff = (start, end) => {
                     var hullMesh = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
                     var hullNormals = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
-                    int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
+                    //int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
                     VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((primitivesPerDeck) * (vertsInSilhouette / 2-1));
 
                     //get the hull normals for this part of the hull from the total normals
@@ -447,12 +448,13 @@ namespace Forge.Core.ObjectEditor {
                     MeshHelper.Encode2DListIntoArray(primitivesPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
                     //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
                     MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
-                    if (i != deckSVerts.Length-1) {
+                    if (i != deckSVerts.Length) {
                         return HullSplitter.SplitLayerGeometry(0.5f, hullVerticies);
                     }
                     return null;
                 };
                 // ReSharper restore AccessToModifiedClosure
+                #endregion
 
                 hullMeshBuffs[i].Add(generateBuff(0, vertsInSilhouette / 2));
                 hullMeshBuffs[i].Add(generateBuff(vertsInSilhouette / 2, vertsInSilhouette));

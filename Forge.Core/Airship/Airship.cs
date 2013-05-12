@@ -47,17 +47,18 @@ namespace Forge.Core.Airship {
 
             //this minus 1 is because of the faux lowest layer
             for(int i=0; i<hullBuffers.Length-1; i++){
-                var maxObjects = HullBuffers.Sum(b => b.MaxObjects);
+                var maxObjects = hullBuffers.Sum(b => b[0].MaxObjects + b[1].MaxObjects);
 
                 HullBuffers[i] = new ObjectBuffer<HullSection>(
                     maxObjects,
-                    HullBuffers[0].IndiciesPerObject / 3,
-                    HullBuffers[0].VerticiesPerObject,
-                    HullBuffers[0].IndiciesPerObject,
+                    hullBuffers[0][0].IndiciesPerObject / 3,
+                    hullBuffers[0][0].VerticiesPerObject,
+                    hullBuffers[0][0].IndiciesPerObject,
                     "Shader_AirshipHull"
                     );
-                foreach (var buffer in HullBuffers) {
-                    HullBuffers[i].AbsorbBuffer(buffer, true);
+                foreach (var buffer in hullBuffers) {
+                    HullBuffers[i].AbsorbBuffer(buffer[0], true);
+                    HullBuffers[i].AbsorbBuffer(buffer[1], true);
                 }
             }
 
