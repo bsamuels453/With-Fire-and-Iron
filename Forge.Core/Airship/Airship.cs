@@ -50,8 +50,10 @@ namespace Forge.Core.Airship {
                 var layerBuffs = (from mesh in hullBuffers[i]
                                     select  mesh.HullBuff).ToList();
 
+                var maxObjects = layerBuffs.Sum(b => b.MaxObjects);
+
                 HullBuffers[i] = new ObjectBuffer<HullSection>(
-                    layerBuffs.Count * layerBuffs[0].MaxObjects,
+                    maxObjects,
                     layerBuffs[0].IndiciesPerObject / 3,
                     layerBuffs[0].VerticiesPerObject,
                     layerBuffs[0].IndiciesPerObject,
