@@ -24,6 +24,8 @@ namespace Forge.Core.ObjectEditor {
     internal static class HullGeometryGenerator{
         const int _primHeightPerDeck = 5;
         const int _horizontalPrimDivisor = 2;
+        const float _deckHeight = 2.13f;
+        const float _bBoxWidth = 0.5f;
 
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
@@ -32,27 +34,23 @@ namespace Forge.Core.ObjectEditor {
             var sw = new Stopwatch();
             sw.Start();
 #endif
-            const float deckHeight = 2.13f;
-            const float bBoxWidth = 0.5f;
             var genResults = GenerateHull(new GenerateHullParams{
                 BackCurveInfo = backCurveInfo,
                 SideCurveInfo = sideCurveInfo,
                 TopCurveInfo = topCurveInfo,
-                DeckHeight = deckHeight,
-                BoundingBoxWidth = bBoxWidth,
+                DeckHeight = _deckHeight,
+                BoundingBoxWidth = _bBoxWidth,
                 PrimitivesPerDeck = _primHeightPerDeck
             }
                 );
             var normalGenResults = GenerateHullNormals(genResults.LayerSilhouetteVerts);
             var deckFloorPlates = GenerateDeckPlates(genResults.LayerSilhouetteVerts, genResults.NumDecks, _primHeightPerDeck);
-            var boundingBoxResults = GenerateDeckBoundingBoxes(bBoxWidth, deckFloorPlates);
-            var hullBuffers = GenerateDeckWallBuffers(
+            var boundingBoxResults = GenerateDeckBoundingBoxes(_bBoxWidth, deckFloorPlates);
+            var hullBuffers = GenerateHullBuffers(
                 genResults.DeckSilhouetteVerts, 
                 normalGenResults.NormalMesh, 
                 genResults.NumDecks, 
-                _primHeightPerDeck,
-                boundingBoxResults.BoxMin,
-                boundingBoxResults.BoxMax
+                genResults.Length
             );
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
 
@@ -64,9 +62,9 @@ namespace Forge.Core.ObjectEditor {
             //resultant.HullWallTexBuffers = hullBuffers;
             resultant.HullMeshes = hullBuffers;
             resultant.NumDecks = genResults.NumDecks;
-            resultant.WallResolution = bBoxWidth;
-            resultant.DeckHeight = deckHeight;
-            resultant.MaxBoundingBoxDims = new Vector2((int) (genResults.Length/bBoxWidth), (int) (genResults.Berth/bBoxWidth));
+            resultant.WallResolution = _bBoxWidth;
+            resultant.DeckHeight = _deckHeight;
+            resultant.MaxBoundingBoxDims = new Vector2((int) (genResults.Length/_bBoxWidth), (int) (genResults.Berth/_bBoxWidth));
 
 #if OUTPUT_GENERATION_TIMINGS
             double d = sw.ElapsedMilliseconds;
@@ -99,6 +97,7 @@ namespace Forge.Core.ObjectEditor {
             results.Berth = topCurveInfo[1].Pos.Y;
             results.Length = sideCurveInfo[2].Pos.X;
             results.NumDecks = (int)(draft / deckHeight) + 1;
+            results.Depth = sideCurveInfo[1].Pos.Y;
             int numVerticalVertexes = (results.NumDecks-1)*primitivesPerDeck + primitivesPerDeck + 1;
 
             //get the y values for the hull
@@ -246,6 +245,7 @@ namespace Forge.Core.ObjectEditor {
             //for (int level = 0; level < primitivesPerDeck + 1; level++){
             //    results.DeckSilhouetteVerts[results.NumDecks][level] = results.LayerSilhouetteVerts[results.NumDecks*(primitivesPerDeck) + level];
             //}
+
             return results;
         }
 
@@ -412,27 +412,40 @@ namespace Forge.Core.ObjectEditor {
             return ret;
         }
 
-        static List<ObjectBuffer<HullSection>>[] GenerateDeckWallBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, int primitivesPerDeck, float boxMin, float boxMax) {
+        static ObjectBuffer<int>[] 
+            GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length) {
+
+            //first thing we do is generate a dictionary that links HullSectionIdentifier and section uid
+                int estDictSize = (int)(numDecks * _primHeightPerDeck * (length / _bBoxWidth)) * 2;
+                var hullSectionLookup = new Dictionary<IEquatable<HullSectionIdentifier>, int>(estDictSize);
+                int id = 0;
+                for (float x = 0; x < length; x+=_bBoxWidth){
+                    for (int deck = 0; deck < numDecks; deck++){
+                        for (int panel=0; panel < _primHeightPerDeck; panel++){
+                            hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Port, deck), id);
+                            id++;
+                            hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Starboard, deck), id);
+                            id++;
+                        }
+                    }
+                }
+
             int vertsInSilhouette = deckSVerts[0][0].Length;
-
-            var hullMeshBuffs = new List<ObjectBuffer<HullSection>>[numDecks];
-            for (int i = 0; i < hullMeshBuffs.Length; i++)
-                hullMeshBuffs[i] = new List<ObjectBuffer<HullSection>>(2);
-
+            var hullMeshBuffs = new ObjectBuffer<int>[numDecks];
             //now set up the display buffer for each deck's wall
             for (int i = 0; i < deckSVerts.Length; i++){
                 // ReSharper disable AccessToModifiedClosure
                 #region generateBuff
-                Func<int, int, ObjectBuffer<HullSection>> generateBuff = (start, end) => {
-                    var hullMesh = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
-                    var hullNormals = new Vector3[primitivesPerDeck + 1, vertsInSilhouette / 2];
+                Func<int, int, List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>> generateBuff = (start, end) => {
+                    var hullMesh = new Vector3[_primHeightPerDeck + 1, vertsInSilhouette / 2];
+                    var hullNormals = new Vector3[_primHeightPerDeck + 1, vertsInSilhouette / 2];
                     //int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
-                    VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((primitivesPerDeck) * (vertsInSilhouette / 2-1));
+                    VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((_primHeightPerDeck) * (vertsInSilhouette / 2 - 1));
 
                     //get the hull normals for this part of the hull from the total normals
-                    for (int x = 0; x < primitivesPerDeck + 1; x++) {
+                    for (int x = 0; x < _primHeightPerDeck + 1; x++) {
                         for (int z = start; z < end; z++) {
-                            hullNormals[x, z - start] = normalMesh[i * primitivesPerDeck + x, z];
+                            hullNormals[x, z - start] = normalMesh[i * _primHeightPerDeck + x, z];
                         }
                     }
                     //convert the 2d list heightmap into a 2d array heightmap
@@ -445,19 +458,27 @@ namespace Forge.Core.ObjectEditor {
                         }
                     }
 
-                    MeshHelper.Encode2DListIntoArray(primitivesPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
+                    MeshHelper.Encode2DListIntoArray(_primHeightPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
                     //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
                     MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
                     if (i != deckSVerts.Length) {
-                        return HullSplitter.SplitLayerGeometry(0.5f, hullVerticies);
+                        return HullSplitter.SplitLayerGeometry(0.5f, hullVerticies, i);
                     }
                     return null;
                 };
                 // ReSharper restore AccessToModifiedClosure
                 #endregion
 
-                hullMeshBuffs[i].Add(generateBuff(0, vertsInSilhouette / 2));
-                hullMeshBuffs[i].Add(generateBuff(vertsInSilhouette / 2, vertsInSilhouette));
+                var triangles = (generateBuff(0, vertsInSilhouette / 2));
+                triangles.AddRange(generateBuff(vertsInSilhouette / 2, vertsInSilhouette));
+
+                var buff = new ObjectBuffer<int>(triangles.Count, 1, 3, 3, "Shader_AirshipHull");
+
+                foreach (var triangle in triangles){
+                    buff.AddObject(hullSectionLookup[triangle.Item3], triangle.Item2, triangle.Item1);
+                }
+
+                hullMeshBuffs[i] = buff;
             }
             return hullMeshBuffs;
         }
@@ -640,6 +661,7 @@ namespace Forge.Core.ObjectEditor {
             public Vector3[][] LayerSilhouetteVerts;
             public float Length;
             public int NumDecks;
+            public float Depth;
         }
 
         #endregion
@@ -662,7 +684,7 @@ namespace Forge.Core.ObjectEditor {
         public List<Vector3>[] FloorVertexes;
         public GeometryBuffer<VertexPositionNormalTexture>[] HullWallTexBuffers;
         public Vector2 MaxBoundingBoxDims;
-        public List<ObjectBuffer<HullSection>>[] HullMeshes;
+        public ObjectBuffer<int>[] HullMeshes;
         public int NumDecks;
         public float WallResolution;
     }
