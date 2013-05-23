@@ -21,7 +21,8 @@ namespace Forge.Core.ObjectEditor{
         static Quadrant.Side _side;
         static float _boxWidth;
 
-        public static ObjectBuffer<HullSection> SplitLayerGeometry(float boundingWidth, VertexPositionNormalTexture[] verts) {
+        public static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
+            SplitLayerGeometry(float boundingWidth, VertexPositionNormalTexture[] verts, int deck) {
             if (verts[1].Position.Z > 0) {
                 _side = Quadrant.Side.Port;
             }
@@ -41,16 +42,14 @@ namespace Forge.Core.ObjectEditor{
                                 group grp by grp.Max(x => x.Position.Y) into layers
                                 select layers.ToArray()).ToArray();
 
-            //xxx need better estimation for number of objects
-            var tempBuff = new ObjectBuffer<HullSection>((int)(400 * 7 / boundingWidth), 1, 3, 3, "Shader_AirshipHull");
-            tempBuff.UpdateBufferManually = true;
+            var retTuple = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>((int)(400 * 7 / boundingWidth));
 
             int layerIdx = 0;
             foreach (var layer in sortedPanels) {
                 var totalLayerVerts = (from tri in layer
                                        from vert in tri
                                        select vert).ToArray();
-                SubdividePanel(tempBuff, totalLayerVerts, layerIdx);
+                retTuple.AddRange(SubdividePanel(totalLayerVerts, layerIdx, deck));
                 layerIdx++;
             }
 
@@ -69,15 +68,15 @@ namespace Forge.Core.ObjectEditor{
                 }
             }
             */
-            Debug.Assert(tempBuff.ActiveObjects != 0);
 
-            var retHullBuff = new ObjectBuffer<HullSection>(tempBuff.ActiveObjects, 1, 3, 3, "Shader_AirshipHull");
-            retHullBuff.CullMode = CullMode.None;
-            retHullBuff.AbsorbBuffer(tempBuff, true);
-            return retHullBuff;
+            return retTuple;
         }
 
-        static void SubdividePanel(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] panelVerts, int panelLayer) {
+        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
+            SubdividePanel(VertexPositionNormalTexture[] panelVerts, int panelLayer, int deck) {
+
+            var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(5);
+
             var groupedTris = new VertexPositionNormalTexture[panelVerts.Length / 3][];
             float subBoxBeginX;
             float subBoxEndX;
@@ -111,35 +110,37 @@ namespace Forge.Core.ObjectEditor{
 
                 var sortedTris = CullTriangles(groupedTris, subBoxBeginX, subBoxEndX);
 
-                var id = new HullSection(subBoxBeginX, subBoxEndX, panelLayer, _side);
+                var id = new HullSectionIdentifier(subBoxBeginX, panelLayer, _side, deck);
 
                 //handling zero enclosed verts cases
                 foreach (var triangle in sortedTris[0]){
-                    SliceZeroEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
+                    ret.AddRange(SliceZeroEnclosureTriangle(triangle, subBoxBeginX, subBoxEndX, id));
                 }
 
                 //handling case where one vert is enclosed within the box
                 foreach (var triangle in sortedTris[1]) {
-                    SliceSingleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
+                    ret.AddRange(SliceSingleEnclosureTriangle(triangle, subBoxBeginX, subBoxEndX, id));
                 }
 
                 //handling case where two verts are enclosed within the box
                 foreach (var triangle in sortedTris[2]) {
-                    SliceDoubleEnclosureTriangle(buff, triangle, subBoxBeginX, subBoxEndX, id);
+                    ret.AddRange(SliceDoubleEnclosureTriangle(triangle, subBoxBeginX, subBoxEndX, id));
                 }
 
                 foreach (var triangle in sortedTris[3]) {
                     var idxLi = GenerateIndiceList(triangle);
-                    buff.AddObject(id, idxLi, triangle);
+                    ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(
+                        triangle, idxLi, id));
                 }
 
 
                 subBoxBeginX += _boxWidth;
                 subBoxEndX += _boxWidth;
             }
+            return ret;
         }
 
-        static void SliceZeroEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
+        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>> SliceZeroEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier) {
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
@@ -203,11 +204,14 @@ namespace Forge.Core.ObjectEditor{
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
-            buff.AddObject(identifier, t1I, t1);
-            buff.AddObject(identifier, t2I, t2);
+            var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t2, t2I, identifier));
+            return ret;
         }
 
-        static void SliceSingleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
+        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>> 
+            SliceSingleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier) {
             var leftSide = (from vert in triangle
                             where vert.Position.X > subBoxEnd
                             select vert).ToArray();
@@ -246,7 +250,9 @@ namespace Forge.Core.ObjectEditor{
 
                 var t1 = new[] { interpVert1, middle, interpVert2 };
                 var t1I = GenerateIndiceList(t1);
-                buff.AddObject(identifier, t1I, t1);
+                var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
+                return ret;
                  
             }
             else{
@@ -289,13 +295,16 @@ namespace Forge.Core.ObjectEditor{
                 var t2I = GenerateIndiceList(t2);
                 var t3I = GenerateIndiceList(t3);
 
-                buff.AddObject(identifier, t1I, t1);
-                buff.AddObject(identifier, t2I, t2);
-                buff.AddObject(identifier, t3I, t3);
+                var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t2, t2I, identifier));
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t3, t3I, identifier));
+                return ret;
             }
         }
 
-        static void SliceDoubleEnclosureTriangle(ObjectBuffer<HullSection> buff, VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSection identifier) {
+        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
+            SliceDoubleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier) {
             var sideVert = (from vert in triangle
                             where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
                             select vert).Single();
@@ -323,8 +332,10 @@ namespace Forge.Core.ObjectEditor{
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
-            buff.AddObject(identifier, t1I, t1);
-            buff.AddObject(identifier, t2I, t2);
+            var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t2, t2I, identifier));
+            return ret;
         }
 
         /// <summary>
