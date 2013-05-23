@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Forge.Core.ObjectEditor;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
@@ -252,10 +253,7 @@ namespace Forge.Core.Airship{
             modelAttribs.MaxTurnSpeed = 4f;
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;
-            
-
-
-
+            modelAttribs.Centroid = new Vector3(modelAttribs.Length / 3, 0, 0);
 
             /*
             int numDecks = jObj["NumDecks"].ToObject<int>();
@@ -295,10 +293,30 @@ namespace Forge.Core.Airship{
                 hullBuffs[i].VertexBuffer.SetData(hullVerts[i]);
             }
             */
+
+            foreach (var buffer in hullData.HullMeshes) {
+                buffer.ApplyTransform((vert) => {
+                    vert.Position.X *= -1;
+                    return vert;
+                }
+                );
+            }
+
+            foreach (var buffer in hullData.DeckFloorBuffers) {
+                buffer.ApplyTransform((vert) => {
+                    vert.Position.X *= -1;
+                    return vert;
+                }
+                );
+            }
+
+
+
+
+
             var ret = new Airship(modelAttribs, hullData.DeckFloorBuffers, hullData.HullMeshes);
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
-
 
             return ret;
         }

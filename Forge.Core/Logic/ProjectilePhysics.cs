@@ -14,7 +14,7 @@ namespace Forge.Core.Logic{
     internal class ProjectilePhysics : IDisposable{
         #region Delegates
 
-        public delegate void CollisionCallback(Vector3 intersectPos, Vector3 velocity);
+        public delegate void CollisionCallback(int id, Vector3 intersectPos, Vector3 velocity);
 
         #endregion
 
@@ -53,8 +53,8 @@ namespace Forge.Core.Logic{
             _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
         }
 
-        public CollisionObjectHandle AddCollisionObject(CollisionObject[] collisionObjects, EntityVariant variant, CollisionCallback collisionCallback){
-            var objInternalData = new CollisionObjectCollection(collisionObjects, variant);
+        public CollisionObjectHandle AddShipCollisionObjects(CollisionObject[] collisionObjects, BoundingSphere soi,  EntityVariant variant, CollisionCallback collisionCallback){
+            var objInternalData = new CollisionObjectCollection(collisionObjects, variant, soi);
 
             var objPublicInterface = new CollisionObjectHandle(
                 setObjectMatrix: matrix => objInternalData.WorldMatrix = matrix,
@@ -99,11 +99,14 @@ namespace Forge.Core.Logic{
         }
 
         public void Update(double timeDelta){
+            var sw = new Stopwatch();
+            sw.Start();
             float timeDeltaSec = (float)timeDelta / 1000f;
             _worldDynamics.StepSimulation(timeDeltaSec, 100);
 
             //check for collisions
             foreach (var projectileDat in _projectiles){
+                
                 foreach (var shipDat in _boundingObjData){
                     var projectileMtx = projectileDat.MotionState.WorldTransform;
                     var shipMtx = shipDat.WorldMatrix;
@@ -111,10 +114,14 @@ namespace Forge.Core.Logic{
                     var invShipMtx = Matrix.Invert(shipMtx);
                     var projectilePos = Common.MultMatrix(invShipMtx, projectileMtx.Translation);
 
+                    if (Vector3.Distance(projectilePos, shipDat.ShipSOI.Center) > shipDat.ShipSOI.Radius)
+                        continue;
+
                     foreach (var boundingObj in shipDat.CollisionObjects){
                         //fast check to see if the projectile is in same area as the object
+                        sw.Start();
                         foreach (var point in boundingObj.Vertexes){
-                            if (Vector3.Distance(projectilePos, point) < 10f){
+                            if (Vector3.Distance(projectilePos, point) < 5f){
                                 //object confirmed to be in general area
                                 //now check to see if its movement path intersects the object's triangles
                                 var worldPt = Common.MultMatrix(shipMtx, point);
@@ -138,7 +145,7 @@ namespace Forge.Core.Logic{
 
                                 if (intersectionConfirmed){
                                     //xxxx these params are not correct (point transform)
-                                    shipDat.CollisionEventDispatcher.Invoke(point, velocity);
+                                    shipDat.CollisionEventDispatcher.Invoke(boundingObj.Id, point, velocity);//add id
                                 }
 
                                 break;
@@ -146,7 +153,11 @@ namespace Forge.Core.Logic{
                         }
                     }
                 }
+                
             }
+            sw.Stop();
+            DebugConsole.WriteLine("Active: " + _projectiles.Count);
+            DebugConsole.WriteLine("Physics loop: "+sw.ElapsedMilliseconds + " ms");
         }
 
         #region Nested type: CollisionObject
@@ -154,8 +165,15 @@ namespace Forge.Core.Logic{
         /// <summary>
         ///   Used to define a collision object. IntersectPoints are used for fast-checking whether or not projectiles intersect this object.
         /// </summary>
-        public class CollisionObject{
+        public struct CollisionObject{
+            public int Id;
             public Vector3[] Vertexes;
+
+            public CollisionObject(int id, Vector3[] vertexes){
+                Id = id;
+                Vertexes = vertexes;
+                Debug.Assert(vertexes.Length == 3);
+            }
         }
 
         #endregion
@@ -165,6 +183,7 @@ namespace Forge.Core.Logic{
         /// Internal class that's used to group together collision objects, such as the plates on the side of an airship, into one class.
         /// </summary>
         class CollisionObjectCollection{
+            public readonly BoundingSphere ShipSOI;
             public readonly CollisionObject[] CollisionObjects;
             public readonly EntityVariant Type;
 
@@ -175,10 +194,11 @@ namespace Forge.Core.Logic{
 
             public Matrix WorldMatrix;
 
-            public CollisionObjectCollection(CollisionObject[] collisionObjects, EntityVariant type){
+            public CollisionObjectCollection(CollisionObject[] collisionObjects, EntityVariant type, BoundingSphere soi){
                 CollisionObjects = collisionObjects;
                 Type = type;
                 WorldMatrix = Matrix.Identity;
+                ShipSOI = soi;
             }
         }
 

@@ -20,10 +20,13 @@ namespace Forge.Core.Airship {
         readonly AirshipController _controller;
         readonly HullIntegrityMesh _hullIntegrityMesh;
 
-        public Vector3 Centroid { get; private set; }
+        //public Vector3 Centroid { get; private set; }
         public ObjectBuffer<ObjectIdentifier>[] DeckBuffers { get; private set; }
-        public ObjectBuffer<HullSection>[] HullBuffers { get; private set; }
+        public ObjectBuffer<int>[] HullBuffers { get; private set; }
 
+        /// <summary>
+        /// Reflects  the current position of the airship, as measured from its center.
+        /// </summary>
         public Vector3 Position{
             get { return _controller.Position; }
         }
@@ -35,63 +38,30 @@ namespace Forge.Core.Airship {
         public Airship(
             ModelAttributes airshipModel,
             ObjectBuffer<ObjectIdentifier>[] deckBuffers,
-            List<ObjectBuffer<HullSection>>[] hullBuffers
+            ObjectBuffer<int>[] hullBuffers
             ){
             _curDeck = 0;
             _numDecks = airshipModel.NumDecks;
             ModelAttributes = airshipModel;
-            _projectilePhysics = new ProjectilePhysics();
+            _projectilePhysics = new ProjectilePhysics();//oh my god get this out of here
             DeckBuffers = deckBuffers;
+            HullBuffers = hullBuffers;
 
-            HullBuffers = new ObjectBuffer<HullSection>[hullBuffers.Length-1];
-
-            //this minus 1 is because of the faux lowest layer
-            for(int i=0; i<hullBuffers.Length-1; i++){
-                var maxObjects = hullBuffers.Sum(b => b[0].MaxObjects + b[1].MaxObjects);
-
-                HullBuffers[i] = new ObjectBuffer<HullSection>(
-                    maxObjects,
-                    hullBuffers[0][0].IndiciesPerObject / 3,
-                    hullBuffers[0][0].VerticiesPerObject,
-                    hullBuffers[0][0].IndiciesPerObject,
-                    "Shader_AirshipHull"
-                    );
-                foreach (var buffer in hullBuffers) {
-                    HullBuffers[i].AbsorbBuffer(buffer[0], true);
-                    HullBuffers[i].AbsorbBuffer(buffer[1], true);
-                }
-            }
-
-            foreach (var buffer in HullBuffers){
-                buffer.ApplyTransform((vert) => {
-                    vert.Position.X *= -1;
-                    return vert;
-                }
-                );
-            }
-
-            foreach (var buffer in DeckBuffers) {
-                buffer.ApplyTransform((vert) => {
-                    vert.Position.X *= -1;
-                    return vert;
-                }
-                );
-            }
-
-            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, ModelAttributes.Length);
-
-            _hardPoints = new List<Hardpoint>();
-            _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
 
             var movementState = new AirshipMovementState();
             movementState.Angle = new Vector3(0, 0, 0);
-            movementState.CurPosition = new Vector3(airshipModel.Length/ 3, 1000, 0);
+            movementState.CurPosition = new Vector3(airshipModel.Length / 3, 2000, 0);
 
             _controller = new PlayerAirshipController(
                 SetAirshipWMatrix,
                 ModelAttributes,
                 movementState
                 );
+
+            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, _projectilePhysics, _controller.Position, ModelAttributes.Length);
+
+            _hardPoints = new List<Hardpoint>();
+            _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
         }
 
         public void Update(ref InputState state, double timeDelta){

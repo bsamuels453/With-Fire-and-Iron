@@ -127,6 +127,10 @@
     <Reference Include="OpenCLTemplate">
       <HintPath>..\lib\OpenCLTemplate.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.622, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Bin\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
@@ -150,10 +154,12 @@
     <Compile Include="Airship\AirshipManagerState.cs" />
     <Compile Include="Airship\AirshipMovementState.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
+    <Compile Include="Airship\AirshipRenderingData.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
     <Compile Include="Airship\HullIntegrityHandler.cs" />
     <Compile Include="Airship\HullIntegrityMesh.cs" />
     <Compile Include="Airship\HullSection.cs" />
+    <Compile Include="Airship\HullSectionIdentifier.cs" />
     <Compile Include="Airship\ModelAttributes.cs" />
     <Compile Include="Airship\PlayerAirshipController.cs" />
     <Compile Include="Airship\Quadrant.cs" />
