@@ -1,4 +1,4 @@
-﻿#define OUTPUT_GENERATION_TIMINGS
+﻿#define PROFILE_AIRSHIP_GENERATION
 
 using System;
 using System.Collections.Generic;
@@ -30,7 +30,7 @@ namespace Forge.Core.ObjectEditor {
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
         public static HullGeometryInfo GenerateShip(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo){
-#if OUTPUT_GENERATION_TIMINGS
+#if PROFILE_AIRSHIP_GENERATION
             var sw = new Stopwatch();
             sw.Start();
 #endif
@@ -46,27 +46,45 @@ namespace Forge.Core.ObjectEditor {
             var normalGenResults = GenerateHullNormals(genResults.LayerSilhouetteVerts);
             var deckFloorPlates = GenerateDeckPlates(genResults.LayerSilhouetteVerts, genResults.NumDecks, _primHeightPerDeck);
             var boundingBoxResults = GenerateDeckBoundingBoxes(_bBoxWidth, deckFloorPlates);
-            var hullBuffers = GenerateHullBuffers(
+            var hullBuffResults = GenerateHullBuffers(
                 genResults.DeckSilhouetteVerts, 
                 normalGenResults.NormalMesh, 
                 genResults.NumDecks, 
                 genResults.Length
             );
+            
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
+
+            foreach (var buffer in hullBuffResults.Item1) {
+                buffer.ApplyTransform((vert) => {
+                    vert.Position.X *= -1;
+                    return vert;
+                }
+                );
+            }
+
+            foreach (var buffer in deckFloorBuffers) {
+                buffer.ApplyTransform((vert) => {
+                    vert.Position.X *= -1;
+                    return vert;
+                }
+                );
+            }
+            var hullSections = GenerateHullSections(hullBuffResults.Item2, hullBuffResults.Item1);
 
             var resultant = new HullGeometryInfo();
             resultant.CenterPoint = normalGenResults.Centroid;
             resultant.DeckFloorBoundingBoxes = boundingBoxResults.DeckBoundingBoxes;
             resultant.DeckFloorBuffers = deckFloorBuffers;
             resultant.FloorVertexes = boundingBoxResults.DeckVertexes;
-            //resultant.HullWallTexBuffers = hullBuffers;
-            resultant.HullMeshes = hullBuffers;
+            resultant.HullMeshes = hullBuffResults.Item1;
             resultant.NumDecks = genResults.NumDecks;
             resultant.WallResolution = _bBoxWidth;
             resultant.DeckHeight = _deckHeight;
             resultant.MaxBoundingBoxDims = new Vector2((int) (genResults.Length/_bBoxWidth), (int) (genResults.Berth/_bBoxWidth));
+            resultant.HullSections = hullSections;
 
-#if OUTPUT_GENERATION_TIMINGS
+#if PROFILE_AIRSHIP_GENERATION
             double d = sw.ElapsedMilliseconds;
             DebugConsole.WriteLine("Airship generated in " + d + " ms");
 #endif
@@ -412,7 +430,7 @@ namespace Forge.Core.ObjectEditor {
             return ret;
         }
 
-        static ObjectBuffer<int>[] 
+        static Tuple<ObjectBuffer<int>[], Dictionary<IEquatable<HullSectionIdentifier>, int>> 
             GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length) {
 
             //first thing we do is generate a dictionary that links HullSectionIdentifier and section uid
@@ -480,7 +498,7 @@ namespace Forge.Core.ObjectEditor {
 
                 hullMeshBuffs[i] = buff;
             }
-            return hullMeshBuffs;
+            return new Tuple<ObjectBuffer<int>[], Dictionary<IEquatable<HullSectionIdentifier>, int>>(hullMeshBuffs, hullSectionLookup);
         }
 
         static Vector3 GenerateCenterPoint(Vector3[,] totalMesh){
@@ -629,6 +647,98 @@ namespace Forge.Core.ObjectEditor {
             return ret;
         }
 
+        static HullSectionContainer GenerateHullSections(Dictionary<IEquatable<HullSectionIdentifier>, int> hullIdRef, ObjectBuffer<int>[] buffers){
+
+            var hullIdRefInv = hullIdRef.ToDictionary(pair => pair.Value, pair => pair.Key);
+
+            //first obtain all the shard data via objectbuffer dump
+            var estTotSize = buffers.Sum(b => b.MaxObjects);
+            var totalShardData = new List<ObjectBuffer<int>.ObjectData>(estTotSize);
+            foreach (var buffer in buffers){
+                var dump = buffer.DumpObjectData();
+                foreach (ObjectBuffer<int>.ObjectData obj in dump) {
+                    totalShardData.Add(obj);
+                }
+            }
+            totalShardData.TrimExcess();
+
+            //group the shard data into sections
+            var groupedSections = (from section in totalShardData
+                                   group section by section.Identifier).ToArray();
+
+
+            var hullSections = new List<HullSection>(groupedSections.Count());
+            foreach (var section in groupedSections){
+                Vector3[] aliasedVertexes;
+
+                {
+                    //first obtain the aliased vertexes of the section
+                    var cumulativeVerts = new List<Vector3>(30);
+                    foreach (var shard in section){
+                        cumulativeVerts.AddRange(from v in shard.Verticies select v.Position);
+                    }
+                    float maxY = cumulativeVerts.Max(v => v.Y);
+                    float minY = cumulativeVerts.Min(v => v.Y);
+
+                    //wish there was a way to linq  this next part, but there isnt
+                    Vector3 invalidVert = new Vector3(-1, -1, -1);
+                    Vector3 maxXmaxY = invalidVert;
+                    Vector3 minXmaxY = invalidVert;
+                    Vector3 maxXminY = invalidVert;
+                    Vector3 minXminY = invalidVert;
+                    float maxXtop = float.MinValue;
+                    float minXtop = float.MaxValue;
+                    float maxXbot = float.MinValue;
+                    float minXbot = float.MaxValue;
+                    // ReSharper disable CompareOfFloatsByEqualityOperator
+                    foreach (var vert in cumulativeVerts){
+                        if (vert.Y == maxY){
+                            if (vert.X > maxXtop){
+                                maxXmaxY = vert;
+                                maxXtop = vert.X;
+                            }
+                            if (vert.X < minXtop){
+                                minXmaxY = vert;
+                                minXtop = vert.X;
+                            }
+                        }
+                        if (vert.Y == minY){
+                            if (vert.X > maxXbot){
+                                maxXminY = vert;
+                                maxXbot = vert.X;
+                            }
+                            if (vert.X < minXbot){
+                                minXminY = vert;
+                                minXbot = vert.X;
+                            }
+                        }
+                    }
+                    // ReSharper restore CompareOfFloatsByEqualityOperator
+                    Debug.Assert(maxXmaxY != invalidVert);
+                    Debug.Assert(minXmaxY != invalidVert);
+                    Debug.Assert(maxXminY != invalidVert);
+                    Debug.Assert(minXminY != invalidVert);
+
+                    aliasedVertexes = new[] { maxXmaxY, minXmaxY, minXminY, maxXmaxY, maxXminY, minXminY };
+                }
+
+                int uid = (int)section.First().Identifier;
+
+                var identifier = (HullSectionIdentifier)hullIdRefInv[uid];
+                var homeBuffer = from buff in buffers where buff.Contains(uid) select buff;
+
+                hullSections.Add(new HullSection(
+                    uid,
+                    aliasedVertexes,
+                    identifier,
+                    homeBuffer.Single()
+                    )
+                    );
+            }
+
+            return new HullSectionContainer(hullSections);
+        }
+
         #region Nested type: BoundingBoxResult
 
         struct BoundingBoxResult{
@@ -687,5 +797,6 @@ namespace Forge.Core.ObjectEditor {
         public ObjectBuffer<int>[] HullMeshes;
         public int NumDecks;
         public float WallResolution;
+        public HullSectionContainer HullSections;
     }
 }
