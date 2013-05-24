@@ -1,4 +1,6 @@
-﻿#region
+﻿//#define PROFILE_PHYSICS
+
+#region
 
 using System;
 using System.Collections.Generic;
@@ -31,11 +33,11 @@ namespace Forge.Core.Logic{
 
         readonly List<CollisionObjectCollection> _boundingObjData;
         readonly RigidBodyConstructionInfo _defaultShotCtor;
-        readonly List<RigidBody> _projectiles;
+        readonly List<Projectile> _projectiles;
         readonly DiscreteDynamicsWorld _worldDynamics;
 
         public ProjectilePhysics(){
-            _defProjectile = new ProjectileAttributes(113832, 0.0285f, 2f);
+            _defProjectile = new ProjectileAttributes(832, 0.0285f, 2f);
             const float gravity = -10;
             var broadphase = new DbvtBroadphase();
             var collisionConfig = new DefaultCollisionConfiguration();
@@ -46,7 +48,7 @@ namespace Forge.Core.Logic{
             _worldDynamics.Gravity = new Vector3(0, gravity, 0);
 
             _boundingObjData = new List<CollisionObjectCollection>();
-            _projectiles = new List<RigidBody>();
+            _projectiles = new List<Projectile>();
 
             var shape = new SphereShape(_defProjectile.Radius);
             var nullMotion = new DefaultMotionState(Matrix.Identity);
@@ -75,60 +77,76 @@ namespace Forge.Core.Logic{
             body.ApplyCentralForce(angle*_defProjectile.FiringForce);
             _worldDynamics.AddRigidBody(body);
 
-            _projectiles.Add(body);
-
-            var retInterface = new Projectile(
+            var projectile = new Projectile(
+                body,
                 getPosition: () => body.CenterOfMassPosition,
-                terminate: () =>{
-                               _projectiles.Remove(body);
+                terminate: (proj) =>{
+                               _projectiles.Remove(proj);
                                _worldDynamics.RemoveRigidBody(body);
                                body.Dispose();
+                               foreach (var collisionObjectCollection in _boundingObjData){
+                                   collisionObjectCollection.BlacklistedProjectiles.Remove(proj);
+                               }
                            }
                 );
 
-            return retInterface;
+            _projectiles.Add(projectile);
+            return projectile;
         }
 
         public void Dispose(){
-            foreach (var body in _projectiles) {
-                _worldDynamics.RemoveRigidBody(body);
-                body.Dispose();
+            foreach (var projectile in _projectiles) {
+                _worldDynamics.RemoveRigidBody(projectile.Body);
+                projectile.Body.Dispose();
             }
             _defaultShotCtor.Dispose();
             _worldDynamics.Dispose();
         }
 
         public void Update(double timeDelta){
+#if PROFILE_PHYSICS
             var sw = new Stopwatch();
             sw.Start();
+#endif
             float timeDeltaSec = (float)timeDelta / 1000f;
             _worldDynamics.StepSimulation(timeDeltaSec, 100);
 
             //check for collisions
-            foreach (var projectileDat in _projectiles){
+            foreach (var projectile in _projectiles){
                 
                 foreach (var shipDat in _boundingObjData){
-                    var projectileMtx = projectileDat.MotionState.WorldTransform;
+                    //make sure this projectile is allowed to collide with this ship
+                    if(shipDat.BlacklistedProjectiles.Contains(projectile)){
+                        continue;
+                    }
+
+
+                    var projectileMtx = projectile.Body.MotionState.WorldTransform;
                     var shipMtx = shipDat.WorldMatrix;
 
                     var invShipMtx = Matrix.Invert(shipMtx);
                     var projectilePos = Common.MultMatrix(invShipMtx, projectileMtx.Translation);
 
-                    if (Vector3.Distance(projectilePos, shipDat.ShipSOI.Center) > shipDat.ShipSOI.Radius)
+                    if (Vector3.Distance(projectilePos, Vector3.Zero) > shipDat.ShipSOI.Radius)
                         continue;
 
                     foreach (var boundingObj in shipDat.CollisionObjects){
                         //fast check to see if the projectile is in same area as the object
-                        sw.Start();
                         foreach (var point in boundingObj.Vertexes){
-                            if (Vector3.Distance(projectilePos, point) < 5f){
+                            if (Vector3.Distance(projectilePos, point) < 1f) {
                                 //object confirmed to be in general area
                                 //now check to see if its movement path intersects the object's triangles
                                 var worldPt = Common.MultMatrix(shipMtx, point);
-                                var velocity = projectileDat.GetVelocityInLocalPoint(worldPt);
+                                var velocity = projectile.Body.GetVelocityInLocalPoint(worldPt);
+                                if (velocity.Length() == 0)
+                                    continue;
+                                var rawvel = velocity;
+                                velocity.Normalize();
                                 var velocityRay = new Ray(projectilePos, velocity);
 
-                                bool intersectionConfirmed = false;
+                                bool intersectionConfirmed = true;//false
+                                //for now this is disabled because havent implemented a way to represent the entire projectile rather than just its central velocity vector
+                                /*
                                 for (int i = 0; i < boundingObj.Vertexes.Length; i += 3){
                                     float? dist;
                                     Common.RayIntersectsTriangle(
@@ -142,10 +160,11 @@ namespace Forge.Core.Logic{
                                         break;
                                     }
                                 }
-
+                                */
                                 if (intersectionConfirmed){
                                     //xxxx these params are not correct (point transform)
-                                    shipDat.CollisionEventDispatcher.Invoke(boundingObj.Id, point, velocity);//add id
+                                    shipDat.BlacklistedProjectiles.Add(projectile);
+                                    shipDat.CollisionEventDispatcher.Invoke(boundingObj.Id, point, rawvel);//add id
                                 }
 
                                 break;
@@ -155,9 +174,11 @@ namespace Forge.Core.Logic{
                 }
                 
             }
+#if PROFILE_PHYSICS
             sw.Stop();
             DebugConsole.WriteLine("Active: " + _projectiles.Count);
             DebugConsole.WriteLine("Physics loop: "+sw.ElapsedMilliseconds + " ms");
+#endif
         }
 
         #region Nested type: CollisionObject
@@ -186,6 +207,7 @@ namespace Forge.Core.Logic{
             public readonly BoundingSphere ShipSOI;
             public readonly CollisionObject[] CollisionObjects;
             public readonly EntityVariant Type;
+            public readonly List<Projectile> BlacklistedProjectiles; 
 
             /// <summary>
             ///   Position of target sphere, velocity of projectile relative to sphere Implement projectile relative speed multiplier here
@@ -199,6 +221,7 @@ namespace Forge.Core.Logic{
                 Type = type;
                 WorldMatrix = Matrix.Identity;
                 ShipSOI = soi;
+                BlacklistedProjectiles = new List<Projectile>();
             }
         }
 
@@ -228,16 +251,22 @@ namespace Forge.Core.Logic{
         public class Projectile : IEquatable<Projectile> {
             //why these delegates? remove them later
             public readonly Func<Vector3> GetPosition;
-            public readonly Action Terminate; //not sure when this is actually needed. might be better to do a timeout
+            readonly Action<Projectile> _terminate; //not sure when this is actually needed. might be better to do a timeout
             //public event Action<float, Vector3, Vector3> OnCollision; //theres no real reason for the projectile to care about OnCollision (yet)
-            public Projectile(Func<Vector3> getPosition, Action terminate){
+            public readonly RigidBody Body;
+            public Projectile(RigidBody body, Func<Vector3> getPosition, Action<Projectile> terminate){
+                Body = body;
                 GetPosition = getPosition;
-                Terminate = terminate;
+                _terminate = terminate;
+            }
+
+            public void Terminate(){
+                _terminate.Invoke(this);
             }
 
             public bool Equals(Projectile other){
                 //kinda hacky
-                return GetPosition == other.GetPosition && Terminate == other.Terminate;
+                return _terminate == other._terminate;
             }
         }
 
