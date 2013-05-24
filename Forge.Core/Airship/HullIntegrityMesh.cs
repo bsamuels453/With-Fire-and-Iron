@@ -23,94 +23,63 @@ namespace Forge.Core.Airship{
         const float _meshOffsetGreen = 1.015f;
         readonly ObjectBuffer<int> _greenBuff;
 
-        readonly List<HullPlate> _hullPlates;
         readonly ObjectBuffer<int> _orangeBuff;
         readonly ObjectBuffer<int> _redBuff;
-        ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
-        Func<HullSectionIdentifier, bool> _disableHullSection;
-        Func<HullSectionIdentifier, bool> _enableHullSection;
+        readonly ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
 
         public HullIntegrityMesh(
             ObjectBuffer<int>[] hullBuffers,
+            HullSectionContainer hullSections,
             ProjectilePhysics projectilePhysics,
             Vector3 shipCentroid,
             float length) {
 
             #region setup collision objects
 
-            _hullPlates = new List<HullPlate>(4000);
             var cumulativeBufferData = new List<ObjectBuffer<int>.ObjectData>(hullBuffers.Length*hullBuffers[0].MaxObjects);
             foreach (var buffer in hullBuffers){
                 cumulativeBufferData.AddRange(buffer.DumpObjectData());
             }
 
-            var groupedHullSections = (from obj in cumulativeBufferData
-                group obj by obj.Identifier).ToArray();
-
             var collisionObjects = new List<ProjectilePhysics.CollisionObject>();
-            int id = 0; //later we make the id associated with plates
 
-            foreach (var section in groupedHullSections){
-                //need to get 4 representative vertexes of this section of hull
-                var cumulativeVerts = new List<Vector3>(30);
-                foreach (var obj in section){
-                    cumulativeVerts.AddRange(from v in obj.Verticies select v.Position);
-                }
-                float maxY = cumulativeVerts.Max(v => v.Y);
-                float minY = cumulativeVerts.Max(v => v.Y);
-
-                //wish there was a way to linq  this next part, but there isnt
-                Vector3 invalidVert = new Vector3(-1, -1, -1);
-                Vector3 maxXmaxY = invalidVert;
-                Vector3 minXmaxY = invalidVert;
-                Vector3 maxXminY = invalidVert;
-                Vector3 minXminY = invalidVert;
-                float maxXtop = float.MinValue;
-                float minXtop = float.MaxValue;
-                float maxXbot = float.MinValue;
-                float minXbot = float.MaxValue;
-                // ReSharper disable CompareOfFloatsByEqualityOperator
-                foreach (var vert in cumulativeVerts){
-                    if (vert.Y == maxY){
-                        if (vert.X > maxXtop){
-                            maxXmaxY = vert;
-                            maxXtop = vert.X;
-                        }
-                        if (vert.X < minXtop){
-                            minXmaxY = vert;
-                            minXtop = vert.X;
-                        }
-                    }
-                    if (vert.Y == minY){
-                        if (vert.X > maxXbot){
-                            maxXminY = vert;
-                            maxXbot = vert.X;
-                        }
-                        if (vert.X < minXbot){
-                            minXminY = vert;
-                            minXbot = vert.X;
-                        }
-                    }
-                }
-                // ReSharper restore CompareOfFloatsByEqualityOperator
-                Debug.Assert(maxXmaxY != invalidVert);
-                Debug.Assert(minXmaxY != invalidVert);
-                Debug.Assert(maxXminY != invalidVert);
-                Debug.Assert(minXminY != invalidVert);
-                collisionObjects.Add(new ProjectilePhysics.CollisionObject(id, new[]{minXmaxY, maxXmaxY, maxXminY}));
-                collisionObjects.Add(new ProjectilePhysics.CollisionObject(id, new[]{minXmaxY, minXminY, maxXminY}));
-
-                _hullPlates.Add(new HullPlate(id, section.Key));
-
-                id++;
+            foreach (var section in hullSections){
+                var cSection = (HullSection)section;
+                /*
+                collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
+                    new Vector3(-100,-100,-100),
+                    new Vector3(-100,-100,100),
+                    new Vector3(100,-100,100)
+                }));
+                collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
+                    new Vector3(-100,-100,-100),
+                    new Vector3(100,-100,-100),
+                    new Vector3(100,-100,100)
+                                    }));
+                 */
+                
+                collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
+                    cSection.AliasedVertexes[0], 
+                    cSection.AliasedVertexes[1], 
+                    cSection.AliasedVertexes[2] 
+                }));
+                collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
+                    cSection.AliasedVertexes[3], 
+                    cSection.AliasedVertexes[4], 
+                    cSection.AliasedVertexes[5] 
+                }));
             }
-            _hullPlates.TrimExcess();
 
             #endregion
 
             var boundingSphere = new BoundingSphere(shipCentroid, length);
 
-            projectilePhysics.AddShipCollisionObjects(collisionObjects.ToArray(), boundingSphere, ProjectilePhysics.EntityVariant.EnemyShip, OnCollision);
+            _collisionObjectHandle = projectilePhysics.AddShipCollisionObjects(
+                collisionObjects.ToArray(), 
+                boundingSphere, 
+                ProjectilePhysics.EntityVariant.EnemyShip, 
+                OnCollision
+                );
 
             //initalize mesh buffers
             #region
@@ -178,31 +147,20 @@ namespace Forge.Core.Airship{
                 _redBuff.WorldMatrix = value;
                 _orangeBuff.WorldMatrix = value;
                 _greenBuff.WorldMatrix = value;
+                _collisionObjectHandle.SetObjectMatrix(value);
             }
         }
 
         void OnCollision(int id, Vector3 position, Vector3 velocity){
-            int f = 4;
+            if(_greenBuff.IsObjectEnabled(id)){
+                _greenBuff.DisableObject(id);
+            }
+
         }
 
         void UpdateDamageTexture(Vector3 position){
             //make sure position is unwrapped and is not in world coordinates
             throw new NotImplementedException();
         }
-
-        //todo: generalize this to HullSection
-        #region Nested type: HullPlate
-
-        struct HullPlate{
-            public int Id;
-            public IEquatable<int> SectionIdentifier;
-
-            public HullPlate(int id, IEquatable<int> sectionIdentifier){
-                Id = id;
-                SectionIdentifier = sectionIdentifier;
-            }
-        }
-
-        #endregion
     }
 }
