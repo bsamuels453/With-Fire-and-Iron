@@ -23,6 +23,7 @@ namespace Forge.Core.Airship {
         //public Vector3 Centroid { get; private set; }
         public ObjectBuffer<ObjectIdentifier>[] DeckBuffers { get; private set; }
         public ObjectBuffer<int>[] HullBuffers { get; private set; }
+        public HullSectionContainer HullSections { get; private set; }
 
         /// <summary>
         /// Reflects  the current position of the airship, as measured from its center.
@@ -38,11 +39,13 @@ namespace Forge.Core.Airship {
         public Airship(
             ModelAttributes airshipModel,
             ObjectBuffer<ObjectIdentifier>[] deckBuffers,
-            ObjectBuffer<int>[] hullBuffers
+            ObjectBuffer<int>[] hullBuffers,
+            HullSectionContainer hullSections
             ){
             _curDeck = 0;
             _numDecks = airshipModel.NumDecks;
             ModelAttributes = airshipModel;
+            HullSections = hullSections;
             _projectilePhysics = new ProjectilePhysics();//oh my god get this out of here
             DeckBuffers = deckBuffers;
             HullBuffers = hullBuffers;
@@ -58,10 +61,10 @@ namespace Forge.Core.Airship {
                 movementState
                 );
 
-            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, _projectilePhysics, _controller.Position, ModelAttributes.Length);
+            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, HullSections, _projectilePhysics, _controller.Position, ModelAttributes.Length);
 
             _hardPoints = new List<Hardpoint>();
-            _hardPoints.Add(new Hardpoint(new Vector3(0, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
+            _hardPoints.Add(new Hardpoint(new Vector3(-25, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
         }
 
         public void Update(ref InputState state, double timeDelta){
