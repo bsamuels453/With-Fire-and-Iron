@@ -185,10 +185,16 @@ namespace Forge.Framework.Draw{
         }
 
         public bool Contains(IEquatable<TIdentifier> identifier){
-            var li = from o in _objectData where o.Identifier == identifier select o;
+            var li = from o in _objectData where o.Identifier.Equals(identifier) select o;
             if (li.Any())
                 return true;
             return false;
+        }
+
+        public bool IsObjectEnabled(IEquatable<TIdentifier> identifier){
+            Debug.Assert(Contains(identifier));
+            var objArr = from o in _objectData where o.Identifier.Equals(identifier) select o;
+            return objArr.First().Enabled;
         }
 
         /// <summary>
