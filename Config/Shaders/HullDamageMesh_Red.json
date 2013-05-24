@@ -1,0 +1,8 @@
+{
+	"InternalAbbreviation": "Shader_DamageMeshRed",
+	"DiffuseLightDirection": "0,-1,1",
+	"DiffuseIntensity": "0.8",
+	"AmbientIntensity": "0.2",
+	"Texture": "Materials/DamageMesh_Red",
+	"Shader": "HLSL/StandardEffect"
+}

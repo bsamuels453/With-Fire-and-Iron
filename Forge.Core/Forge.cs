@@ -1,3 +1,5 @@
+#define PLAYMODE
+
 #region
 
 using System;
@@ -51,12 +53,14 @@ namespace Forge.Core{
             p.Dispose();
             Exit();
              */
+#if PLAYMODE
             GamestateManager.UseGlobalRenderTarget = true;
             GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new TerrainManagerState());
             GamestateManager.AddGameState(new AirshipManagerState());
-            
-            //GamestateManager.AddGameState(new HullEditorState());
+#else
+            GamestateManager.AddGameState(new HullEditorState());
+#endif
 
             IsMouseVisible = true;
             base.Initialize();

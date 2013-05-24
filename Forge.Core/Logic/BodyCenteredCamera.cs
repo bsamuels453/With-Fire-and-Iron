@@ -18,15 +18,16 @@ namespace Forge.Core.Logic{
         float _cameraDistance;
         float _cameraPhi;
         float _cameraTheta;
-
+        const float _camAngularSpeed = 0.005f;//0.01f
+        const float _camScrollSpeedDivisor = 100f;
         /// <summary>
         ///   default constructor makes it recieve from entire screen
         /// </summary>
         /// <param name="boundingBox"> </param>
         public BodyCenteredCamera(Rectangle? boundingBox = null){
-            _cameraPhi = 1.2f;
-            _cameraTheta = 1.93f;
-            _cameraDistance = 60;
+            _cameraPhi = 1.19f;
+            _cameraTheta = -3.65f;
+            _cameraDistance = 29.4f;
             if (boundingBox != null){
                 _boundingBox = (Rectangle) boundingBox;
             }
@@ -43,10 +44,10 @@ namespace Forge.Core.Logic{
                     if (!state.KeyboardState.IsKeyDown(Keys.LeftControl)){
                         int dx = state.MousePos.X - state.PrevState.MousePos.X;
                         int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
-
+                        
                         if (state.RightButtonState == ButtonState.Pressed){
-                            _cameraPhi -= dy*0.01f;
-                            _cameraTheta += dx*0.01f;
+                            _cameraPhi -= dy * _camAngularSpeed;
+                            _cameraTheta += dx * _camAngularSpeed;
 
                             if (_cameraPhi > (float) Math.PI - 0.01f){
                                 _cameraPhi = (float) Math.PI - 0.01f;
@@ -86,7 +87,7 @@ namespace Forge.Core.Logic{
 
             if (state.AllowMouseScrollInterpretation){
                 if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
-                    _cameraDistance += -state.MouseScrollChange/20f;
+                    _cameraDistance += -state.MouseScrollChange / _camScrollSpeedDivisor;
                     if (_cameraDistance < 5){
                         _cameraDistance = 5;
                     }
@@ -106,6 +107,7 @@ namespace Forge.Core.Logic{
 
         public void SetCameraTarget(Vector3 target){
             CameraTarget = target;
+            //CameraTarget = new Vector3(-10.65f, -1.68f, -0.488f);
 
             CameraPosition.X = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Cos(_cameraTheta)) + CameraTarget.X;
             CameraPosition.Z = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Sin(_cameraTheta)) + CameraTarget.Z;

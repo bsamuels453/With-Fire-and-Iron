@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Forge.Core.Airship;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
@@ -20,7 +21,7 @@ namespace Forge.Core.ObjectEditor {
         public readonly ObjectBuffer<ObjectIdentifier>[] DeckBuffers;
         public readonly float DeckHeight;
         public readonly List<Vector3>[] DeckVertexes;
-        public readonly List<HullMesh>[] HullBuffers;
+        public readonly ObjectBuffer<int>[] HullBuffers;
         public readonly int NumDecks;
         public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
         public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
@@ -61,7 +62,7 @@ namespace Forge.Core.ObjectEditor {
         //these will save from having to do array[curDeck] all the time elsewhere in the editor
         public ObjectBuffer<ObjectIdentifier> CurDeckBuffer { get; private set; }
         public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
-        public List<HullMesh> CurHullBuffer { get; private set; }
+        public ObjectBuffer<int> CurHullBuffer { get; private set; }
         public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
         public List<BoundingBox> CurDeckBoundingBoxes { get; private set; }
         public List<Vector3> CurDeckVertexes { get; private set; }
@@ -117,7 +118,7 @@ namespace Forge.Core.ObjectEditor {
                         CurDeck--;
                         tempFloorBuff[i].Enabled = true;
                         tempWWallBuff[i].Enabled = true;
-                        tempWallBuff[i].ForEach(item => item.CullMode = CullMode.None);
+                        tempWallBuff[i].CullMode = CullMode.None;
                         break;
                     }
                 }
@@ -130,7 +131,7 @@ namespace Forge.Core.ObjectEditor {
                     if (DeckBuffers[i].Enabled) {
                         CurDeck++;
                         DeckBuffers[i].Enabled = false;
-                        HullBuffers[i].ForEach(item => item.CullMode = CullMode.CullClockwiseFace);
+                        HullBuffers[i].CullMode = CullMode.CullCounterClockwiseFace; 
                         WallBuffers[i].Enabled = false;
                         break;
                     }

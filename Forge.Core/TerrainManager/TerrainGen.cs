@@ -86,7 +86,7 @@ namespace Forge.Core.TerrainManager{
             if (loadFromSource){
                 _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_Generator"));
 #if CPU_DEBUG
-                _generationPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\GenTerrain.cl", null, IntPtr.Zero); //use option -I + scriptDir for header search
+                _generationPrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\GenTerrain.cl", null, IntPtr.Zero); //use option -I + scriptDir for header search
 #else
                 _generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
 #endif
@@ -128,7 +128,7 @@ namespace Forge.Core.TerrainManager{
             if (loadFromSource){
                 _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_QTree"));
 #if CPU_DEBUG
-                _qTreePrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\Quadtree.cl", null, IntPtr.Zero);
+                _qTreePrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\Quadtree.cl", null, IntPtr.Zero);
 #else
                 _qTreePrgm.Build(null, "", null, IntPtr.Zero);
 #endif
@@ -171,7 +171,7 @@ namespace Forge.Core.TerrainManager{
             if (loadFromSource){
                 _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_VertexWinder"));
 #if CPU_DEBUG
-                _winderPrgm.Build(null, @"-g -s D:\Projects\Gondola\Scripts\VertexWinder.cl", null, IntPtr.Zero);
+                _winderPrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\VertexWinder.cl", null, IntPtr.Zero);
 #else
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
 #endif

@@ -55,7 +55,7 @@ namespace Forge.Core.Airship{
 
         public void Terminate(){
             foreach (var projectile in _activeProjectiles){
-                projectile.Terminate.Invoke();
+                projectile.Terminate();
             }
         }
 

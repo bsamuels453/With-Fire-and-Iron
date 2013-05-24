@@ -2,34 +2,64 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
 
 namespace Forge.Core.Airship {
-    public class HullSection : IEquatable<HullSection> {
-        readonly float _xStart;
-        readonly float _xEnd;
-        readonly int _yPanel;
-        readonly Vector3 _centroid;//notimpl
-        readonly float _width;//notimpl
+    class HullSection : IEquatable<HullSection> {
+        public int Uid { get; private set; }
+        public Vector3[] AliasedVertexes { get; private set; }
+        public int Deck { get; private set; }
+        public int YPanel { get; private set; }
+        public Quadrant.Side Side { get; private set; }
 
-        public HullSection(float xStart, float xEnd, int yPanel) {
-            throw new NotImplementedException();
-            _xStart = xStart;
-            _xEnd = xEnd;
-            _yPanel = yPanel;
+        readonly Action _hideSection;
+        readonly Action _unhideSection;
+
+        public HullSection(int uid, Vector3[] aliasedVertexes, HullSectionIdentifier identifier, ObjectBuffer<int> hullBuffer){
+            Uid = uid;
+            AliasedVertexes = aliasedVertexes;
+            Deck = identifier.Deck;
+            Side = identifier.Side;
+            YPanel = identifier.YPanel;
+            _hideSection = () => hullBuffer.DisableObject(uid);
+            _unhideSection = () => hullBuffer.EnableObject(uid);
         }
 
-        #region IEquatable<HullSection> Members
+        public HullSection(int uid, Vector3[] aliasedVertexes, int deck, Quadrant.Side side, int yPanel, ObjectBuffer<int> hullBuffer) {
+            Uid = uid;
+            AliasedVertexes = aliasedVertexes;
+            Deck = deck;
+            Side = side;
+            YPanel = yPanel;
+            _hideSection = () => hullBuffer.DisableObject(uid);
+            _unhideSection = () => hullBuffer.EnableObject(uid);
+        }
 
-        public bool Equals(HullSection other) {
-            if (Math.Abs(_xStart - other._xStart) < 0.01f &&
-                Math.Abs(_xEnd - other._xEnd) < 0.01f &&
-                _yPanel == other._yPanel) {
-                return true;
+        public void Hide(){
+            _hideSection.Invoke();
+        }
+
+        public void UnHide(){
+            _unhideSection.Invoke();
+        }
+
+        public bool Equals(HullSection other){
+            if (ReferenceEquals(null, other)) return false;
+            if (ReferenceEquals(this, other)) return true;
+            return other.Uid == Uid;
+        }
+        public override bool Equals(object obj) {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != typeof (HullSection)) return false;
+            return Equals((HullSection) obj);
+        }
+
+        public override int GetHashCode(){
+            unchecked{
+                return Uid;
             }
-            return false;
         }
-
-        #endregion
     }
 }

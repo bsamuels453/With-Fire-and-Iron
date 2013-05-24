@@ -103,6 +103,8 @@ namespace Forge.Framework.Draw{
         }
 
         public void Draw(Matrix viewMatrix, Color fillColor){
+            bool dontUnbindTarget = CurTarg != null;//this has to exist because of globalrendertarget abomination
+
             CurTarg = this;
             Gbl.Device.SetRenderTarget(_targetCanvas);
             Gbl.Device.Clear(fillColor);
@@ -122,7 +124,9 @@ namespace Forge.Framework.Draw{
             }
             SpriteBatch.End();
             Gbl.Device.SetRenderTarget(null);
-            CurTarg = null;
+            if (!dontUnbindTarget){
+                CurTarg = null;
+            }
         }
 
         public static void BeginDraw(){

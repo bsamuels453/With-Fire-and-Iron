@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Forge.Core.ObjectEditor;
+using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Microsoft.Xna.Framework;
@@ -18,9 +20,13 @@ namespace Forge.Core.Airship{
     internal static class AirshipPackager{
         const int _version = 0;
 
-        public static void Export(string fileName, HullDataManager hullData){
+        public static void Export(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo) {
             JObject jObj = new JObject();
             jObj["Version"] = _version;
+            jObj["FrontBezierSurf"] = JToken.FromObject(backCurveInfo);
+            jObj["SideBezierSurf"] = JToken.FromObject(sideCurveInfo);
+            jObj["TopBezierSurf"] = JToken.FromObject(topCurveInfo);
+            /*
             jObj["NumDecks"] = hullData.NumDecks;
 
             var hullInds = new int[hullData.NumDecks][];
@@ -54,6 +60,7 @@ namespace Forge.Core.Airship{
             jObj["DeckVerticies"] = JToken.FromObject(deckPlateVerts);
             jObj["DeckIndicies"] = JToken.FromObject(deckPlateInds);
 
+             */
             var sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
             sw.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             sw.Close();
@@ -227,10 +234,31 @@ namespace Forge.Core.Airship{
             var jObj = JObject.Parse(sr.ReadToEnd());
             sr.Close();
 
-            var ret = new Airship();
-            ret.Length = 50;
+            var backInfo = jObj["FrontBezierSurf"].ToObject<List<BezierInfo>>();
+            var sideInfo = jObj["SideBezierSurf"].ToObject<List<BezierInfo>>();
+            var topInfo = jObj["TopBezierSurf"].ToObject<List<BezierInfo>>();
+
+            var hullData = HullGeometryGenerator.GenerateShip(
+                backInfo,
+                sideInfo,
+                topInfo
+                );
+
+            var modelAttribs = new ModelAttributes();
+            //in the future these attributes will be defined based off analyzing the hull
+            modelAttribs.Length = 50;
+            modelAttribs.MaxAscentSpeed = 10;
+            modelAttribs.MaxForwardSpeed = 30;
+            modelAttribs.MaxReverseSpeed = 10;
+            modelAttribs.MaxTurnSpeed = 4f;
+            modelAttribs.Berth = 13.95f;
+            modelAttribs.NumDecks = hullData.NumDecks;
+            modelAttribs.Centroid = new Vector3(modelAttribs.Length / 3, 0, 0);
+
+            /*
             int numDecks = jObj["NumDecks"].ToObject<int>();
-            ret.Centroid = jObj["Centroid"].ToObject<Vector3>();
+            modelAttribs.NumDecks = numDecks;
+            modelAttribs.Centroid = jObj["Centroid"].ToObject<Vector3>();
 
             var hullVerts = jObj["HullVerticies"].ToObject<VertexPositionNormalTexture[][]>();
             var hullInds = jObj["HullIndicies"].ToObject<int[][]>();
@@ -238,8 +266,8 @@ namespace Forge.Core.Airship{
             var deckVerts = jObj["DeckVerticies"].ToObject<VertexPositionNormalTexture[][]>();
             var deckInds = jObj["DeckIndicies"].ToObject<int[][]>();
 
-            ret.Decks = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
-            ret.HullLayers = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
+            var deckBuffs = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
+            var hullBuffs = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
 
             //reflect vertexes to fix orientation
             //xxx THIS BREAKS THE NORMALS
@@ -255,23 +283,23 @@ namespace Forge.Core.Airship{
 
 
             for (int i = 0; i < numDecks; i++){
-                ret.Decks[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
-                ret.Decks[i].IndexBuffer.SetData(deckInds[i]);
-                ret.Decks[i].VertexBuffer.SetData(deckVerts[i]);
+                deckBuffs[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
+                deckBuffs[i].IndexBuffer.SetData(deckInds[i]);
+                deckBuffs[i].VertexBuffer.SetData(deckVerts[i]);
 
 
-                ret.HullLayers[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
-                ret.HullLayers[i].IndexBuffer.SetData(hullInds[i]);
-                ret.HullLayers[i].VertexBuffer.SetData(hullVerts[i]);
+                hullBuffs[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
+                hullBuffs[i].IndexBuffer.SetData(hullInds[i]);
+                hullBuffs[i].VertexBuffer.SetData(hullVerts[i]);
             }
+            */
 
+
+            var ret = new Airship(modelAttribs, hullData.DeckFloorBuffers, hullData.HullMeshes, hullData.HullSections);
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
-
 
             return ret;
         }
     }
-
-
 }

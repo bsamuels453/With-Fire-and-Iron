@@ -1,7 +1,13 @@
-This is the terrain rendering and generation component of Project Forge. It uses OpenCL to generate terrain and and renders that terrain through directx9.
+Airship combat simulator I'm working on in my spare time. Most of the code is based on one of my older sim projects, Forge.
 
-Drydock, the airship construction tool, has also been merged into this project. Drydock uses bezier curves to model a ship hull, rasterizes it to a model, then allows one to build objects and comparements inside the hull.
+There's a lot of components in this project, so here's a quick overview of what's been implemented.
+-OpenCL terrain generation
+-OpenCL terrain quantization (quadtree)
+-Airship hull modeling using bezier curves/surfaces
+-Partially completed object/airship internals editor
+-Airship firing/cannonball collision mechanics.
 
-This project will likely serve as a staging ground for the rest of my game.
+For now, this code is licenced under the Mozilla Public Licence.
+http://www.mozilla.org/MPL/2.0/
 
 [![githalytics.com alpha](https://cruel-carlota.pagodabox.com/0ac64015708f0a4b47a68145827c6fae "githalytics.com")](http://githalytics.com/bsamuels453/Gondola)
