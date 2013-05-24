@@ -294,33 +294,12 @@ namespace Forge.Core.Airship{
             }
             */
 
-            foreach (var buffer in hullData.HullMeshes) {
-                buffer.ApplyTransform((vert) => {
-                    vert.Position.X *= -1;
-                    return vert;
-                }
-                );
-            }
 
-            foreach (var buffer in hullData.DeckFloorBuffers) {
-                buffer.ApplyTransform((vert) => {
-                    vert.Position.X *= -1;
-                    return vert;
-                }
-                );
-            }
-
-
-
-
-
-            var ret = new Airship(modelAttribs, hullData.DeckFloorBuffers, hullData.HullMeshes);
+            var ret = new Airship(modelAttribs, hullData.DeckFloorBuffers, hullData.HullMeshes, hullData.HullSections);
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
 
             return ret;
         }
     }
-
-
 }
