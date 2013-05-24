@@ -26,7 +26,7 @@ namespace Forge.Framework.Draw{
             base(indiciesPerObject*maxObjects, verticiesPerObject*maxObjects, primitivesPerObject*maxObjects, settingsFileName, PrimitiveType.TriangleList){
             Rasterizer = new RasterizerState{CullMode = CullMode.None};
 
-            _objectData = new List<ObjectData>();
+            _objectData = new List<ObjectData>(maxObjects);
             _indicies = new int[maxObjects*indiciesPerObject];
             _verticies = new VertexPositionNormalTexture[maxObjects*verticiesPerObject];
 
@@ -182,6 +182,13 @@ namespace Forge.Framework.Draw{
                 }
             }
             VertexBuffer.SetData(_verticies);
+        }
+
+        public bool Contains(IEquatable<TIdentifier> identifier){
+            var li = from o in _objectData where o.Identifier == identifier select o;
+            if (li.Any())
+                return true;
+            return false;
         }
 
         /// <summary>
