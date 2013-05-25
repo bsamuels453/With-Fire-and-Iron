@@ -13,9 +13,9 @@ namespace Forge.Core.GameState{
     /// <summary>
     ///   Used to obtain and release control of the mouse. This class dispatches mouse updates via events passed to it through ObtainFocus.
     /// </summary>
-    internal class Mouse{
+    internal class MouseManager{
         /// <summary>
-        ///   The currently active controller that the Mouse class is dispatching events to.
+        ///   The currently active controller that the MouseManager class is dispatching events to.
         /// </summary>
         MouseController _curController;
 
@@ -29,7 +29,7 @@ namespace Forge.Core.GameState{
         /// </summary>
         MouseController _prevController;
 
-        public Mouse(){
+        public MouseManager(){
             _curState = new MouseState();
         }
 
