@@ -163,6 +163,7 @@
     <Compile Include="Airship\ModelAttributes.cs" />
     <Compile Include="Airship\PlayerAirshipController.cs" />
     <Compile Include="Airship\Quadrant.cs" />
+    <Compile Include="GameState\Mouse.cs" />
     <Compile Include="Logic\ProjectilePathTracer.cs" />
     <Compile Include="Logic\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
