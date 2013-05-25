@@ -195,7 +195,6 @@
     <Compile Include="Util\XZPair.cs" />
     <Compile Include="GameState\PlayerState.cs" />
     <Compile Include="TerrainManager\TerrainManagerState.cs" />
-    <Compile Include="Logic\SharedStateData.cs" />
     <Compile Include="TerrainManager\TerrainChunk.cs" />
     <Compile Include="TerrainManager\TerrainGen.cs" />
     <Compile Include="GameState\GameStateManager.cs" />

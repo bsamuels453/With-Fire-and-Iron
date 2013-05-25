@@ -18,8 +18,6 @@ namespace Forge.Core.GameState{
         static readonly InputHandler _inputHandler;
 
         static readonly List<IGameState> _activeStates;
-        static readonly Dictionary<SharedStateData, object> _sharedData;
-
         static bool _useGlobalRenderTarget;
         static RenderTarget _globalRenderTarget;
         static UIElementCollection _globalElementCollection;
@@ -59,7 +57,6 @@ namespace Forge.Core.GameState{
         static GamestateManager(){
             _activeStates = new List<IGameState>();
             _inputHandler = new InputHandler();
-            _sharedData = new Dictionary<SharedStateData, object>();//todo-optimize: might be able to make this into a list instead
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
         }
@@ -75,29 +72,12 @@ namespace Forge.Core.GameState{
                 _globalRenderTarget.Dispose();
             }
 
-            _sharedData.Clear();
             _activeStates.Clear();
         }
 
         public static void ClearState(IGameState state) {
             _activeStates.Remove(state);
             state.Dispose();
-        }
-
-        public static object QuerySharedData(SharedStateData identifier) {
-            return _sharedData[identifier];
-        }
-
-        public static void AddSharedData(SharedStateData identifier, object data) {
-            _sharedData.Add(identifier, data);
-        }
-
-        public static void ModifySharedData(SharedStateData identifier, object data) {
-            _sharedData[identifier] = data;
-        }
-
-        public static void DeleteSharedData(SharedStateData identifier) {
-            _sharedData.Remove(identifier);
         }
 
         public static void AddGameState(IGameState newState) {
