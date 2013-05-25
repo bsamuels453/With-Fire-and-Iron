@@ -71,6 +71,17 @@ namespace Forge.Core.GameState{
         public void UpdateMouse(double timeDelta){
             var prevState = _curState;
             _curState = new MouseState(prevState, timeDelta);
+            if (_curController != null){
+                if (_curState.LeftButtonChange || _curState.RightButtonChange){
+                    _curController.SafeInvokeOnMouseButton(_curState);
+                }
+                if (_curState.MouseScrollChange != 0){
+                    _curController.SafeInvokeOnMouseScroll(_curState);
+                }
+                if (_curState.MouseMoved){
+                    _curController.SafeInvokeOnMouseMovement(_curState);
+                }
+            }
         }
 
         #region Nested type: MouseController
