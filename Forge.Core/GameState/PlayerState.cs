@@ -100,7 +100,7 @@ namespace Forge.Core.GameState{
                         pos.Y < _viewportSize.X*tolerance
                         ){
                         //move mouse to center of screen
-                        Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
+                        Microsoft.Xna.Framework.Input.Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
                         pos.X = _viewportSize.X/2;
                         pos.Y = _viewportSize.Y/2;
                         _skipNextMouseUpdate = true;
