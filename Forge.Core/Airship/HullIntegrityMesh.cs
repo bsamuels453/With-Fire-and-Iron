@@ -11,7 +11,7 @@ using Microsoft.Xna.Framework;
 #endregion
 
 namespace Forge.Core.Airship{
-    internal class HullIntegrityMesh{
+    internal class HullIntegrityMesh : IDisposable{
         //-creates overlay mesh for damaged portions
         //-removes hull portions if damage exceeds limits
         //-generates physics block for deflected blows
@@ -161,6 +161,20 @@ namespace Forge.Core.Airship{
         void UpdateDamageTexture(Vector3 position){
             //make sure position is unwrapped and is not in world coordinates
             throw new NotImplementedException();
+        }
+
+        bool _disposed;
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _greenBuff.Dispose();
+            _orangeBuff.Dispose();
+            _redBuff.Dispose();
+            _disposed = true;
+        }
+
+        ~HullIntegrityMesh(){
+            Debug.Assert(_disposed);
         }
     }
 }

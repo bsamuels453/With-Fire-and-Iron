@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Logic;
 using Forge.Core.ObjectEditor;
@@ -138,8 +139,24 @@ namespace Forge.Core.Airship {
             }
         }
 
+        bool _disposed;
+
         public void Dispose(){
+            Debug.Assert(!_disposed);
             _projectilePhysics.Dispose();
+            _hullIntegrityMesh.Dispose();
+
+            foreach (var buffer in DeckBuffers){
+                buffer.Dispose();
+            }
+            foreach (var buffer in HullBuffers){
+                buffer.Dispose();
+            }
+            _disposed = true;
+        }
+
+        ~Airship(){
+            Debug.Assert(_disposed);
         }
     }
 }

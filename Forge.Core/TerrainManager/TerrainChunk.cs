@@ -63,11 +63,17 @@ namespace Forge.Core.TerrainManager {
             _bufferDataSet = true;
         }
 
+        bool _disposed;
+
         public void Dispose(){
-            //_normals.Dispose();
-            //_binormals.Dispose();
-            //_tangents.Dispose();
+            Debug.Assert(!_disposed);
             _buffer.Dispose();
+            _wbuff.Dispose();
+            _disposed = true;
+        }
+
+        ~TerrainChunk(){
+            Debug.Assert(_disposed);
         }
     }
 }

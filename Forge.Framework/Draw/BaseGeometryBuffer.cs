@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -18,7 +19,7 @@ namespace Forge.Framework.Draw{
         public bool Enabled;
         protected RasterizerState Rasterizer;
         protected Effect Shader;
-        bool _isDisposed;
+        bool _disposed;
 
         protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType, CullMode cullMode = CullMode.None){
             Enabled = true;
@@ -57,11 +58,11 @@ namespace Forge.Framework.Draw{
         #region IDisposable Members
 
         public void Dispose(){
-            if (!_isDisposed){
+            if (!_disposed){
                 RenderTarget.Buffers.Remove(this);
                 BaseIndexBuffer.Dispose();
                 BaseVertexBuffer.Dispose();
-                _isDisposed = true;
+                _disposed = true;
             }
         }
 
@@ -88,9 +89,7 @@ namespace Forge.Framework.Draw{
         #endregion
 
         ~BaseGeometryBuffer(){
-            if (!_isDisposed){
-                //throw new Exception("Dispose your buffers, scrub");
-            }
+            Debug.Assert(_disposed);
         }
     }
 }

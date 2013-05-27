@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using Forge.Core.GameState;
 using Forge.Core.Util;
@@ -8,7 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Forge.Core.TerrainManager {
-    class TerrainUpdater {
+    class TerrainUpdater : IDisposable{
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
         public TerrainUpdater(){
