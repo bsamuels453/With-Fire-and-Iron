@@ -18,14 +18,14 @@ namespace Forge.Core.ObjectEditor {
         public readonly Vector3 CenterPoint;
 
         public readonly List<BoundingBox>[] DeckBoundingBoxes;
-        public readonly ObjectBuffer<ObjectIdentifier>[] DeckBuffers;
+        public readonly ObjectBuffer<AirshipObjectIdentifier>[] DeckBuffers;
         public readonly float DeckHeight;
         public readonly List<Vector3>[] DeckVertexes;
         public readonly ObjectBuffer<int>[] HullBuffers;
         public readonly int NumDecks;
         public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
         public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
-        public readonly ObjectModelBuffer<ObjectIdentifier>[] ObjectBuffers;
+        public readonly ObjectModelBuffer<AirshipObjectIdentifier>[] ObjectBuffers;
         public readonly float WallResolution;
         int _curDeck;
 
@@ -40,10 +40,10 @@ namespace Forge.Core.ObjectEditor {
             WallResolution = geometryInfo.WallResolution;
             CenterPoint = geometryInfo.CenterPoint;
 
-            ObjectBuffers = new ObjectModelBuffer<ObjectIdentifier>[NumDecks];
+            ObjectBuffers = new ObjectModelBuffer<AirshipObjectIdentifier>[NumDecks];
 
             for (int i = 0; i < ObjectBuffers.Count(); i++) {
-                ObjectBuffers[i] = new ObjectModelBuffer<ObjectIdentifier>(100, "Shader_TintedModel");
+                ObjectBuffers[i] = new ObjectModelBuffer<AirshipObjectIdentifier>(100, "Shader_TintedModel");
             }
 
             WallBuffers = new ObjectBuffer<WallSegmentIdentifier>[NumDecks];
@@ -60,13 +60,13 @@ namespace Forge.Core.ObjectEditor {
         }
 
         //these will save from having to do array[curDeck] all the time elsewhere in the editor
-        public ObjectBuffer<ObjectIdentifier> CurDeckBuffer { get; private set; }
+        public ObjectBuffer<AirshipObjectIdentifier> CurDeckBuffer { get; private set; }
         public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
         public ObjectBuffer<int> CurHullBuffer { get; private set; }
         public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
         public List<BoundingBox> CurDeckBoundingBoxes { get; private set; }
         public List<Vector3> CurDeckVertexes { get; private set; }
-        public ObjectModelBuffer<ObjectIdentifier> CurObjBuffer { get; private set; }
+        public ObjectModelBuffer<AirshipObjectIdentifier> CurObjBuffer { get; private set; }
 
         public int VisibleDecks { get; private set; }
 

@@ -22,7 +22,7 @@ namespace Forge.Core.Airship {
         readonly HullIntegrityMesh _hullIntegrityMesh;
 
         //public Vector3 Centroid { get; private set; }
-        public ObjectBuffer<ObjectIdentifier>[] DeckBuffers { get; private set; }
+        public ObjectBuffer<AirshipObjectIdentifier>[] DeckBuffers { get; private set; }
         public ObjectBuffer<int>[] HullBuffers { get; private set; }
         public HullSectionContainer HullSections { get; private set; }
 
@@ -39,7 +39,7 @@ namespace Forge.Core.Airship {
 
         public Airship(
             ModelAttributes airshipModel,
-            ObjectBuffer<ObjectIdentifier>[] deckBuffers,
+            ObjectBuffer<AirshipObjectIdentifier>[] deckBuffers,
             ObjectBuffer<int>[] hullBuffers,
             HullSectionContainer hullSections
             ){

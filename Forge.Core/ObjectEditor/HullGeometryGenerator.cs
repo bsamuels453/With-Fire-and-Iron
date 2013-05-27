@@ -302,9 +302,9 @@ namespace Forge.Core.ObjectEditor {
             return retMesh;
         }
 
-        static ObjectBuffer<ObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks) {
+        static ObjectBuffer<AirshipObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks) {
             float boundingBoxWidth = Math.Abs(deckBoundingBoxes[0][0].Max.X - deckBoundingBoxes[0][0].Min.X);
-            var ret = new ObjectBuffer<ObjectIdentifier>[numDecks];
+            var ret = new ObjectBuffer<AirshipObjectIdentifier>[numDecks];
 
             for (int deck = 0; deck < numDecks; deck++){
                 var deckBBoxes = deckBoundingBoxes[deck];
@@ -390,10 +390,10 @@ namespace Forge.Core.ObjectEditor {
                     }
                 }
 
-                var buff = new ObjectBuffer<ObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Shader_AirshipDeck");
+                var buff = new ObjectBuffer<AirshipObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Shader_AirshipDeck");
 
                 //add border quads to objectbuffer
-                var nullidentifier = new ObjectIdentifier(ObjectType.Misc, Vector3.Zero);
+                var nullidentifier = new AirshipObjectIdentifier(ObjectType.Misc, Vector3.Zero);
                 var idxWinding = new[]{0, 1, 2, 2, 3, 0};
                 var vertli = new List<VertexPositionNormalTexture>();
                 for (int i = 0; i < verts.Count; i += 4){
@@ -423,7 +423,7 @@ namespace Forge.Core.ObjectEditor {
                     vertli.Add(new VertexPositionNormalTexture(min + xWidth, Vector3.Up, new Vector2(1, 0)));
                     vertli.Add(new VertexPositionNormalTexture(min + xWidth + zWidth, Vector3.Up, new Vector2(1, 1)));
                     vertli.Add(new VertexPositionNormalTexture(min + zWidth, Vector3.Up, new Vector2(0, 1)));
-                    buff.AddObject(new ObjectIdentifier(ObjectType.Deckboard, min), (int[])idxWinding.Clone(), vertli.ToArray());
+                    buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min), (int[])idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
             }
@@ -789,7 +789,7 @@ namespace Forge.Core.ObjectEditor {
     internal class HullGeometryInfo{
         public Vector3 CenterPoint;
         public List<BoundingBox>[] DeckFloorBoundingBoxes;
-        public ObjectBuffer<ObjectIdentifier>[] DeckFloorBuffers;
+        public ObjectBuffer<AirshipObjectIdentifier>[] DeckFloorBuffers;
         public float DeckHeight;
         public List<Vector3>[] FloorVertexes;
         public GeometryBuffer<VertexPositionNormalTexture>[] HullWallTexBuffers;

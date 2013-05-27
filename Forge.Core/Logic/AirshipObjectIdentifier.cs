@@ -5,18 +5,18 @@ using System.Text;
 using Microsoft.Xna.Framework;
 
 namespace Forge.Core.Logic {
-    internal class ObjectIdentifier : IEquatable<ObjectIdentifier> {
+    internal class AirshipObjectIdentifier : IEquatable<AirshipObjectIdentifier> {
         public readonly ObjectType ObjectType;
         public readonly Vector3 Position;
 
-        public ObjectIdentifier(ObjectType objectType, Vector3 position) {
+        public AirshipObjectIdentifier(ObjectType objectType, Vector3 position) {
             ObjectType = objectType;
             Position = position;
         }
 
-        #region IEquatable<ObjectIdentifier> Members
+        #region IEquatable<AirshipObjectIdentifier> Members
 
-        public bool Equals(ObjectIdentifier other) {
+        public bool Equals(AirshipObjectIdentifier other) {
             return ObjectType == other.ObjectType && Position == other.Position;
         }
 

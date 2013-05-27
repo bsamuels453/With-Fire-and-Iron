@@ -80,12 +80,12 @@ namespace Forge.Core.Airship{
         }
 
         static void ConcatDeckPlates(
-            ObjectBuffer<ObjectIdentifier>.ObjectData[] objectData,
+            ObjectBuffer<AirshipObjectIdentifier>.ObjectData[] objectData,
             float deckPlateWidth,
             out List<int> indicies,
             out List<VertexPositionNormalTexture> verticies){
             //this identifies deck boards that aren't part of the main mesh
-            var nullIdentifier = new ObjectIdentifier(ObjectType.Misc, Vector3.Zero);
+            var nullIdentifier = new AirshipObjectIdentifier(ObjectType.Misc, Vector3.Zero);
 
             //get extrema
             float minX = float.MaxValue, minZ = float.MaxValue, maxX = 0, maxZ = 0;
@@ -193,7 +193,7 @@ namespace Forge.Core.Airship{
             }
 
             //now add the plates that aren't part of the main mesh
-            var otherPlates = new List<ObjectBuffer<ObjectIdentifier>.ObjectData>();
+            var otherPlates = new List<ObjectBuffer<AirshipObjectIdentifier>.ObjectData>();
             foreach (var data in objectData){
                 if (data.Identifier.Equals(nullIdentifier))
                     otherPlates.Add(data);
