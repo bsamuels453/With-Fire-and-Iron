@@ -17,7 +17,7 @@ namespace Forge.Core.GameState{
     internal static class GamestateManager{
         static readonly InputHandler _inputHandler;
 
-        static readonly List<IGameState> _activeStates;
+        static IGameState _activeState;
         static bool _useGlobalRenderTarget;
         static RenderTarget _globalRenderTarget;
         static UIElementCollection _globalElementCollection;
@@ -55,46 +55,31 @@ namespace Forge.Core.GameState{
         }
 
         static GamestateManager(){
-            _activeStates = new List<IGameState>();
+            _activeState = null;
             _inputHandler = new InputHandler();
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
         }
 
-        public static void ClearAllStates() {
-            foreach (var state in _activeStates){
-                state.Dispose();
-            }
-            if (_useGlobalRenderTarget){
-                _useGlobalRenderTarget = false;
-                _globalRenderTarget.Unbind();
-                _globalElementCollection.Unbind();
-                _globalRenderTarget.Dispose();
-            }
 
-            _activeStates.Clear();
-        }
-
-        public static void ClearState(IGameState state) {
-            _activeStates.Remove(state);
-            state.Dispose();
+        public static void ClearState() {
+            _activeState.Dispose();
+            _activeState = null;
         }
 
         public static void AddGameState(IGameState newState) {
-            _activeStates.Add(newState);
+            _activeState = newState;
         }
 
         public static void Update() {
             _inputHandler.Update();
             if (_useGlobalRenderTarget){
             }
-            for (int i = 0; i < _activeStates.Count; i++){
-                    _stopwatch.Stop();
-                    double d = _stopwatch.ElapsedMilliseconds;
-                    _stopwatch.Start();
-                    _activeStates[i].Update(_inputHandler.CurrentInputState, d);
-                }
+            _stopwatch.Stop();
+            double d = _stopwatch.ElapsedMilliseconds;
+            _activeState.Update(_inputHandler.CurrentInputState, d);
             _stopwatch.Restart();
+
             if (_useGlobalRenderTarget){
                 _globalElementCollection.UpdateLogic(0);
                 _globalElementCollection.UpdateInput(ref _inputHandler.CurrentInputState);
@@ -102,9 +87,7 @@ namespace Forge.Core.GameState{
         }
 
         public static void Draw() {
-            foreach (var state in _activeStates){
-                state.Draw();
-            }
+            _activeState.Draw();
 
             if (_useGlobalRenderTarget){
                 _globalRenderTarget.Draw(CameraController.ViewMatrix, Color.Transparent);

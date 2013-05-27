@@ -8,11 +8,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Forge.Core.TerrainManager {
-    class TerrainManagerState : IGameState {
+    class TerrainUpdater {
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
-        public TerrainManagerState(){
-            GamestateManager.UseGlobalRenderTarget = true;
+        public TerrainUpdater(){
             _loadedChunks = new List<TerrainChunk>();
             /*
             _generator = new TerrainGen();
@@ -67,10 +66,6 @@ namespace Forge.Core.TerrainManager {
         }
 
         public void Update(InputState state, double timeDelta){
-        }
-
-        public void Draw(){
-
         }
     }
 }

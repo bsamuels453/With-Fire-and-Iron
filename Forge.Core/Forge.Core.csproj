@@ -151,7 +151,7 @@
   <ItemGroup>
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\AirshipController.cs" />
-    <Compile Include="Airship\AirshipManagerState.cs" />
+    <Compile Include="Airship\GameplayState.cs" />
     <Compile Include="Airship\AirshipMovementState.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
@@ -163,7 +163,6 @@
     <Compile Include="Airship\ModelAttributes.cs" />
     <Compile Include="Airship\PlayerAirshipController.cs" />
     <Compile Include="Airship\Quadrant.cs" />
-    <Compile Include="GameState\Mouse.cs" />
     <Compile Include="Logic\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
     <Compile Include="HullEditor\BezierCurve.cs" />
@@ -193,7 +192,7 @@
     <Compile Include="Util\Vec3Ref.cs" />
     <Compile Include="Util\XZPair.cs" />
     <Compile Include="GameState\PlayerState.cs" />
-    <Compile Include="TerrainManager\TerrainManagerState.cs" />
+    <Compile Include="TerrainManager\TerrainUpdater.cs" />
     <Compile Include="TerrainManager\TerrainChunk.cs" />
     <Compile Include="TerrainManager\TerrainGen.cs" />
     <Compile Include="GameState\GameStateManager.cs" />

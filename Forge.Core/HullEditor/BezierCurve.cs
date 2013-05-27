@@ -7,6 +7,7 @@ using Forge.Framework.UI;
 using Forge.Core.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MouseState = Microsoft.Xna.Framework.Input.MouseState;
 
 namespace Forge.Core.HullEditor {
     /// <summary>

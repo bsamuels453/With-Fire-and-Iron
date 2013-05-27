@@ -1,10 +1,11 @@
 ﻿using Forge.Core.GameState;
 using Forge.Core.Logic;
+using Forge.Core.TerrainManager;
 using Forge.Framework;
 using Forge.Framework.UI;
 
 namespace Forge.Core.Airship {
-    class AirshipManagerState : IGameState{
+    class GameplayState : IGameState{
         readonly BodyCenteredCamera _cameraController;
         Airship _airship;
 
@@ -14,8 +15,12 @@ namespace Forge.Core.Airship {
         Button _deckUpButton;
         Button _deckDownButton;
 
-        public AirshipManagerState(){
+        TerrainUpdater _terrainUpdater;
+
+        public GameplayState(){
             GamestateManager.UseGlobalRenderTarget = true;
+
+            _terrainUpdater = new TerrainUpdater();
 
             _airship = AirshipPackager.Import("Export.airship");
             _cameraController = new BodyCenteredCamera();
@@ -75,6 +80,7 @@ namespace Forge.Core.Airship {
                 button.Alpha = 0.65f;
             }
             _highlightMasks[absSpeed].Alpha = 0;
+            _terrainUpdater.Update(state, timeDelta);
         }
 
         public void Draw(){
@@ -83,6 +89,7 @@ namespace Forge.Core.Airship {
 
         public void Dispose() {
             _airship.Dispose();
+            _terrainUpdater.Dispose();
         }
     }
 }

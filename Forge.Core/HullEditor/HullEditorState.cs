@@ -50,7 +50,7 @@ namespace Forge.Core.HullEditor {
                 var backInfo = _backpanel.Curves.GetControllerInfo();
                 var topInfo = _toppanel.Curves.GetControllerInfo();
 
-                GamestateManager.ClearAllStates();
+                GamestateManager.ClearState();
                 GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
             }
         }
@@ -217,8 +217,8 @@ namespace Forge.Core.HullEditor {
             var sideInfo = _sidepanel.Curves.GetControllerInfo();
             var backInfo = _backpanel.Curves.GetControllerInfo();
             var topInfo = _toppanel.Curves.GetControllerInfo();
-            
-            GamestateManager.ClearAllStates();
+
+            GamestateManager.ClearState();
             GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
             return;
 
