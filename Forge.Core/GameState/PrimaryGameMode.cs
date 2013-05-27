@@ -103,6 +103,7 @@ namespace Forge.Core.GameState {
         public void Dispose() {
             _airship.Dispose();
             _terrainUpdater.Dispose();
+            _renderTarget.Dispose();
         }
     }
 }

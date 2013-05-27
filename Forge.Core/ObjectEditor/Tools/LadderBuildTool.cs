@@ -47,14 +47,14 @@ namespace Forge.Core.ObjectEditor.Tools {
 
         protected override void HandleCursorRelease() {
             
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 0));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 4)); 
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 0));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 4)); 
 
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(1, 2, 1));
-            //_hullData.CurHullBuffer[0].Cut(CursorPosition, CursorPosition + new Vector3(0.5f, 0, 0));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(1, 2, 1));
+            //_hullData.TopExposedHullLayer[0].Cut(CursorPosition, CursorPosition + new Vector3(0.5f, 0, 0));
 
             var identifier = new AirshipObjectIdentifier(ObjectType.Ladder, CursorPosition);
 

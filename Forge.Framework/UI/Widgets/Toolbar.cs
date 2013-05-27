@@ -212,7 +212,8 @@ namespace Forge.Framework.UI.Widgets{
         }
 
         ~Toolbar(){
-            Debug.Assert(_disposed);
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
     }
 }

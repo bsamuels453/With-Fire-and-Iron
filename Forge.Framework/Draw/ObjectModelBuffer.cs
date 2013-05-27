@@ -162,7 +162,8 @@ namespace Forge.Framework.Draw{
         }
 
         ~ObjectModelBuffer(){
-            Debug.Assert(_disposed);
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
 
         #region Nested type: ObjectData

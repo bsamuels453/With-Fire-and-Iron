@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -86,10 +87,19 @@ namespace Forge.Framework.Draw{
 
         #region IDisposable Members
 
+        bool _disposed;
+
         public void Dispose(){
+            Debug.Assert(!_disposed);
             _renderTargets.Remove(this);
             SpriteBatch.Dispose();
             _targetCanvas.Dispose();
+            _disposed = true;
+        }
+
+        ~RenderTarget(){
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
 
         #endregion
