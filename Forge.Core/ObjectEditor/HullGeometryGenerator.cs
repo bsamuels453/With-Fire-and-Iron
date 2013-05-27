@@ -89,10 +89,11 @@ namespace Forge.Core.ObjectEditor {
 
             var resultant = new HullGeometryInfo();
             resultant.CenterPoint = normalGenResults.Centroid * reflectionVector;
-            resultant.DeckFloorBoundingBoxes = boundingBoxResults.DeckBoundingBoxes;
-            resultant.DeckFloorBuffers = deckFloorBuffers;
-            resultant.FloorVertexes = boundingBoxResults.DeckVertexes;
-            resultant.HullMeshes = hullBuffResults.Item1;
+            resultant.DeckSectionContainer = new DeckSectionContainer(
+                boundingBoxResults.DeckBoundingBoxes,
+                deckFloorBuffers,
+                boundingBoxResults.DeckVertexes
+                );
             resultant.NumDecks = genResults.NumDecks;
             resultant.WallResolution = _bBoxWidth;
             resultant.DeckHeight = _deckHeight;
@@ -752,7 +753,7 @@ namespace Forge.Core.ObjectEditor {
                     );
             }
 
-            return new HullSectionContainer(hullSections);
+            return new HullSectionContainer(hullSections, buffers);
         }
 
         #region Nested type: BoundingBoxResult
@@ -804,15 +805,11 @@ namespace Forge.Core.ObjectEditor {
 
     internal class HullGeometryInfo{
         public Vector3 CenterPoint;
-        public List<BoundingBox>[] DeckFloorBoundingBoxes;
-        public ObjectBuffer<AirshipObjectIdentifier>[] DeckFloorBuffers;
         public float DeckHeight;
-        public List<Vector3>[] FloorVertexes;
-        public GeometryBuffer<VertexPositionNormalTexture>[] HullWallTexBuffers;
         public Vector2 MaxBoundingBoxDims;
-        public ObjectBuffer<int>[] HullMeshes;
         public int NumDecks;
         public float WallResolution;
         public HullSectionContainer HullSections;
+        public DeckSectionContainer DeckSectionContainer;
     }
 }
