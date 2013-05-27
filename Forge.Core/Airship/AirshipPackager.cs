@@ -296,7 +296,7 @@ namespace Forge.Core.Airship{
             */
 
 
-            var ret = new Airship(modelAttribs, hullData.DeckFloorBuffers, hullData.HullMeshes, hullData.HullSections);
+            var ret = new Airship(modelAttribs, hullData.DeckSectionContainer, hullData.HullSections);
             sw.Stop();
             double d = sw.ElapsedMilliseconds;
 
