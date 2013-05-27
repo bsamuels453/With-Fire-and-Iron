@@ -22,7 +22,7 @@ namespace Forge.Core.GameState{
 
             _cameraController = new SubmarineCamera(new Vector3(-31, 1043, -50), new Angle3(-0.49f, 0, -11.7f));
             GamestateManager.CameraController = _cameraController;
-            GamestateManager.OnCameraControllerChange += OnCameraControllerChange;
+
             _clampMouse = true;
             _skipNextMouseUpdate = true;
 

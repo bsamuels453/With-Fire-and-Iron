@@ -2,7 +2,9 @@
 using Forge.Core.Logic;
 using Forge.Core.TerrainManager;
 using Forge.Framework;
+using Forge.Framework.Draw;
 using Forge.Framework.UI;
+using Microsoft.Xna.Framework;
 
 namespace Forge.Core.Airship {
     class GameplayState : IGameState{
@@ -17,9 +19,15 @@ namespace Forge.Core.Airship {
 
         TerrainUpdater _terrainUpdater;
 
-        public GameplayState(){
-            GamestateManager.UseGlobalRenderTarget = true;
+        UIElementCollection _uiElementCollection;
+        RenderTarget _renderTarget;
 
+        public GameplayState(){
+            _uiElementCollection = new UIElementCollection();
+            _uiElementCollection.Bind();
+            _renderTarget = new RenderTarget();
+            _renderTarget.Bind();
+            
             _terrainUpdater = new TerrainUpdater();
 
             _airship = AirshipPackager.Import("Export.airship");
@@ -66,9 +74,13 @@ namespace Forge.Core.Airship {
             _deckDownButton = buttonGen.GenerateButton();
             _deckUpButton.OnLeftClickDispatcher += _airship.AddVisibleLayer;
             _deckDownButton.OnLeftClickDispatcher += _airship.RemoveVisibleLayer;
+
+            _uiElementCollection.Unbind();
         }
 
         public void Update(InputState state, double timeDelta) {
+            _uiElementCollection.UpdateInput(ref state);
+            _uiElementCollection.UpdateLogic(timeDelta);
             _airship.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_airship.Position);
             _cameraController.Update(ref state, timeDelta);
@@ -84,7 +96,7 @@ namespace Forge.Core.Airship {
         }
 
         public void Draw(){
-            //throw new NotImplementedException();
+            _renderTarget.Draw(_cameraController.ViewMatrix, Color.Transparent);
         }
 
         public void Dispose() {

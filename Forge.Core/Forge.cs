@@ -55,8 +55,7 @@ namespace Forge.Core{
             Exit();
              */
 #if PLAYMODE
-            GamestateManager.UseGlobalRenderTarget = true;
-            GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
+            //GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new GameplayState());
 #else
             GamestateManager.AddGameState(new HullEditorState());
