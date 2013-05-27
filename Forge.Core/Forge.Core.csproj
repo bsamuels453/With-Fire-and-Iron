@@ -151,6 +151,7 @@
   <ItemGroup>
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\AirshipController.cs" />
+    <Compile Include="Airship\Data\DeckSectionContainer.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
     <Compile Include="Airship\Data\AirshipMovementData.cs" />
     <Compile Include="Airship\AirshipPackager.cs" />
