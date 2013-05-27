@@ -4,11 +4,10 @@ using System.Diagnostics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Forge.Framework;
-using MouseState = Microsoft.Xna.Framework.Input.MouseState;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Input{
     internal class InputHandler{
         readonly Stopwatch _clickTimer;
         public InputState CurrentInputState;

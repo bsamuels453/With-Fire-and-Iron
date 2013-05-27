@@ -12,7 +12,7 @@ using IDisposable = System.IDisposable;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Physics{
     internal class ProjectilePhysics : IDisposable{
         #region Delegates
 

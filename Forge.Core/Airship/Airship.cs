@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Core.Airship.Data;
 using Forge.Core.Logic;
 using Forge.Core.ObjectEditor;
+using Forge.Core.Physics;
 using Forge.Framework.Draw;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
@@ -52,7 +54,7 @@ namespace Forge.Core.Airship {
             HullBuffers = hullBuffers;
 
 
-            var movementState = new AirshipMovementState();
+            var movementState = new AirshipMovementData();
             movementState.Angle = new Vector3(0, 0, 0);
             movementState.CurPosition = new Vector3(airshipModel.Length / 3, 2000, 0);
 

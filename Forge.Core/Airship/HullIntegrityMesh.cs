@@ -4,7 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Core.Airship.Data;
 using Forge.Core.Logic;
+using Forge.Core.Physics;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
 

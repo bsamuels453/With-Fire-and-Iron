@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Camera{
     /// <summary>
     ///   this abstract class creates a camera that rotates around a point
     /// </summary>

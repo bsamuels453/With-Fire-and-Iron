@@ -5,7 +5,7 @@ using Forge.Framework.Draw;
 using Forge.Core.Util;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Forge.Core.TerrainManager {
+namespace Forge.Core.Terrain {
     class TerrainChunk : IDisposable{
         public XZPair Identifier;
 

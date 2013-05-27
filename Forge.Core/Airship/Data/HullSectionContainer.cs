@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
-namespace Forge.Core.Airship {
+namespace Forge.Core.Airship.Data {
     class HullSectionContainer :IEnumerable{
 
         readonly HullSection[] _hullSections;

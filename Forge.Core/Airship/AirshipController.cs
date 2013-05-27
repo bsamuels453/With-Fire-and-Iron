@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
 
@@ -113,17 +114,17 @@ namespace Forge.Core.Airship {
             throw new NotImplementedException();
         }
 
-        protected AirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementState movementState){
+        protected AirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData){
             _setAirshipWMatrix = setWorldMatrix;
             AirshipModelData = modelData;
 
-            Position = movementState.CurPosition;
-            Angle = movementState.Angle;
-            _velocity = movementState.CurVelocity;
-            _ascentVel = movementState.CurAltitudeVelocity;
-            _angleTarget = movementState.AngleTarget;
-            _velocityTarget = movementState.VelocityTarget;
-            _altitudeTarget = movementState.AltitudeTarget;
+            Position = movementData.CurPosition;
+            Angle = movementData.Angle;
+            _velocity = movementData.CurVelocity;
+            _ascentVel = movementData.CurAltitudeVelocity;
+            _angleTarget = movementData.AngleTarget;
+            _velocityTarget = movementData.VelocityTarget;
+            _altitudeTarget = movementData.AltitudeTarget;
 
         }
 

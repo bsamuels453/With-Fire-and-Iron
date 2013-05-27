@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using Forge.Core.Logic;
+using Forge.Core.Physics;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;

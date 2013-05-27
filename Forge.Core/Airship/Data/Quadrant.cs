@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Forge.Core.Airship {
+﻿namespace Forge.Core.Airship.Data {
     static public class Quadrant{
         /// <summary>
         /// z>0; port

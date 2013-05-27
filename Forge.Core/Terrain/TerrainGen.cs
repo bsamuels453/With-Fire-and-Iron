@@ -15,7 +15,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
-namespace Forge.Core.TerrainManager{
+namespace Forge.Core.Terrain{
     internal class TerrainGen{
         readonly ComputeBuffer<byte> _activeVerts;
         readonly ComputeBuffer<byte> _binormals;

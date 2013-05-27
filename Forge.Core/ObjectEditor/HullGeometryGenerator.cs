@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship;
+using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;

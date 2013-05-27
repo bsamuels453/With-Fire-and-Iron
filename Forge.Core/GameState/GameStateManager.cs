@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Forge.Core.Camera;
+using Forge.Core.Input;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Framework.UI;

@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using Forge.Core.GameState;
-using Forge.Core.ObjectEditor;
+using Forge.Core.HullEditor;
 using Forge.Framework;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Forge.Core.HullEditor {
+namespace Forge.Core.GameState {
     internal class HullEditorState : IGameState {
         readonly BackEditorPanel _backpanel;
         readonly UIElementCollection _elementCollection;

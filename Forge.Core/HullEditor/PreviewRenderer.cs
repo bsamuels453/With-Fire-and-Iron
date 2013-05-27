@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Forge.Core.Camera;
 using Forge.Core.GameState;
 using Forge.Framework;
 using Forge.Framework.Draw;

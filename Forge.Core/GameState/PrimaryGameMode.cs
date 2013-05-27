@@ -1,15 +1,16 @@
-﻿using Forge.Core.GameState;
+﻿using Forge.Core.Airship;
+using Forge.Core.Camera;
 using Forge.Core.Logic;
-using Forge.Core.TerrainManager;
+using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 
-namespace Forge.Core.Airship {
-    class GameplayState : IGameState{
+namespace Forge.Core.GameState {
+    class PrimaryGameMode : IGameState{
         readonly BodyCenteredCamera _cameraController;
-        Airship _airship;
+        Airship.Airship _airship;
 
         Button[] _highlightMasks;
         Button _speedIndicator;
@@ -22,7 +23,7 @@ namespace Forge.Core.Airship {
         UIElementCollection _uiElementCollection;
         RenderTarget _renderTarget;
 
-        public GameplayState(){
+        public PrimaryGameMode(){
             _uiElementCollection = new UIElementCollection();
             _uiElementCollection.Bind();
             _renderTarget = new RenderTarget();

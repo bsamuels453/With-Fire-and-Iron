@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Forge.Core.Airship;
-using Forge.Core.GameState;
+using Forge.Core.Camera;
+using Forge.Core.ObjectEditor;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Framework.UI;
@@ -9,7 +10,7 @@ using Forge.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Forge.Core.ObjectEditor {
+namespace Forge.Core.GameState {
     internal class ObjectEditorState : IGameState {
         readonly BodyCenteredCamera _cameraController;
         readonly ObjectEditorUI _doodadUI;

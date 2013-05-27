@@ -9,10 +9,8 @@ using Forge.Core.Logic;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.HullEditor;
-using Forge.Core.TerrainManager;
 using Forge.Core.GameState;
 using Microsoft.Xna.Framework;
-using GameplayState = Forge.Core.Airship.GameplayState;
 
 #endregion
 
@@ -56,7 +54,7 @@ namespace Forge.Core{
              */
 #if PLAYMODE
             //GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
-            GamestateManager.AddGameState(new GameplayState());
+            GamestateManager.AddGameState(new PrimaryGameMode());
 #else
             GamestateManager.AddGameState(new HullEditorState());
 #endif

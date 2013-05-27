@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Forge.Core.GameState;
 using Forge.Core.Util;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Forge.Core.TerrainManager {
+namespace Forge.Core.Terrain {
     class TerrainUpdater : IDisposable{
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
