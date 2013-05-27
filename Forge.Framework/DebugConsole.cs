@@ -17,7 +17,7 @@ namespace Forge.Framework{
         static IOWrapper _wrapper;
         static Process _consoleProcess;
 
-        public static void InitalizeConsole(Game game){
+        public static void InitalizeConsole(){
             _wrapper = new IOWrapper();
 
             _wrapper.FileWriter = new StreamWriter("debuglog.txt");

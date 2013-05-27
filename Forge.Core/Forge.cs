@@ -41,7 +41,7 @@ namespace Forge.Core{
                 nearPlaneDistance: 0.01f,
                 farPlaneDistance: 50000
                 );
-            DebugConsole.InitalizeConsole(this);
+            DebugConsole.InitalizeConsole();
 
             /*
             var p = new ProjectilePhysics();
