@@ -156,13 +156,13 @@ namespace Forge.Framework.Draw{
 
         public void Dispose(){
             if (!_disposed){
-                //RenderTarget.Buffers.Remove(this);
+                RenderTarget.Buffers.Remove(this);
                 _disposed = true;
             }
         }
 
         ~ObjectModelBuffer(){
-            Dispose();
+            Debug.Assert(_disposed);
         }
 
         #region Nested type: ObjectData

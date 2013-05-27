@@ -45,7 +45,11 @@ namespace Forge.Core.GameState {
         }
 
         public void Dispose() {
-            //throw new System.NotImplementedException();
+            _renderTarget.Bind();
+            _hullData.Dispose();
+            _doodadUI.Dispose();
+            _renderTarget.Unbind();
+            _renderTarget.Dispose();
         }
 
         public void Update(InputState state, double timeDelta) {

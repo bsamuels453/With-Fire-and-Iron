@@ -54,6 +54,10 @@ namespace Forge.Core.ObjectEditor.Tools {
             _tempWallBuffer.Enabled = false;
         }
 
+        protected override void DisposeChild(){
+            _tempWallBuffer.Dispose();
+        }
+
         void GenerateWallsFromStroke() {
             _tempWallIdentifiers.Clear();
             int strokeW = (int)((StrokeEnd.Z - StrokeOrigin.Z) / GridResolution);

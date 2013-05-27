@@ -102,5 +102,9 @@ namespace Forge.Core.ObjectEditor.Tools {
         protected override void OnDisable() {
             _ghostedLadderModel.DisableObject(0);
         }
+
+        protected override void DisposeChild(){
+            _ghostedLadderModel.Dispose();
+        }
     }
 }

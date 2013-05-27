@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Camera;
 using Forge.Core.GameState;
@@ -359,5 +360,23 @@ namespace Forge.Core.ObjectEditor.Tools {
         ///   Called when the child needs to be disabled.
         /// </summary>
         protected abstract void OnDisable();
+
+        bool _disposed;
+
+        protected abstract void DisposeChild();
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _cursorBuff.Dispose();
+            foreach (var buffer in GuideGridBuffers){
+                buffer.Dispose();
+            }
+            DisposeChild();
+            _disposed = true;
+        }
+
+        ~DeckPlacementBase(){
+            Debug.Assert(_disposed);
+        }
     }
 }

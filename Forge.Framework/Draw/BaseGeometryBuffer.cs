@@ -89,7 +89,10 @@ namespace Forge.Framework.Draw{
         #endregion
 
         ~BaseGeometryBuffer(){
-            Debug.Assert(_disposed);
+            //Debug.Assert(_disposed);
+            if (!_disposed){
+                throw new Exception();
+            }
         }
     }
 }

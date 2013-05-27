@@ -12,7 +12,7 @@ using Newtonsoft.Json.Converters;
 #endregion
 
 namespace Forge.Framework.UI.Widgets{
-    public class Toolbar : ILogicUpdates, IInputUpdates{
+    public class Toolbar : ILogicUpdates, IInputUpdates, IDisposable{
         #region ToolbarOrientation enum
 
         public enum ToolbarOrientation{
@@ -200,5 +200,19 @@ namespace Forge.Framework.UI.Widgets{
         }
 
         #endregion
+
+        bool _disposed;
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            foreach (var tool in _buttonTools){
+                tool.Dispose();
+            }
+            _disposed = true;
+        }
+
+        ~Toolbar(){
+            Debug.Assert(_disposed);
+        }
     }
 }

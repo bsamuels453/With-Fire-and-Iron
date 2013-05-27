@@ -60,13 +60,15 @@ namespace Forge.Core.HullEditor {
             _renderTarget.Unbind();
         }
 
-
         public void Draw() {
             Gbl.Device.Clear(Color.CornflowerBlue);
             _renderTarget.Draw(_camera.ViewMatrix, Color.CornflowerBlue);
         }
 
         public void Dispose() {
+            _renderTarget.Bind();
+            _geometryBuffer.Dispose();
+            _renderTarget.Unbind();
             _renderTarget.Dispose();
         }
 

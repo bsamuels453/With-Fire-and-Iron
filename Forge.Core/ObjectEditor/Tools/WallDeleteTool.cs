@@ -126,5 +126,9 @@ namespace Forge.Core.ObjectEditor.Tools {
             _tempWallBuffer.Enabled = false;
             _prevIdentifiers.Clear();
         }
+
+        protected override void DisposeChild(){
+            _tempWallBuffer.Dispose();
+        }
     }
 }

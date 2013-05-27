@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship;
 using Forge.Core.ObjectEditor.Tools;
@@ -8,7 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Forge.Core.ObjectEditor {
-    internal class HullDataManager {
+    internal class HullDataManager : IDisposable{
         #region Delegates
 
         public delegate void CurDeckChanged(int oldDeck, int newDeck);
@@ -137,6 +139,29 @@ namespace Forge.Core.ObjectEditor {
                     }
                 }
             }
+        }
+
+        bool _disposed;
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            foreach (var buffer in WallBuffers){
+                buffer.Dispose();
+            }
+            foreach (var buffer in ObjectBuffers){
+                buffer.Dispose();
+            }
+            foreach (var buffer in HullBuffers){
+                buffer.Dispose();
+            }
+            foreach (var buffer in DeckBuffers){
+                buffer.Dispose();
+            }
+            _disposed = true;
+        }
+
+        ~HullDataManager(){
+            Debug.Assert(_disposed);
         }
     }
 }
