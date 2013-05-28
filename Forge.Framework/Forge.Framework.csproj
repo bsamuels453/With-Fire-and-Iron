@@ -97,6 +97,10 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Cloo, Version=0.9.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Bin\Cloo.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.Game, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Microsoft.Xna.Framework.GamerServices, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=MSIL" />
@@ -108,6 +112,10 @@
     <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553, processorArchitecture=x86" />
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenCLTemplate, Version=1.1.6.2, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Bin\OpenCLTemplate.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -131,10 +139,13 @@
     <Compile Include="Draw\RenderTarget.cs" />
     <Compile Include="Draw\Sprite2D.cs" />
     <Compile Include="FloatingRectangle.cs" />
+    <Compile Include="Resources\HLSLShaderLoader.cs" />
+    <Compile Include="Resources\OpenCLScriptLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="InputState.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResourceNotDisposedException.cs" />
+    <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="UI\Button.cs" />
     <Compile Include="UI\ButtonGenerator.cs" />
     <Compile Include="UI\Components\DraggableComponent.cs" />
