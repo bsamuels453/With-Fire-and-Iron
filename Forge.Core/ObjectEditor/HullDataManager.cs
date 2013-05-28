@@ -11,6 +11,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Forge.Core.ObjectEditor {
+    /// <summary>
+    /// NOTICE: the next time work is done on the editor, encapsulate ObjectModelBuffer, WallIdentifiers, and WallBuffer
+    /// </summary>
     internal class HullDataManager : IDisposable{
         #region Delegates
 
