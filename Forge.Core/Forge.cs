@@ -1,4 +1,4 @@
-//#define PLAYMODE
+#define PLAYMODE
 
 #region
 
@@ -36,8 +36,8 @@ namespace Forge.Core{
             Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                 fieldOfView: 3.14f/4,
                 aspectRatio: aspectRatio,
-                nearPlaneDistance: 0.01f,
-                farPlaneDistance: 50000
+                nearPlaneDistance: 0.3f,
+                farPlaneDistance: 13000f
                 );
             DebugConsole.InitalizeConsole();
 
