@@ -20,7 +20,7 @@ namespace Forge.Framework{
         public static void InitalizeConsole(){
             _wrapper = new IOWrapper();
 
-            _wrapper.FileWriter = new StreamWriter("debuglog.txt");
+            _wrapper.FileWriter = new StreamWriter("Output.txt");
             _wrapper.FileWriter.AutoFlush = true;
 
 #if ENABLE_DEBUG_CONSOLE
@@ -54,15 +54,16 @@ namespace Forge.Framework{
         }
 
         public static void WriteLine(string s){
+            string timeStamp = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "] ";
             if (_wrapper.ExternConsoleEnabled) {
                 try{
-                    _wrapper.ConsoleWriter.WriteLine(s);
+                    _wrapper.ConsoleWriter.WriteLine(timeStamp + s);
                 }
                 catch{
                     _wrapper.ExternConsoleEnabled = false;
                 }
             }
-            _wrapper.FileWriter.WriteLine(s);
+            _wrapper.FileWriter.WriteLine(timeStamp + s);
         }
 
         public static void Dispose(){
