@@ -1,5 +1,4 @@
-﻿//#define CPU_DEBUG
-
+﻿
 #region
 
 using System;
@@ -26,7 +25,6 @@ namespace Forge.Core.Terrain{
         readonly ComputeCommandQueue _cmdQueue;
         readonly ComputeContext _context;
         readonly ComputeKernel _crossCullKernel;
-        readonly List<ComputeDevice> _devices;
         readonly ComputeBuffer<int> _dummy;
         readonly int[] _emptyIndices;
         readonly byte[] _emptyVerts;
@@ -37,7 +35,6 @@ namespace Forge.Core.Terrain{
         readonly ComputeBuffer<int> _indicies;
         readonly ComputeKernel _normalGenKernel;
         readonly ComputeBuffer<ushort> _normals;
-        readonly ComputeContextPropertyList _properties;
         readonly ComputeKernel _qTreeKernel;
         readonly ComputeProgram _qTreePrgm;
         readonly ComputeBuffer<byte> _tangents;
@@ -47,20 +44,12 @@ namespace Forge.Core.Terrain{
         readonly ComputeProgram _winderPrgm;
 
         public TerrainGen(){
-#if CPU_DEBUG
-            var platform = ComputePlatform.Platforms[1];
-#else
-            var platform = ComputePlatform.Platforms[0];
-#endif
-            _devices = new List<ComputeDevice>();
-            _devices.Add(platform.Devices[0]);
-            _properties = new ComputeContextPropertyList(platform);
-            _context = new ComputeContext(_devices, _properties, null, IntPtr.Zero);
-            _cmdQueue = new ComputeCommandQueue(_context, _devices[0], ComputeCommandQueueFlags.None);
+
+
+            _context = Resource.CLContext;
+            _cmdQueue = Resource.CLQueue;
 
             #region setup generator kernel
-            bool loadFromSource = Resource.HasRawHashChanged[Resource.RawDir.Scripts];
-            loadFromSource = true;
             _chunkWidthInBlocks = Resource.LoadContent<int>("TerrainGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
             _blockWidth = Resource.LoadContent<int>("TerrainGen_BlockWidthInMeters");
@@ -84,25 +73,10 @@ namespace Forge.Core.Terrain{
             };
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
-            if (loadFromSource){
-                _generationPrgm = new ComputeProgram(_context, Resource.LoadScript("TerrainGen_Generator"));
-#if CPU_DEBUG
-                _generationPrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\GenTerrain.cl", null, IntPtr.Zero); //use option -I + scriptDir for header search
-#else
-                _generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
-#endif
-                Resource.SaveBinary(_generationPrgm.Binaries, "TerrainGen_Generator");
-            }
-            else{
-                var binary = Resource.LoadBinary("TerrainGen_Generator");
-                _generationPrgm = new ComputeProgram(_context, binary, _devices);
-                _generationPrgm.Build(null, "", null, IntPtr.Zero);
-            }
-            //loadFromSource = false;
+            _generationPrgm = Resource.LoadCLScript("\\Scripts\\GenTerrain.cl");
 
             _terrainGenKernel = _generationPrgm.CreateKernel("GenTerrain");
             _normalGenKernel = _generationPrgm.CreateKernel("GenNormals");
-
 
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
             //implementation is basically a float4 wrapper that uses zero for the last variable
@@ -125,21 +99,7 @@ namespace Forge.Core.Terrain{
             #endregion
 
             #region setup quadtree kernel
-
-            if (loadFromSource){
-                _qTreePrgm = new ComputeProgram(_context, Resource.LoadScript("TerrainGen_QTree"));
-#if CPU_DEBUG
-                _qTreePrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\Quadtree.cl", null, IntPtr.Zero);
-#else
-                _qTreePrgm.Build(null, "", null, IntPtr.Zero);
-#endif
-                Resource.SaveBinary(_qTreePrgm.Binaries, "TerrainGen_QTree");
-            }
-            else{
-                var binary = Resource.LoadBinary("TGen_QTree");
-                _qTreePrgm = new ComputeProgram(_context, binary, _devices);
-                _qTreePrgm.Build(null, "", null, IntPtr.Zero);
-            }
+            _qTreePrgm = Resource.LoadCLScript("\\Scripts\\Quadtree.cl");
 
             _qTreeKernel = _qTreePrgm.CreateKernel("QuadTree");
             _crossCullKernel = _qTreePrgm.CreateKernel("CrossCull");
@@ -168,21 +128,7 @@ namespace Forge.Core.Terrain{
             #endregion
 
             #region setup winding kernel
-
-            if (loadFromSource){
-                _winderPrgm = new ComputeProgram(_context, Resource.LoadScript("TerrainGen_VertexWinder"));
-#if CPU_DEBUG
-                _winderPrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\VertexWinder.cl", null, IntPtr.Zero);
-#else
-                _winderPrgm.Build(null, "", null, IntPtr.Zero);
-#endif
-                Resource.SaveBinary(_winderPrgm.Binaries, "TerrainGen_VertexWinder");
-            }
-            else{
-                var binary = Resource.LoadBinary("TerrainGen_VertexWinder");
-                _winderPrgm = new ComputeProgram(_context, binary, _devices);
-                _winderPrgm.Build(null, "", null, IntPtr.Zero);
-            }
+            _winderPrgm = Resource.LoadCLScript("\\Scripts\\VertexWinder.cl");
 
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
             _indicies = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, (_chunkWidthInBlocks)*(_chunkWidthInBlocks)*8);
@@ -197,10 +143,6 @@ namespace Forge.Core.Terrain{
             _cmdQueue.WriteToBuffer(_emptyIndices, _indicies, true, null);
 
             #endregion
-
-            if (loadFromSource){
-                Resource.AllowMD5Refresh[Resource.RawDir.Scripts] = true;
-            }
 
             _cmdQueue.Finish();
         }
@@ -347,7 +289,7 @@ namespace Forge.Core.Terrain{
         }
         */
 
-        List<int> ParseIndicies(int[] indicies){
+        IEnumerable<int> ParseIndicies(int[] indicies){
             var outIndicies = new List<int>();
 
             for (int i = 0; i < indicies.Length; i += 4){
