@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Forge.Framework{
-    public static class Gbl{
+    public static class Resource{
         #region RawDir enum
 
         public enum RawDir{
@@ -47,7 +47,7 @@ namespace Forge.Framework{
 
         //todo: write jsonconverter for this enum
 
-        static Gbl(){
+        static Resource(){
             CheckHashes();
             RawLookup = new Dictionary<string, string>();
 

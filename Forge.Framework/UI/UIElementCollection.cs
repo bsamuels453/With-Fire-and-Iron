@@ -31,7 +31,7 @@ namespace Forge.Framework.UI{
             //_uiElementCollections.Add(this);
             _depthLevel = 0;
             _collectionDepth = 1;
-            _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _parentCollection = this;
         }
 
@@ -42,7 +42,7 @@ namespace Forge.Framework.UI{
             //_uiElementCollections.Add(this);
             _depthLevel = parent._depthLevel + 1;
             _collectionDepth = parent.GetAbsoluteDepth(depth);
-            _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             Debug.Assert(_depthLevel < 10);
             parent.AddElement(this);
         }

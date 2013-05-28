@@ -51,7 +51,7 @@ namespace Forge.Core.Airship{
 
             var translation = Matrix.CreateTranslation(globalPosition);
             var handle = _projectileEngine.AddProjectile(globalPosition, globalAim, _enemyVariant);
-            _projectileBuff.AddObject(handle, Gbl.ContentManager.Load<Model>("Models/Sphere"), translation);
+            _projectileBuff.AddObject(handle, Resource.ContentManager.Load<Model>("Models/Sphere"), translation);
             _activeProjectiles.Add(handle);
         }
 

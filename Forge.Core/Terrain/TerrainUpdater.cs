@@ -43,9 +43,9 @@ namespace Forge.Core.Terrain {
                     var indxs = jObj["Inds"].ToObject<int[]>();
                     var verts = jObj["Verts"].ToObject<VertexPositionTexture[]>();
 
-                    var normTex = new Texture2D(Gbl.Device, 129, 129, false, SurfaceFormat.Rgba64);
-                    var binsTex = new Texture2D(Gbl.Device, 129, 129, false, SurfaceFormat.Color);
-                    var tangsTex = new Texture2D(Gbl.Device, 129, 129, false, SurfaceFormat.Color);
+                    var normTex = new Texture2D(Resource.Device, 129, 129, false, SurfaceFormat.Rgba64);
+                    var binsTex = new Texture2D(Resource.Device, 129, 129, false, SurfaceFormat.Color);
+                    var tangsTex = new Texture2D(Resource.Device, 129, 129, false, SurfaceFormat.Color);
 
                     normTex.SetData(norms);
                     binsTex.SetData(bins);

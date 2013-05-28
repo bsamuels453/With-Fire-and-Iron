@@ -25,7 +25,7 @@ namespace Forge.Core.GameState {
         readonly UIElementCollection _uiElementCollection;
 
         public ObjectEditorState(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo) {
-            _renderTarget = new RenderTarget(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            _renderTarget = new RenderTarget(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _renderTarget.Bind();
             _uiElementCollection = new UIElementCollection();
             _uiElementCollection.Bind();

@@ -28,12 +28,12 @@ namespace Forge.Core{
         }
 
         protected override void Initialize(){
-            Gbl.Device = _graphics.GraphicsDevice;
-            Gbl.ContentManager = Content;
-            Gbl.ScreenSize = new ScreenSize(1200, 800);
+            Resource.Device = _graphics.GraphicsDevice;
+            Resource.ContentManager = Content;
+            Resource.ScreenSize = new ScreenSize(1200, 800);
 
-            var aspectRatio = Gbl.Device.Viewport.Bounds.Width/(float) Gbl.Device.Viewport.Bounds.Height;
-            Gbl.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+            var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
+            Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                 fieldOfView: 3.14f/4,
                 aspectRatio: aspectRatio,
                 nearPlaneDistance: 0.01f,
@@ -53,7 +53,7 @@ namespace Forge.Core{
             Exit();
              */
 #if PLAYMODE
-            //GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
+            //GamestateManager.AddGameState(new PlayerState(new Point(Resource.Device.Viewport.Bounds.Width, Resource.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new PrimaryGameMode());
 #else
             GamestateManager.AddGameState(new HullEditorState());
@@ -68,7 +68,7 @@ namespace Forge.Core{
         }
 
         protected override void UnloadContent(){
-            Gbl.CommitHashChanges();
+            Resource.CommitHashChanges();
             GamestateManager.ClearState();
             DebugConsole.Dispose();
         }

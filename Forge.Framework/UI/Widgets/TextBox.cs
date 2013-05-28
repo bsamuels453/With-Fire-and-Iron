@@ -19,10 +19,10 @@ namespace Forge.Framework.UI.Widgets {
 
         public TextBox(int x, int y, DepthLevel depth, Color fontColor, int width=999999, string font = "Fonts/Monospace10", int maxLines = 99999999) {
             try {
-                Font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
+                Font = Resource.ContentManager.Load<SpriteFont>(Resource.RawLookup[font]);
             }
             catch {
-                Font = Gbl.ContentManager.Load<SpriteFont>(font);
+                Font = Resource.ContentManager.Load<SpriteFont>(font);
             }
             _absoluteDepth = UIElementCollection.BoundCollection.GetAbsoluteDepth(depth);
             _position = new Vector2(x, y);

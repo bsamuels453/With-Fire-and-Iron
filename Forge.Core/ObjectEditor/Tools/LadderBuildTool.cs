@@ -25,7 +25,7 @@ namespace Forge.Core.ObjectEditor.Tools {
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2);
             var trans = Matrix.Identity;
 
-            _ghostedLadderModel.AddObject(0, Gbl.ContentManager.Load<Model>("Models/Ladder"), trans);
+            _ghostedLadderModel.AddObject(0, Resource.ContentManager.Load<Model>("Models/Ladder"), trans);
             _ghostedLadderModel.DisableObject(0);
         }
 
@@ -60,7 +60,7 @@ namespace Forge.Core.ObjectEditor.Tools {
 
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2) * Matrix.CreateTranslation(CursorPosition);
             Matrix trans = Matrix.Identity * Matrix.CreateTranslation(CursorPosition);
-            _hullData.CurObjBuffer.AddObject(identifier, Gbl.ContentManager.Load<Model>("Models/Ladder"), trans);
+            _hullData.CurObjBuffer.AddObject(identifier, Resource.ContentManager.Load<Model>("Models/Ladder"), trans);
 
             var quadsToHide = new List<AirshipObjectIdentifier>();
             var upperBoxesToHide = new List<BoundingBox>();

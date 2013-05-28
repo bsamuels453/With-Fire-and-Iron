@@ -95,16 +95,16 @@ namespace Forge.Core.ObjectEditor.Tools {
                 var viewMatrix = Matrix.CreateLookAt(camPos, camTarg, Vector3.Up);
 
                 //transform the mouse into world space
-                var nearPoint = Gbl.Device.Viewport.Unproject(
+                var nearPoint = Resource.Device.Viewport.Unproject(
                     nearMouse,
-                    Gbl.ProjectionMatrix,
+                    Resource.ProjectionMatrix,
                     viewMatrix,
                     Matrix.Identity
                     );
 
-                var farPoint = Gbl.Device.Viewport.Unproject(
+                var farPoint = Resource.Device.Viewport.Unproject(
                     farMouse,
-                    Gbl.ProjectionMatrix,
+                    Resource.ProjectionMatrix,
                     viewMatrix,
                     Matrix.Identity
                     );

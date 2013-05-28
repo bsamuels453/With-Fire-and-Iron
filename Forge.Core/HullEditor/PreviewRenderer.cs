@@ -24,19 +24,19 @@ namespace Forge.Core.HullEditor {
 
         public PreviewRenderer(BezierCurveCollection sideCurves, BezierCurveCollection topCurves, BezierCurveCollection backCurves){
             _camera = new BodyCenteredCamera(new Rectangle(
-                     Gbl.ScreenSize.GetScreenValueX(0.5f),
-                     Gbl.ScreenSize.GetScreenValueY(0.5f),
-                     Gbl.ScreenSize.GetScreenValueX(0.5f),
-                     Gbl.ScreenSize.GetScreenValueY(0.5f)
+                     Resource.ScreenSize.GetScreenValueX(0.5f),
+                     Resource.ScreenSize.GetScreenValueY(0.5f),
+                     Resource.ScreenSize.GetScreenValueX(0.5f),
+                     Resource.ScreenSize.GetScreenValueY(0.5f)
                      )
                      );
             GamestateManager.CameraController = _camera;
 
             _renderTarget = new RenderTarget(
-                Gbl.ScreenSize.GetScreenValueX(0.5f),
-                Gbl.ScreenSize.GetScreenValueY(0.5f),
-                Gbl.ScreenSize.GetScreenValueX(0.5f),
-                Gbl.ScreenSize.GetScreenValueY(0.5f)
+                Resource.ScreenSize.GetScreenValueX(0.5f),
+                Resource.ScreenSize.GetScreenValueY(0.5f),
+                Resource.ScreenSize.GetScreenValueX(0.5f),
+                Resource.ScreenSize.GetScreenValueY(0.5f)
                 );
 
             _renderTarget.Bind();
@@ -61,7 +61,7 @@ namespace Forge.Core.HullEditor {
         }
 
         public void Draw() {
-            Gbl.Device.Clear(Color.CornflowerBlue);
+            Resource.Device.Clear(Color.CornflowerBlue);
             _renderTarget.Draw(_camera.ViewMatrix, Color.CornflowerBlue);
         }
 

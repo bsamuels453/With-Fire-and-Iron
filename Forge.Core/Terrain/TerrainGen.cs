@@ -58,17 +58,17 @@ namespace Forge.Core.Terrain{
             _cmdQueue = new ComputeCommandQueue(_context, _devices[0], ComputeCommandQueueFlags.None);
 
             #region setup generator kernel
-            bool loadFromSource = Gbl.HasRawHashChanged[Gbl.RawDir.Scripts];
+            bool loadFromSource = Resource.HasRawHashChanged[Resource.RawDir.Scripts];
             loadFromSource = true;
-            _chunkWidthInBlocks = Gbl.LoadContent<int>("TerrainGen_ChunkWidthInBlocks");
+            _chunkWidthInBlocks = Resource.LoadContent<int>("TerrainGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
-            _blockWidth = Gbl.LoadContent<int>("TerrainGen_BlockWidthInMeters");
-            float lacunarity = Gbl.LoadContent<float>("TerrainGen_Lacunarity");
-            float gain = Gbl.LoadContent<float>("TerrainGen_Gain");
-            int octaves = Gbl.LoadContent<int>("TerrainGen_Octaves");
-            float offset = Gbl.LoadContent<float>("TerrainGen_Offset");
-            float hScale = Gbl.LoadContent<float>("TerrainGen_HScale");
-            float vScale = Gbl.LoadContent<float>("TerrainGen_VScale");
+            _blockWidth = Resource.LoadContent<int>("TerrainGen_BlockWidthInMeters");
+            float lacunarity = Resource.LoadContent<float>("TerrainGen_Lacunarity");
+            float gain = Resource.LoadContent<float>("TerrainGen_Gain");
+            int octaves = Resource.LoadContent<int>("TerrainGen_Octaves");
+            float offset = Resource.LoadContent<float>("TerrainGen_Offset");
+            float hScale = Resource.LoadContent<float>("TerrainGen_HScale");
+            float vScale = Resource.LoadContent<float>("TerrainGen_VScale");
 
             _genConstants = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadOnly, 8);
             var genArr = new[]{
@@ -84,16 +84,16 @@ namespace Forge.Core.Terrain{
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
             if (loadFromSource){
-                _generationPrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_Generator"));
+                _generationPrgm = new ComputeProgram(_context, Resource.LoadScript("TerrainGen_Generator"));
 #if CPU_DEBUG
                 _generationPrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\GenTerrain.cl", null, IntPtr.Zero); //use option -I + scriptDir for header search
 #else
                 _generationPrgm.Build(null, "", null, IntPtr.Zero);//use option -I + scriptDir for header search
 #endif
-                Gbl.SaveBinary(_generationPrgm.Binaries, "TerrainGen_Generator");
+                Resource.SaveBinary(_generationPrgm.Binaries, "TerrainGen_Generator");
             }
             else{
-                var binary = Gbl.LoadBinary("TerrainGen_Generator");
+                var binary = Resource.LoadBinary("TerrainGen_Generator");
                 _generationPrgm = new ComputeProgram(_context, binary, _devices);
                 _generationPrgm.Build(null, "", null, IntPtr.Zero);
             }
@@ -126,16 +126,16 @@ namespace Forge.Core.Terrain{
             #region setup quadtree kernel
 
             if (loadFromSource){
-                _qTreePrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_QTree"));
+                _qTreePrgm = new ComputeProgram(_context, Resource.LoadScript("TerrainGen_QTree"));
 #if CPU_DEBUG
                 _qTreePrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\Quadtree.cl", null, IntPtr.Zero);
 #else
                 _qTreePrgm.Build(null, "", null, IntPtr.Zero);
 #endif
-                Gbl.SaveBinary(_qTreePrgm.Binaries, "TerrainGen_QTree");
+                Resource.SaveBinary(_qTreePrgm.Binaries, "TerrainGen_QTree");
             }
             else{
-                var binary = Gbl.LoadBinary("TGen_QTree");
+                var binary = Resource.LoadBinary("TGen_QTree");
                 _qTreePrgm = new ComputeProgram(_context, binary, _devices);
                 _qTreePrgm.Build(null, "", null, IntPtr.Zero);
             }
@@ -169,16 +169,16 @@ namespace Forge.Core.Terrain{
             #region setup winding kernel
 
             if (loadFromSource){
-                _winderPrgm = new ComputeProgram(_context, Gbl.LoadScript("TerrainGen_VertexWinder"));
+                _winderPrgm = new ComputeProgram(_context, Resource.LoadScript("TerrainGen_VertexWinder"));
 #if CPU_DEBUG
                 _winderPrgm.Build(null, @"-g -s D:\Projects\Forge\Scripts\VertexWinder.cl", null, IntPtr.Zero);
 #else
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
 #endif
-                Gbl.SaveBinary(_winderPrgm.Binaries, "TerrainGen_VertexWinder");
+                Resource.SaveBinary(_winderPrgm.Binaries, "TerrainGen_VertexWinder");
             }
             else{
-                var binary = Gbl.LoadBinary("TerrainGen_VertexWinder");
+                var binary = Resource.LoadBinary("TerrainGen_VertexWinder");
                 _winderPrgm = new ComputeProgram(_context, binary, _devices);
                 _winderPrgm.Build(null, "", null, IntPtr.Zero);
             }
@@ -198,7 +198,7 @@ namespace Forge.Core.Terrain{
             #endregion
 
             if (loadFromSource){
-                Gbl.AllowMD5Refresh[Gbl.RawDir.Scripts] = true;
+                Resource.AllowMD5Refresh[Resource.RawDir.Scripts] = true;
             }
 
             _cmdQueue.Finish();
@@ -257,9 +257,9 @@ namespace Forge.Core.Terrain{
             }
 
 
-            var texNormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Rgba64);
-            var texBinormal = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
-            var texTangent = new Texture2D(Gbl.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texNormal = new Texture2D(Resource.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Rgba64);
+            var texBinormal = new Texture2D(Resource.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
+            var texTangent = new Texture2D(Resource.Device, _chunkWidthInVerts, _chunkWidthInVerts, false, SurfaceFormat.Color);
 
             texNormal.SetData(rawNormals);
             texBinormal.SetData(rawBinormals);

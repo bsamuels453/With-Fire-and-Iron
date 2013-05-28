@@ -20,9 +20,9 @@ namespace Forge.Core.GameState {
             _elementCollection = new UIElementCollection();
             _elementCollection.Bind();
 
-            _sidepanel = new SideEditorPanel(0, 0, Gbl.ScreenSize.GetScreenValueX(0.5f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
-            _toppanel = new TopEditorPanel(0, Gbl.ScreenSize.GetScreenValueY(0.5f), Gbl.ScreenSize.GetScreenValueX(0.5f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/top.xml");
-            _backpanel = new BackEditorPanel(Gbl.ScreenSize.GetScreenValueX(0.5f), 0, Gbl.ScreenSize.GetScreenValueX(0.25f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/back.xml");
+            _sidepanel = new SideEditorPanel(0, 0, Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
+            _toppanel = new TopEditorPanel(0, Resource.ScreenSize.GetScreenValueY(0.5f), Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/top.xml");
+            _backpanel = new BackEditorPanel(Resource.ScreenSize.GetScreenValueX(0.5f), 0, Resource.ScreenSize.GetScreenValueX(0.25f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/back.xml");
 
             _sidepanel.BackPanel = _backpanel;
             _sidepanel.TopPanel = _toppanel;

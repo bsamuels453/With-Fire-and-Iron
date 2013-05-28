@@ -32,7 +32,7 @@ namespace Forge.Core.Camera{
                 _boundingBox = (Rectangle) boundingBox;
             }
             else{
-                _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+                _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             }
         }
 
