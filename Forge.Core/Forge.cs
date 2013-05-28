@@ -3,6 +3,7 @@
 #region
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Forge.Core.Airship;
 using Forge.Core.Logic;
@@ -30,6 +31,7 @@ namespace Forge.Core{
 
         protected override void Initialize(){
             DebugConsole.InitalizeConsole();
+            DebugConsole.WriteLine("Initializing resources...");
             Resource.Initialize();
             Resource.Device = _graphics.GraphicsDevice;
             Resource.ContentManager = Content;
@@ -42,36 +44,32 @@ namespace Forge.Core{
                 nearPlaneDistance: 0.3f,
                 farPlaneDistance: 13000f
                 );
-            
 
-            /*
-            var p = new ProjectilePhysics();
-            var proj = p.AddProjectile(new Vector3(0, 0, 200), new Vector3(0, 0, 0), ProjectilePhysics.EntityVariant.EnemyShip);
-            for (int i = 0; i < 500; i++){
-                p.Update();
-                Thread.Sleep(1);
-            }
-            proj.Terminate.Invoke();
-            p.Dispose();
-            Exit();
-             */
+            DebugConsole.WriteLine("Resource initialization complete");
+
+            DebugConsole.WriteLine("Initializing game-state...");
 #if PLAYMODE
-            //GamestateManager.AddGameState(new PlayerState(new Point(Resource.Device.Viewport.Bounds.Width, Resource.Device.Viewport.Bounds.Height)));
             GamestateManager.AddGameState(new PrimaryGameMode());
 #else
             GamestateManager.AddGameState(new HullEditorState());
 #endif
 
             IsMouseVisible = true;
+            DebugConsole.WriteLine("Game-state initialization completed.");
             base.Initialize();
-            DebugConsole.WriteLine("Game initalized");
+            DebugConsole.WriteLine("Game initialization completed.");
         }
 
         protected override void LoadContent(){
         }
 
         protected override void UnloadContent(){
+            var timer = new Stopwatch();
+            DebugConsole.WriteLine("Unloading game-state resources...");
+            timer.Start();
             GamestateManager.ClearState();
+            timer.Stop();
+            DebugConsole.WriteLine("Game-state resources released in " + timer.ElapsedMilliseconds + " ms");
             DebugConsole.Dispose();
         }
 
