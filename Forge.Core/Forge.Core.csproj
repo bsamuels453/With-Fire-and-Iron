@@ -171,13 +171,13 @@
     <Compile Include="GameState\HullEditorState.cs" />
     <Compile Include="HullEditor\HullEditorPanels.cs" />
     <Compile Include="HullEditor\PreviewRenderer.cs" />
-    <Compile Include="ObjectEditor\HullSplitter.cs" />
+    <Compile Include="Airship\Generation\HullSplitter.cs" />
     <Compile Include="ObjectEditor\Tools\DeckPlacementBase.cs" />
     <Compile Include="ObjectEditor\Tools\LadderBuildTool.cs" />
     <Compile Include="ObjectEditor\Tools\WallBuildTool.cs" />
     <Compile Include="ObjectEditor\Tools\WallDeleteTool.cs" />
     <Compile Include="ObjectEditor\HullDataManager.cs" />
-    <Compile Include="ObjectEditor\HullGeometryGenerator.cs" />
+    <Compile Include="Airship\Generation\HullGeometryGenerator.cs" />
     <Compile Include="GameState\ObjectEditorState.cs" />
     <Compile Include="ObjectEditor\ObjectEditorUI.cs" />
     <Compile Include="Camera\BodyCenteredCamera.cs" />

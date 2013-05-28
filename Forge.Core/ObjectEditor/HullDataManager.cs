@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship;
 using Forge.Core.Airship.Data;
+using Forge.Core.Airship.Generation;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;

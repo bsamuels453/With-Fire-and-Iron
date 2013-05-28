@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Core.Airship;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -13,7 +12,7 @@ using Forge.Core.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Forge.Core.ObjectEditor {
+namespace Forge.Core.Airship.Generation {
     /// <summary>
     /// Generates the geometry for airship hulls. This differs from PreviewRenderer in
     /// that this class generates the geometry so that things like windows, portholes, or
