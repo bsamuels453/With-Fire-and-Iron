@@ -10,6 +10,7 @@ using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.HullEditor;
 using Forge.Core.GameState;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 
 #endregion

@@ -6,6 +6,7 @@ using Forge.Core.GameState;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Framework;
+using Forge.Framework.Resources;
 using Forge.Framework.UI.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;

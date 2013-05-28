@@ -15,7 +15,7 @@ using Newtonsoft.Json.Linq;
 
 #endregion
 
-namespace Forge.Framework{
+namespace Forge.Framework.Resources{
     public static class Resource{
         #region RawDir enum
 

@@ -13,7 +13,7 @@ namespace Forge.Core.Terrain {
         readonly TerrainGen _generator;
         public TerrainUpdater(){
             _loadedChunks = new List<TerrainChunk>();
-            /*
+            
             _generator = new TerrainGen();
             for (int x = 0; x < 10; x++){
                 for (int z = 0; z < 10; z++){
@@ -32,7 +32,7 @@ namespace Forge.Core.Terrain {
                     //sw.Close();
                 }
             }
-             */
+             /*
             for (int x = 0; x < 2; x++){
                 for (int z = 0; z < 2; z++){
                     var sr = new StreamReader("chunk" + x + " " + z);
@@ -54,7 +54,7 @@ namespace Forge.Core.Terrain {
                     var chunk = new TerrainChunk(new XZPair(x, z), verts, indxs, normTex, binsTex, tangsTex);
                     _loadedChunks.Add(chunk);
                 }
-            }
+            }*/
 
         }
 

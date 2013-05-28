@@ -5,6 +5,7 @@ using Forge.Core.Camera;
 using Forge.Core.ObjectEditor;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
+using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Forge.Core.Util;
 using Forge.Framework;

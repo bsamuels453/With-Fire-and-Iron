@@ -3,6 +3,7 @@ using System.IO;
 using System.Xml;
 using Forge.Core.HullEditor;
 using Forge.Framework;
+using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

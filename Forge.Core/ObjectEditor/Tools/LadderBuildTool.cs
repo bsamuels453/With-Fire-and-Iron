@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
