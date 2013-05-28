@@ -75,15 +75,15 @@ namespace Forge.Core.ObjectEditor.Tools {
             }
             if (HullData.CurDeck != 0) {
                 foreach (var quad in quadsToHide) {
-                    bool b = _hullData.DeckBuffers[_hullData.CurDeck - 1].DisableObject(quad);
+                    bool b = _hullData.DeckSectionContainer.DeckBufferByDeck[_hullData.CurDeck - 1].DisableObject(quad);
                     Debug.Assert(b);
                 }
                 foreach (var bbox in upperBoxesToHide) {
-                    _hullData.DeckBoundingBoxes[_hullData.CurDeck - 1].Remove(bbox);
+                    _hullData.DeckSectionContainer.BoundingBoxesByDeck[_hullData.CurDeck - 1].Remove(bbox);
                 }
             }
             foreach (var bbox in lowerBoxesToHide) {
-                _hullData.DeckBoundingBoxes[_hullData.CurDeck].Remove(bbox);
+                _hullData.DeckSectionContainer.BoundingBoxesByDeck[_hullData.CurDeck].Remove(bbox);
             }
             GenerateGuideGrid();
         }

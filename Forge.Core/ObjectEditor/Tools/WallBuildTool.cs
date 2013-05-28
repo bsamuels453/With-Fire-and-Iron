@@ -15,7 +15,7 @@ namespace Forge.Core.ObjectEditor.Tools {
         public WallBuildTool(HullDataManager hullData) :
             base(hullData, hullData.WallResolution) {
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>(
-            hullData.DeckVertexes[0].Count() * 2,
+            hullData.DeckSectionContainer.DeckVertexesByDeck[0].Count() * 2,
             10,
             20,
             30,

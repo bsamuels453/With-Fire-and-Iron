@@ -115,7 +115,7 @@ namespace Forge.Core.ObjectEditor.Tools {
 
                 //xx eventually might want to dissect this with comments
                 bool intersectionFound = false;
-                foreach (BoundingBox t in HullData.CurDeckBoundingBoxes) {
+                foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes) {
                     float? ndist;
                     if ((ndist = ray.Intersects(t)) != null) {
                         EnableCursorGhost();
@@ -124,20 +124,20 @@ namespace Forge.Core.ObjectEditor.Tools {
 
                         var distList = new List<float>();
 
-                        for (int point = 0; point < HullData.CurDeckVertexes.Count(); point++) {
-                            distList.Add(Vector3.Distance(rayTermination, HullData.CurDeckVertexes[point]));
+                        for (int point = 0; point < HullData.DeckSectionContainer.TopExposedVertexes.Count(); point++) {
+                            distList.Add(Vector3.Distance(rayTermination, HullData.DeckSectionContainer.TopExposedVertexes[point]));
                         }
                         float f = distList.Min();
 
                         int ptIdx = distList.IndexOf(f);
 
-                        if (!IsCursorValid(HullData.CurDeckVertexes[ptIdx], prevCursorPosition, HullData.CurDeckVertexes, f)) {
+                        if (!IsCursorValid(HullData.DeckSectionContainer.TopExposedVertexes[ptIdx], prevCursorPosition, HullData.DeckSectionContainer.TopExposedVertexes, f)) {
                             _cursorGhostActive = false;
                             DisableCursorGhost();
                             break;
                         }
 
-                        CursorPosition = HullData.CurDeckVertexes[ptIdx];
+                        CursorPosition = HullData.DeckSectionContainer.TopExposedVertexes[ptIdx];
                         if (CursorPosition != prevCursorPosition) {
                             UpdateCursorGhost();
                             HandleCursorChange(_isDrawing);
@@ -221,7 +221,7 @@ namespace Forge.Core.ObjectEditor.Tools {
             for (int i = 0; i < HullData.NumDecks; i++) {
                 #region indicies
 
-                int numBoxes = HullData.DeckBoundingBoxes[i].Count();
+                int numBoxes = HullData.DeckSectionContainer.BoundingBoxesByDeck[i].Count();
                 if (GuideGridBuffers[i] != null) {
                     GuideGridBuffers[i].Dispose();
                 }
@@ -236,11 +236,11 @@ namespace Forge.Core.ObjectEditor.Tools {
 
                 #region verticies
 
-                var verts = new VertexPositionColor[HullData.DeckBoundingBoxes[i].Count() * 8];
+                var verts = new VertexPositionColor[HullData.DeckSectionContainer.BoundingBoxesByDeck[i].Count() * 8];
 
                 int vertIndex = 0;
 
-                foreach (var boundingBox in HullData.DeckBoundingBoxes[i]) {
+                foreach (var boundingBox in HullData.DeckSectionContainer.BoundingBoxesByDeck[i]) {
                     Vector3 v1, v2, v3, v4;
                     //v4  v3
                     //
