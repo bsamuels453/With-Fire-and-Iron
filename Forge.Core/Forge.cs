@@ -29,6 +29,8 @@ namespace Forge.Core{
         }
 
         protected override void Initialize(){
+            DebugConsole.InitalizeConsole();
+            Resource.Initialize();
             Resource.Device = _graphics.GraphicsDevice;
             Resource.ContentManager = Content;
             Resource.ScreenSize = new ScreenSize(1200, 800);
@@ -40,7 +42,7 @@ namespace Forge.Core{
                 nearPlaneDistance: 0.3f,
                 farPlaneDistance: 13000f
                 );
-            DebugConsole.InitalizeConsole();
+            
 
             /*
             var p = new ProjectilePhysics();
@@ -69,7 +71,6 @@ namespace Forge.Core{
         }
 
         protected override void UnloadContent(){
-            Resource.CommitHashChanges();
             GamestateManager.ClearState();
             DebugConsole.Dispose();
         }
