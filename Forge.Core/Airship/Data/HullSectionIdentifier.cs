@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
 
-namespace Forge.Core.Airship {
+namespace Forge.Core.Airship.Data {
     public struct HullSectionIdentifier : IEquatable<HullSectionIdentifier> {
         public readonly float XStart;
         public readonly int YPanel;

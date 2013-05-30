@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
 
-namespace Forge.Core.Airship {
+namespace Forge.Core.Airship.Data {
     class HullSection : IEquatable<HullSection> {
         public int Uid { get; private set; }
         public Vector3[] AliasedVertexes { get; private set; }

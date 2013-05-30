@@ -1,19 +1,17 @@
 ﻿#region
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Core.Airship;
-using Forge.Framework.Draw;
+using Forge.Core.Airship.Data;
 using Forge.Core.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.Airship.Generation{
     /// <summary>
     /// This class is used to subdivide sections of hull into pieces of a static size. These hull pieces can be toggled on and off through the objectbuffer that is returned.
     /// </summary>

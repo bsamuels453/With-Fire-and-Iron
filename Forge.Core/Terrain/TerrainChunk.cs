@@ -1,16 +1,20 @@
-﻿using System;
+﻿//#define WIREFRAME_OVERLAY
+
+using System;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Framework.Draw;
 using Forge.Core.Util;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Forge.Core.TerrainManager {
+namespace Forge.Core.Terrain {
     class TerrainChunk : IDisposable{
         public XZPair Identifier;
 
         readonly GeometryBuffer<VertexPositionTexture> _buffer;
+#if WIREFRAME_OVERLAY
         readonly GeometryBuffer<VertexPositionTexture> _wbuff;
+#endif
         readonly VertexPositionTexture[] _verticies;
         readonly int[] _indicies;
         readonly Texture2D _normals;
@@ -27,8 +31,10 @@ namespace Forge.Core.TerrainManager {
             _binormals = binormals;
             _tangents = tangents;
             _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Shader_Terrain");
+#if WIREFRAME_OVERLAY
             _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count()*2, verticies.Count(), indicies.Count(), "Shader_Wireframe", PrimitiveType.LineList);
             _wbuff.ShaderParams["Alpha"].SetValue(0.25f);
+#endif
 
         Debug.Assert(_bufferDataSet == false);
             _buffer.IndexBuffer.SetData((int[])_indicies.Clone());
@@ -36,7 +42,7 @@ namespace Forge.Core.TerrainManager {
             _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
             _buffer.ShaderParams["BinormalMapTexture"].SetValue(_binormals);
             _buffer.ShaderParams["TangentMapTexture"].SetValue(_tangents);
-
+#if WIREFRAME_OVERLAY
             //we need to explode the indice list from triangle list to line list
             var wireframeInds = new int[_indicies.Length * 2];
             int srcIdx = 0;
@@ -52,6 +58,7 @@ namespace Forge.Core.TerrainManager {
 
             _wbuff.IndexBuffer.SetData(wireframeInds);
             _wbuff.VertexBuffer.SetData(_verticies);
+#endif
 
             _normals.Dispose();
             _binormals.Dispose();
@@ -63,11 +70,19 @@ namespace Forge.Core.TerrainManager {
             _bufferDataSet = true;
         }
 
+        bool _disposed;
+
         public void Dispose(){
-            //_normals.Dispose();
-            //_binormals.Dispose();
-            //_tangents.Dispose();
+            Debug.Assert(!_disposed);
             _buffer.Dispose();
+#if WIREFRAME_OVERLAY
+            _wbuff.Dispose();
+#endif
+            _disposed = true;
+        }
+
+        ~TerrainChunk(){
+            Debug.Assert(_disposed);
         }
     }
 }

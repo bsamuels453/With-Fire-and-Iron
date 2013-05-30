@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace Forge.Core.Airship{
+namespace Forge.Core.Airship.Data{
     public struct ModelAttributes {
         public int NumDecks;
         public Vector3 Centroid;

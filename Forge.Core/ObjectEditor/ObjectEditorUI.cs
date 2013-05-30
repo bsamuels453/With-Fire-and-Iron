@@ -1,4 +1,6 @@
-﻿using Forge.Core.ObjectEditor.Tools;
+﻿using System;
+using System.Diagnostics;
+using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
 using Forge.Framework;
 using Forge.Framework.UI;
@@ -8,7 +10,7 @@ namespace Forge.Core.ObjectEditor {
     /// <summary>
     ///   this class handles the display of the prototype airship and all of its components
     /// </summary>
-    internal class ObjectEditorUI : IInputUpdates, ILogicUpdates {
+    internal class ObjectEditorUI : IInputUpdates, ILogicUpdates, IDisposable {
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly HullDataManager _hullData;
@@ -59,6 +61,18 @@ namespace Forge.Core.ObjectEditor {
 
         void RemoveVisibleLevel(int identifier) {
             _hullData.MoveDownOneDeck();
+        }
+
+        bool _disposed;
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _toolBar.Dispose();
+            _disposed = true;
+        }
+
+        ~ObjectEditorUI(){
+            Debug.Assert(_disposed);
         }
     }
 }

@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Forge.Core.Airship.Data;
 using Forge.Core.Logic;
 using Forge.Core.ObjectEditor;
+using Forge.Core.Physics;
 using Forge.Framework.Draw;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
@@ -12,18 +15,14 @@ using Microsoft.Xna.Framework.Input;
 namespace Forge.Core.Airship {
     internal class Airship : IDisposable{
         public ModelAttributes ModelAttributes { get; private set; }
-
-        int _curDeck;
-        readonly int _numDecks;
         readonly List<Hardpoint> _hardPoints;
         readonly ProjectilePhysics _projectilePhysics;
         readonly AirshipController _controller;
         readonly HullIntegrityMesh _hullIntegrityMesh;
 
         //public Vector3 Centroid { get; private set; }
-        public ObjectBuffer<ObjectIdentifier>[] DeckBuffers { get; private set; }
-        public ObjectBuffer<int>[] HullBuffers { get; private set; }
-        public HullSectionContainer HullSections { get; private set; }
+        public HullSectionContainer HullSectionContainer { get; private set; }
+        public DeckSectionContainer DeckSectionContainer { get; private set; }
 
         /// <summary>
         /// Reflects  the current position of the airship, as measured from its center.
@@ -38,20 +37,16 @@ namespace Forge.Core.Airship {
 
         public Airship(
             ModelAttributes airshipModel,
-            ObjectBuffer<ObjectIdentifier>[] deckBuffers,
-            ObjectBuffer<int>[] hullBuffers,
-            HullSectionContainer hullSections
+            DeckSectionContainer deckSectionContainer,
+            HullSectionContainer hullSectionContainer
             ){
-            _curDeck = 0;
-            _numDecks = airshipModel.NumDecks;
+
             ModelAttributes = airshipModel;
-            HullSections = hullSections;
+            HullSectionContainer = hullSectionContainer;
+            DeckSectionContainer = deckSectionContainer;
             _projectilePhysics = new ProjectilePhysics();//oh my god get this out of here
-            DeckBuffers = deckBuffers;
-            HullBuffers = hullBuffers;
 
-
-            var movementState = new AirshipMovementState();
+            var movementState = new AirshipMovementData();
             movementState.Angle = new Vector3(0, 0, 0);
             movementState.CurPosition = new Vector3(airshipModel.Length / 3, 2000, 0);
 
@@ -61,7 +56,7 @@ namespace Forge.Core.Airship {
                 movementState
                 );
 
-            _hullIntegrityMesh = new HullIntegrityMesh(HullBuffers, HullSections, _projectilePhysics, _controller.Position, ModelAttributes.Length);
+            _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _projectilePhysics, _controller.Position, ModelAttributes.Length);
 
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(-25, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
@@ -86,51 +81,24 @@ namespace Forge.Core.Airship {
         }
 
         public void AddVisibleLayer(int _){
-            if (_curDeck != 0){
-                var tempFloorBuff = DeckBuffers.Reverse().ToArray();
-                var tempHullBuff = HullBuffers.Reverse().ToArray();
-                //var tempWWallBuff = WallBuffers.Reverse().ToArray();
-                for (int i = 0; i < tempFloorBuff.Count(); i++){
-                    if (tempFloorBuff[i].Enabled == false){
-                        _curDeck--;
-                        tempFloorBuff[i].Enabled = true;
-                        //tempWWallBuff[i].Enabled = true;
-
-                        if (i < _numDecks - 1){
-                            tempHullBuff[i].Enabled = true;
-                        }
-                        tempHullBuff[i-1].CullMode = CullMode.None;
-                        break;
-                    }
-                }
-            }
+            HullSectionContainer.SetTopVisibleDeck(HullSectionContainer.TopExpIdx - 1);
+            DeckSectionContainer.SetTopVisibleDeck(DeckSectionContainer.TopExpIdx - 1);
         }
 
         public void RemoveVisibleLayer(int _){
-            if (_curDeck < _numDecks - 1){
-                for (int i = 0; i < DeckBuffers.Count(); i++){
-                    if (DeckBuffers[i].Enabled){
-                        _curDeck++;
-                        DeckBuffers[i].Enabled = false;
-                        HullBuffers[i].CullMode = CullMode.CullCounterClockwiseFace;
-                        if (i > 0){
-                            HullBuffers[i - 1].Enabled = false;
-                        }
-                        //WallBuffers[i].Enabled = false;
-                        break;
-                    }
-                }
-            }
+            HullSectionContainer.SetTopVisibleDeck(HullSectionContainer.TopExpIdx + 1);
+            DeckSectionContainer.SetTopVisibleDeck(DeckSectionContainer.TopExpIdx + 1);
         }
 
         void SetAirshipWMatrix(Matrix worldMatrix) {
             _hullIntegrityMesh.WorldMatrix = worldMatrix;
 
-            foreach (var deck in DeckBuffers) {
-                deck.WorldMatrix = worldMatrix;
+            foreach (var hullLayer in HullSectionContainer.HullBuffersByDeck){
+                hullLayer.WorldMatrix = worldMatrix;
             }
-            foreach (var layer in HullBuffers) {
-                layer.WorldMatrix = worldMatrix;
+
+            foreach (var deckLayer in DeckSectionContainer.DeckBufferByDeck) {
+                deckLayer.WorldMatrix = worldMatrix;
             }
 
             foreach (var hardPoint in _hardPoints) {
@@ -138,8 +106,24 @@ namespace Forge.Core.Airship {
             }
         }
 
+        bool _disposed;
+
         public void Dispose(){
+            Debug.Assert(!_disposed);
             _projectilePhysics.Dispose();
+            _hullIntegrityMesh.Dispose();
+
+            DeckSectionContainer.Dispose();
+            HullSectionContainer.Dispose();
+
+            foreach (var hardPoint in _hardPoints){
+                hardPoint.Dispose();
+            }
+            _disposed = true;
+        }
+
+        ~Airship(){
+            Debug.Assert(_disposed);
         }
     }
 }

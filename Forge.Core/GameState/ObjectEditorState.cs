@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using Forge.Core.Airship;
-using Forge.Core.GameState;
+using Forge.Core.Airship.Generation;
+using Forge.Core.Camera;
+using Forge.Core.ObjectEditor;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
+using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Forge.Core.Util;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Forge.Core.ObjectEditor {
+namespace Forge.Core.GameState {
     internal class ObjectEditorState : IGameState {
         readonly BodyCenteredCamera _cameraController;
         readonly ObjectEditorUI _doodadUI;
@@ -23,7 +26,7 @@ namespace Forge.Core.ObjectEditor {
         readonly UIElementCollection _uiElementCollection;
 
         public ObjectEditorState(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo) {
-            _renderTarget = new RenderTarget(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            _renderTarget = new RenderTarget(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _renderTarget.Bind();
             _uiElementCollection = new UIElementCollection();
             _uiElementCollection.Bind();
@@ -44,7 +47,11 @@ namespace Forge.Core.ObjectEditor {
         }
 
         public void Dispose() {
-            //throw new System.NotImplementedException();
+            _renderTarget.Bind();
+            _hullData.Dispose();
+            _doodadUI.Dispose();
+            _renderTarget.Unbind();
+            _renderTarget.Dispose();
         }
 
         public void Update(InputState state, double timeDelta) {

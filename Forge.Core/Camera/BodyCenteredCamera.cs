@@ -2,12 +2,13 @@
 
 using System;
 using Forge.Framework;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Camera{
     /// <summary>
     ///   this abstract class creates a camera that rotates around a point
     /// </summary>
@@ -32,7 +33,7 @@ namespace Forge.Core.Logic{
                 _boundingBox = (Rectangle) boundingBox;
             }
             else{
-                _boundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+                _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             }
         }
 

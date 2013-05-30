@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -23,7 +25,7 @@ namespace Forge.Framework.Draw{
         public Vector2 Offset;
 
         static RenderTarget(){
-            _cumulativeSpriteBatch = new SpriteBatch(Gbl.Device);
+            _cumulativeSpriteBatch = new SpriteBatch(Resource.Device);
             _renderTargets = new List<RenderTarget>();
 
             _universalDepthStencil = new DepthStencilState();
@@ -32,9 +34,9 @@ namespace Forge.Framework.Draw{
         }
 
         public RenderTarget(int x, int y, int width, int height, float depth = 1){
-            SpriteBatch = new SpriteBatch(Gbl.Device);
+            SpriteBatch = new SpriteBatch(Resource.Device);
             _targetCanvas = new RenderTarget2D(
-                Gbl.Device,
+                Resource.Device,
                 width,
                 height,
                 false,
@@ -54,11 +56,11 @@ namespace Forge.Framework.Draw{
         /// </summary>
         /// <param name="depth"> </param>
         public RenderTarget(float depth = 1){
-            SpriteBatch = new SpriteBatch(Gbl.Device);
+            SpriteBatch = new SpriteBatch(Resource.Device);
             _targetCanvas = new RenderTarget2D(
-                Gbl.Device,
-                Gbl.ScreenSize.X,
-                Gbl.ScreenSize.Y,
+                Resource.Device,
+                Resource.ScreenSize.X,
+                Resource.ScreenSize.Y,
                 false,
                 SurfaceFormat.Color,
                 DepthFormat.Depth24Stencil8
@@ -66,7 +68,7 @@ namespace Forge.Framework.Draw{
             Depth = depth;
 
             Offset = new Vector2(0, 0);
-            BoundingBox = new Rectangle(0, 0, Gbl.ScreenSize.X, Gbl.ScreenSize.Y);
+            BoundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
             _renderTargets.Add(this);
@@ -86,10 +88,19 @@ namespace Forge.Framework.Draw{
 
         #region IDisposable Members
 
+        bool _disposed;
+
         public void Dispose(){
+            Debug.Assert(!_disposed);
             _renderTargets.Remove(this);
             SpriteBatch.Dispose();
             _targetCanvas.Dispose();
+            _disposed = true;
+        }
+
+        ~RenderTarget(){
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
 
         #endregion
@@ -106,9 +117,9 @@ namespace Forge.Framework.Draw{
             bool dontUnbindTarget = CurTarg != null;//this has to exist because of globalrendertarget abomination
 
             CurTarg = this;
-            Gbl.Device.SetRenderTarget(_targetCanvas);
-            Gbl.Device.Clear(fillColor);
-            Gbl.Device.DepthStencilState = _universalDepthStencil;
+            Resource.Device.SetRenderTarget(_targetCanvas);
+            Resource.Device.Clear(fillColor);
+            Resource.Device.DepthStencilState = _universalDepthStencil;
             SpriteBatch.Begin(
                 SpriteSortMode.BackToFront,
                 BlendState.AlphaBlend,
@@ -123,7 +134,7 @@ namespace Forge.Framework.Draw{
                 sprite.Draw();
             }
             SpriteBatch.End();
-            Gbl.Device.SetRenderTarget(null);
+            Resource.Device.SetRenderTarget(null);
             if (!dontUnbindTarget){
                 CurTarg = null;
             }
@@ -133,7 +144,7 @@ namespace Forge.Framework.Draw{
         }
 
         public static void EndDraw(){
-            Gbl.Device.SetRenderTarget(null);
+            Resource.Device.SetRenderTarget(null);
             _cumulativeSpriteBatch.Begin(
                 SpriteSortMode.BackToFront,
                 BlendState.NonPremultiplied,

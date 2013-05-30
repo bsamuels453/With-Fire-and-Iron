@@ -1,6 +1,8 @@
 ﻿#region
 
 using System;
+using System.Diagnostics;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -18,7 +20,7 @@ namespace Forge.Framework.Draw{
         public bool Enabled;
         protected RasterizerState Rasterizer;
         protected Effect Shader;
-        bool _isDisposed;
+        bool _disposed;
 
         protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType, CullMode cullMode = CullMode.None){
             Enabled = true;
@@ -30,21 +32,21 @@ namespace Forge.Framework.Draw{
             Rasterizer = new RasterizerState{CullMode = cullMode};
 
             BaseIndexBuffer = new IndexBuffer(
-                Gbl.Device,
+                Resource.Device,
                 typeof (int),
                 numIndicies,
                 BufferUsage.None
                 );
 
             BaseVertexBuffer = new VertexBuffer(
-                Gbl.Device,
+                Resource.Device,
                 typeof (T),
                 numVerticies,
                 BufferUsage.None
                 );
 
-            Gbl.LoadShader(shader, out Shader);
-            Shader.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
+            Resource.LoadShader(shader, out Shader);
+            Shader.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
             Shader.Parameters["World"].SetValue(Matrix.Identity);
 
             RenderTarget.Buffers.Add(this);
@@ -57,11 +59,11 @@ namespace Forge.Framework.Draw{
         #region IDisposable Members
 
         public void Dispose(){
-            if (!_isDisposed){
+            if (!_disposed){
                 RenderTarget.Buffers.Remove(this);
                 BaseIndexBuffer.Dispose();
                 BaseVertexBuffer.Dispose();
-                _isDisposed = true;
+                _disposed = true;
             }
         }
 
@@ -73,24 +75,23 @@ namespace Forge.Framework.Draw{
             if (Enabled){
                 Shader.Parameters["View"].SetValue(viewMatrix);
                 Shader.Parameters["World"].SetValue(BaseWorldMatrix);
-                Gbl.Device.RasterizerState = Rasterizer;
+                Resource.Device.RasterizerState = Rasterizer;
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){
                     pass.Apply();
-                    Gbl.Device.Indices = BaseIndexBuffer;
-                    Gbl.Device.SetVertexBuffer(BaseVertexBuffer);
-                    Gbl.Device.DrawIndexedPrimitives(_primitiveType, 0, 0, _numIndicies, 0, _numPrimitives);
+                    Resource.Device.Indices = BaseIndexBuffer;
+                    Resource.Device.SetVertexBuffer(BaseVertexBuffer);
+                    Resource.Device.DrawIndexedPrimitives(_primitiveType, 0, 0, _numIndicies, 0, _numPrimitives);
                 }
-                Gbl.Device.SetVertexBuffer(null);
+                Resource.Device.SetVertexBuffer(null);
             }
         }
 
         #endregion
 
         ~BaseGeometryBuffer(){
-            if (!_isDisposed){
-                //throw new Exception("Dispose your buffers, scrub");
-            }
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
     }
 }

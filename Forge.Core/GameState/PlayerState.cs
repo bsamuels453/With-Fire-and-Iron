@@ -11,6 +11,8 @@ using Microsoft.Xna.Framework.Input;
 #endregion
 
 namespace Forge.Core.GameState{
+    //old class from when the freecam hack was enabled; i dont see any use for this any time soon so I'm going to leave it here instead of reimplementing it in new system.
+    /*
     internal class PlayerState : IGameState{
         readonly SubmarineCamera _cameraController;
         readonly Point _viewportSize;
@@ -22,7 +24,7 @@ namespace Forge.Core.GameState{
 
             _cameraController = new SubmarineCamera(new Vector3(-31, 1043, -50), new Angle3(-0.49f, 0, -11.7f));
             GamestateManager.CameraController = _cameraController;
-            GamestateManager.OnCameraControllerChange += OnCameraControllerChange;
+
             _clampMouse = true;
             _skipNextMouseUpdate = true;
 
@@ -100,7 +102,7 @@ namespace Forge.Core.GameState{
                         pos.Y < _viewportSize.X*tolerance
                         ){
                         //move mouse to center of screen
-                        Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
+                        Microsoft.Xna.Framework.Input.Mouse.SetPosition(_viewportSize.X/2, _viewportSize.Y/2);
                         pos.X = _viewportSize.X/2;
                         pos.Y = _viewportSize.Y/2;
                         _skipNextMouseUpdate = true;
@@ -122,4 +124,5 @@ namespace Forge.Core.GameState{
 
         #endregion
     }
+     */
 }

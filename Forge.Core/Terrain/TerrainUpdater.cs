@@ -1,20 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using Forge.Core.GameState;
 using Forge.Core.Util;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Forge.Core.TerrainManager {
-    class TerrainManagerState : IGameState {
+namespace Forge.Core.Terrain {
+    class TerrainUpdater : IDisposable{
         readonly List<TerrainChunk> _loadedChunks;
         readonly TerrainGen _generator;
-        public TerrainManagerState(){
-            GamestateManager.UseGlobalRenderTarget = true;
+        public TerrainUpdater(){
             _loadedChunks = new List<TerrainChunk>();
-            /*
+            
             _generator = new TerrainGen();
             for (int x = 0; x < 10; x++){
                 for (int z = 0; z < 10; z++){
@@ -33,7 +32,7 @@ namespace Forge.Core.TerrainManager {
                     //sw.Close();
                 }
             }
-             */
+             /*
             for (int x = 0; x < 2; x++){
                 for (int z = 0; z < 2; z++){
                     var sr = new StreamReader("chunk" + x + " " + z);
@@ -44,9 +43,9 @@ namespace Forge.Core.TerrainManager {
                     var indxs = jObj["Inds"].ToObject<int[]>();
                     var verts = jObj["Verts"].ToObject<VertexPositionTexture[]>();
 
-                    var normTex = new Texture2D(Gbl.Device, 129, 129, false, SurfaceFormat.Rgba64);
-                    var binsTex = new Texture2D(Gbl.Device, 129, 129, false, SurfaceFormat.Color);
-                    var tangsTex = new Texture2D(Gbl.Device, 129, 129, false, SurfaceFormat.Color);
+                    var normTex = new Texture2D(Resource.Device, 129, 129, false, SurfaceFormat.Rgba64);
+                    var binsTex = new Texture2D(Resource.Device, 129, 129, false, SurfaceFormat.Color);
+                    var tangsTex = new Texture2D(Resource.Device, 129, 129, false, SurfaceFormat.Color);
 
                     normTex.SetData(norms);
                     binsTex.SetData(bins);
@@ -55,7 +54,7 @@ namespace Forge.Core.TerrainManager {
                     var chunk = new TerrainChunk(new XZPair(x, z), verts, indxs, normTex, binsTex, tangsTex);
                     _loadedChunks.Add(chunk);
                 }
-            }
+            }*/
 
         }
 
@@ -67,10 +66,6 @@ namespace Forge.Core.TerrainManager {
         }
 
         public void Update(InputState state, double timeDelta){
-        }
-
-        public void Draw(){
-
         }
     }
 }

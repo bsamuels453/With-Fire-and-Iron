@@ -1,12 +1,16 @@
-﻿using Forge.Core.GameState;
+﻿using Forge.Core.Airship;
+using Forge.Core.Camera;
 using Forge.Core.Logic;
+using Forge.Core.Terrain;
 using Forge.Framework;
+using Forge.Framework.Draw;
 using Forge.Framework.UI;
+using Microsoft.Xna.Framework;
 
-namespace Forge.Core.Airship {
-    class AirshipManagerState : IGameState{
+namespace Forge.Core.GameState {
+    class PrimaryGameMode : IGameState{
         readonly BodyCenteredCamera _cameraController;
-        Airship _airship;
+        Airship.Airship _airship;
 
         Button[] _highlightMasks;
         Button _speedIndicator;
@@ -14,8 +18,18 @@ namespace Forge.Core.Airship {
         Button _deckUpButton;
         Button _deckDownButton;
 
-        public AirshipManagerState(){
-            GamestateManager.UseGlobalRenderTarget = true;
+        TerrainUpdater _terrainUpdater;
+
+        UIElementCollection _uiElementCollection;
+        RenderTarget _renderTarget;
+
+        public PrimaryGameMode(){
+            _uiElementCollection = new UIElementCollection();
+            _uiElementCollection.Bind();
+            _renderTarget = new RenderTarget();
+            _renderTarget.Bind();
+            
+            _terrainUpdater = new TerrainUpdater();
 
             _airship = AirshipPackager.Import("Export.airship");
             _cameraController = new BodyCenteredCamera();
@@ -61,9 +75,13 @@ namespace Forge.Core.Airship {
             _deckDownButton = buttonGen.GenerateButton();
             _deckUpButton.OnLeftClickDispatcher += _airship.AddVisibleLayer;
             _deckDownButton.OnLeftClickDispatcher += _airship.RemoveVisibleLayer;
+
+            _uiElementCollection.Unbind();
         }
 
         public void Update(InputState state, double timeDelta) {
+            _uiElementCollection.UpdateInput(ref state);
+            _uiElementCollection.UpdateLogic(timeDelta);
             _airship.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_airship.Position);
             _cameraController.Update(ref state, timeDelta);
@@ -75,14 +93,17 @@ namespace Forge.Core.Airship {
                 button.Alpha = 0.65f;
             }
             _highlightMasks[absSpeed].Alpha = 0;
+            _terrainUpdater.Update(state, timeDelta);
         }
 
         public void Draw(){
-            //throw new NotImplementedException();
+            _renderTarget.Draw(_cameraController.ViewMatrix, Color.Transparent);
         }
 
         public void Dispose() {
             _airship.Dispose();
+            _terrainUpdater.Dispose();
+            _renderTarget.Dispose();
         }
     }
 }

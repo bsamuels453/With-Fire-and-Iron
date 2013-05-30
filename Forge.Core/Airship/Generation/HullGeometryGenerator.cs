@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Core.Airship;
+using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
@@ -12,7 +12,7 @@ using Forge.Core.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Forge.Core.ObjectEditor {
+namespace Forge.Core.Airship.Generation {
     /// <summary>
     /// Generates the geometry for airship hulls. This differs from PreviewRenderer in
     /// that this class generates the geometry so that things like windows, portholes, or
@@ -55,6 +55,7 @@ namespace Forge.Core.ObjectEditor {
             
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
 
+            //reflect everything around the X axis
             foreach (var buffer in hullBuffResults.Item1) {
                 buffer.ApplyTransform((vert) => {
                     vert.Position.X *= -1;
@@ -70,14 +71,28 @@ namespace Forge.Core.ObjectEditor {
                 }
                 );
             }
+
+            var reflectionVector = new Vector3(-1,1,1);
+            foreach (var boxArray in boundingBoxResults.DeckBoundingBoxes){
+                for (int boxIdx = 0; boxIdx < boxArray.Count; boxIdx++){
+                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min * reflectionVector, boxArray[boxIdx].Max * reflectionVector);
+                }
+            }
+            foreach (var vertArray in boundingBoxResults.DeckVertexes){
+                for (int vertIdx = 0; vertIdx < vertArray.Count; vertIdx++){
+                    vertArray[vertIdx] = vertArray[vertIdx] * reflectionVector;
+                }
+            }
+
             var hullSections = GenerateHullSections(hullBuffResults.Item2, hullBuffResults.Item1);
 
             var resultant = new HullGeometryInfo();
-            resultant.CenterPoint = normalGenResults.Centroid;
-            resultant.DeckFloorBoundingBoxes = boundingBoxResults.DeckBoundingBoxes;
-            resultant.DeckFloorBuffers = deckFloorBuffers;
-            resultant.FloorVertexes = boundingBoxResults.DeckVertexes;
-            resultant.HullMeshes = hullBuffResults.Item1;
+            resultant.CenterPoint = normalGenResults.Centroid * reflectionVector;
+            resultant.DeckSectionContainer = new DeckSectionContainer(
+                boundingBoxResults.DeckBoundingBoxes,
+                deckFloorBuffers,
+                boundingBoxResults.DeckVertexes
+                );
             resultant.NumDecks = genResults.NumDecks;
             resultant.WallResolution = _bBoxWidth;
             resultant.DeckHeight = _deckHeight;
@@ -302,9 +317,10 @@ namespace Forge.Core.ObjectEditor {
             return retMesh;
         }
 
-        static ObjectBuffer<ObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks) {
+        static ObjectBuffer<AirshipObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks) {
             float boundingBoxWidth = Math.Abs(deckBoundingBoxes[0][0].Max.X - deckBoundingBoxes[0][0].Min.X);
-            var ret = new ObjectBuffer<ObjectIdentifier>[numDecks];
+            Vector3 reflection = new Vector3(-1, 1, 1);
+            var ret = new ObjectBuffer<AirshipObjectIdentifier>[numDecks];
 
             for (int deck = 0; deck < numDecks; deck++){
                 var deckBBoxes = deckBoundingBoxes[deck];
@@ -390,10 +406,10 @@ namespace Forge.Core.ObjectEditor {
                     }
                 }
 
-                var buff = new ObjectBuffer<ObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Shader_AirshipDeck");
+                var buff = new ObjectBuffer<AirshipObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Shader_AirshipDeck");
 
                 //add border quads to objectbuffer
-                var nullidentifier = new ObjectIdentifier(ObjectType.Misc, Vector3.Zero);
+                var nullidentifier = new AirshipObjectIdentifier(ObjectType.Misc, Vector3.Zero);
                 var idxWinding = new[]{0, 1, 2, 2, 3, 0};
                 var vertli = new List<VertexPositionNormalTexture>();
                 for (int i = 0; i < verts.Count; i += 4){
@@ -423,7 +439,7 @@ namespace Forge.Core.ObjectEditor {
                     vertli.Add(new VertexPositionNormalTexture(min + xWidth, Vector3.Up, new Vector2(1, 0)));
                     vertli.Add(new VertexPositionNormalTexture(min + xWidth + zWidth, Vector3.Up, new Vector2(1, 1)));
                     vertli.Add(new VertexPositionNormalTexture(min + zWidth, Vector3.Up, new Vector2(0, 1)));
-                    buff.AddObject(new ObjectIdentifier(ObjectType.Deckboard, min), (int[])idxWinding.Clone(), vertli.ToArray());
+                    buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min * reflection), (int[])idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
             }
@@ -736,7 +752,7 @@ namespace Forge.Core.ObjectEditor {
                     );
             }
 
-            return new HullSectionContainer(hullSections);
+            return new HullSectionContainer(hullSections, buffers);
         }
 
         #region Nested type: BoundingBoxResult
@@ -788,15 +804,11 @@ namespace Forge.Core.ObjectEditor {
 
     internal class HullGeometryInfo{
         public Vector3 CenterPoint;
-        public List<BoundingBox>[] DeckFloorBoundingBoxes;
-        public ObjectBuffer<ObjectIdentifier>[] DeckFloorBuffers;
         public float DeckHeight;
-        public List<Vector3>[] FloorVertexes;
-        public GeometryBuffer<VertexPositionNormalTexture>[] HullWallTexBuffers;
         public Vector2 MaxBoundingBoxDims;
-        public ObjectBuffer<int>[] HullMeshes;
         public int NumDecks;
         public float WallResolution;
         public HullSectionContainer HullSections;
+        public DeckSectionContainer DeckSectionContainer;
     }
 }

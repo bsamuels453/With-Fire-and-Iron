@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 namespace Forge.Core.Airship {
     class PlayerAirshipController : AirshipController{
-        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementState movementState) : 
-            base(setWorldMatrix, modelData, movementState){
+        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData) : 
+            base(setWorldMatrix, modelData, movementData){
         }
 
         int _engineSpeed;

@@ -5,9 +5,6 @@
 	"ChunkWidthInBlocks":   "128",
 	"WorldWidthInChunks":   "4",
 	
-	"Generator":            "Scripts\\GenTerrain.cl",
-	"QTree":                "Scripts\\QuadTree.cl",
-	"VertexWinder":         "Scripts\\VertexWinder.cl",
 	"Lacunarity":           "1.8",
 	"Gain":                 "0.5",
 	"Octaves":              "4",

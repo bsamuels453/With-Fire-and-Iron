@@ -4,14 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Core.Airship.Data;
 using Forge.Core.Logic;
+using Forge.Core.Physics;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework;
 
 #endregion
 
 namespace Forge.Core.Airship{
-    internal class HullIntegrityMesh{
+    internal class HullIntegrityMesh : IDisposable{
         //-creates overlay mesh for damaged portions
         //-removes hull portions if damage exceeds limits
         //-generates physics block for deflected blows
@@ -28,14 +30,13 @@ namespace Forge.Core.Airship{
         readonly ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
 
         public HullIntegrityMesh(
-            ObjectBuffer<int>[] hullBuffers,
             HullSectionContainer hullSections,
             ProjectilePhysics projectilePhysics,
             Vector3 shipCentroid,
             float length) {
 
             #region setup collision objects
-
+            var hullBuffers = hullSections.HullBuffersByDeck;
             var cumulativeBufferData = new List<ObjectBuffer<int>.ObjectData>(hullBuffers.Length*hullBuffers[0].MaxObjects);
             foreach (var buffer in hullBuffers){
                 cumulativeBufferData.AddRange(buffer.DumpObjectData());
@@ -161,6 +162,20 @@ namespace Forge.Core.Airship{
         void UpdateDamageTexture(Vector3 position){
             //make sure position is unwrapped and is not in world coordinates
             throw new NotImplementedException();
+        }
+
+        bool _disposed;
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _greenBuff.Dispose();
+            _orangeBuff.Dispose();
+            _redBuff.Dispose();
+            _disposed = true;
+        }
+
+        ~HullIntegrityMesh(){
+            Debug.Assert(_disposed);
         }
     }
 }

@@ -7,7 +7,7 @@ using Forge.Framework;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Input{
     internal class InputHandler{
         readonly Stopwatch _clickTimer;
         public InputState CurrentInputState;

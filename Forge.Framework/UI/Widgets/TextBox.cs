@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -19,10 +20,10 @@ namespace Forge.Framework.UI.Widgets {
 
         public TextBox(int x, int y, DepthLevel depth, Color fontColor, int width=999999, string font = "Fonts/Monospace10", int maxLines = 99999999) {
             try {
-                Font = Gbl.ContentManager.Load<SpriteFont>(Gbl.RawLookup[font]);
+                Font = Resource.LoadContent<SpriteFont>(font);
             }
             catch {
-                Font = Gbl.ContentManager.Load<SpriteFont>(font);
+                //Font = Resource.ContentManager.Load<SpriteFont>(font);
             }
             _absoluteDepth = UIElementCollection.BoundCollection.GetAbsoluteDepth(depth);
             _position = new Vector2(x, y);

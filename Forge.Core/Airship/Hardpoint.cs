@@ -2,16 +2,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Forge.Core.Logic;
+using Forge.Core.Physics;
 using Forge.Framework;
 using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 #endregion
 
 namespace Forge.Core.Airship{
-    internal class Hardpoint{
+    internal class Hardpoint : IDisposable{
         readonly List<ProjectilePhysics.Projectile> _activeProjectiles;
         readonly Vector3 _aimDir;
         readonly ProjectilePhysics.EntityVariant _enemyVariant;
@@ -49,7 +52,7 @@ namespace Forge.Core.Airship{
 
             var translation = Matrix.CreateTranslation(globalPosition);
             var handle = _projectileEngine.AddProjectile(globalPosition, globalAim, _enemyVariant);
-            _projectileBuff.AddObject(handle, Gbl.ContentManager.Load<Model>("Models/Sphere"), translation);
+            _projectileBuff.AddObject(handle,Resource.LoadContent<Model>("Models/Sphere"), translation);
             _activeProjectiles.Add(handle);
         }
 
@@ -69,6 +72,19 @@ namespace Forge.Core.Airship{
         //target will need to be converted to local coords
         public void AimAt(Vector3 target){
             throw new NotImplementedException();
+        }
+
+        bool _disposed;
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _projectileBuff.Dispose();
+            _disposed = true;
+        }
+
+        ~Hardpoint(){
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿#region
 
 using System;
+using Forge.Core.Logic;
 using Forge.Framework;
 using Forge.Core.Util;
 using Microsoft.Xna.Framework;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Camera{
     internal class SubmarineCamera : ICamera{
         public Angle3 LookAng;
         public Vector3 Position;

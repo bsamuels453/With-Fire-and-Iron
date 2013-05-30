@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -17,7 +18,7 @@ namespace Forge.Framework.Draw{
 
         public Line2D(Line parent, Color color){
             _isDisposed = false;
-            _texture = new Texture2D(Gbl.Device, 1, 1, false, SurfaceFormat.Color);
+            _texture = new Texture2D(Resource.Device, 1, 1, false, SurfaceFormat.Color);
             _texture.SetData(new[]{color});
             _parent = parent;
             RenderTarget.Sprites.Add(this);

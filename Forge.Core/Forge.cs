@@ -3,15 +3,17 @@
 #region
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using Forge.Core.Airship;
 using Forge.Core.Logic;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.HullEditor;
-using Forge.Core.TerrainManager;
 using Forge.Core.GameState;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 
 #endregion
 
@@ -29,51 +31,45 @@ namespace Forge.Core{
         }
 
         protected override void Initialize(){
-            Gbl.Device = _graphics.GraphicsDevice;
-            Gbl.ContentManager = Content;
-            Gbl.ScreenSize = new ScreenSize(1200, 800);
+            DebugConsole.InitalizeConsole();
+            DebugConsole.WriteLine("Initializing resources...");
+            Resource.Initialize(Content, _graphics.GraphicsDevice);
+            Resource.ScreenSize = new ScreenSize(1200, 800);
 
-            var aspectRatio = Gbl.Device.Viewport.Bounds.Width/(float) Gbl.Device.Viewport.Bounds.Height;
-            Gbl.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+            var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
+            Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                 fieldOfView: 3.14f/4,
                 aspectRatio: aspectRatio,
-                nearPlaneDistance: 0.01f,
-                farPlaneDistance: 50000
+                nearPlaneDistance: 0.3f,
+                farPlaneDistance: 13000f
                 );
-            DebugConsole.InitalizeConsole(this);
 
-            /*
-            var p = new ProjectilePhysics();
-            var proj = p.AddProjectile(new Vector3(0, 0, 200), new Vector3(0, 0, 0), ProjectilePhysics.EntityVariant.EnemyShip);
-            for (int i = 0; i < 500; i++){
-                p.Update();
-                Thread.Sleep(1);
-            }
-            proj.Terminate.Invoke();
-            p.Dispose();
-            Exit();
-             */
+            DebugConsole.WriteLine("Resource initialization complete");
+
+            DebugConsole.WriteLine("Initializing game-state...");
 #if PLAYMODE
-            GamestateManager.UseGlobalRenderTarget = true;
-            GamestateManager.AddGameState(new PlayerState(new Point(Gbl.Device.Viewport.Bounds.Width, Gbl.Device.Viewport.Bounds.Height)));
-            GamestateManager.AddGameState(new TerrainManagerState());
-            GamestateManager.AddGameState(new AirshipManagerState());
+            GamestateManager.AddGameState(new PrimaryGameMode());
 #else
             GamestateManager.AddGameState(new HullEditorState());
 #endif
 
             IsMouseVisible = true;
+            DebugConsole.WriteLine("Game-state initialization completed.");
             base.Initialize();
-            DebugConsole.WriteLine("Game initalized");
+            DebugConsole.WriteLine("Game initialization completed.");
         }
 
         protected override void LoadContent(){
         }
 
         protected override void UnloadContent(){
-            Gbl.CommitHashChanges();
-            GamestateManager.ClearAllStates();
-            DebugConsole.Dispose();
+            var timer = new Stopwatch();
+            DebugConsole.WriteLine("Unloading game-state resources...");
+            timer.Start();
+            GamestateManager.ClearState();
+            timer.Stop();
+            DebugConsole.WriteLine("Game-state resources released in " + timer.ElapsedMilliseconds + " ms");
+            DebugConsole.DisposeStatic();
         }
 
         protected override void Update(GameTime gameTime){

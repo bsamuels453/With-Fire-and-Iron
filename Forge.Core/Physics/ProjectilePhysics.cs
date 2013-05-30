@@ -12,7 +12,7 @@ using IDisposable = System.IDisposable;
 
 #endregion
 
-namespace Forge.Core.Logic{
+namespace Forge.Core.Physics{
     internal class ProjectilePhysics : IDisposable{
         #region Delegates
 
@@ -94,13 +94,22 @@ namespace Forge.Core.Logic{
             return projectile;
         }
 
+        bool _disposed;
+
         public void Dispose(){
+            Debug.Assert(!_disposed);
             foreach (var projectile in _projectiles) {
                 _worldDynamics.RemoveRigidBody(projectile.Body);
                 projectile.Body.Dispose();
             }
             _defaultShotCtor.Dispose();
             _worldDynamics.Dispose();
+            _disposed = true;
+        }
+
+        ~ProjectilePhysics(){
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
 
         public void Update(double timeDelta){

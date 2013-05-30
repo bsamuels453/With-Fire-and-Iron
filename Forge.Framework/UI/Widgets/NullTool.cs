@@ -25,5 +25,9 @@ namespace Forge.Framework.UI.Widgets{
 
         public void Draw(Matrix viewMatrix){
         }
+
+        public void Dispose(){
+            
+        }
     }
 }

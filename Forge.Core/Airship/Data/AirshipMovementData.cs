@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
-namespace Forge.Core.Airship {
-    public struct AirshipMovementState {
+namespace Forge.Core.Airship.Data {
+    public struct AirshipMovementData {
         public Vector3 CurPosition;
         public Vector3 Angle;
 

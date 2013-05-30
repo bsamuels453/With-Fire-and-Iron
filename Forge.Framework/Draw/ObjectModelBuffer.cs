@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -24,7 +25,7 @@ namespace Forge.Framework.Draw{
         Matrix _globalTransform;
 
         public ObjectModelBuffer(int maxObjects, string shader){
-            Gbl.LoadShader(shader, out _shader);
+            Resource.LoadShader(shader, out _shader);
             _objectData = new List<ObjectData>();
             _maxObjects = maxObjects;
             _isSlotOccupied = new bool[maxObjects];
@@ -50,7 +51,7 @@ namespace Forge.Framework.Draw{
                         part.Effect = _shader;
                     }
                     foreach (var effect in mesh.Effects){
-                        effect.Parameters["Projection"].SetValue(Gbl.ProjectionMatrix);
+                        effect.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
                         effect.Parameters["World"].SetValue(obj.Transform*_globalTransform);
                         effect.Parameters["View"].SetValue(viewMatrix);
                     }
@@ -156,13 +157,14 @@ namespace Forge.Framework.Draw{
 
         public void Dispose(){
             if (!_disposed){
-                //RenderTarget.Buffers.Remove(this);
+                RenderTarget.Buffers.Remove(this);
                 _disposed = true;
             }
         }
 
         ~ObjectModelBuffer(){
-            Dispose();
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
         }
 
         #region Nested type: ObjectData

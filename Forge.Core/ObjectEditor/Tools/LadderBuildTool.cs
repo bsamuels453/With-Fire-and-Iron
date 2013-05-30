@@ -3,6 +3,7 @@ using System.Diagnostics;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -25,7 +26,7 @@ namespace Forge.Core.ObjectEditor.Tools {
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2);
             var trans = Matrix.Identity;
 
-            _ghostedLadderModel.AddObject(0, Gbl.ContentManager.Load<Model>("Models/Ladder"), trans);
+            _ghostedLadderModel.AddObject(0, Resource.LoadContent<Model>("Models/Ladder"), trans);
             _ghostedLadderModel.DisableObject(0);
         }
 
@@ -47,43 +48,43 @@ namespace Forge.Core.ObjectEditor.Tools {
 
         protected override void HandleCursorRelease() {
             
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 0));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 4)); 
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 0));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 1));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 2));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 3));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(CursorPosition.X, CursorPosition.Z, 4)); 
 
-            //_hullData.CurHullBuffer.ForEach(item => item.DisablePanel(1, 2, 1));
-            //_hullData.CurHullBuffer[0].Cut(CursorPosition, CursorPosition + new Vector3(0.5f, 0, 0));
+            //_hullData.TopExposedHullLayer.ForEach(item => item.DisablePanel(1, 2, 1));
+            //_hullData.TopExposedHullLayer[0].Cut(CursorPosition, CursorPosition + new Vector3(0.5f, 0, 0));
 
-            var identifier = new ObjectIdentifier(ObjectType.Ladder, CursorPosition);
+            var identifier = new AirshipObjectIdentifier(ObjectType.Ladder, CursorPosition);
 
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2) * Matrix.CreateTranslation(CursorPosition);
             Matrix trans = Matrix.Identity * Matrix.CreateTranslation(CursorPosition);
-            _hullData.CurObjBuffer.AddObject(identifier, Gbl.ContentManager.Load<Model>("Models/Ladder"), trans);
+            _hullData.CurObjBuffer.AddObject(identifier, Resource.LoadContent<Model>("Models/Ladder"), trans);
 
-            var quadsToHide = new List<ObjectIdentifier>();
+            var quadsToHide = new List<AirshipObjectIdentifier>();
             var upperBoxesToHide = new List<BoundingBox>();
             var lowerBoxesToHide = new List<BoundingBox>();
             for (float x = 0; x < _ladderWidth; x += _gridWidth) {
                 for (float z = 0; z < _ladderWidth; z += _gridWidth) {
                     var min = CursorPosition + new Vector3(x, _hullData.DeckHeight, z);
-                    quadsToHide.Add(new ObjectIdentifier(ObjectType.Deckboard, min));
+                    quadsToHide.Add(new AirshipObjectIdentifier(ObjectType.Deckboard, min));
                     upperBoxesToHide.Add(new BoundingBox(min, min + new Vector3(_gridWidth, 0, _gridWidth)));
                     lowerBoxesToHide.Add(new BoundingBox(CursorPosition + new Vector3(x, 0, z), CursorPosition + new Vector3(x + _gridWidth, 0, z + _gridWidth)));
                 }
             }
             if (HullData.CurDeck != 0) {
                 foreach (var quad in quadsToHide) {
-                    bool b = _hullData.DeckBuffers[_hullData.CurDeck - 1].DisableObject(quad);
+                    bool b = _hullData.DeckSectionContainer.DeckBufferByDeck[_hullData.CurDeck - 1].DisableObject(quad);
                     Debug.Assert(b);
                 }
                 foreach (var bbox in upperBoxesToHide) {
-                    _hullData.DeckBoundingBoxes[_hullData.CurDeck - 1].Remove(bbox);
+                    _hullData.DeckSectionContainer.BoundingBoxesByDeck[_hullData.CurDeck - 1].Remove(bbox);
                 }
             }
             foreach (var bbox in lowerBoxesToHide) {
-                _hullData.DeckBoundingBoxes[_hullData.CurDeck].Remove(bbox);
+                _hullData.DeckSectionContainer.BoundingBoxesByDeck[_hullData.CurDeck].Remove(bbox);
             }
             GenerateGuideGrid();
         }
@@ -101,6 +102,10 @@ namespace Forge.Core.ObjectEditor.Tools {
 
         protected override void OnDisable() {
             _ghostedLadderModel.DisableObject(0);
+        }
+
+        protected override void DisposeChild(){
+            _ghostedLadderModel.Dispose();
         }
     }
 }

@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Xml;
-using Forge.Core.GameState;
-using Forge.Core.ObjectEditor;
+using Forge.Core.HullEditor;
 using Forge.Framework;
+using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace Forge.Core.HullEditor {
+namespace Forge.Core.GameState {
     internal class HullEditorState : IGameState {
         readonly BackEditorPanel _backpanel;
         readonly UIElementCollection _elementCollection;
@@ -21,9 +21,9 @@ namespace Forge.Core.HullEditor {
             _elementCollection = new UIElementCollection();
             _elementCollection.Bind();
 
-            _sidepanel = new SideEditorPanel(0, 0, Gbl.ScreenSize.GetScreenValueX(0.5f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
-            _toppanel = new TopEditorPanel(0, Gbl.ScreenSize.GetScreenValueY(0.5f), Gbl.ScreenSize.GetScreenValueX(0.5f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/top.xml");
-            _backpanel = new BackEditorPanel(Gbl.ScreenSize.GetScreenValueX(0.5f), 0, Gbl.ScreenSize.GetScreenValueX(0.25f), Gbl.ScreenSize.GetScreenValueY(0.5f), "Data/back.xml");
+            _sidepanel = new SideEditorPanel(0, 0, Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
+            _toppanel = new TopEditorPanel(0, Resource.ScreenSize.GetScreenValueY(0.5f), Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/top.xml");
+            _backpanel = new BackEditorPanel(Resource.ScreenSize.GetScreenValueX(0.5f), 0, Resource.ScreenSize.GetScreenValueX(0.25f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/back.xml");
 
             _sidepanel.BackPanel = _backpanel;
             _sidepanel.TopPanel = _toppanel;
@@ -50,7 +50,7 @@ namespace Forge.Core.HullEditor {
                 var backInfo = _backpanel.Curves.GetControllerInfo();
                 var topInfo = _toppanel.Curves.GetControllerInfo();
 
-                GamestateManager.ClearAllStates();
+                GamestateManager.ClearState();
                 GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
             }
         }
@@ -217,8 +217,8 @@ namespace Forge.Core.HullEditor {
             var sideInfo = _sidepanel.Curves.GetControllerInfo();
             var backInfo = _backpanel.Curves.GetControllerInfo();
             var topInfo = _toppanel.Curves.GetControllerInfo();
-            
-            GamestateManager.ClearAllStates();
+
+            GamestateManager.ClearState();
             GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
             return;
 

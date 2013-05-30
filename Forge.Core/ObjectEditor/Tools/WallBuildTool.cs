@@ -15,7 +15,7 @@ namespace Forge.Core.ObjectEditor.Tools {
         public WallBuildTool(HullDataManager hullData) :
             base(hullData, hullData.WallResolution) {
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>(
-            hullData.DeckVertexes[0].Count() * 2,
+            hullData.DeckSectionContainer.DeckVertexesByDeck[0].Count() * 2,
             10,
             20,
             30,
@@ -52,6 +52,10 @@ namespace Forge.Core.ObjectEditor.Tools {
 
         protected override void OnDisable() {
             _tempWallBuffer.Enabled = false;
+        }
+
+        protected override void DisposeChild(){
+            _tempWallBuffer.Dispose();
         }
 
         void GenerateWallsFromStroke() {
