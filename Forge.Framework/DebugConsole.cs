@@ -1,11 +1,13 @@
-﻿//#define ENABLE_DEBUG_CONSOLE
+﻿#define ENABLE_DEBUG_CONSOLE
 
 #region
 
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework;
 
@@ -13,9 +15,8 @@ using Microsoft.Xna.Framework;
 
 namespace Forge.Framework{
     public static class DebugConsole{
-        static TcpClient _client;
         static IOWrapper _wrapper;
-        static Process _consoleProcess;
+        const int _port = 10964;
 
         public static void InitalizeConsole(){
             _wrapper = new IOWrapper();
@@ -24,29 +25,11 @@ namespace Forge.Framework{
             _wrapper.FileWriter.AutoFlush = true;
 
 #if ENABLE_DEBUG_CONSOLE
-            _consoleProcess = new Process();
-            _consoleProcess.StartInfo.FileName = "DebugConsole.exe";
-            _consoleProcess.StartInfo.UseShellExecute = false;
-            _consoleProcess.Start();
-            _client = new TcpClient();
-
-            var asyncResult = _client.BeginConnect("127.0.0.1", 10964, null, null);
-
-            int numSleeps = 0;
-            while (!asyncResult.IsCompleted && numSleeps<150){
-                Thread.Sleep(10);
-                numSleeps++;
-            }
-            if (asyncResult.IsCompleted){
-                _wrapper.ExternConsoleEnabled = true;
-                _wrapper.ConsoleWriter = new StreamWriter(_client.GetStream());
-                _wrapper.ConsoleWriter.AutoFlush = true;
-                WriteLine("Debug console connection established");
-            }
-            else{
-                _wrapper.ExternConsoleEnabled = false;
-                WriteLine("Debug console not responding, text log only");
-            }
+            var ip = IPAddress.Parse("127.0.0.1");
+            _wrapper.Endpoint = new IPEndPoint(ip, _port);
+            _wrapper.Client = new UdpClient();
+            _wrapper.ExternConsoleEnabled = true;
+            WriteLine("---------- GAME STARTING ----------");
 #else
             _wrapper.ExternConsoleEnabled = false;
             WriteLine("Debug console not responding, text log only");
@@ -55,18 +38,20 @@ namespace Forge.Framework{
 
         public static void WriteLine(string s){
             string timeStamp = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "] ";
+            var line = timeStamp + s;
             if (_wrapper.ExternConsoleEnabled) {
                 try{
-                    _wrapper.ConsoleWriter.WriteLine(timeStamp + s);
+                    _wrapper.SendToConsole(line);
+                    _wrapper.FileWriter.WriteLine(line);
                 }
                 catch{
+                    _wrapper.FileWriter.WriteLine(line);
                     _wrapper.ExternConsoleEnabled = false;
                 }
             }
-            _wrapper.FileWriter.WriteLine(timeStamp + s);
         }
 
-        public static void Dispose(){
+        public static void DisposeStatic(){
             _wrapper.Dispose();
         }
 
@@ -74,9 +59,10 @@ namespace Forge.Framework{
         /// this is used for hackish destructor
         /// </summary>
         internal class IOWrapper : IDisposable{
-            public StreamWriter ConsoleWriter;
+            public UdpClient Client;
             public StreamWriter FileWriter;
             public bool ExternConsoleEnabled;
+            public IPEndPoint Endpoint;
             public Process ConsoleProcess;
             bool _disposed;
 
@@ -84,16 +70,20 @@ namespace Forge.Framework{
                 _disposed = false;
             }
 
+            public void SendToConsole(string str){
+                var bytes = Encoding.ASCII.GetBytes(str);
+                Client.Send(bytes, bytes.Length, Endpoint);
+            }
+
             public void Dispose(){
                 if (ExternConsoleEnabled) {
                     try {
-                        ConsoleWriter.WriteLine("KILLCONSOLE");
+                        SendToConsole("---------- GAME TERMINATED ----------");
                     }
                     catch {
-                        int f = 3;
+                        int test = 5;
                     }
-                    ConsoleWriter.Close();
-                    _client.Close();
+                    Client.Close();
                 }
                 FileWriter.Close();
                 _disposed = true;
