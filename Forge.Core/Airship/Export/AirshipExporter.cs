@@ -27,17 +27,19 @@ namespace Forge.Core.Airship.Export {
             DebugConsole.WriteLine("Airship deserialized in " + sw.ElapsedMilliseconds + " ms");
         }
 
-
         public static void Export(string fileName, HullSectionContainer hull, DeckSectionContainer decks, ModelAttributes modelAttribs) {
             DebugConsole.WriteLine("Starting airship serialization...");
             var sw = new Stopwatch();
             sw.Start();
+
+            //hull sections
             var sections = hull.HullSections;
             var hullSectionCtorDat = new List<HullSectionCtorDat>(sections.Length);
             foreach (var section in sections){
                 hullSectionCtorDat.Add(new HullSectionCtorDat(section));
             }
 
+            //hull buffers
             var hullBufferCtorDat = new List<HullBufferObjectDataContainer<int>>(hull.NumDecks);
             foreach (var buffer in hull.HullBuffersByDeck) {
                 var bufferDump = buffer.DumpObjectData();
@@ -48,6 +50,10 @@ namespace Forge.Core.Airship.Export {
                 }
                 hullBufferCtorDat.Add(new HullBufferObjectDataContainer<int>(array));
             }
+
+
+
+
 
 
             var airship = new AirshipExport();
@@ -63,6 +69,7 @@ namespace Forge.Core.Airship.Export {
 
         // ReSharper disable MemberCanBePrivate.Local
         // ReSharper disable NotAccessedField.Local
+
         [ProtoContract]
         struct AirshipExport{
             [ProtoMember(1)]
@@ -71,7 +78,7 @@ namespace Forge.Core.Airship.Export {
             public List<HullBufferObjectDataContainer<int>> HullBufferCtorDat; 
 
         }
-
+        #region hullbuffer wrappers
         [ProtoContract]
         struct HullBufferObjectDataContainer<T>{
             [ProtoMember(1)]
@@ -107,7 +114,9 @@ namespace Forge.Core.Airship.Export {
                 Enabled = objData.Enabled;
             }
         }
+        #endregion
 
+        #region hull section wrappers
         [ProtoContract] 
         struct HullSectionCtorDat{
             [ProtoMember(1)]
@@ -133,7 +142,9 @@ namespace Forge.Core.Airship.Export {
                 YPanel = section.YPanel;
             }
         }
+        #endregion
 
+        #region xna class wrappers
         [ProtoContract]
         struct Vec3Wrap{
             [ProtoMember(1)]
@@ -200,6 +211,8 @@ namespace Forge.Core.Airship.Export {
                 return ret;
             }
         }
+        #endregion
+
         // ReSharper restore NotAccessedField.Local
         // ReSharper restore MemberCanBePrivate.Local
     }
