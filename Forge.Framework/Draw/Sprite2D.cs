@@ -54,7 +54,7 @@ namespace Forge.Framework.Draw{
         }
 
         public void SetTextureFromString(string textureName){
-            _texture = Resource.ContentManager.Load<Texture2D>(textureName);
+            _texture = Resource.LoadContent<Texture2D>(textureName);
         }
 
         public void Draw(){

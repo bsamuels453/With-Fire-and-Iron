@@ -13,6 +13,7 @@ using Forge.Core.HullEditor;
 using Forge.Core.GameState;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 
 #endregion
 
@@ -32,9 +33,7 @@ namespace Forge.Core{
         protected override void Initialize(){
             DebugConsole.InitalizeConsole();
             DebugConsole.WriteLine("Initializing resources...");
-            Resource.Initialize();
-            Resource.Device = _graphics.GraphicsDevice;
-            Resource.ContentManager = Content;
+            Resource.Initialize(Content, _graphics.GraphicsDevice);
             Resource.ScreenSize = new ScreenSize(1200, 800);
 
             var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;

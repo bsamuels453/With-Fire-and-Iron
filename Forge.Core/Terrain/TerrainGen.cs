@@ -50,15 +50,15 @@ namespace Forge.Core.Terrain{
             _cmdQueue = Resource.CLQueue;
 
             #region setup generator kernel
-            _chunkWidthInBlocks = Resource.LoadContent<int>("TerrainGen_ChunkWidthInBlocks");
+            _chunkWidthInBlocks = Resource.LoadConfig<int>("TerrainGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
-            _blockWidth = Resource.LoadContent<int>("TerrainGen_BlockWidthInMeters");
-            float lacunarity = Resource.LoadContent<float>("TerrainGen_Lacunarity");
-            float gain = Resource.LoadContent<float>("TerrainGen_Gain");
-            int octaves = Resource.LoadContent<int>("TerrainGen_Octaves");
-            float offset = Resource.LoadContent<float>("TerrainGen_Offset");
-            float hScale = Resource.LoadContent<float>("TerrainGen_HScale");
-            float vScale = Resource.LoadContent<float>("TerrainGen_VScale");
+            _blockWidth = Resource.LoadConfig<int>("TerrainGen_BlockWidthInMeters");
+            float lacunarity = Resource.LoadConfig<float>("TerrainGen_Lacunarity");
+            float gain = Resource.LoadConfig<float>("TerrainGen_Gain");
+            int octaves = Resource.LoadConfig<int>("TerrainGen_Octaves");
+            float offset = Resource.LoadConfig<float>("TerrainGen_Offset");
+            float hScale = Resource.LoadConfig<float>("TerrainGen_HScale");
+            float vScale = Resource.LoadConfig<float>("TerrainGen_VScale");
 
             _genConstants = new ComputeBuffer<float>(_context, ComputeMemoryFlags.ReadOnly, 8);
             var genArr = new[]{

@@ -2,17 +2,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Security.Cryptography;
 using Cloo;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -28,31 +24,19 @@ namespace Forge.Framework.Resources{
 
         #endregion
 
-        public static GraphicsDevice Device;
-        public static ContentManager ContentManager;
-        public static Dictionary<string, string> RawLookup;
+        public static GraphicsDevice Device { get; private set; }
+        static ContentManager _contentManager;
+        static Dictionary<string, string> _configLookup;
         public static Matrix ProjectionMatrix;
         public static ScreenSize ScreenSize;
         static OpenCLScriptLoader _openCLScriptLoader;
 
-        /// <summary>
-        ///   whenever the md5 doesn't match up to the new one, the value of RawDir in the following structure is set to true
-        /// </summary>
-        public static Dictionary<RawDir, bool> HasRawHashChanged;
-
-        /// <summary>
-        ///   If the md5 has changed, the new md5 won't be written to file until its RawDir in this dictionary is true. This prevents the md5 from updating when certain scripts havent been compiled/processed before the program terminates.
-        /// </summary>
-        public static Dictionary<RawDir, bool> AllowMD5Refresh;
-
-        //todo: write jsonconverter for this enum
-
-        public static void Initialize(){
-
+        public static void Initialize(ContentManager content, GraphicsDevice device){
+            Device = device;
+            _contentManager = content;
             _openCLScriptLoader = new OpenCLScriptLoader();
 
-
-            RawLookup = new Dictionary<string, string>();
+            _configLookup = new Dictionary<string, string>();
 
             List<string> directories = new List<string>();
             List<string> directoriesToSearch = new List<string>();
@@ -66,63 +50,69 @@ namespace Forge.Framework.Resources{
                 directoriesToSearch.AddRange(Directory.GetDirectories(dir).ToList());
                 directories.Add(dir);
             }
-            string s;
-            try{
-                foreach (string directory in directories){
-                    s = directory;
-                    string[] files = Directory.GetFiles(directory);
-                    foreach (string file in files){
-                        var sr = new StreamReader(file);
-                        s = file;
-                        var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
-                        sr.Close();
+            foreach (string directory in directories){
+                string[] files = Directory.GetFiles(directory);
+                foreach (string file in files){
+                    var sr = new StreamReader(file);
+                    var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
+                    sr.Close();
 
-                        string prefix = newConfigVals["InternalAbbreviation"] + "_";
-                        newConfigVals.Remove("InternalAbbreviation");
+                    string prefix = newConfigVals["InternalAbbreviation"] + "_";
+                    newConfigVals.Remove("InternalAbbreviation");
 
-                        foreach (var configVal in newConfigVals){
-                            try{
-                                RawLookup.Add(prefix + configVal.Key, configVal.Value);
-                            }
-                            catch (Exception e){
-                                int f = 4;
-                            }
+                    foreach (var configVal in newConfigVals){
+                        try{
+                            _configLookup.Add(prefix + configVal.Key, configVal.Value);
+                        }
+                        catch (ArgumentException e){
+                            DebugConsole.WriteLine("Error: a configuration value of the same identifier has already been added: " + prefix + configVal.Key);
                         }
                     }
                 }
-            }
-            catch (Exception e){
-                int g = 5;
+
             }
         }
 
-        public static T LoadContent<T>(string str){
-            string objValue = "";
-            if (str.Contains('/')){
-                return ContentManager.Load<T>(str);
-            }
+        /// <summary>
+        /// Loads content straight from XNA's contentManager.
+        /// </summary>
+        /// <typeparam name="T">The type of the content to be returned.</typeparam>
+        /// <param name="identifier">The name of the content to be loaded. Be sure to include subfolders, if relevant./</param>
+        /// <returns></returns>
+        public static T LoadContent<T>(string identifier){
+            return _contentManager.Load<T>(identifier);
+        }
 
+        /// <summary>
+        /// Load a config value.
+        /// </summary>
+        /// <typeparam name="T">The type of the configuration value.</typeparam>
+        /// <param name="identifier">The config value's identifier, including the specified InternalAbbreviation.</param>
+        /// <returns></returns>
+        public static T LoadConfig<T>(string identifier){
+            var configValue = _configLookup[identifier];
+            T obj;
             try{
-                objValue = RawLookup[str];
-                return ContentManager.Load<T>(objValue);
+                //First try to deserialize the object with the standard Json deserializers
+                obj = JsonConvert.DeserializeObject<T>(configValue);
             }
             catch{
-                T obj;
-                try{
-                    obj = JsonConvert.DeserializeObject<T>(objValue);
-                }
-                catch{
-                    obj = VectorParser.Parse<T>(objValue);
-                }
-                return obj;
+                //Vectors can't be deserialized by json, so deserialize it separately.
+                obj = VectorParser.Parse<T>(configValue);
             }
+            return obj;
         }
 
+        /// <summary>
+        /// Loads the specified shader into the effect parameter.
+        /// </summary>
+        /// <param name="shaderName">The shader's alias, as specified by the InternalAbbreviation of the shader's config file.</param>
+        /// <param name="effect">The loaded effect. New effects are cloned to prevent dupe issues.</param>
         public static void LoadShader(string shaderName, out Effect effect){
             effect = null;
             var configs = new List<string>();
             var configValues = new List<string>();
-            foreach (var valuePair in RawLookup){
+            foreach (var valuePair in _configLookup){
                 if (valuePair.Key.Length < shaderName.Length + 1)
                     continue;
                 string sub = valuePair.Key.Substring(0, shaderName.Count());
@@ -134,7 +124,7 @@ namespace Forge.Framework.Resources{
 
             for (int i = 0; i < configs.Count; i++){
                 if (configs[i] == "Shader"){
-                    effect = ContentManager.Load<Effect>(configValues[i]).Clone();
+                    effect = _contentManager.Load<Effect>(configValues[i]).Clone();
                     if (effect == null){
                         throw new Exception("Shader not found");
                     }
@@ -182,7 +172,7 @@ namespace Forge.Framework.Resources{
                     if (name == "Shader")
                         continue;
                     //it's a string, and in the context of shader settings, strings always coorespond with texture names
-                    var texture = ContentManager.Load<Texture2D>(configVal);
+                    var texture = _contentManager.Load<Texture2D>(configVal);
                     effect.Parameters[name].SetValue(texture);
                     continue;
                 }
@@ -198,21 +188,35 @@ namespace Forge.Framework.Resources{
             }
         }
 
+        #region opencl
+        /// <summary>
+        /// Returns the program-wide OpenCL context.
+        /// </summary>
         public static ComputeContext CLContext{
             get { return _openCLScriptLoader.ComputeContext; }
         }
 
+        /// <summary>
+        /// Returns the program-wide OpenCL command queue.
+        /// </summary>
         public static ComputeCommandQueue CLQueue{
             get { return _openCLScriptLoader.CommandQueue; }
         }
 
+        /// <summary>
+        /// Load an OpenCL script.
+        /// </summary>
+        /// <param name="scriptName">The filename of the script, relative to the binary's directory. Example Path: \\Scripts\\Quadtree.cl</param>
+        /// <returns>Compiled ComputeProgram of the script.</returns>
         public static ComputeProgram LoadCLScript(string scriptName){
             return _openCLScriptLoader.LoadOpenclScript(scriptName);
         }
+        #endregion
 
-        public static string GetScriptDirectory(string str){
+        /*
+        public static string GetScriptDirectory(string identifier){
             string curDir = Directory.GetCurrentDirectory();
-            string address = RawLookup[str];
+            string address = ConfigLookup[identifier];
             string directory = "";
             for (int i = address.Length - 1; i >= 0; i--){
                 if (address[i] == '\\'){
@@ -221,6 +225,7 @@ namespace Forge.Framework.Resources{
             }
             return curDir + "\\" + directory;
         }
+         */
     }
 
     public struct ScreenSize{
