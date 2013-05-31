@@ -13,7 +13,18 @@ namespace Forge.Framework {
         /// Contains references to all of the in-between structures used by the protocol buffer serializer/deserializer.
         /// </summary>
         /// 
+
         #region containers
+
+        [ProtoContract]
+        public struct IntContainer{
+            [ProtoMember(1)] public int[] Ints;
+
+            public IntContainer(int[] ints){
+                Ints = ints;
+            }
+        }
+
 
         [ProtoContract]
         public struct BoundingBoxContainer{
@@ -51,6 +62,26 @@ namespace Forge.Framework {
                 ret.Normal = obj.Normal;
                 ret.TextureCoordinate = obj.TextureCoordinate;
                 return ret;
+            }
+
+            public static implicit operator VertexPositionNormalTexture(VertexWrapper obj) {
+                var ret = new VertexPositionNormalTexture();
+                ret.Position = obj.Position;
+                ret.Normal = obj.Normal;
+                ret.TextureCoordinate = obj.TextureCoordinate;
+                return ret;
+            }
+        }
+
+        [ProtoContract]
+        public struct VertexContainer{
+            [ProtoMember(1)] public VertexWrapper[] Vertexes;
+
+            public VertexContainer(IList<VertexPositionNormalTexture> vertexes){
+                Vertexes = new VertexWrapper[vertexes.Count()];
+                for (int i = 0; i < Vertexes.Length; i++){
+                    Vertexes[i] = vertexes[i];
+                }
             }
         }
 
