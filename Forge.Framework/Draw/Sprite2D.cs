@@ -26,7 +26,8 @@ namespace Forge.Framework.Draw{
         /// <summary>
         ///   constructor for a normal sprite
         /// </summary>
-        public Sprite2D(string textureName, int x, int y, int width, int height, float depth = 0.5f, float alpha = 1, float spriteRepeatX = 1, float spriteRepeatY = 1){
+        public Sprite2D(string textureName, int x, int y, int width, int height, float depth = 0.5f, float alpha = 1, float spriteRepeatX = 1,
+            float spriteRepeatY = 1){
             _texture = Resource.LoadContent<Texture2D>(textureName);
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
             _destRect = new Rectangle();
@@ -65,15 +66,16 @@ namespace Forge.Framework.Draw{
                 _destRect.Y = Y;
                 _destRect.Width = Width;
                 _destRect.Height = Height;
-                RenderTarget.CurSpriteBatch.Draw(
-                    _texture,
-                    _destRect,
-                    (Rectangle?) _srcRect,
-                    Color.White*Alpha,
-                    0,
-                    Vector2.Zero,
-                    SpriteEffects.None,
-                    Depth
+                RenderTarget.CurSpriteBatch.Draw
+                    (
+                        _texture,
+                        _destRect,
+                        (Rectangle?) _srcRect,
+                        Color.White*Alpha,
+                        0,
+                        Vector2.Zero,
+                        SpriteEffects.None,
+                        Depth
                     );
             }
         }

@@ -1,22 +1,23 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
-using MonoGameUtility;
 using ProtoBuf;
 
-namespace Forge.Core.Airship.Data {
-    class HullSectionContainer :IEnumerable, IDisposable{
-        public readonly int NumDecks;
-        public int TopExpIdx { get; private set; }
-        readonly HullSection[] _hullSections;
+#endregion
+
+namespace Forge.Core.Airship.Data{
+    internal class HullSectionContainer : IEnumerable, IDisposable{
         public readonly ObjectBuffer<int>[] HullBuffersByDeck;
         public readonly HullSection[][] HullSectionByDeck;
-        public ObjectBuffer<int> TopExposedHullLayer { get; private set; }
+        public readonly int NumDecks;
+        readonly HullSection[] _hullSections;
+        bool _disposed;
 
         public HullSectionContainer(List<HullSection> hullSections, ObjectBuffer<int>[] hullBuffersByDeck){
             HullBuffersByDeck = hullBuffersByDeck;
@@ -29,16 +30,40 @@ namespace Forge.Core.Airship.Data {
             Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
         }
 
+        public int TopExpIdx { get; private set; }
+        public ObjectBuffer<int> TopExposedHullLayer { get; private set; }
+
+        #region IDisposable Members
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            foreach (var buffer in HullBuffersByDeck){
+                buffer.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        IEnumerator IEnumerable.GetEnumerator(){
+            return GetEnumerator();
+        }
+
+        #endregion
+
         static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
             var groupedByDeck = (from section in hullSections
-                                 group section by section.Deck).ToArray();
+                group section by section.Deck).ToArray();
 
             var hullSectionByDeck = new HullSection[groupedByDeck.Length][];
-            foreach (var grouping in groupedByDeck) {
+            foreach (var grouping in groupedByDeck){
                 hullSectionByDeck[grouping.Key] = grouping.ToArray();
             }
 
-            foreach (var layer in hullSectionByDeck) {
+            foreach (var layer in hullSectionByDeck){
                 Debug.Assert(layer != null);
             }
 
@@ -51,10 +76,10 @@ namespace Forge.Core.Airship.Data {
             //Debug.Assert(deck >= 0);
             //Debug.Assert(deck < NumDecks);
 
-            for (int i = NumDecks-1; i >= deck; i--){
+            for (int i = NumDecks - 1; i >= deck; i--){
                 HullBuffersByDeck[i].CullMode = CullMode.None;
             }
-            for (int i = deck-1; i >= 0; i--) {
+            for (int i = deck - 1; i >= 0; i--){
                 HullBuffersByDeck[i].CullMode = CullMode.CullCounterClockwiseFace;
             }
             TopExpIdx = deck;
@@ -62,23 +87,8 @@ namespace Forge.Core.Airship.Data {
             return TopExpIdx;
         }
 
-        public IEnumerator GetEnumerator() {
+        public IEnumerator GetEnumerator(){
             return _hullSections.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator(){
-            return GetEnumerator();
-        }
-
-        bool _disposed;
-
-        public void Dispose(){
-            Debug.Assert(!_disposed);
-            foreach (var buffer in HullBuffersByDeck){
-                buffer.Dispose();
-            }
-
-            _disposed = true;
         }
 
         ~HullSectionContainer(){
@@ -86,12 +96,13 @@ namespace Forge.Core.Airship.Data {
         }
 
         #region serialization
+
         public HullSectionContainer(Serialized serializedStruct){
             NumDecks = serializedStruct.NumDecks;
             _hullSections = serializedStruct.HullSections;
 
             HullBuffersByDeck = new ObjectBuffer<int>[NumDecks];
-            for (int i = 0; i < NumDecks; i++) {
+            for (int i = 0; i < NumDecks; i++){
                 HullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
             }
 
@@ -105,27 +116,26 @@ namespace Forge.Core.Airship.Data {
             Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
         }
 
-        public Serialized ExtractSerializationStruct() {
+        public Serialized ExtractSerializationStruct(){
             var hullBuffData = new ObjectBuffer<int>.Serialized[NumDecks];
-            for (int i = 0; i < NumDecks; i++) {
+            for (int i = 0; i < NumDecks; i++){
                 hullBuffData[i] = HullBuffersByDeck[i].ExtractSerializationStruct();
             }
 
-            var ret = new Serialized(
+            var ret = new Serialized
+                (
                 NumDecks,
                 _hullSections,
                 hullBuffData
                 );
             return ret;
         }
+
         [ProtoContract]
         public struct Serialized{
-            [ProtoMember(1)]
-            public readonly int NumDecks;
-            [ProtoMember(2)]
-            public readonly HullSection[] HullSections;
-            [ProtoMember(3)]
-            public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+            [ProtoMember(3)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+            [ProtoMember(2)] public readonly HullSection[] HullSections;
+            [ProtoMember(1)] public readonly int NumDecks;
 
             public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck){
                 NumDecks = numDecks;
@@ -133,6 +143,7 @@ namespace Forge.Core.Airship.Data {
                 HullBuffersByDeck = hullBuffersByDeck;
             }
         }
+
         #endregion
     }
 }

@@ -172,39 +172,40 @@ namespace Forge.Framework{
 
         public static Matrix GetWorldTranslation(Vector3 position, Vector3 angle, float objLength){
             var worldMatrix = Matrix.Identity;
-            worldMatrix *= Matrix.CreateTranslation(objLength / 2, 0, 0);
+            worldMatrix *= Matrix.CreateTranslation(objLength/2, 0, 0);
             worldMatrix *= Matrix.CreateRotationX(angle.X)*Matrix.CreateRotationY(angle.Y)*Matrix.CreateRotationZ(angle.Z);
             worldMatrix *= Matrix.CreateTranslation(position.X, position.Y, position.Z);
             return worldMatrix;
         }
 
         /// <summary>
-        /// multiplies a 4x4 and 1x3 matrix together for use in projection calcs
+        ///   multiplies a 4x4 and 1x3 matrix together for use in projection calcs
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static Vector3 MultMatrix(Matrix m, Vector3 v) {
-            return new Vector3(
-                v.X * m.M11 + v.Y * m.M21 + v.Z * m.M31 + m.M41,
-                v.X * m.M12 + v.Y * m.M22 + v.Z * m.M32 + m.M42,
-                v.X * m.M13 + v.Y * m.M23 + v.Z * m.M33 + m.M43
+        /// <param name="m"> </param>
+        /// <param name="v"> </param>
+        /// <returns> </returns>
+        public static Vector3 MultMatrix(Matrix m, Vector3 v){
+            return new Vector3
+                (
+                v.X*m.M11 + v.Y*m.M21 + v.Z*m.M31 + m.M41,
+                v.X*m.M12 + v.Y*m.M22 + v.Z*m.M32 + m.M42,
+                v.X*m.M13 + v.Y*m.M23 + v.Z*m.M33 + m.M43
                 );
         }
 
         /// <summary>
-        /// these references are to prevent CLR from calling Vector3/Ray's copy constructor
+        ///   these references are to prevent CLR from calling Vector3/Ray's copy constructor
         /// </summary>
-        /// <param name="ray"></param>
-        /// <param name="vertex1"></param>
-        /// <param name="vertex2"></param>
-        /// <param name="vertex3"></param>
-        /// <param name="result">this is the only reference type that actually has reference operations performed on it</param>
+        /// <param name="ray"> </param>
+        /// <param name="vertex1"> </param>
+        /// <param name="vertex2"> </param>
+        /// <param name="vertex3"> </param>
+        /// <param name="result"> this is the only reference type that actually has reference operations performed on it </param>
         public static void RayIntersectsTriangle(
             ref Ray ray,
             ref Vector3 vertex1,
             ref Vector3 vertex2,
-            ref Vector3 vertex3, out float? result) {
+            ref Vector3 vertex3, out float? result){
             // Compute vectors along two edges of the triangle.
             Vector3 edge1, edge2;
 
@@ -219,12 +220,12 @@ namespace Forge.Framework{
             Vector3.Dot(ref edge1, ref directionCrossEdge2, out determinant);
 
             // If the ray is parallel to the triangle plane, there is no collision.
-            if (determinant > -float.Epsilon && determinant < float.Epsilon) {
+            if (determinant > -float.Epsilon && determinant < float.Epsilon){
                 result = null;
                 return;
             }
 
-            float inverseDeterminant = 1.0f / determinant;
+            float inverseDeterminant = 1.0f/determinant;
 
             // Calculate the U parameter of the intersection point.
             Vector3 distanceVector;
@@ -235,7 +236,7 @@ namespace Forge.Framework{
             triangleU *= inverseDeterminant;
 
             // Make sure it is inside the triangle.
-            if (triangleU < 0 || triangleU > 1) {
+            if (triangleU < 0 || triangleU > 1){
                 result = null;
                 return;
             }
@@ -249,7 +250,7 @@ namespace Forge.Framework{
             triangleV *= inverseDeterminant;
 
             // Make sure it is inside the triangle.
-            if (triangleV < 0 || triangleU + triangleV > 1) {
+            if (triangleV < 0 || triangleU + triangleV > 1){
                 result = null;
                 return;
             }
@@ -260,7 +261,7 @@ namespace Forge.Framework{
             rayDistance *= inverseDeterminant;
 
             // Is the triangle behind the ray origin?
-            if (rayDistance < 0) {
+            if (rayDistance < 0){
                 result = null;
                 return;
             }

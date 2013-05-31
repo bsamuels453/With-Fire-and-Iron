@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using Forge.Core.HullEditor;
@@ -8,8 +10,10 @@ using Forge.Framework.UI;
 using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
-namespace Forge.Core.GameState {
-    internal class HullEditorState : IGameState {
+#endregion
+
+namespace Forge.Core.GameState{
+    internal class HullEditorState : IGameState{
         readonly BackEditorPanel _backpanel;
         readonly UIElementCollection _elementCollection;
 
@@ -17,13 +21,17 @@ namespace Forge.Core.GameState {
         readonly SideEditorPanel _sidepanel;
         readonly TopEditorPanel _toppanel;
 
-        public HullEditorState() {
+        public HullEditorState(){
             _elementCollection = new UIElementCollection();
             _elementCollection.Bind();
 
             _sidepanel = new SideEditorPanel(0, 0, Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
-            _toppanel = new TopEditorPanel(0, Resource.ScreenSize.GetScreenValueY(0.5f), Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/top.xml");
-            _backpanel = new BackEditorPanel(Resource.ScreenSize.GetScreenValueX(0.5f), 0, Resource.ScreenSize.GetScreenValueX(0.25f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/back.xml");
+            _toppanel = new TopEditorPanel
+                (0, Resource.ScreenSize.GetScreenValueY(0.5f), Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f),
+                    "Data/top.xml");
+            _backpanel = new BackEditorPanel
+                (Resource.ScreenSize.GetScreenValueX(0.5f), 0, Resource.ScreenSize.GetScreenValueX(0.25f), Resource.ScreenSize.GetScreenValueY(0.5f),
+                    "Data/back.xml");
 
             _sidepanel.BackPanel = _backpanel;
             _sidepanel.TopPanel = _toppanel;
@@ -39,13 +47,51 @@ namespace Forge.Core.GameState {
             _elementCollection.Unbind();
         }
 
+        #region IGameState Members
 
-        void HandleEditorKeyboardInput(ref InputState state) {
-            if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.S)) {
+        public void Dispose(){
+            _previewRenderer.Dispose();
+            _sidepanel.Dispose();
+            _backpanel.Dispose();
+            _toppanel.Dispose();
+        }
+
+        public void Update(InputState state, double timeDelta){
+            //force end early
+            var sideInfo = _sidepanel.Curves.GetControllerInfo();
+            var backInfo = _backpanel.Curves.GetControllerInfo();
+            var topInfo = _toppanel.Curves.GetControllerInfo();
+
+            GamestateManager.ClearState();
+            GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
+            return;
+
+            _elementCollection.Bind();
+            _sidepanel.Update();
+            _toppanel.Update();
+            _backpanel.Update();
+            _previewRenderer.Update(ref state);
+            UIElementCollection.BoundCollection.UpdateInput(ref state);
+            UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
+            _elementCollection.Unbind();
+            HandleEditorKeyboardInput(ref state);
+        }
+
+        public void Draw(){
+            _sidepanel.Draw();
+            _toppanel.Draw();
+            _backpanel.Draw();
+            _previewRenderer.Draw();
+        }
+
+        #endregion
+
+        void HandleEditorKeyboardInput(ref InputState state){
+            if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.S)){
                 SaveCurves("save/");
             }
 
-            if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.N)) {
+            if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.N)){
                 var sideInfo = _sidepanel.Curves.GetControllerInfo();
                 var backInfo = _backpanel.Curves.GetControllerInfo();
                 var topInfo = _toppanel.Curves.GetControllerInfo();
@@ -55,39 +101,39 @@ namespace Forge.Core.GameState {
             }
         }
 
-        public void SaveCurves(string directory) {
+        public void SaveCurves(string directory){
             //dear mother of god why does this have to be hardcoded
             //top set
             var bowPointTop = _toppanel.Curves.ToMeters(_toppanel.Curves[1].CenterHandlePos);
-            float bowNLengthTop = _toppanel.Curves[1].NextHandleLength / _toppanel.Curves.PixelsPerMeter;
-            float bowAngleTop = -MathHelper.Pi / 2;
+            float bowNLengthTop = _toppanel.Curves[1].NextHandleLength/_toppanel.Curves.PixelsPerMeter;
+            float bowAngleTop = -MathHelper.Pi/2;
 
             var starboardPointTop = _toppanel.Curves.ToMeters(_toppanel.Curves[0].CenterHandlePos);
-            float starboardNLengthTop = _toppanel.Curves[0].NextHandleLength / _toppanel.Curves.PixelsPerMeter;
+            float starboardNLengthTop = _toppanel.Curves[0].NextHandleLength/_toppanel.Curves.PixelsPerMeter;
             float starboardAngleTop = _toppanel.Curves[0].Handle.Angle;
 
             //side set
             var bowPointSide = _sidepanel.Curves.ToMeters(_sidepanel.Curves[0].CenterHandlePos);
-            float bowNLengthSide = (_sidepanel.Curves[0].NextHandleLength) / _sidepanel.Curves.PixelsPerMeter;
+            float bowNLengthSide = (_sidepanel.Curves[0].NextHandleLength)/_sidepanel.Curves.PixelsPerMeter;
             float bowAngleSide = (_sidepanel.Curves[0].Handle.Angle);
 
             var sternPointSide = _sidepanel.Curves.ToMeters(_sidepanel.Curves[2].CenterHandlePos);
-            float sternPLengthSide = _sidepanel.Curves[2].PrevHandleLength / _sidepanel.Curves.PixelsPerMeter;
+            float sternPLengthSide = _sidepanel.Curves[2].PrevHandleLength/_sidepanel.Curves.PixelsPerMeter;
             float sternAngleSide = _sidepanel.Curves[2].Handle.Angle;
 
             var hullPointSide = _sidepanel.Curves.ToMeters(_sidepanel.Curves[1].CenterHandlePos);
-            float hullPLengthSide = _sidepanel.Curves[1].PrevHandleLength / _sidepanel.Curves.PixelsPerMeter;
-            float hullNLengthSide = _sidepanel.Curves[1].NextHandleLength / _sidepanel.Curves.PixelsPerMeter;
+            float hullPLengthSide = _sidepanel.Curves[1].PrevHandleLength/_sidepanel.Curves.PixelsPerMeter;
+            float hullNLengthSide = _sidepanel.Curves[1].NextHandleLength/_sidepanel.Curves.PixelsPerMeter;
             float hullAngleSide = _sidepanel.Curves[1].Handle.Angle;
 
             //back set
             var starboardPointBack = _backpanel.Curves.ToMeters(_backpanel.Curves[2].CenterHandlePos);
-            float starboardPLengthBack = _backpanel.Curves[2].PrevHandleLength / _backpanel.Curves.PixelsPerMeter;
+            float starboardPLengthBack = _backpanel.Curves[2].PrevHandleLength/_backpanel.Curves.PixelsPerMeter;
             float starboardAngleBack = _backpanel.Curves[2].Handle.Angle;
 
             var hullPointBack = _backpanel.Curves.ToMeters(_backpanel.Curves[1].CenterHandlePos);
-            float hullPLengthBack = _backpanel.Curves[1].PrevHandleLength / _backpanel.Curves.PixelsPerMeter;
-            float hullNLengthBack = _backpanel.Curves[1].NextHandleLength / _backpanel.Curves.PixelsPerMeter;
+            float hullPLengthBack = _backpanel.Curves[1].PrevHandleLength/_backpanel.Curves.PixelsPerMeter;
+            float hullNLengthBack = _backpanel.Curves[1].NextHandleLength/_backpanel.Curves.PixelsPerMeter;
             float hullAngleBack = -MathHelper.Pi;
 
             //now force validate the points
@@ -97,7 +143,7 @@ namespace Forge.Core.GameState {
             starboardPointTop.Y = 0;
             sternPointSide.Y = 0;
 
-            starboardPointBack.X = bowPointTop.Y * 2;
+            starboardPointBack.X = bowPointTop.Y*2;
             starboardPointBack.Y = 0;
             hullPointBack.Y = hullPointSide.Y;
             hullPointBack.X = bowPointTop.Y;
@@ -128,7 +174,7 @@ namespace Forge.Core.GameState {
 
             backData.Add(new CurveData());
             backData[0].CenterHandlePos = new Vector2(0, 0);
-            backData[0].Angle = (2 * MathHelper.Pi - starboardAngleBack);
+            backData[0].Angle = (2*MathHelper.Pi - starboardAngleBack);
             backData[0].NextHandleLength = starboardPLengthBack;
             backData[0].PrevHandleLength = 5;
 
@@ -157,7 +203,7 @@ namespace Forge.Core.GameState {
             topData[1].PrevHandleLength = bowNLengthTop;
 
             topData.Add(new CurveData());
-            topData[2].CenterHandlePos = new Vector2(starboardPointTop.X, bowPointTop.Y * 2);
+            topData[2].CenterHandlePos = new Vector2(starboardPointTop.X, bowPointTop.Y*2);
             topData[2].Angle = (MathHelper.Pi - starboardAngleTop);
             topData[2].NextHandleLength = 5;
             topData[2].PrevHandleLength = starboardNLengthTop;
@@ -167,7 +213,7 @@ namespace Forge.Core.GameState {
             SaveCurve(directory + "side.xml", sideData);
         }
 
-        void SaveCurve(string filename, List<CurveData> curveData) {
+        void SaveCurve(string filename, List<CurveData> curveData){
             var settings = new XmlWriterSettings();
             settings.Indent = true;
 
@@ -178,7 +224,7 @@ namespace Forge.Core.GameState {
             writer.WriteStartElement("Data");
             writer.WriteElementString("NumControllers", null, curveData.Count.ToString());
 
-            for (int i = 0; i < curveData.Count; i++) {
+            for (int i = 0; i < curveData.Count; i++){
                 writer.WriteStartElement("Handle" + i, null);
                 writer.WriteElementString("PosX", null, curveData[i].CenterHandlePos.X.ToString());
                 writer.WriteElementString("PosY", null, curveData[i].CenterHandlePos.Y.ToString());
@@ -195,7 +241,7 @@ namespace Forge.Core.GameState {
 
         #region Nested type: CurveData
 
-        class CurveData {
+        class CurveData{
             public Vector2 CenterHandlePos { get; set; }
             public float Angle { get; set; }
             public float PrevHandleLength { get; set; }
@@ -203,41 +249,5 @@ namespace Forge.Core.GameState {
         }
 
         #endregion
-
-        public void Dispose() {
-            _previewRenderer.Dispose();
-            _sidepanel.Dispose();
-            _backpanel.Dispose();
-            _toppanel.Dispose();
-        }
-
-        public void Update(InputState state, double timeDelta) {
-
-            //force end early
-            var sideInfo = _sidepanel.Curves.GetControllerInfo();
-            var backInfo = _backpanel.Curves.GetControllerInfo();
-            var topInfo = _toppanel.Curves.GetControllerInfo();
-
-            GamestateManager.ClearState();
-            GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
-            return;
-
-            _elementCollection.Bind();
-            _sidepanel.Update();
-            _toppanel.Update();
-            _backpanel.Update();
-            _previewRenderer.Update(ref state);
-            UIElementCollection.BoundCollection.UpdateInput(ref state);
-            UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
-            _elementCollection.Unbind();
-            HandleEditorKeyboardInput(ref state);
-        }
-
-        public void Draw() {
-            _sidepanel.Draw();
-            _toppanel.Draw();
-            _backpanel.Draw();
-            _previewRenderer.Draw();
-        }
     }
 }

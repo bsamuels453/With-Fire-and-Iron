@@ -1,11 +1,12 @@
-﻿using System.Collections.Generic;
+﻿#region
+
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Camera;
 using Forge.Core.GameState;
-using Forge.Framework.Draw;
-using Forge.Core.Logic;
 using Forge.Framework;
+using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Forge.Framework.UI.Widgets;
 using Microsoft.Xna.Framework;
@@ -16,11 +17,13 @@ using Matrix = MonoGameUtility.Matrix;
 using Ray = MonoGameUtility.Ray;
 using Vector3 = MonoGameUtility.Vector3;
 
-namespace Forge.Core.ObjectEditor.Tools {
-    internal abstract class DeckPlacementBase : IToolbarTool {
+#endregion
+
+namespace Forge.Core.ObjectEditor.Tools{
+    internal abstract class DeckPlacementBase : IToolbarTool{
+        protected readonly float GridResolution;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
         protected readonly HullDataManager HullData;
-        protected readonly float GridResolution;
 
         readonly GeometryBuffer<VertexPositionColor> _cursorBuff;
         readonly int _selectionResolution;
@@ -29,35 +32,16 @@ namespace Forge.Core.ObjectEditor.Tools {
         protected Vector3 StrokeEnd;
         protected Vector3 StrokeOrigin;
         bool _cursorGhostActive;
+        bool _disposed;
         bool _enabled;
         bool _isDrawing;
 
-        public bool Enabled {
-            get { return _enabled; }
-            set {
-                _enabled = value;
-                _cursorBuff.Enabled = value;
-
-                if (value) {
-                    OnEnable();
-                    GuideGridBuffers[HullData.CurDeck].Enabled = true;
-                }
-                else {
-                    foreach (var buffer in GuideGridBuffers) {
-                        buffer.Enabled = false;
-                    }
-                    OnDisable();
-                }
-            }
-        }
-
         /// <summary>
-        /// 
         /// </summary>
-        /// <param name="hullData"></param>
-        /// <param name="gridResolution">not functioning properly</param>
-        /// <param name="selectionResolution">how many grid tiles wide the selection marquee is intended to be. Set to -1 for selection type to be set to vertexes, rather than tiles.</param>
-        protected DeckPlacementBase(HullDataManager hullData, float gridResolution, int selectionResolution = -1) {
+        /// <param name="hullData"> </param>
+        /// <param name="gridResolution"> not functioning properly </param>
+        /// <param name="selectionResolution"> how many grid tiles wide the selection marquee is intended to be. Set to -1 for selection type to be set to vertexes, rather than tiles. </param>
+        protected DeckPlacementBase(HullDataManager hullData, float gridResolution, int selectionResolution = -1){
             HullData = hullData;
             if (selectionResolution > 0)
                 _selectionResolution = selectionResolution + 1;
@@ -70,7 +54,7 @@ namespace Forge.Core.ObjectEditor.Tools {
             GridResolution = gridResolution;
 
             _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Shader_Wireframe", PrimitiveType.LineList);
-            var selectionIndicies = new[] { 0, 1 };
+            var selectionIndicies = new[]{0, 1};
             _cursorBuff.IndexBuffer.SetData(selectionIndicies);
             _cursorBuff.Enabled = false;
             _cursorBuff.ShaderParams["Alpha"].SetValue(1);
@@ -83,16 +67,35 @@ namespace Forge.Core.ObjectEditor.Tools {
 
         #region IToolbarTool Members
 
-        public void UpdateInput(ref InputState state) {
+        public bool Enabled{
+            get { return _enabled; }
+            set{
+                _enabled = value;
+                _cursorBuff.Enabled = value;
+
+                if (value){
+                    OnEnable();
+                    GuideGridBuffers[HullData.CurDeck].Enabled = true;
+                }
+                else{
+                    foreach (var buffer in GuideGridBuffers){
+                        buffer.Enabled = false;
+                    }
+                    OnDisable();
+                }
+            }
+        }
+
+        public void UpdateInput(ref InputState state){
             #region intersect stuff
 
-            if (state.AllowMouseMovementInterpretation) {
+            if (state.AllowMouseMovementInterpretation){
                 var prevCursorPosition = CursorPosition;
 
                 var nearMouse = new Vector3(state.MousePos.X, state.MousePos.Y, 0);
                 var farMouse = new Vector3(state.MousePos.X, state.MousePos.Y, 1);
 
-                var camera = (BodyCenteredCamera)GamestateManager.CameraController;
+                var camera = (BodyCenteredCamera) GamestateManager.CameraController;
 
                 var camPos = camera.CameraPosition;
                 var camTarg = camera.CameraTarget;
@@ -100,18 +103,20 @@ namespace Forge.Core.ObjectEditor.Tools {
                 var viewMatrix = Matrix.CreateLookAt(camPos, camTarg, Vector3.Up);
 
                 //transform the mouse into world space
-                var nearPoint = Resource.Device.Viewport.Unproject(
-                    nearMouse,
-                    Resource.ProjectionMatrix,
-                    viewMatrix,
-                    Matrix.Identity
+                var nearPoint = Resource.Device.Viewport.Unproject
+                    (
+                        nearMouse,
+                        Resource.ProjectionMatrix,
+                        viewMatrix,
+                        Matrix.Identity
                     );
 
-                var farPoint = Resource.Device.Viewport.Unproject(
-                    farMouse,
-                    Resource.ProjectionMatrix,
-                    viewMatrix,
-                    Matrix.Identity
+                var farPoint = Resource.Device.Viewport.Unproject
+                    (
+                        farMouse,
+                        Resource.ProjectionMatrix,
+                        viewMatrix,
+                        Matrix.Identity
                     );
 
                 var direction = farPoint - nearPoint;
@@ -120,30 +125,33 @@ namespace Forge.Core.ObjectEditor.Tools {
 
                 //xx eventually might want to dissect this with comments
                 bool intersectionFound = false;
-                foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes) {
+                foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes){
                     float? ndist;
-                    if ((ndist = ray.Intersects(t)) != null) {
+                    if ((ndist = ray.Intersects(t)) != null){
                         EnableCursorGhost();
                         _cursorGhostActive = true;
-                        var rayTermination = ray.Position + ray.Direction * (float)ndist;
+                        var rayTermination = ray.Position + ray.Direction*(float) ndist;
 
                         var distList = new List<float>();
 
-                        for (int point = 0; point < HullData.DeckSectionContainer.TopExposedVertexes.Count(); point++) {
+                        for (int point = 0; point < HullData.DeckSectionContainer.TopExposedVertexes.Count(); point++){
                             distList.Add(Vector3.Distance(rayTermination, HullData.DeckSectionContainer.TopExposedVertexes[point]));
                         }
                         float f = distList.Min();
 
                         int ptIdx = distList.IndexOf(f);
 
-                        if (!IsCursorValid(HullData.DeckSectionContainer.TopExposedVertexes[ptIdx], prevCursorPosition, HullData.DeckSectionContainer.TopExposedVertexes, f)) {
+                        if (
+                            !IsCursorValid
+                                (HullData.DeckSectionContainer.TopExposedVertexes[ptIdx], prevCursorPosition, HullData.DeckSectionContainer.TopExposedVertexes,
+                                    f)){
                             _cursorGhostActive = false;
                             DisableCursorGhost();
                             break;
                         }
 
                         CursorPosition = HullData.DeckSectionContainer.TopExposedVertexes[ptIdx];
-                        if (CursorPosition != prevCursorPosition) {
+                        if (CursorPosition != prevCursorPosition){
                             UpdateCursorGhost();
                             HandleCursorChange(_isDrawing);
                         }
@@ -152,24 +160,24 @@ namespace Forge.Core.ObjectEditor.Tools {
                         break;
                     }
                 }
-                if (!intersectionFound) {
+                if (!intersectionFound){
                     _cursorGhostActive = false;
                     DisableCursorGhost();
                 }
             }
-            else {
+            else{
                 _cursorGhostActive = false;
                 DisableCursorGhost();
             }
 
             #endregion
 
-            if (state.AllowLeftButtonInterpretation) {
+            if (state.AllowLeftButtonInterpretation){
                 if (
                     state.LeftButtonState != state.PrevState.LeftButtonState &&
-                    state.LeftButtonState == ButtonState.Pressed
-                    && _cursorGhostActive
-                    ) {
+                        state.LeftButtonState == ButtonState.Pressed
+                            && _cursorGhostActive
+                    ){
                     StrokeOrigin = CursorPosition;
                     _isDrawing = true;
                     HandleCursorDown();
@@ -177,8 +185,8 @@ namespace Forge.Core.ObjectEditor.Tools {
                 }
             }
 
-            if (state.AllowLeftButtonInterpretation) {
-                if (_isDrawing && state.LeftButtonState == ButtonState.Released) {
+            if (state.AllowLeftButtonInterpretation){
+                if (_isDrawing && state.LeftButtonState == ButtonState.Released){
                     _isDrawing = false;
                     StrokeOrigin = new Vector3();
                     StrokeEnd = new Vector3();
@@ -187,15 +195,25 @@ namespace Forge.Core.ObjectEditor.Tools {
             }
         }
 
-        public void UpdateLogic(double timeDelta) {
+        public void UpdateLogic(double timeDelta){
+        }
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _cursorBuff.Dispose();
+            foreach (var buffer in GuideGridBuffers){
+                buffer.Dispose();
+            }
+            DisposeChild();
+            _disposed = true;
         }
 
         #endregion
 
-        bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt) {
-            if (_selectionResolution == -1) {
+        bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
+            if (_selectionResolution == -1){
                 //vertex selection/wall drawing
-                if (deckFloorVertexes.Contains(prevCursorPosition) && _isDrawing) {
+                if (deckFloorVertexes.Contains(prevCursorPosition) && _isDrawing){
                     var v1 = new Vector3(newCursorPos.X, newCursorPos.Y, StrokeOrigin.Z);
                     var v2 = new Vector3(StrokeOrigin.X, newCursorPos.Y, newCursorPos.Z);
 
@@ -209,10 +227,10 @@ namespace Forge.Core.ObjectEditor.Tools {
 
             //object placement
             bool validCursor = true;
-            for (int x = 0; x < _selectionResolution; x++) {
-                for (int z = 0; z < _selectionResolution; z++) {
-                    var vert = newCursorPos + new Vector3(x * GridResolution, 0, z * GridResolution);
-                    if (!deckFloorVertexes.Contains(vert)) {
+            for (int x = 0; x < _selectionResolution; x++){
+                for (int z = 0; z < _selectionResolution; z++){
+                    var vert = newCursorPos + new Vector3(x*GridResolution, 0, z*GridResolution);
+                    if (!deckFloorVertexes.Contains(vert)){
                         validCursor = false;
                         break;
                     }
@@ -222,17 +240,17 @@ namespace Forge.Core.ObjectEditor.Tools {
         }
 
         //todo: refactor gridResolution
-        protected void GenerateGuideGrid() {
-            for (int i = 0; i < HullData.NumDecks; i++) {
+        protected void GenerateGuideGrid(){
+            for (int i = 0; i < HullData.NumDecks; i++){
                 #region indicies
 
                 int numBoxes = HullData.DeckSectionContainer.BoundingBoxesByDeck[i].Count();
-                if (GuideGridBuffers[i] != null) {
+                if (GuideGridBuffers[i] != null){
                     GuideGridBuffers[i].Dispose();
                 }
-                GuideGridBuffers[i] = new GeometryBuffer<VertexPositionColor>(8 * numBoxes, 8 * numBoxes, 4 * numBoxes, "Shader_Wireframe", PrimitiveType.LineList);
-                var guideDotIndicies = new int[8 * numBoxes];
-                for (int si = 0; si < 8 * numBoxes; si += 1) {
+                GuideGridBuffers[i] = new GeometryBuffer<VertexPositionColor>(8*numBoxes, 8*numBoxes, 4*numBoxes, "Shader_Wireframe", PrimitiveType.LineList);
+                var guideDotIndicies = new int[8*numBoxes];
+                for (int si = 0; si < 8*numBoxes; si += 1){
                     guideDotIndicies[si] = si;
                 }
                 GuideGridBuffers[i].IndexBuffer.SetData(guideDotIndicies);
@@ -241,11 +259,11 @@ namespace Forge.Core.ObjectEditor.Tools {
 
                 #region verticies
 
-                var verts = new VertexPositionColor[HullData.DeckSectionContainer.BoundingBoxesByDeck[i].Count() * 8];
+                var verts = new VertexPositionColor[HullData.DeckSectionContainer.BoundingBoxesByDeck[i].Count()*8];
 
                 int vertIndex = 0;
 
-                foreach (var boundingBox in HullData.DeckSectionContainer.BoundingBoxesByDeck[i]) {
+                foreach (var boundingBox in HullData.DeckSectionContainer.BoundingBoxesByDeck[i]){
                     Vector3 v1, v2, v3, v4;
                     //v4  v3
                     //
@@ -283,35 +301,38 @@ namespace Forge.Core.ObjectEditor.Tools {
         }
 
         /// <summary>
-        /// this is called when the cursor ghost is turned on
+        ///   this is called when the cursor ghost is turned on
         /// </summary>
-        protected virtual void EnableCursorGhost() {
+        protected virtual void EnableCursorGhost(){
             _cursorBuff.Enabled = true;
-
         }
 
         /// <summary>
-        /// this is called when the cursor ghost is turned off
+        ///   this is called when the cursor ghost is turned off
         /// </summary>
-        protected virtual void DisableCursorGhost() {
+        protected virtual void DisableCursorGhost(){
             _cursorBuff.Enabled = false;
         }
 
         /// <summary>
-        /// this is called when the cursor ghost needs to be moved to a new position
+        ///   this is called when the cursor ghost needs to be moved to a new position
         /// </summary>
-        protected virtual void UpdateCursorGhost() {
+        protected virtual void UpdateCursorGhost(){
             var verts = new VertexPositionColor[2];
-            verts[0] = new VertexPositionColor(
-                new Vector3(
+            verts[0] = new VertexPositionColor
+                (
+                new Vector3
+                    (
                     CursorPosition.X,
                     CursorPosition.Y + 0.03f,
                     CursorPosition.Z
                     ),
                 Color.White
                 );
-            verts[1] = new VertexPositionColor(
-                new Vector3(
+            verts[1] = new VertexPositionColor
+                (
+                new Vector3
+                    (
                     CursorPosition.X,
                     CursorPosition.Y + 10f,
                     CursorPosition.Z
@@ -320,14 +341,14 @@ namespace Forge.Core.ObjectEditor.Tools {
                 );
             _cursorBuff.VertexBuffer.SetData(verts);
             _cursorBuff.Enabled = true;
-            if (_isDrawing) {
+            if (_isDrawing){
                 StrokeEnd = CursorPosition;
             }
         }
 
-        void VisibleDeckChange(int oldVal, int newVal) {
-            if (_enabled) {
-                foreach (var buffer in GuideGridBuffers) {
+        void VisibleDeckChange(int oldVal, int newVal){
+            if (_enabled){
+                foreach (var buffer in GuideGridBuffers){
                     buffer.Enabled = false;
                 }
 
@@ -366,19 +387,7 @@ namespace Forge.Core.ObjectEditor.Tools {
         /// </summary>
         protected abstract void OnDisable();
 
-        bool _disposed;
-
         protected abstract void DisposeChild();
-
-        public void Dispose(){
-            Debug.Assert(!_disposed);
-            _cursorBuff.Dispose();
-            foreach (var buffer in GuideGridBuffers){
-                buffer.Dispose();
-            }
-            DisposeChild();
-            _disposed = true;
-        }
 
         ~DeckPlacementBase(){
             Debug.Assert(_disposed);

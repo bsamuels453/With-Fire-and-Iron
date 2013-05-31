@@ -1,19 +1,20 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
-using System.IO;
 using Forge.Core.Util;
 using Forge.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace Forge.Core.Terrain {
-    class TerrainUpdater : IDisposable{
-        readonly List<TerrainChunk> _loadedChunks;
+#endregion
+
+namespace Forge.Core.Terrain{
+    internal class TerrainUpdater : IDisposable{
         readonly TerrainGen _generator;
+        readonly List<TerrainChunk> _loadedChunks;
+
         public TerrainUpdater(){
             _loadedChunks = new List<TerrainChunk>();
-            
+
             _generator = new TerrainGen();
             for (int x = 0; x < 10; x++){
                 for (int z = 0; z < 10; z++){
@@ -32,7 +33,7 @@ namespace Forge.Core.Terrain {
                     //sw.Close();
                 }
             }
-             /*
+            /*
             for (int x = 0; x < 2; x++){
                 for (int z = 0; z < 2; z++){
                     var sr = new StreamReader("chunk" + x + " " + z);
@@ -55,8 +56,9 @@ namespace Forge.Core.Terrain {
                     _loadedChunks.Add(chunk);
                 }
             }*/
-
         }
+
+        #region IDisposable Members
 
         public void Dispose(){
             foreach (var chunk in _loadedChunks){
@@ -64,6 +66,8 @@ namespace Forge.Core.Terrain {
             }
             _loadedChunks.Clear();
         }
+
+        #endregion
 
         public void Update(InputState state, double timeDelta){
         }

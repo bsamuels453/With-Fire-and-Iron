@@ -7,12 +7,12 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.Util {
+namespace Forge.Core.Util{
     /// <summary>
     ///   helper class for use with rectangular meshes
     /// </summary>
-    internal static class MeshHelper {
-        public static int[] CreateQuadIndiceArray(int numQuads) {
+    internal static class MeshHelper{
+        public static int[] CreateQuadIndiceArray(int numQuads){
             //construct indice list
             //remember the clockwise-fu
             //+1-----+2
@@ -25,9 +25,9 @@ namespace Forge.Core.Util {
             //    /   | 
             //  /     |
             //+0-----+3
-            var indicies = new int[numQuads * 6];
+            var indicies = new int[numQuads*6];
             int curVertex = 0;
-            for (int i = 0; i < indicies.Count(); i += 6) {
+            for (int i = 0; i < indicies.Count(); i += 6){
                 indicies[i] = curVertex;
                 indicies[i + 1] = curVertex + 1;
                 indicies[i + 2] = curVertex + 2;
@@ -42,9 +42,9 @@ namespace Forge.Core.Util {
         }
 
         public static int[] CreateTriangleIndiceArray(int numTris){
-            var indicies = new int[numTris * 3];
+            var indicies = new int[numTris*3];
             int curVertex = 0;
-            for (int i = 0; i < indicies.Count(); i += 3) {
+            for (int i = 0; i < indicies.Count(); i += 3){
                 indicies[i] = curVertex;
                 indicies[i + 1] = curVertex + 1;
                 indicies[i + 2] = curVertex + 2;
@@ -53,14 +53,14 @@ namespace Forge.Core.Util {
             return indicies;
         }
 
-        public static VertexPositionNormalTexture[] CreateTexcoordedVertexList(int numQuads) {
-            var verticies = new VertexPositionNormalTexture[numQuads * 4];
+        public static VertexPositionNormalTexture[] CreateTexcoordedVertexList(int numQuads){
+            var verticies = new VertexPositionNormalTexture[numQuads*4];
 
-            for (int i = 0; i < verticies.Count(); i++) {
+            for (int i = 0; i < verticies.Count(); i++){
                 verticies[i] = new VertexPositionNormalTexture();
             }
 
-            for (int i = 0; i < verticies.Count(); i += 4) {
+            for (int i = 0; i < verticies.Count(); i += 4){
                 verticies[i].TextureCoordinate = new Vector2(0, 0);
                 verticies[i + 1].TextureCoordinate = new Vector2(0, 1);
                 verticies[i + 2].TextureCoordinate = new Vector2(1, 1);
@@ -70,14 +70,14 @@ namespace Forge.Core.Util {
             return verticies;
         }
 
-        public static VertexPositionTexture[] CreateTexcoordedVertexListWithoutNormals(int numQuads) {
-            var verticies = new VertexPositionTexture[numQuads * 4];
+        public static VertexPositionTexture[] CreateTexcoordedVertexListWithoutNormals(int numQuads){
+            var verticies = new VertexPositionTexture[numQuads*4];
 
-            for (int i = 0; i < verticies.Count(); i++) {
+            for (int i = 0; i < verticies.Count(); i++){
                 verticies[i] = new VertexPositionTexture();
             }
 
-            for (int i = 0; i < verticies.Count(); i += 4) {
+            for (int i = 0; i < verticies.Count(); i += 4){
                 verticies[i].TextureCoordinate = new Vector2(0, 0);
                 verticies[i + 1].TextureCoordinate = new Vector2(0, 1);
                 verticies[i + 2].TextureCoordinate = new Vector2(1, 1);
@@ -87,25 +87,25 @@ namespace Forge.Core.Util {
             return verticies;
         }
 
-        public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, Vector3[][] list) {
-            for (int x = 0; x < meshWidth; x++) {
-                for (int y = 0; y < meshHeight; y++) {
+        public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, Vector3[][] list){
+            for (int x = 0; x < meshWidth; x++){
+                for (int y = 0; y < meshHeight; y++){
                     mesh[x, y] = list[x][y];
                 }
             }
         }
 
-        public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, List<List<Vector3>> list) {
-            for (int x = 0; x < meshWidth; x++) {
-                for (int y = 0; y < meshHeight; y++) {
+        public static void Encode2DListIntoArray(int meshWidth, int meshHeight, ref Vector3[,] mesh, List<List<Vector3>> list){
+            for (int x = 0; x < meshWidth; x++){
+                for (int y = 0; y < meshHeight; y++){
                     mesh[x, y] = list[x][y];
                 }
             }
         }
 
-        public static void GenerateMeshNormals(Vector3[,] mesh, ref Vector3[,] normals) {
-            for (int vertX = 0; vertX < mesh.GetLength(0) - 1; vertX++) {
-                for (int vertZ = 0; vertZ < mesh.GetLength(1) - 1; vertZ++) {
+        public static void GenerateMeshNormals(Vector3[,] mesh, ref Vector3[,] normals){
+            for (int vertX = 0; vertX < mesh.GetLength(0) - 1; vertX++){
+                for (int vertZ = 0; vertZ < mesh.GetLength(1) - 1; vertZ++){
                     var crossSum = new Vector3();
 
                     var s1 = mesh[vertX + 1, vertZ] - mesh[vertX, vertZ];
@@ -116,15 +116,14 @@ namespace Forge.Core.Util {
                     crossSum += Vector3.Cross(s3, s2);
 
                     normals[vertX, vertZ] += crossSum;
-                    if (crossSum != Vector3.Zero) {
+                    if (crossSum != Vector3.Zero){
                         normals[vertX, vertZ].Normalize();
                     }
-
                 }
             }
 
-            for (int vertX = 1; vertX < mesh.GetLength(0); vertX++) {
-                for (int vertZ = 1; vertZ < mesh.GetLength(1); vertZ++) {
+            for (int vertX = 1; vertX < mesh.GetLength(0); vertX++){
+                for (int vertZ = 1; vertZ < mesh.GetLength(1); vertZ++){
                     var crossSum = new Vector3();
 
                     var s1 = mesh[vertX - 1, vertZ] - mesh[vertX, vertZ];
@@ -136,19 +135,18 @@ namespace Forge.Core.Util {
 
                     normals[vertX, vertZ] += crossSum;
                     normals[vertX, vertZ].Normalize();
-                    if (crossSum == Vector3.Zero) {
-                        
+                    if (crossSum == Vector3.Zero){
                         normals[vertX, vertZ] = Vector3.Down;
                     }
                 }
             }
         }
 
-        public static void ConvertMeshToVertList(Vector3[,] mesh, Vector3[,] normals, ref VertexPositionNormalTexture[] verticies) {
+        public static void ConvertMeshToVertList(Vector3[,] mesh, Vector3[,] normals, ref VertexPositionNormalTexture[] verticies){
             //convert from 2d array to 1d
             int index = 0;
-            for (int x = 0; x < mesh.GetLength(0) - 1; x++) {
-                for (int z = 0; z < mesh.GetLength(1) - 1; z++) {
+            for (int x = 0; x < mesh.GetLength(0) - 1; x++){
+                for (int z = 0; z < mesh.GetLength(1) - 1; z++){
                     verticies[index].Position = mesh[x, z];
                     verticies[index].Normal = normals[x, z];
 
@@ -165,15 +163,16 @@ namespace Forge.Core.Util {
                 }
             }
         }
+
         /// <summary>
-        /// warning: cache thrashes
+        ///   warning: cache thrashes
         /// </summary>
-        /// <param name="mesh"></param>
-        /// <param name="vertexes"></param>
-        public static void ConvertMeshToVertList(Vector3[,] mesh, ref VertexPositionTexture[] vertexes) {
+        /// <param name="mesh"> </param>
+        /// <param name="vertexes"> </param>
+        public static void ConvertMeshToVertList(Vector3[,] mesh, ref VertexPositionTexture[] vertexes){
             int index = 0;
-            for (int x = 0; x < mesh.GetLength(0) - 1; x++) {
-                for (int z = 0; z < mesh.GetLength(1) - 1; z++) {
+            for (int x = 0; x < mesh.GetLength(0) - 1; x++){
+                for (int z = 0; z < mesh.GetLength(1) - 1; z++){
                     vertexes[index].Position = mesh[x, z];
                     vertexes[index + 1].Position = mesh[x, z + 1];
                     vertexes[index + 2].Position = mesh[x + 1, z + 1];
@@ -184,12 +183,12 @@ namespace Forge.Core.Util {
             }
         }
 
-        public static void GenerateCube(out VertexPositionNormalTexture[] verticies, out int[] indicies, Vector3 origin, float xSize, float ySize, float zSize) {
+        public static void GenerateCube(out VertexPositionNormalTexture[] verticies, out int[] indicies, Vector3 origin, float xSize, float ySize, float zSize){
             //boy do i love hardcoding
             verticies = new VertexPositionNormalTexture[20];
-            indicies = new[] { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 19, 18, 18, 17, 16 };
+            indicies = new[]{0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4, 8, 9, 10, 10, 11, 8, 12, 13, 14, 14, 15, 12, 16, 19, 18, 18, 17, 16};
 
-            for (int indexOffset = 0; indexOffset < 20; indexOffset += 4) {
+            for (int indexOffset = 0; indexOffset < 20; indexOffset += 4){
                 var faceVertexes = CreateTexcoordedVertexList(1);
 
                 faceVertexes.CopyTo(verticies, indexOffset);

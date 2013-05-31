@@ -120,9 +120,10 @@ namespace Forge.Framework.UI{
             else
                 identifier = Button.DefaultIdentifier;
 
-            float depth = UIElementCollection.BoundCollection.GetAbsoluteDepth((DepthLevel)Depth);
+            float depth = UIElementCollection.BoundCollection.GetAbsoluteDepth((DepthLevel) Depth);
 
-            return new Button(
+            return new Button
+                (
                 (float) X,
                 (float) Y,
                 (float) Width,

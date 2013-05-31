@@ -1,6 +1,5 @@
 ﻿#region
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,8 +7,6 @@ using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
 using Forge.Core.Util;
 using Forge.Framework;
-using Forge.Framework.Draw;
-using Forge.Core.Logic;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using Newtonsoft.Json;
@@ -20,8 +17,7 @@ using ProtoBuf;
 
 namespace Forge.Core.Airship.Export{
     internal static class AirshipPackager{
-
-        public static void ExportAirshipDefinition(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo) {
+        public static void ExportAirshipDefinition(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo){
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             JObject jObj = new JObject();
@@ -36,7 +32,7 @@ namespace Forge.Core.Airship.Export{
             DebugConsole.WriteLine("Airship serialized to definition in " + stopwatch.ElapsedMilliseconds + " ms");
         }
 
-        public static Airship ImportFromDefinition(string fileName) {
+        public static Airship ImportFromDefinition(string fileName){
             var sw = new Stopwatch();
             sw.Start();
             var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
@@ -47,10 +43,11 @@ namespace Forge.Core.Airship.Export{
             var sideInfo = jObj["SideBezierSurf"].ToObject<List<BezierInfo>>();
             var topInfo = jObj["TopBezierSurf"].ToObject<List<BezierInfo>>();
 
-            var hullData = HullGeometryGenerator.GenerateShip(
-                backInfo,
-                sideInfo,
-                topInfo
+            var hullData = HullGeometryGenerator.GenerateShip
+                (
+                    backInfo,
+                    sideInfo,
+                    topInfo
                 );
 
             var modelAttribs = new ModelAttributes();
@@ -62,7 +59,7 @@ namespace Forge.Core.Airship.Export{
             modelAttribs.MaxTurnSpeed = 4f;
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;
-            modelAttribs.Centroid = new Vector3(modelAttribs.Length / 3, 0, 0);
+            modelAttribs.Centroid = new Vector3(modelAttribs.Length/3, 0, 0);
             sw.Stop();
 
             DebugConsole.WriteLine("Airship deserialized from definition in " + sw.ElapsedMilliseconds + " ms");
@@ -71,7 +68,8 @@ namespace Forge.Core.Airship.Export{
             return ret;
         }
 
-        public static void ExportToProtocol(string fileName, HullSectionContainer hullSectionContainer, DeckSectionContainer deckSectionContainer, ModelAttributes attributes){
+        public static void ExportToProtocol(string fileName, HullSectionContainer hullSectionContainer, DeckSectionContainer deckSectionContainer,
+            ModelAttributes attributes){
             var sw = new Stopwatch();
             sw.Start();
             var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\" + fileName, FileMode.Create);
@@ -104,27 +102,28 @@ namespace Forge.Core.Airship.Export{
             return ret;
         }
 
-        [ProtoContract]
-        struct AirshipSerializationStruct{
-            [ProtoMember(1)]
-            public HullSectionContainer.Serialized HullSections;
-            [ProtoMember(2)]
-            public DeckSectionContainer.Serialized DeckSections;
-            [ProtoMember(3)]
-            public ModelAttributes ModelAttributes;
-        }
-
-        static Vector3 CalculateCenter(VertexPositionNormalTexture[][] airshipVertexes) {
+        static Vector3 CalculateCenter(VertexPositionNormalTexture[][] airshipVertexes){
             var ret = new Vector3(0, 0, 0);
             int numVerts = 0;
-            foreach (var layer in airshipVertexes) {
+            foreach (var layer in airshipVertexes){
                 numVerts += layer.Length;
-                foreach (var vert in layer) {
-                    ret += (Vector3)vert.Position;
+                foreach (var vert in layer){
+                    ret += vert.Position;
                 }
             }
             ret /= numVerts;
             return ret;
         }
+
+        #region Nested type: AirshipSerializationStruct
+
+        [ProtoContract]
+        struct AirshipSerializationStruct{
+            [ProtoMember(2)] public DeckSectionContainer.Serialized DeckSections;
+            [ProtoMember(1)] public HullSectionContainer.Serialized HullSections;
+            [ProtoMember(3)] public ModelAttributes ModelAttributes;
+        }
+
+        #endregion
     }
 }

@@ -1,77 +1,82 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region
+
+using System;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
-namespace Forge.Core.Airship {
-    class PlayerAirshipController : AirshipController{
-        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData) : 
-            base(setWorldMatrix, modelData, movementData){
-        }
+#endregion
 
-        int _engineSpeed;
-        public TurnState CurTurnState;
-        public int EngineSpeed {
-            get { return _engineSpeed; }
-            set {
-                if (value <= 3 && value >= -2) {
-                    _engineSpeed = value;
-                }
-            }
-        }
+namespace Forge.Core.Airship{
+    internal class PlayerAirshipController : AirshipController{
+        #region TurnState enum
 
-        public enum TurnState {
+        public enum TurnState{
             TurningLeft,
             TurningRight,
             Stable
         }
 
-        protected override void UpdateController(ref InputState state, double timeDelta){
+        #endregion
 
+        public TurnState CurTurnState;
+        int _engineSpeed;
+
+        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData) :
+            base(setWorldMatrix, modelData, movementData){
+        }
+
+        public int EngineSpeed{
+            get { return _engineSpeed; }
+            set{
+                if (value <= 3 && value >= -2){
+                    _engineSpeed = value;
+                }
+            }
+        }
+
+        protected override void UpdateController(ref InputState state, double timeDelta){
             var keyState = state.KeyboardState;
             var prevKeyState = state.PrevState.KeyboardState;
 
-            if (keyState.IsKeyUp(Keys.W) && prevKeyState.IsKeyDown(Keys.W)) {
+            if (keyState.IsKeyUp(Keys.W) && prevKeyState.IsKeyDown(Keys.W)){
                 EngineSpeed++;
             }
-            if (keyState.IsKeyUp(Keys.S) && prevKeyState.IsKeyDown(Keys.S)) {
-                if (EngineSpeed > 0) {
+            if (keyState.IsKeyUp(Keys.S) && prevKeyState.IsKeyDown(Keys.S)){
+                if (EngineSpeed > 0){
                     EngineSpeed = 0;
                 }
-                else {
+                else{
                     EngineSpeed--;
                 }
             }
 
             int altitudeSpeed = 0;
-            if (keyState.IsKeyDown(Keys.LeftShift)) {
+            if (keyState.IsKeyDown(Keys.LeftShift)){
                 altitudeSpeed = 1;
             }
-            if (keyState.IsKeyDown(Keys.LeftControl)) {
+            if (keyState.IsKeyDown(Keys.LeftControl)){
                 altitudeSpeed = -1;
             }
             bool isTurning = false;
-            if (keyState.IsKeyDown(Keys.A)) {
+            if (keyState.IsKeyDown(Keys.A)){
                 CurTurnState = TurnState.TurningLeft;
                 isTurning = true;
             }
-            if (keyState.IsKeyDown(Keys.D)) {
+            if (keyState.IsKeyDown(Keys.D)){
                 CurTurnState = TurnState.TurningRight;
                 isTurning = true;
             }
-            if (!isTurning) {
+            if (!isTurning){
                 CurTurnState = TurnState.Stable;
             }
 
-            float engineDutyCycle = (float)_engineSpeed / 3;
+            float engineDutyCycle = (float) _engineSpeed/3;
             float altitudeDutyCycle = altitudeSpeed;
 
             int turnValue = 0;
-            switch (CurTurnState) {
+            switch (CurTurnState){
                 case TurnState.Stable:
                     turnValue = 0;
                     break;
@@ -83,10 +88,9 @@ namespace Forge.Core.Airship {
                     break;
             }
 
-            base.AngularVelocity = turnValue * base.AirshipModelData.MaxTurnSpeed;
-            base.Velocity = engineDutyCycle * base.AirshipModelData.MaxForwardSpeed;
-            base.AscentVelocity = altitudeDutyCycle * base.AirshipModelData.MaxAscentSpeed;
-
+            base.AngularVelocity = turnValue*base.AirshipModelData.MaxTurnSpeed;
+            base.Velocity = engineDutyCycle*base.AirshipModelData.MaxForwardSpeed;
+            base.AscentVelocity = altitudeDutyCycle*base.AirshipModelData.MaxAscentSpeed;
         }
     }
 }

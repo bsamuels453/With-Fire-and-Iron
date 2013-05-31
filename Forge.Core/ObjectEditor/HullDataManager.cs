@@ -1,19 +1,21 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Core.Airship;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
+using Forge.Core.Logic;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
-using Forge.Core.Logic;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
-namespace Forge.Core.ObjectEditor {
+#endregion
+
+namespace Forge.Core.ObjectEditor{
     /// <summary>
-    /// NOTICE: the next time work is done on the editor, encapsulate ObjectModelBuffer, WallIdentifiers, and WallBuffer
+    ///   NOTICE: the next time work is done on the editor, encapsulate ObjectModelBuffer, WallIdentifiers, and WallBuffer
     /// </summary>
     internal class HullDataManager : IDisposable{
         #region Delegates
@@ -25,16 +27,17 @@ namespace Forge.Core.ObjectEditor {
         public readonly Vector3 CenterPoint;
 
         public readonly float DeckHeight;
+        public readonly DeckSectionContainer DeckSectionContainer;
+        public readonly HullSectionContainer HullSectionContainer;
         public readonly int NumDecks;
+        public readonly ObjectModelBuffer<AirshipObjectIdentifier>[] ObjectBuffers;
         public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
         public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
-        public readonly ObjectModelBuffer<AirshipObjectIdentifier>[] ObjectBuffers;
         public readonly float WallResolution;
-        public readonly HullSectionContainer HullSectionContainer;
-        public readonly DeckSectionContainer DeckSectionContainer;
         int _curDeck;
+        bool _disposed;
 
-        public HullDataManager(HullGeometryInfo geometryInfo) {
+        public HullDataManager(HullGeometryInfo geometryInfo){
             NumDecks = geometryInfo.NumDecks;
             VisibleDecks = NumDecks;
             DeckSectionContainer = geometryInfo.DeckSectionContainer;
@@ -46,18 +49,18 @@ namespace Forge.Core.ObjectEditor {
 
             ObjectBuffers = new ObjectModelBuffer<AirshipObjectIdentifier>[NumDecks];
 
-            for (int i = 0; i < ObjectBuffers.Count(); i++) {
+            for (int i = 0; i < ObjectBuffers.Count(); i++){
                 ObjectBuffers[i] = new ObjectModelBuffer<AirshipObjectIdentifier>(100, "Shader_TintedModel");
             }
 
             WallBuffers = new ObjectBuffer<WallSegmentIdentifier>[NumDecks];
-            for (int i = 0; i < WallBuffers.Count(); i++) {
-                int potentialWalls = DeckSectionContainer.DeckVertexesByDeck[i].Count() * 2;
+            for (int i = 0; i < WallBuffers.Count(); i++){
+                int potentialWalls = DeckSectionContainer.DeckVertexesByDeck[i].Count()*2;
                 WallBuffers[i] = new ObjectBuffer<WallSegmentIdentifier>(potentialWalls, 10, 20, 30, "Shader_AirshipWalls");
             }
 
             WallIdentifiers = new List<WallSegmentIdentifier>[NumDecks];
-            for (int i = 0; i < WallIdentifiers.Length; i++) {
+            for (int i = 0; i < WallIdentifiers.Length; i++){
                 WallIdentifiers[i] = new List<WallSegmentIdentifier>();
             }
             CurDeck = 0;
@@ -69,9 +72,9 @@ namespace Forge.Core.ObjectEditor {
 
         public int VisibleDecks { get; private set; }
 
-        public int CurDeck {
+        public int CurDeck{
             get { return _curDeck; }
-            set {
+            set{
                 //higher curdeck means a lower deck is displayed
                 //low curdeck means higher deck displayed
                 //highest deck is 0
@@ -84,33 +87,21 @@ namespace Forge.Core.ObjectEditor {
                 CurWallIdentifiers = WallIdentifiers[_curDeck];
                 CurObjBuffer = ObjectBuffers[_curDeck];
 
-                foreach (var buffer in ObjectBuffers) {
+                foreach (var buffer in ObjectBuffers){
                     buffer.Enabled = false;
                 }
 
-                for (int i = _curDeck; i < NumDecks; i++) {
+                for (int i = _curDeck; i < NumDecks; i++){
                     ObjectBuffers[i].Enabled = true;
                 }
 
-                if (OnCurDeckChange != null) {
+                if (OnCurDeckChange != null){
                     OnCurDeckChange.Invoke(oldDeck, _curDeck);
                 }
             }
         }
 
-        public event CurDeckChanged OnCurDeckChange;
-
-        public void MoveUpOneDeck() {
-            CurDeck = HullSectionContainer.SetTopVisibleDeck(CurDeck - 1);
-            DeckSectionContainer.SetTopVisibleDeck(CurDeck);
-        }
-
-        public void MoveDownOneDeck() {
-            CurDeck = HullSectionContainer.SetTopVisibleDeck(CurDeck + 1);
-            DeckSectionContainer.SetTopVisibleDeck(CurDeck);
-        }
-
-        bool _disposed;
+        #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
@@ -123,6 +114,20 @@ namespace Forge.Core.ObjectEditor {
             DeckSectionContainer.Dispose();
             HullSectionContainer.Dispose();
             _disposed = true;
+        }
+
+        #endregion
+
+        public event CurDeckChanged OnCurDeckChange;
+
+        public void MoveUpOneDeck(){
+            CurDeck = HullSectionContainer.SetTopVisibleDeck(CurDeck - 1);
+            DeckSectionContainer.SetTopVisibleDeck(CurDeck);
+        }
+
+        public void MoveDownOneDeck(){
+            CurDeck = HullSectionContainer.SetTopVisibleDeck(CurDeck + 1);
+            DeckSectionContainer.SetTopVisibleDeck(CurDeck);
         }
 
         ~HullDataManager(){

@@ -20,6 +20,7 @@ namespace Forge.Framework.UI{
         readonly Sprite2D _sprite; //the button's sprite
         Vector2 _centPosition; //represents the approximate center of the button
         bool _enabled;
+        bool _hasMouseFocus;
         string _texture;
 
         public Vector2 CentPosition{
@@ -118,8 +119,6 @@ namespace Forge.Framework.UI{
             return _boundingBox.Contains(x, y);
         }
 
-        bool _hasMouseFocus;
-
         public List<IUIElementBase> GetElementStack(int x, int y){
             var ret = new List<IUIElementBase>(1);
             if (!Enabled){
@@ -136,7 +135,8 @@ namespace Forge.Framework.UI{
         #region ctor
 
         //xx why are these position coordinates all floats?
-        public Button(float x, float y, float width, float height, float depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
+        public Button(float x, float y, float width, float height, float depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat,
+            float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
             _identifier = identifier;
             _enabled = true;
             _iEventDispatcher = new ButtonEventDispatcher();
@@ -158,7 +158,8 @@ namespace Forge.Framework.UI{
             UIElementCollection.BoundCollection.AddElement(this);
         }
 
-        public Button(float x, float y, float width, float height, DepthLevel depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat, float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null) {
+        public Button(float x, float y, float width, float height, DepthLevel depth, string textureName, float spriteTexRepeatX = DefaultTexRepeat,
+            float spriteTexRepeatY = DefaultTexRepeat, int identifier = DefaultIdentifier, IUIComponent[] components = null){
             _identifier = identifier;
             _enabled = true;
             _iEventDispatcher = new ButtonEventDispatcher();
@@ -167,15 +168,15 @@ namespace Forge.Framework.UI{
             float fDepth = UIElementCollection.BoundCollection.GetAbsoluteDepth(depth);
 
             _boundingBox = new FloatingRectangle(x, y, width, height);
-            _sprite = new Sprite2D(textureName, (int)x, (int)y, (int)width, (int)height, fDepth, 1, spriteTexRepeatX, spriteTexRepeatY);
+            _sprite = new Sprite2D(textureName, (int) x, (int) y, (int) width, (int) height, fDepth, 1, spriteTexRepeatX, spriteTexRepeatY);
 
-            _centPosition.X = _boundingBox.X + _boundingBox.Width / 2;
-            _centPosition.Y = _boundingBox.Y + _boundingBox.Height / 2;
+            _centPosition.X = _boundingBox.X + _boundingBox.Width/2;
+            _centPosition.Y = _boundingBox.Y + _boundingBox.Height/2;
 
             Components = components;
             Alpha = 1;
-            if (Components != null) {
-                foreach (IUIComponent component in Components) {
+            if (Components != null){
+                foreach (IUIComponent component in Components){
                     component.ComponentCtor(this, _iEventDispatcher);
                 }
             }

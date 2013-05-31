@@ -21,13 +21,12 @@ namespace Forge.Framework.UI.Widgets{
             set { }
         }
 
+        public void Dispose(){
+        }
+
         #endregion
 
         public void Draw(Matrix viewMatrix){
-        }
-
-        public void Dispose(){
-            
         }
     }
 }

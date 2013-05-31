@@ -8,14 +8,13 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 
 #endregion
 
 namespace Forge.Framework{
     public static class DebugConsole{
-        static IOWrapper _wrapper;
         const int _port = 10964;
+        static IOWrapper _wrapper;
 
         public static void InitalizeConsole(){
             _wrapper = new IOWrapper();
@@ -38,7 +37,7 @@ namespace Forge.Framework{
         public static void WriteLine(string s){
             string timeStamp = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "] ";
             var line = timeStamp + s;
-            if (_wrapper.ExternConsoleEnabled) {
+            if (_wrapper.ExternConsoleEnabled){
                 try{
                     _wrapper.SendToConsole(line);
                     _wrapper.FileWriter.WriteLine(line);
@@ -54,32 +53,31 @@ namespace Forge.Framework{
             _wrapper.Dispose();
         }
 
+        #region Nested type: IOWrapper
+
         /// <summary>
-        /// this is used for hackish destructor
+        ///   this is used for hackish destructor
         /// </summary>
         internal class IOWrapper : IDisposable{
             public UdpClient Client;
-            public StreamWriter FileWriter;
-            public bool ExternConsoleEnabled;
-            public IPEndPoint Endpoint;
             public Process ConsoleProcess;
+            public IPEndPoint Endpoint;
+            public bool ExternConsoleEnabled;
+            public StreamWriter FileWriter;
             bool _disposed;
 
             public IOWrapper(){
                 _disposed = false;
             }
 
-            public void SendToConsole(string str){
-                var bytes = Encoding.ASCII.GetBytes(str);
-                Client.Send(bytes, bytes.Length, Endpoint);
-            }
+            #region IDisposable Members
 
             public void Dispose(){
-                if (ExternConsoleEnabled) {
-                    try {
+                if (ExternConsoleEnabled){
+                    try{
                         WriteLine("---------- GAME TERMINATED ----------");
                     }
-                    catch {
+                    catch{
                         int test = 5;
                     }
                     Client.Close();
@@ -88,13 +86,20 @@ namespace Forge.Framework{
                 _disposed = true;
             }
 
+            #endregion
+
+            public void SendToConsole(string str){
+                var bytes = Encoding.ASCII.GetBytes(str);
+                Client.Send(bytes, bytes.Length, Endpoint);
+            }
+
             ~IOWrapper(){
                 if (!_disposed){
                     Dispose();
                 }
             }
         }
+
+        #endregion
     }
-
-
 }

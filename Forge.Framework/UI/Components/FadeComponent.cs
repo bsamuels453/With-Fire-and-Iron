@@ -108,7 +108,8 @@ namespace Forge.Framework.UI.Components{
         /// <param name="fadeoutOpacity"> opacity level to fade out to. range 0-1f </param>
         /// <param name="fadeDuration"> the time it takes for sprite to fade out in milliseconds </param>
         /// <param name="identifier"> </param>
-        public FadeComponent(FadeState defaultState, FadeTrigger trigger = DefaultTrigger, float fadeoutOpacity = DefaultFadeoutOpacity, float fadeDuration = DefaultFadeDuration, string identifier = ""){
+        public FadeComponent(FadeState defaultState, FadeTrigger trigger = DefaultTrigger, float fadeoutOpacity = DefaultFadeoutOpacity,
+            float fadeDuration = DefaultFadeDuration, string identifier = ""){
             _fadeoutOpacity = fadeoutOpacity;
             _fadeDuration = fadeDuration*10000; //10k ticks in a millisecond
             _isInTransition = false;
@@ -225,12 +226,14 @@ namespace Forge.Framework.UI.Components{
                     var e1 = (IUIInteractiveElement) element1;
                     var e2 = (IUIInteractiveElement) element2;
 
-                    e1.GetComponent<FadeComponent>().AddRecievingFadeComponent(
-                        e2.GetComponent<FadeComponent>()
+                    e1.GetComponent<FadeComponent>().AddRecievingFadeComponent
+                        (
+                            e2.GetComponent<FadeComponent>()
                         );
 
-                    e2.GetComponent<FadeComponent>().AddRecievingFadeComponent(
-                        e1.GetComponent<FadeComponent>()
+                    e2.GetComponent<FadeComponent>().AddRecievingFadeComponent
+                        (
+                            e1.GetComponent<FadeComponent>()
                         );
 
                     break;
@@ -258,8 +261,9 @@ namespace Forge.Framework.UI.Components{
                     var e1 = (IUIInteractiveElement) eventProcElement;
 
 
-                    e1.GetComponent<FadeComponent>().AddRecievingFadeComponent(
-                        eventRecieveElement.GetComponent<FadeComponent>()
+                    e1.GetComponent<FadeComponent>().AddRecievingFadeComponent
+                        (
+                            eventRecieveElement.GetComponent<FadeComponent>()
                         );
 
                     break;
@@ -282,8 +286,9 @@ namespace Forge.Framework.UI.Components{
                         foreach (var eElement in eventRecieveElements){
                             var procElement = (IUIInteractiveElement) pElement;
 
-                            procElement.GetComponent<FadeComponent>().AddRecievingFadeComponent(
-                                eElement.GetComponent<FadeComponent>()
+                            procElement.GetComponent<FadeComponent>().AddRecievingFadeComponent
+                                (
+                                    eElement.GetComponent<FadeComponent>()
                                 );
                         }
                     }

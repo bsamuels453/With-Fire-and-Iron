@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Forge.Framework.Resources{
     /// <summary>
-    /// Used to wrap OpenCL script loading, compiling, and saving.
+    ///   Used to wrap OpenCL script loading, compiling, and saving.
     /// </summary>
     internal class OpenCLScriptLoader : ResourceLoader{
         readonly List<ComputeDevice> _devices;
@@ -73,9 +73,19 @@ namespace Forge.Framework.Resources{
         }
 
         /// <summary>
-        /// Saves md5 to the //Data//Hashes.json file under the Scripts category.
+        ///   The context in which openCL scripts will be run.
         /// </summary>
-        /// <param name="md5"></param>
+        public ComputeContext ComputeContext { get; private set; }
+
+        /// <summary>
+        ///   The queue of commands for the context to execute.
+        /// </summary>
+        public ComputeCommandQueue CommandQueue { get; private set; }
+
+        /// <summary>
+        ///   Saves md5 to the //Data//Hashes.json file under the Scripts category.
+        /// </summary>
+        /// <param name="md5"> </param>
         public static void SaveMD5(string md5){
             var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
             var jobj = JObject.Parse(sr.ReadToEnd());
@@ -89,23 +99,13 @@ namespace Forge.Framework.Resources{
         }
 
         /// <summary>
-        ///   The context in which openCL scripts will be run.
+        ///   Returns an OpenCL script that was compiled/loaded at the start of the program.
         /// </summary>
-        public ComputeContext ComputeContext { get; private set; }
-
-        /// <summary>
-        ///   The queue of commands for the context to execute.
-        /// </summary>
-        public ComputeCommandQueue CommandQueue { get; private set; }
-
-        /// <summary>
-        /// Returns an OpenCL script that was compiled/loaded at the start of the program.
-        /// </summary>
-        /// <param name="fileName">The relative file location of the script.</param>
-        /// <returns></returns>
+        /// <param name="fileName"> The relative file location of the script. </param>
+        /// <returns> </returns>
         public ComputeProgram LoadOpenclScript(string fileName){
             var scriptEnumerable = from s in _scripts where s.SrcFileInfo.RelativeFileLocation.Equals(fileName) select s;
-            var script = scriptEnumerable.Single();//defensive precaution
+            var script = scriptEnumerable.Single(); //defensive precaution
             return script.Program;
         }
 

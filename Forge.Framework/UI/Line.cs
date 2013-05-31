@@ -116,7 +116,8 @@ namespace Forge.Framework.UI{
 
         #region ctor
 
-        public Line(RenderTarget target, Vector2 v1, Vector2 v2, Color color, DepthLevel depth, int identifier = DefaultIdentifier, IUIComponent[] components = null){
+        public Line(RenderTarget target, Vector2 v1, Vector2 v2, Color color, DepthLevel depth, int identifier = DefaultIdentifier,
+            IUIComponent[] components = null){
             _lineSprite = new Line2D(this, color);
             _point1 = v1;
             _point2 = v2;
@@ -202,15 +203,15 @@ namespace Forge.Framework.UI{
             }
         }
 
+        public void UpdateInput(ref InputState state){
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         public void Dispose(){
             Sprite.Dispose();
             _lineSprite.Dispose();
-        }
-
-        public void UpdateInput(ref InputState state){
-            throw new NotImplementedException();
         }
     }
 
@@ -278,7 +279,8 @@ namespace Forge.Framework.UI{
             else
                 identifier = Button.DefaultIdentifier;
 
-            return new Line(
+            return new Line
+                (
                 Target,
                 (Vector2) V1,
                 (Vector2) V2,

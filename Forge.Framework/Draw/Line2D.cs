@@ -28,16 +28,17 @@ namespace Forge.Framework.Draw{
         #region IDrawableSprite Members
 
         public void Draw(){
-            RenderTarget.CurSpriteBatch.Draw(
-                _texture,
-                _parent.OriginPoint,
-                null,
-                Color.White*_parent.Alpha,
-                _parent.Angle,
-                Vector2.Zero,
-                new Vector2(_parent.Length, _parent.LineWidth),
-                SpriteEffects.None,
-                _parent.Depth
+            RenderTarget.CurSpriteBatch.Draw
+                (
+                    _texture,
+                    _parent.OriginPoint,
+                    null,
+                    Color.White*_parent.Alpha,
+                    _parent.Angle,
+                    Vector2.Zero,
+                    new Vector2(_parent.Length, _parent.LineWidth),
+                    SpriteEffects.None,
+                    _parent.Depth
                 );
         }
 

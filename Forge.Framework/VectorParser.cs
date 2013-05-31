@@ -27,7 +27,8 @@ namespace Forge.Framework{
             var split = s.Split(',');
             Debug.Assert(split.Count() == 4);
 
-            Vector4 v = new Vector4(
+            Vector4 v = new Vector4
+                (
                 float.Parse(split[0]),
                 float.Parse(split[1]),
                 float.Parse(split[2]),
@@ -40,7 +41,8 @@ namespace Forge.Framework{
             var split = s.Split(',');
             Debug.Assert(split.Count() == 3);
 
-            Vector3 v = new Vector3(
+            Vector3 v = new Vector3
+                (
                 float.Parse(split[0]),
                 float.Parse(split[1]),
                 float.Parse(split[2])

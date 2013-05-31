@@ -1,5 +1,4 @@
-﻿
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -7,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Cloo;
-using Forge.Framework;
 using Forge.Core.Util;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
@@ -44,12 +42,11 @@ namespace Forge.Core.Terrain{
         readonly ComputeProgram _winderPrgm;
 
         public TerrainGen(){
-
-
             _context = Resource.CLContext;
             _cmdQueue = Resource.CLQueue;
 
             #region setup generator kernel
+
             _chunkWidthInBlocks = Resource.LoadConfig<int>("TerrainGen_ChunkWidthInBlocks");
             _chunkWidthInVerts = _chunkWidthInBlocks + 1;
             _blockWidth = Resource.LoadConfig<int>("TerrainGen_BlockWidthInMeters");
@@ -81,7 +78,7 @@ namespace Forge.Core.Terrain{
             //despite the script using float3 for these fields, we need to consider it to be float4 because the 
             //implementation is basically a float4 wrapper that uses zero for the last variable
             _geometry = new ComputeBuffer<float>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
-            _normals = new ComputeBuffer<ushort>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts * _chunkWidthInVerts * 4);
+            _normals = new ComputeBuffer<ushort>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
             _binormals = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
             _tangents = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*4);
             _uvCoords = new ComputeBuffer<float>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts*2);
@@ -99,6 +96,7 @@ namespace Forge.Core.Terrain{
             #endregion
 
             #region setup quadtree kernel
+
             _qTreePrgm = Resource.LoadCLScript("\\Scripts\\Quadtree.cl");
 
             _qTreeKernel = _qTreePrgm.CreateKernel("QuadTree");
@@ -107,7 +105,7 @@ namespace Forge.Core.Terrain{
             _activeVerts = new ComputeBuffer<byte>(_context, ComputeMemoryFlags.None, _chunkWidthInVerts*_chunkWidthInVerts);
 
             _dummy = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, 50);
-            var rawNormals = new ushort[_chunkWidthInVerts * _chunkWidthInVerts * 4];
+            var rawNormals = new ushort[_chunkWidthInVerts*_chunkWidthInVerts*4];
             _emptyVerts = new byte[_chunkWidthInVerts*_chunkWidthInVerts];
             for (int i = 0; i < _emptyVerts.Length; i++){
                 _emptyVerts[i] = 1;
@@ -128,6 +126,7 @@ namespace Forge.Core.Terrain{
             #endregion
 
             #region setup winding kernel
+
             _winderPrgm = Resource.LoadCLScript("\\Scripts\\VertexWinder.cl");
 
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
@@ -152,7 +151,7 @@ namespace Forge.Core.Terrain{
             int offsetZ = id.Z*_blockWidth*(_chunkWidthInBlocks);
 
             var rawGeometry = new float[_chunkWidthInVerts*_chunkWidthInVerts*4];
-            var rawNormals = new ushort[_chunkWidthInVerts * _chunkWidthInVerts * 4];
+            var rawNormals = new ushort[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawBinormals = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawTangents = new byte[_chunkWidthInVerts*_chunkWidthInVerts*4];
             var rawUVCoords = new float[_chunkWidthInVerts*_chunkWidthInVerts*2];
@@ -237,8 +236,9 @@ namespace Forge.Core.Terrain{
                 int srcIdx = 0;
                 srcIdx < rawVertexes.Length;
                 srcIdx
-                += 2){
-                outVertexes[destIdx] = new Vector2(
+                    += 2){
+                outVertexes[destIdx] = new Vector2
+                    (
                     rawVertexes[srcIdx],
                     rawVertexes[srcIdx + 1]);
 
@@ -254,8 +254,9 @@ namespace Forge.Core.Terrain{
                 int srcIdx = 0;
                 srcIdx < rawVertexes.Length;
                 srcIdx
-                += 4){
-                outVertexes[destIdx] = new Vector3(
+                    += 4){
+                outVertexes[destIdx] = new Vector3
+                    (
                     rawVertexes[srcIdx],
                     rawVertexes[srcIdx + 1],
                     rawVertexes[srcIdx + 2]);
@@ -315,15 +316,15 @@ namespace Forge.Core.Terrain{
             //there will be missing indexes because of the culling
 
             var indicieMap = new Dictionary<int, int>(indicies.Count);
-            for (int i = 0; i < activeNodes.Length; i++) {
-                if (activeNodes[i] == 1) {
+            for (int i = 0; i < activeNodes.Length; i++){
+                if (activeNodes[i] == 1){
                     indicieMap.Add(i, indicieMap.Count);
                 }
             }
 
             var vertexList = new List<VertexPositionTexture>();
             reparsedIndicies = new int[indicies.Count];
-            for(int i=0; i<indicies.Count; i++){
+            for (int i = 0; i < indicies.Count; i++){
                 reparsedIndicies[i] = indicieMap[indicies[i]];
             }
 

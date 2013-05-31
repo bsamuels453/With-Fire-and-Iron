@@ -1,40 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using Forge.Core.Airship;
-using Forge.Core.Airship.Data;
+﻿#region
+
 using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
-using Forge.Core.Logic;
 using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
-using ProtoBuf;
 
-namespace Forge.Core.GameState {
-    class PrimaryGameMode : IGameState{
+#endregion
+
+namespace Forge.Core.GameState{
+    internal class PrimaryGameMode : IGameState{
+        readonly Airship.Airship _airship;
         readonly BodyCenteredCamera _cameraController;
-        Airship.Airship _airship;
 
-        Button[] _highlightMasks;
+        readonly Button _deckDownButton;
+        readonly Button _deckUpButton;
+        readonly Button[] _highlightMasks;
+        readonly RenderTarget _renderTarget;
+
+        readonly TerrainUpdater _terrainUpdater;
+
+        readonly UIElementCollection _uiElementCollection;
         Button _speedIndicator;
-
-        Button _deckUpButton;
-        Button _deckDownButton;
-
-        TerrainUpdater _terrainUpdater;
-
-        UIElementCollection _uiElementCollection;
-        RenderTarget _renderTarget;
 
         public PrimaryGameMode(){
             _uiElementCollection = new UIElementCollection();
             _uiElementCollection.Bind();
             _renderTarget = new RenderTarget();
             _renderTarget.Bind();
-            
+
             _terrainUpdater = new TerrainUpdater();
 
             _airship = AirshipPackager.ImportFromProtocol("ExportedAirship.protocol");
@@ -65,7 +61,7 @@ namespace Forge.Core.GameState {
 
             _highlightMasks = new Button[6];
             for (int i = 0; i < 6; i++){
-                buttonGen.Y = height * i + yPos;
+                buttonGen.Y = height*i + yPos;
                 _highlightMasks[i] = buttonGen.GenerateButton();
                 _highlightMasks[i].Alpha = 0.65f;
             }
@@ -85,14 +81,16 @@ namespace Forge.Core.GameState {
             _uiElementCollection.Unbind();
         }
 
-        public void Update(InputState state, double timeDelta) {
+        #region IGameState Members
+
+        public void Update(InputState state, double timeDelta){
             _uiElementCollection.UpdateInput(ref state);
             _uiElementCollection.UpdateLogic(timeDelta);
             _airship.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_airship.Position);
             _cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int)((_airship.Velocity / _airship.ModelAttributes.MaxForwardSpeed) * 3);
+            int incremental = (int) ((_airship.Velocity/_airship.ModelAttributes.MaxForwardSpeed)*3);
 
             int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
@@ -106,10 +104,12 @@ namespace Forge.Core.GameState {
             _renderTarget.Draw(_cameraController.ViewMatrix, Color.Transparent);
         }
 
-        public void Dispose() {
+        public void Dispose(){
             _airship.Dispose();
             _terrainUpdater.Dispose();
             _renderTarget.Dispose();
         }
+
+        #endregion
     }
 }

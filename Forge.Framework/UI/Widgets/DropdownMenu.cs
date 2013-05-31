@@ -1,24 +1,25 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Microsoft.Xna.Framework;
 using Rectangle = MonoGameUtility.Rectangle;
 
-namespace Forge.Framework.UI.Widgets {
-    public class DropdownMenu : IUIElementBase{
-        public event Action<string> OnOptionSelected;
+#endregion
 
+namespace Forge.Framework.UI.Widgets{
+    public class DropdownMenu : IUIElementBase{
         //readonly Button _dropdownBG;
         readonly Button _dropdownButton;
-        readonly Button _dropdownTopElem;
-        readonly TextBox _selectedText;
 
         readonly List<Button> _dropdownHighlights;
         readonly List<TextBox> _dropdownText;
-        Rectangle _strayMouseBounds;
+        readonly Button _dropdownTopElem;
 
         readonly string[] _options;
+        readonly TextBox _selectedText;
+        Rectangle _strayMouseBounds;
 
         bool _submenuVisible;
 
@@ -30,11 +31,12 @@ namespace Forge.Framework.UI.Widgets {
             const string dropdownParentButTex = "Materials/DarkTextBoxMid";
             const string dropdownBGTex = "Materials/TextBoxMid";
             _options = options;
-            _strayMouseBounds = new Rectangle(
+            _strayMouseBounds = new Rectangle
+                (
                 x - 25,
                 y - 25,
                 width + 60,
-                baseHeight * options.Length + baseHeight + 50
+                baseHeight*options.Length + baseHeight + 50
                 );
 
             #region generate top
@@ -72,7 +74,8 @@ namespace Forge.Framework.UI.Widgets {
             buttonGen.TextureName = dropdownBGTex;
             buttonGen.X = x;
 
-            _selectedText = new TextBox(
+            _selectedText = new TextBox
+                (
                 x + 1,
                 y + 1,
                 DepthLevel.Highlight,
@@ -89,19 +92,22 @@ namespace Forge.Framework.UI.Widgets {
             _dropdownHighlights = new List<Button>(options.Length);
             int id = 0;
             foreach (var option in options){
-                _dropdownText.Add(new TextBox(
-                    x + 1,
-                    yPos + 1,
-                    DepthLevel.Highlight,
-                    Color.Black
-                    ));
+                _dropdownText.Add
+                    (new TextBox
+                        (
+                        x + 1,
+                        yPos + 1,
+                        DepthLevel.Highlight,
+                        Color.Black
+                        ));
                 _dropdownText.Last().SetText(option);
 
                 buttonGen.Identifier = id;
                 buttonGen.Y = yPos;
                 buttonGen.Identifier = id;
-                _dropdownHighlights.Add(
-                    buttonGen.GenerateButton());
+                _dropdownHighlights.Add
+                    (
+                        buttonGen.GenerateButton());
 
                 _dropdownHighlights.Last().OnLeftClickDispatcher += OnSelectionMade;
                 _dropdownHighlights.Last().Enabled = false;
@@ -115,34 +121,7 @@ namespace Forge.Framework.UI.Widgets {
             UIElementCollection.BoundCollection.AddElement(this);
         }
 
-        void OnSelectionMade(int identifier){
-            HideSubmenu();
-            _selectedText.SetText(_options[identifier]);
-
-            if (OnOptionSelected != null){
-                OnOptionSelected.Invoke(_options[identifier]);
-            }
-        }
-
-        void ShowSubmenu(){
-            foreach (var button in _dropdownHighlights){
-                button.Enabled = true;
-            }
-            foreach (var textBox in _dropdownText){
-                textBox.Enabled = true;
-            }
-            _submenuVisible = true;
-        }
-
-        void HideSubmenu(){
-            foreach (var button in _dropdownHighlights) {
-                button.Enabled = false;
-            }
-            foreach (var textBox in _dropdownText) {
-                textBox.Enabled = false;
-            }
-            _submenuVisible = false;
-        }
+        #region IUIElementBase Members
 
         public void UpdateLogic(double timeDelta){
             //throw new NotImplementedException();
@@ -192,6 +171,39 @@ namespace Forge.Framework.UI.Widgets {
 
         public List<IUIElementBase> GetElementStack(int x, int y){
             return new List<IUIElementBase>();
+        }
+
+        #endregion
+
+        public event Action<string> OnOptionSelected;
+
+        void OnSelectionMade(int identifier){
+            HideSubmenu();
+            _selectedText.SetText(_options[identifier]);
+
+            if (OnOptionSelected != null){
+                OnOptionSelected.Invoke(_options[identifier]);
+            }
+        }
+
+        void ShowSubmenu(){
+            foreach (var button in _dropdownHighlights){
+                button.Enabled = true;
+            }
+            foreach (var textBox in _dropdownText){
+                textBox.Enabled = true;
+            }
+            _submenuVisible = true;
+        }
+
+        void HideSubmenu(){
+            foreach (var button in _dropdownHighlights){
+                button.Enabled = false;
+            }
+            foreach (var textBox in _dropdownText){
+                textBox.Enabled = false;
+            }
+            _submenuVisible = false;
         }
     }
 }

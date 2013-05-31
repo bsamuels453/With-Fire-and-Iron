@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region
 
-namespace Forge.Framework.UI {
+using System.Collections.Generic;
+
+#endregion
+
+namespace Forge.Framework.UI{
     public interface IUIElementBase : ILogicUpdates, IInputUpdates{
         float X { get; set; }
         float Y { get; set; }
@@ -12,6 +13,6 @@ namespace Forge.Framework.UI {
         float Alpha { get; set; }
         float Depth { get; set; }
         bool HitTest(int x, int y);
-        List<IUIElementBase> GetElementStack(int x, int y); 
+        List<IUIElementBase> GetElementStack(int x, int y);
     }
 }

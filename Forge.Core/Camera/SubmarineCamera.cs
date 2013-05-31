@@ -1,9 +1,8 @@
 ﻿#region
 
 using System;
-using Forge.Core.Logic;
-using Forge.Framework;
 using Forge.Core.Util;
+using Forge.Framework;
 using MonoGameUtility;
 
 #endregion

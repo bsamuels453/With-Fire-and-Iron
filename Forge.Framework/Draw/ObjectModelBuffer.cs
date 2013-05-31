@@ -173,8 +173,8 @@ namespace Forge.Framework.Draw{
             public readonly IEquatable<T> Identifier;
             public readonly Model Model;
             public readonly int ObjectOffset;
-            public Matrix Transform;
             public bool Enabled;
+            public Matrix Transform;
 
             public ObjectData(IEquatable<T> identifier, int objectOffset, Matrix transform, Model model){
                 Enabled = true;

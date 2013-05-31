@@ -24,12 +24,12 @@ namespace Forge.Framework.Resources{
 
         #endregion
 
-        public static GraphicsDevice Device { get; private set; }
         static ContentManager _contentManager;
         static Dictionary<string, string> _configLookup;
         public static Matrix ProjectionMatrix;
         public static ScreenSize ScreenSize;
         static OpenCLScriptLoader _openCLScriptLoader;
+        public static GraphicsDevice Device { get; private set; }
 
         public static void Initialize(ContentManager content, GraphicsDevice device){
             Device = device;
@@ -69,26 +69,25 @@ namespace Forge.Framework.Resources{
                         }
                     }
                 }
-
             }
         }
 
         /// <summary>
-        /// Loads content straight from XNA's contentManager.
+        ///   Loads content straight from XNA's contentManager.
         /// </summary>
-        /// <typeparam name="T">The type of the content to be returned.</typeparam>
-        /// <param name="identifier">The name of the content to be loaded. Be sure to include subfolders, if relevant./</param>
-        /// <returns></returns>
+        /// <typeparam name="T"> The type of the content to be returned. </typeparam>
+        /// <param name="identifier"> The name of the content to be loaded. Be sure to include subfolders, if relevant./ </param>
+        /// <returns> </returns>
         public static T LoadContent<T>(string identifier){
             return _contentManager.Load<T>(identifier);
         }
 
         /// <summary>
-        /// Load a config value.
+        ///   Load a config value.
         /// </summary>
-        /// <typeparam name="T">The type of the configuration value.</typeparam>
-        /// <param name="identifier">The config value's identifier, including the specified InternalAbbreviation.</param>
-        /// <returns></returns>
+        /// <typeparam name="T"> The type of the configuration value. </typeparam>
+        /// <param name="identifier"> The config value's identifier, including the specified InternalAbbreviation. </param>
+        /// <returns> </returns>
         public static T LoadConfig<T>(string identifier){
             var configValue = _configLookup[identifier];
             T obj;
@@ -104,10 +103,10 @@ namespace Forge.Framework.Resources{
         }
 
         /// <summary>
-        /// Loads the specified shader into the effect parameter.
+        ///   Loads the specified shader into the effect parameter.
         /// </summary>
-        /// <param name="shaderName">The shader's alias, as specified by the InternalAbbreviation of the shader's config file.</param>
-        /// <param name="effect">The loaded effect. New effects are cloned to prevent dupe issues.</param>
+        /// <param name="shaderName"> The shader's alias, as specified by the InternalAbbreviation of the shader's config file. </param>
+        /// <param name="effect"> The loaded effect. New effects are cloned to prevent dupe issues. </param>
         public static void LoadShader(string shaderName, out Effect effect){
             effect = null;
             var configs = new List<string>();
@@ -189,28 +188,30 @@ namespace Forge.Framework.Resources{
         }
 
         #region opencl
+
         /// <summary>
-        /// Returns the program-wide OpenCL context.
+        ///   Returns the program-wide OpenCL context.
         /// </summary>
         public static ComputeContext CLContext{
             get { return _openCLScriptLoader.ComputeContext; }
         }
 
         /// <summary>
-        /// Returns the program-wide OpenCL command queue.
+        ///   Returns the program-wide OpenCL command queue.
         /// </summary>
         public static ComputeCommandQueue CLQueue{
             get { return _openCLScriptLoader.CommandQueue; }
         }
 
         /// <summary>
-        /// Load an OpenCL script.
+        ///   Load an OpenCL script.
         /// </summary>
-        /// <param name="scriptName">The filename of the script, relative to the binary's directory. Example Path: \\Scripts\\Quadtree.cl</param>
-        /// <returns>Compiled ComputeProgram of the script.</returns>
+        /// <param name="scriptName"> The filename of the script, relative to the binary's directory. Example Path: \\Scripts\\Quadtree.cl </param>
+        /// <returns> Compiled ComputeProgram of the script. </returns>
         public static ComputeProgram LoadCLScript(string scriptName){
             return _openCLScriptLoader.LoadOpenclScript(scriptName);
         }
+
         #endregion
 
         /*

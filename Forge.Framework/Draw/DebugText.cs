@@ -1,24 +1,25 @@
-﻿using System;
+﻿#region
+
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Forge.Framework.UI;
 using Forge.Framework.UI.Widgets;
 using Microsoft.Xna.Framework;
 
-namespace Forge.Framework.Draw {
-    public static class DebugText {
+#endregion
+
+namespace Forge.Framework.Draw{
+    public static class DebugText{
         static readonly Dictionary<string, TextBox> _text;
 
         static DebugText(){
             _text = new Dictionary<string, TextBox>();
         }
 
-        static public void CreateText(string id, int x, int y){
-            _text.Add(id, new TextBox(x,y,DepthLevel.High, Color.Black));
+        public static void CreateText(string id, int x, int y){
+            _text.Add(id, new TextBox(x, y, DepthLevel.High, Color.Black));
         }
 
-        static public void SetText(string id, string text){
+        public static void SetText(string id, string text){
             _text[id].SetText(text);
         }
     }

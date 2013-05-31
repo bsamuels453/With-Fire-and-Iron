@@ -61,18 +61,25 @@ namespace Forge.Framework.UI.Components{
 
         #endregion
 
+        #region IAcceptMouseEntryEvent Members
 
-        public void OnMouseEntry(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
-            if (Enabled) {
+        public void OnMouseEntry(ref bool allowInterpretation, Point mousePos, Point prevMousePos){
+            if (Enabled){
                 ProcHighlight();
             }
         }
 
-        public void OnMouseExit(ref bool allowInterpretation, Point mousePos, Point prevMousePos) {
-            if (Enabled) {
+        #endregion
+
+        #region IAcceptMouseExitEvent Members
+
+        public void OnMouseExit(ref bool allowInterpretation, Point mousePos, Point prevMousePos){
+            if (Enabled){
                 UnprocHighlight();
             }
         }
+
+        #endregion
 
         #region IUIComponent Members
 
@@ -92,7 +99,7 @@ namespace Forge.Framework.UI.Components{
                 var dcomponent = _owner.GetComponent<DraggableComponent>();
                 dcomponent.DragMovementDispatcher += OnOwnerDrag;
             }
-            
+
             switch (_highlightTrigger){
                 case HighlightTrigger.MouseEntryExit:
                     ownerEventDispatcher.OnMouseExit.Add(this);
@@ -108,7 +115,8 @@ namespace Forge.Framework.UI.Components{
             }
 
             //create sprite
-            _highlightSprite = new Sprite2D(_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, _owner.Depth - 0.000001f, 0);
+            _highlightSprite = new Sprite2D
+                (_highlightTexture, (int) _owner.X, (int) _owner.Y, (int) _owner.Width, (int) _owner.Height, _owner.Depth - 0.000001f, 0);
         }
 
         public void Update(){

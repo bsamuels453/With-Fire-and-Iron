@@ -1,6 +1,7 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
@@ -8,22 +9,24 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Vector2 = MonoGameUtility.Vector2;
 
-namespace Forge.Framework.UI.Widgets {
-    public class TextBox : IDrawableSprite {
-        public readonly SpriteFont Font;
-        public bool Enabled;
-        readonly int _maxLines;
-        readonly int _width;
-        readonly Vector2 _position;
-        readonly float _absoluteDepth;
-        readonly Color _fontColor;
-        readonly StringBuilder _builder;
+#endregion
 
-        public TextBox(int x, int y, DepthLevel depth, Color fontColor, int width=999999, string font = "Fonts/Monospace10", int maxLines = 99999999) {
-            try {
+namespace Forge.Framework.UI.Widgets{
+    public class TextBox : IDrawableSprite{
+        public readonly SpriteFont Font;
+        readonly float _absoluteDepth;
+        readonly StringBuilder _builder;
+        readonly Color _fontColor;
+        readonly int _maxLines;
+        readonly Vector2 _position;
+        readonly int _width;
+        public bool Enabled;
+
+        public TextBox(int x, int y, DepthLevel depth, Color fontColor, int width = 999999, string font = "Fonts/Monospace10", int maxLines = 99999999){
+            try{
                 Font = Resource.LoadContent<SpriteFont>(font);
             }
-            catch {
+            catch{
                 //Font = Resource.ContentManager.Load<SpriteFont>(font);
             }
             _absoluteDepth = UIElementCollection.BoundCollection.GetAbsoluteDepth(depth);
@@ -36,6 +39,40 @@ namespace Forge.Framework.UI.Widgets {
             RenderTarget.Sprites.Add(this);
         }
 
+        #region IDrawableSprite Members
+
+        public Texture2D Texture{
+            get { throw new NotImplementedException(); }
+            set { throw new NotImplementedException(); }
+        }
+
+        public void Draw(){
+            if (Enabled){
+                RenderTarget.CurSpriteBatch.DrawString
+                    (
+                        Font,
+                        _builder,
+                        _position,
+                        _fontColor,
+                        0,
+                        Vector2.Zero,
+                        1,
+                        SpriteEffects.None,
+                        _absoluteDepth
+                    );
+            }
+        }
+
+        public void SetTextureFromString(string textureName){
+            throw new NotImplementedException();
+        }
+
+        public void Dispose(){
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
         public void SetText(string text){
             var lines = new List<string>();
             var splitText = text.Split(' ');
@@ -47,19 +84,19 @@ namespace Forge.Framework.UI.Widgets {
                 return;
             }
 
-            Func<int, int, string> genPhrase = (s,e) => {
-                string p = "";
-                for (int i = s; i < e; i++) {
-                    p += splitText[i] + ' ';
-                }
-                p = p.TrimEnd(' ');
-                return p;
-            };
+            Func<int, int, string> genPhrase = (s, e) =>{
+                                                   string p = "";
+                                                   for (int i = s; i < e; i++){
+                                                       p += splitText[i] + ' ';
+                                                   }
+                                                   p = p.TrimEnd(' ');
+                                                   return p;
+                                               };
 
-            while (end <= splitText.Length) {
-                string phrase = genPhrase(start,end);
+            while (end <= splitText.Length){
+                string phrase = genPhrase(start, end);
 
-                if (Font.MeasureString(phrase).X > _width) {
+                if (Font.MeasureString(phrase).X > _width){
                     phrase = genPhrase(start, end - 1);
                     lines.Add(phrase);
                     start = end - 1;
@@ -79,35 +116,6 @@ namespace Forge.Framework.UI.Widgets {
                     break;
                 _builder.AppendLine(line);
             }
-        }
-
-        public Texture2D Texture{
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
-        }
-
-        public void Draw(){
-            if (Enabled){
-                RenderTarget.CurSpriteBatch.DrawString(
-                    Font,
-                    _builder,
-                    _position,
-                    _fontColor,
-                    0,
-                    Vector2.Zero,
-                    1,
-                    SpriteEffects.None,
-                    _absoluteDepth
-                    );
-            }
-        }
-
-        public void SetTextureFromString(string textureName){
-            throw new NotImplementedException();
-        }
-
-        public void Dispose(){
-            throw new NotImplementedException();
         }
     }
 }

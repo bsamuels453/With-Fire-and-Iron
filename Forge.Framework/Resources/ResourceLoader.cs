@@ -1,22 +1,23 @@
-﻿using System;
+﻿#region
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 
-namespace Forge.Framework.Resources {
-    abstract class ResourceLoader {
+#endregion
+
+namespace Forge.Framework.Resources{
+    internal abstract class ResourceLoader{
         const int _numEstimatedDirectories = 20;
         const int _numEstimatedFiles = 50;
 
         /// <summary>
-        /// Retrieves all files within a given directly, including the files within each subfolder.
+        ///   Retrieves all files within a given directly, including the files within each subfolder.
         /// </summary>
-        /// <param name="directory">The binary-relative directory in which to search for files. Do not surround the directory name with escape characters.</param>
-        /// <returns></returns>
+        /// <param name="directory"> The binary-relative directory in which to search for files. Do not surround the directory name with escape characters. </param>
+        /// <returns> </returns>
         protected List<FileAttributes> GetAllFilesInDirectory(string directory){
-            var rawDir = (string)directory.Clone();
+            var rawDir = (string) directory.Clone();
             directory = "\\" + directory + "\\";
 
             var directoriesToSearchForFiles = new List<string>();
@@ -39,7 +40,7 @@ namespace Forge.Framework.Resources {
             foreach (var dir in directoriesToSearchForFiles){
                 var dirFiles = Directory.GetFiles(dir);
                 foreach (var file in dirFiles){
-                    int extensionSepIdx=-1;
+                    int extensionSepIdx = -1;
                     for (int i = file.Length - 1; i >= 0; i--){
                         if (file[i] == '.'){
                             extensionSepIdx = i;
@@ -60,12 +61,14 @@ namespace Forge.Framework.Resources {
                         relativeLocation += "\\" + name;
                     }
 
-                    files.Add(new FileAttributes(
-                        fileName,
-                        extension,
-                        fullLocation,
-                        relativeLocation
-                        ));
+                    files.Add
+                        (new FileAttributes
+                            (
+                            fileName,
+                            extension,
+                            fullLocation,
+                            relativeLocation
+                            ));
                 }
             }
 
@@ -73,17 +76,21 @@ namespace Forge.Framework.Resources {
             return files;
         }
 
+        #region Nested type: FileAttributes
+
         protected struct FileAttributes{
             /// <summary>
-            /// The name of the file, including extension.
-            /// </summary>
-            public readonly string Filename;
-            /// <summary>
-            /// The extension of the file.
+            ///   The extension of the file.
             /// </summary>
             public readonly string Extension;
+
             /// <summary>
-            /// The full blown file location.
+            ///   The name of the file, including extension.
+            /// </summary>
+            public readonly string Filename;
+
+            /// <summary>
+            ///   The full blown file location.
             /// </summary>
             public readonly string FullFileLocation;
 
@@ -96,5 +103,7 @@ namespace Forge.Framework.Resources {
                 RelativeFileLocation = relativeFileLocation;
             }
         }
+
+        #endregion
     }
 }

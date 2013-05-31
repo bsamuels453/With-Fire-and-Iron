@@ -1,30 +1,16 @@
-﻿using System;
+﻿#region
+
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using ProtoBuf;
 
-namespace Forge.Framework {
+#endregion
+
+namespace Forge.Framework{
     public class ProtoBuffWrappers{
-        /// <summary>
-        /// Contains references to all of the in-between structures used by the protocol buffer serializer/deserializer.
-        /// </summary>
-        /// 
-
-        #region containers
-
-        [ProtoContract]
-        public struct IntContainer{
-            [ProtoMember(1)] public int[] Ints;
-
-            public IntContainer(int[] ints){
-                Ints = ints;
-            }
-        }
-
+        #region Nested type: BoundingBoxContainer
 
         [ProtoContract]
         public struct BoundingBoxContainer{
@@ -38,6 +24,28 @@ namespace Forge.Framework {
             }
         }
 
+        #endregion
+
+        #region Nested type: IntContainer
+
+        /// <summary>
+        ///   Contains references to all of the in-between structures used by the protocol buffer serializer/deserializer.
+        /// </summary>
+
+        #region containers
+        [ProtoContract]
+        public struct IntContainer{
+            [ProtoMember(1)] public int[] Ints;
+
+            public IntContainer(int[] ints){
+                Ints = ints;
+            }
+        }
+
+        #endregion
+
+        #region Nested type: Vector3Container
+
         [ProtoContract]
         public struct Vector3Container{
             [ProtoMember(1)] public List<Vector3> Vertexes;
@@ -50,28 +58,9 @@ namespace Forge.Framework {
             }
         }
 
-        [ProtoContract]
-        public struct VertexWrapper{
-            [ProtoMember(1)] public Vector3 Position;
-            [ProtoMember(2)] public Vector3 Normal;
-            [ProtoMember(3)] public Vector2 TextureCoordinate;
+        #endregion
 
-            public static implicit operator VertexWrapper(VertexPositionNormalTexture obj){
-                var ret = new VertexWrapper();
-                ret.Position = obj.Position;
-                ret.Normal = obj.Normal;
-                ret.TextureCoordinate = obj.TextureCoordinate;
-                return ret;
-            }
-
-            public static implicit operator VertexPositionNormalTexture(VertexWrapper obj) {
-                var ret = new VertexPositionNormalTexture();
-                ret.Position = obj.Position;
-                ret.Normal = obj.Normal;
-                ret.TextureCoordinate = obj.TextureCoordinate;
-                return ret;
-            }
-        }
+        #region Nested type: VertexContainer
 
         [ProtoContract]
         public struct VertexContainer{
@@ -87,5 +76,33 @@ namespace Forge.Framework {
 
         #endregion
 
+        #region Nested type: VertexWrapper
+
+        [ProtoContract]
+        public struct VertexWrapper{
+            [ProtoMember(2)] public Vector3 Normal;
+            [ProtoMember(1)] public Vector3 Position;
+            [ProtoMember(3)] public Vector2 TextureCoordinate;
+
+            public static implicit operator VertexWrapper(VertexPositionNormalTexture obj){
+                var ret = new VertexWrapper();
+                ret.Position = obj.Position;
+                ret.Normal = obj.Normal;
+                ret.TextureCoordinate = obj.TextureCoordinate;
+                return ret;
+            }
+
+            public static implicit operator VertexPositionNormalTexture(VertexWrapper obj){
+                var ret = new VertexPositionNormalTexture();
+                ret.Position = obj.Position;
+                ret.Normal = obj.Normal;
+                ret.TextureCoordinate = obj.TextureCoordinate;
+                return ret;
+            }
+        }
+
+        #endregion
+
+        #endregion
     }
 }

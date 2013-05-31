@@ -1,70 +1,52 @@
-﻿using System;
-using System.Collections;
+﻿#region
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Forge.Core.Logic;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using ProtoBuf;
 
+#endregion
+
 namespace Forge.Core.Airship.Data{
-    class DeckSectionContainer  : IDisposable{
-        public readonly int NumDecks;
-        public int TopExpIdx { get; private set; }
+    internal class DeckSectionContainer : IDisposable{
         public readonly ObjectBuffer<AirshipObjectIdentifier>[] DeckBufferByDeck;
+        public readonly int NumDecks;
+        bool _disposed;
+
+        public DeckSectionContainer(
+            List<BoundingBox>[] deckBoundingBoxes,
+            ObjectBuffer<AirshipObjectIdentifier>[] deckBuffers,
+            List<Vector3>[] deckVerts){
+            DeckBufferByDeck = deckBuffers;
+            BoundingBoxesByDeck = deckBoundingBoxes;
+            DeckVertexesByDeck = deckVerts;
+
+            TopExpIdx = 0;
+            TopExposedDeck = DeckBufferByDeck[TopExpIdx];
+            TopExposedBoundingBoxes = BoundingBoxesByDeck[TopExpIdx];
+            TopExposedVertexes = DeckVertexesByDeck[TopExpIdx];
+
+            NumDecks = DeckBufferByDeck.Length;
+            foreach (var buff in DeckBufferByDeck){
+                Debug.Assert(buff != null);
+            }
+
+            Debug.Assert(DeckBufferByDeck.Length == BoundingBoxesByDeck.Length);
+            Debug.Assert(DeckBufferByDeck.Length == DeckVertexesByDeck.Length);
+        }
+
+        public int TopExpIdx { get; private set; }
         public ObjectBuffer<AirshipObjectIdentifier> TopExposedDeck { get; private set; }
         public List<Vector3> TopExposedVertexes { get; private set; }
         public List<BoundingBox> TopExposedBoundingBoxes { get; private set; }
         public List<BoundingBox>[] BoundingBoxesByDeck { get; private set; }
         public List<Vector3>[] DeckVertexesByDeck { get; private set; }
 
-        public DeckSectionContainer(
-            List<BoundingBox>[] deckBoundingBoxes,
-            ObjectBuffer<AirshipObjectIdentifier>[] deckBuffers, 
-            List<Vector3>[] deckVerts) {
-
-                DeckBufferByDeck = deckBuffers;
-                BoundingBoxesByDeck = deckBoundingBoxes;
-                DeckVertexesByDeck = deckVerts;
-
-                TopExpIdx = 0;
-                TopExposedDeck = DeckBufferByDeck[TopExpIdx];
-                TopExposedBoundingBoxes = BoundingBoxesByDeck[TopExpIdx];
-                TopExposedVertexes = DeckVertexesByDeck[TopExpIdx];
-
-                NumDecks = DeckBufferByDeck.Length;
-                foreach (var buff in DeckBufferByDeck) {
-                    Debug.Assert(buff != null);
-                }
-
-                Debug.Assert(DeckBufferByDeck.Length == BoundingBoxesByDeck.Length);
-                Debug.Assert(DeckBufferByDeck.Length == DeckVertexesByDeck.Length);
-        }
-
-        public int SetTopVisibleDeck(int deck) {
-            if (deck < 0 || deck >= NumDecks)
-                return TopExpIdx;
-            //Debug.Assert(deck >= 0);
-            //Debug.Assert(deck < NumDecks);
-
-            for (int i = NumDecks - 1; i >= deck; i--) {
-                DeckBufferByDeck[i].Enabled = true;
-            }
-            for (int i = deck - 1; i >= 0; i--) {
-                DeckBufferByDeck[i].Enabled = false;
-            }
-            TopExpIdx = deck;
-            TopExposedDeck = DeckBufferByDeck[TopExpIdx];
-            TopExposedBoundingBoxes = BoundingBoxesByDeck[TopExpIdx];
-            TopExposedVertexes = DeckVertexesByDeck[TopExpIdx];
-            return TopExpIdx;
-        }
-
-        bool _disposed;
+        #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
@@ -73,6 +55,27 @@ namespace Forge.Core.Airship.Data{
             }
 
             _disposed = true;
+        }
+
+        #endregion
+
+        public int SetTopVisibleDeck(int deck){
+            if (deck < 0 || deck >= NumDecks)
+                return TopExpIdx;
+            //Debug.Assert(deck >= 0);
+            //Debug.Assert(deck < NumDecks);
+
+            for (int i = NumDecks - 1; i >= deck; i--){
+                DeckBufferByDeck[i].Enabled = true;
+            }
+            for (int i = deck - 1; i >= 0; i--){
+                DeckBufferByDeck[i].Enabled = false;
+            }
+            TopExpIdx = deck;
+            TopExposedDeck = DeckBufferByDeck[TopExpIdx];
+            TopExposedBoundingBoxes = BoundingBoxesByDeck[TopExpIdx];
+            TopExposedVertexes = DeckVertexesByDeck[TopExpIdx];
+            return TopExpIdx;
         }
 
         ~DeckSectionContainer(){
@@ -90,12 +93,12 @@ namespace Forge.Core.Airship.Data{
             }
 
             DeckVertexesByDeck = new List<Vector3>[NumDecks];
-            for (int i = 0; i < NumDecks; i++) {
+            for (int i = 0; i < NumDecks; i++){
                 DeckVertexesByDeck[i] = s.DeckVertexes[i].Vertexes;
             }
 
             DeckBufferByDeck = new ObjectBuffer<AirshipObjectIdentifier>[NumDecks];
-            for (int i = 0; i < NumDecks; i++) {
+            for (int i = 0; i < NumDecks; i++){
                 DeckBufferByDeck[i] = new ObjectBuffer<AirshipObjectIdentifier>(s.DeckBuffers[i]);
             }
 
@@ -104,7 +107,7 @@ namespace Forge.Core.Airship.Data{
             TopExposedBoundingBoxes = BoundingBoxesByDeck[TopExpIdx];
             TopExposedVertexes = DeckVertexesByDeck[TopExpIdx];
 
-            foreach (var buff in DeckBufferByDeck) {
+            foreach (var buff in DeckBufferByDeck){
                 Debug.Assert(buff != null);
             }
 
@@ -112,9 +115,9 @@ namespace Forge.Core.Airship.Data{
             Debug.Assert(DeckBufferByDeck.Length == DeckVertexesByDeck.Length);
         }
 
-        public Serialized ExtractSerializationStruct() {
+        public Serialized ExtractSerializationStruct(){
             var deckBuffData = new ObjectBuffer<AirshipObjectIdentifier>.Serialized[NumDecks];
-            for (int i = 0; i < NumDecks; i++) {
+            for (int i = 0; i < NumDecks; i++){
                 deckBuffData[i] = DeckBufferByDeck[i].ExtractSerializationStruct();
             }
 
@@ -124,11 +127,12 @@ namespace Forge.Core.Airship.Data{
             for (int i = 0; i < NumDecks; i++){
                 deckVertexes[i] = new ProtoBuffWrappers.Vector3Container(DeckVertexesByDeck[i]);
             }
-            for (int i = 0; i < NumDecks; i++) {
+            for (int i = 0; i < NumDecks; i++){
                 deckBBoxes[i] = new ProtoBuffWrappers.BoundingBoxContainer(BoundingBoxesByDeck[i]);
             }
 
-            var ret = new Serialized(
+            var ret = new Serialized
+                (
                 NumDecks,
                 deckBuffData,
                 deckVertexes,
@@ -139,16 +143,13 @@ namespace Forge.Core.Airship.Data{
 
         [ProtoContract]
         public struct Serialized{
-            [ProtoMember(1)]
-            public readonly int NumDecks;
-            [ProtoMember(2)]
-            public readonly ObjectBuffer<AirshipObjectIdentifier>.Serialized[] DeckBuffers;
-            [ProtoMember(3)]
-            public readonly ProtoBuffWrappers.Vector3Container[] DeckVertexes;
-            [ProtoMember(4)]
-            public readonly ProtoBuffWrappers.BoundingBoxContainer[] DeckBoundingBoxes;
+            [ProtoMember(4)] public readonly ProtoBuffWrappers.BoundingBoxContainer[] DeckBoundingBoxes;
+            [ProtoMember(2)] public readonly ObjectBuffer<AirshipObjectIdentifier>.Serialized[] DeckBuffers;
+            [ProtoMember(3)] public readonly ProtoBuffWrappers.Vector3Container[] DeckVertexes;
+            [ProtoMember(1)] public readonly int NumDecks;
 
-            public Serialized(int numDecks, ObjectBuffer<AirshipObjectIdentifier>.Serialized[] deckBuffers, ProtoBuffWrappers.Vector3Container[] deckVertexes, ProtoBuffWrappers.BoundingBoxContainer[] deckBoundingBoxes) {
+            public Serialized(int numDecks, ObjectBuffer<AirshipObjectIdentifier>.Serialized[] deckBuffers, ProtoBuffWrappers.Vector3Container[] deckVertexes,
+                ProtoBuffWrappers.BoundingBoxContainer[] deckBoundingBoxes){
                 NumDecks = numDecks;
                 DeckBuffers = deckBuffers;
                 DeckVertexes = deckVertexes;

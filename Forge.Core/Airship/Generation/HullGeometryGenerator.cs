@@ -1,25 +1,24 @@
 ﻿#define PROFILE_AIRSHIP_GENERATION
 
+#region
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
-using Forge.Framework;
-using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Core.Util;
+using Forge.Framework;
+using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
-namespace Forge.Core.Airship.Generation {
+#endregion
+
+namespace Forge.Core.Airship.Generation{
     /// <summary>
-    /// Generates the geometry for airship hulls. This differs from PreviewRenderer in
-    /// that this class generates the geometry so that things like windows, portholes, or
-    /// other extremities can be added easily without modifying/removing much of the geometry.
-    /// In more mathematical terms, it means that the horizontal boundaries between adjacent
-    /// quads are parallel to the XZ plane. This class can also take a few seconds to do its
-    /// thing because it isnt going to be updating every tick like previewrenderer does.
+    ///   Generates the geometry for airship hulls. This differs from PreviewRenderer in that this class generates the geometry so that things like windows, portholes, or other extremities can be added easily without modifying/removing much of the geometry. In more mathematical terms, it means that the horizontal boundaries between adjacent quads are parallel to the XZ plane. This class can also take a few seconds to do its thing because it isnt going to be updating every tick like previewrenderer does.
     /// </summary>
     internal static class HullGeometryGenerator{
         const int _primHeightPerDeck = 5;
@@ -34,61 +33,66 @@ namespace Forge.Core.Airship.Generation {
             var sw = new Stopwatch();
             sw.Start();
 #endif
-            var genResults = GenerateHull(new GenerateHullParams{
-                BackCurveInfo = backCurveInfo,
-                SideCurveInfo = sideCurveInfo,
-                TopCurveInfo = topCurveInfo,
-                DeckHeight = _deckHeight,
-                BoundingBoxWidth = _bBoxWidth,
-                PrimitivesPerDeck = _primHeightPerDeck
-            }
+            var genResults = GenerateHull
+                (new GenerateHullParams{
+                    BackCurveInfo = backCurveInfo,
+                    SideCurveInfo = sideCurveInfo,
+                    TopCurveInfo = topCurveInfo,
+                    DeckHeight = _deckHeight,
+                    BoundingBoxWidth = _bBoxWidth,
+                    PrimitivesPerDeck = _primHeightPerDeck
+                }
                 );
             var normalGenResults = GenerateHullNormals(genResults.LayerSilhouetteVerts);
             var deckFloorPlates = GenerateDeckPlates(genResults.LayerSilhouetteVerts, genResults.NumDecks, _primHeightPerDeck);
             var boundingBoxResults = GenerateDeckBoundingBoxes(_bBoxWidth, deckFloorPlates);
-            var hullBuffResults = GenerateHullBuffers(
-                genResults.DeckSilhouetteVerts, 
-                normalGenResults.NormalMesh, 
-                genResults.NumDecks, 
-                genResults.Length
-            );
-            
+            var hullBuffResults = GenerateHullBuffers
+                (
+                    genResults.DeckSilhouetteVerts,
+                    normalGenResults.NormalMesh,
+                    genResults.NumDecks,
+                    genResults.Length
+                );
+
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
 
             //reflect everything around the X axis
-            foreach (var buffer in hullBuffResults.Item1) {
-                buffer.ApplyTransform((vert) => {
-                    vert.Position.X *= -1;
-                    return vert;
-                }
-                );
+            foreach (var buffer in hullBuffResults.Item1){
+                buffer.ApplyTransform
+                    ((vert) =>{
+                         vert.Position.X *= -1;
+                         return vert;
+                     }
+                    );
             }
 
-            foreach (var buffer in deckFloorBuffers) {
-                buffer.ApplyTransform((vert) => {
-                    vert.Position.X *= -1;
-                    return vert;
-                }
-                );
+            foreach (var buffer in deckFloorBuffers){
+                buffer.ApplyTransform
+                    ((vert) =>{
+                         vert.Position.X *= -1;
+                         return vert;
+                     }
+                    );
             }
 
-            var reflectionVector = new Vector3(-1,1,1);
+            var reflectionVector = new Vector3(-1, 1, 1);
             foreach (var boxArray in boundingBoxResults.DeckBoundingBoxes){
                 for (int boxIdx = 0; boxIdx < boxArray.Count; boxIdx++){
-                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min * reflectionVector, boxArray[boxIdx].Max * reflectionVector);
+                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min*reflectionVector, boxArray[boxIdx].Max*reflectionVector);
                 }
             }
             foreach (var vertArray in boundingBoxResults.DeckVertexes){
                 for (int vertIdx = 0; vertIdx < vertArray.Count; vertIdx++){
-                    vertArray[vertIdx] = vertArray[vertIdx] * reflectionVector;
+                    vertArray[vertIdx] = vertArray[vertIdx]*reflectionVector;
                 }
             }
 
             var hullSections = GenerateHullSections(hullBuffResults.Item2, hullBuffResults.Item1);
 
             var resultant = new HullGeometryInfo();
-            resultant.CenterPoint = normalGenResults.Centroid * reflectionVector;
-            resultant.DeckSectionContainer = new DeckSectionContainer(
+            resultant.CenterPoint = normalGenResults.Centroid*reflectionVector;
+            resultant.DeckSectionContainer = new DeckSectionContainer
+                (
                 boundingBoxResults.DeckBoundingBoxes,
                 deckFloorBuffers,
                 boundingBoxResults.DeckVertexes
@@ -129,9 +133,9 @@ namespace Forge.Core.Airship.Generation {
             float draft = sideCurveInfo[1].Pos.Y;
             results.Berth = topCurveInfo[1].Pos.Y;
             results.Length = sideCurveInfo[2].Pos.X;
-            results.NumDecks = (int)(draft / deckHeight) + 1;
+            results.NumDecks = (int) (draft/deckHeight) + 1;
             results.Depth = sideCurveInfo[1].Pos.Y;
-            int numVerticalVertexes = (results.NumDecks-1)*primitivesPerDeck + primitivesPerDeck + 1;
+            int numVerticalVertexes = (results.NumDecks - 1)*primitivesPerDeck + primitivesPerDeck + 1;
 
             //get the y values for the hull
             for (int i = 0; i < numVerticalVertexes - primitivesPerDeck; i++){
@@ -148,7 +152,7 @@ namespace Forge.Core.Airship.Generation {
             foreach (float t in geometryYvalues){
                 xzHullIntercepts.Add(sidePtGen.GetValuesFromDependent(t));
                 if (xzHullIntercepts.Last().Count != 2){
-                    if (xzHullIntercepts.Last().Count == 1) { //this happens at the very bottom of the ship
+                    if (xzHullIntercepts.Last().Count == 1){ //this happens at the very bottom of the ship
                         xzHullIntercepts.Last().Add(xzHullIntercepts[xzHullIntercepts.Count - 1][0]);
                     }
                     else
@@ -162,7 +166,7 @@ namespace Forge.Core.Airship.Generation {
             //this list contains slices of the airship which contain all the vertexes for the specific layer of the airship
             var ySliceVerts = new List<List<Vector3>>();
 
-            int numHorizontalPrimitives = (int)(results.Length / boundingBoxWidth + 1) / _horizontalPrimDivisor;
+            int numHorizontalPrimitives = (int) (results.Length/boundingBoxWidth + 1)/_horizontalPrimDivisor;
             if (numHorizontalPrimitives%2 != 0){
                 numHorizontalPrimitives++;
             }
@@ -317,7 +321,7 @@ namespace Forge.Core.Airship.Generation {
             return retMesh;
         }
 
-        static ObjectBuffer<AirshipObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks) {
+        static ObjectBuffer<AirshipObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks){
             float boundingBoxWidth = Math.Abs(deckBoundingBoxes[0][0].Max.X - deckBoundingBoxes[0][0].Min.X);
             Vector3 reflection = new Vector3(-1, 1, 1);
             var ret = new ObjectBuffer<AirshipObjectIdentifier>[numDecks];
@@ -357,7 +361,8 @@ namespace Forge.Core.Airship.Generation {
 
                 for (; x < length; x += boundingBoxWidth){ //yolo
 
-                    var interpolator = new Interpolate(
+                    var interpolator = new Interpolate
+                        (
                         deckSilhouette[prevVert].Z,
                         deckSilhouette[nextVert].Z,
                         deckSilhouette[nextVert].X - deckSilhouette[prevVert].X
@@ -378,7 +383,8 @@ namespace Forge.Core.Airship.Generation {
                         prevVert++;
                         nextVert++;
                         float ppx = prevX;
-                        interpolator = new Interpolate(
+                        interpolator = new Interpolate
+                            (
                             deckSilhouette[prevVert].Z,
                             deckSilhouette[nextVert].Z,
                             deckSilhouette[nextVert].X - deckSilhouette[prevVert].X
@@ -418,7 +424,7 @@ namespace Forge.Core.Airship.Generation {
                     vertli.Add(new VertexPositionNormalTexture(verts[i + 1], Vector3.Up, new Vector2(1, 0)));
                     vertli.Add(new VertexPositionNormalTexture(verts[i + 2], Vector3.Up, new Vector2(1, 1)));
                     vertli.Add(new VertexPositionNormalTexture(verts[i + 3], Vector3.Up, new Vector2(0, 1)));
-                    buff.AddObject(nullidentifier, (int[])idxWinding.Clone(), vertli.ToArray());
+                    buff.AddObject(nullidentifier, (int[]) idxWinding.Clone(), vertli.ToArray());
                     //reflect across Z axis
                     vertli.Clear();
                     var reflectVector = new Vector3(1, 1, -1);
@@ -426,7 +432,7 @@ namespace Forge.Core.Airship.Generation {
                     vertli.Add(new VertexPositionNormalTexture(verts[i + 1]*reflectVector, Vector3.Up, new Vector2(1, 0)));
                     vertli.Add(new VertexPositionNormalTexture(verts[i + 2]*reflectVector, Vector3.Up, new Vector2(1, 1)));
                     vertli.Add(new VertexPositionNormalTexture(verts[i + 3]*reflectVector, Vector3.Up, new Vector2(0, 1)));
-                    buff.AddObject(nullidentifier, (int[])idxWinding.Clone(), vertli.ToArray());
+                    buff.AddObject(nullidentifier, (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
 
                 //add boundingbox defined quads to objectbuffer
@@ -439,72 +445,109 @@ namespace Forge.Core.Airship.Generation {
                     vertli.Add(new VertexPositionNormalTexture(min + xWidth, Vector3.Up, new Vector2(1, 0)));
                     vertli.Add(new VertexPositionNormalTexture(min + xWidth + zWidth, Vector3.Up, new Vector2(1, 1)));
                     vertli.Add(new VertexPositionNormalTexture(min + zWidth, Vector3.Up, new Vector2(0, 1)));
-                    buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min * reflection), (int[])idxWinding.Clone(), vertli.ToArray());
+                    buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min*reflection), (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
             }
             return ret;
         }
 
-        static Tuple<ObjectBuffer<int>[], Dictionary<IEquatable<HullSectionIdentifier>, int>> 
-            GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length) {
-
+        static Tuple<ObjectBuffer<int>[], Dictionary<IEquatable<HullSectionIdentifier>, int>>
+            GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length){
             //first thing we do is generate a dictionary that links HullSectionIdentifier and section uid
-                int estDictSize = (int)(numDecks * _primHeightPerDeck * (length / _bBoxWidth)) * 2;
-                var hullSectionLookup = new Dictionary<IEquatable<HullSectionIdentifier>, int>(estDictSize);
-                int id = 0;
-                for (float x = 0; x < length; x+=_bBoxWidth){
-                    for (int deck = 0; deck < numDecks; deck++){
-                        for (int panel=0; panel < _primHeightPerDeck; panel++){
-                            hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Port, deck), id);
-                            id++;
-                            hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Starboard, deck), id);
-                            id++;
-                        }
+            int estDictSize = (int) (numDecks*_primHeightPerDeck*(length/_bBoxWidth))*2;
+            var hullSectionLookup = new Dictionary<IEquatable<HullSectionIdentifier>, int>(estDictSize);
+            int id = 0;
+            for (float x = 0; x < length; x += _bBoxWidth){
+                for (int deck = 0; deck < numDecks; deck++){
+                    for (int panel = 0; panel < _primHeightPerDeck; panel++){
+                        hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Port, deck), id);
+                        id++;
+                        hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Starboard, deck), id);
+                        id++;
                     }
                 }
+            }
 
             int vertsInSilhouette = deckSVerts[0][0].Length;
             var hullMeshBuffs = new ObjectBuffer<int>[numDecks];
             //now set up the display buffer for each deck's wall
             for (int i = 0; i < deckSVerts.Length; i++){
                 // ReSharper disable AccessToModifiedClosure
+
                 #region generateBuff
-                Func<int, int, List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>> generateBuff = (start, end) => {
-                    var hullMesh = new Vector3[_primHeightPerDeck + 1, vertsInSilhouette / 2];
-                    var hullNormals = new Vector3[_primHeightPerDeck + 1, vertsInSilhouette / 2];
-                    //int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
-                    VertexPositionNormalTexture[] hullVerticies = MeshHelper.CreateTexcoordedVertexList((_primHeightPerDeck) * (vertsInSilhouette / 2 - 1));
 
-                    //get the hull normals for this part of the hull from the total normals
-                    for (int x = 0; x < _primHeightPerDeck + 1; x++) {
-                        for (int z = start; z < end; z++) {
-                            hullNormals[x, z - start] = normalMesh[i * _primHeightPerDeck + x, z];
-                        }
-                    }
-                    //convert the 2d list heightmap into a 2d array heightmap
-                    //this gets hella messy because gotta subsection the 2d array
-                    var sVerts = new Vector3[deckSVerts[i].Length][];
-                    for (int j = 0; j < deckSVerts[i].Length; j++){
-                        sVerts[j] = new Vector3[end-start];
-                        for (int k = start; k < end; k++){
-                            sVerts[j][k - start] = deckSVerts[i][j][k];
-                        }
-                    }
+                Func<int, int, List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>> generateBuff = (start, end) =>{
+                                                                                                                            var hullMesh =
+                                                                                                                                new Vector3[
+                                                                                                                                    _primHeightPerDeck + 1,
+                                                                                                                                    vertsInSilhouette/2];
+                                                                                                                            var hullNormals =
+                                                                                                                                new Vector3[
+                                                                                                                                    _primHeightPerDeck + 1,
+                                                                                                                                    vertsInSilhouette/2];
+                                                                                                                            //int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
+                                                                                                                            VertexPositionNormalTexture[]
+                                                                                                                                hullVerticies =
+                                                                                                                                    MeshHelper.
+                                                                                                                                        CreateTexcoordedVertexList
+                                                                                                                                        ((_primHeightPerDeck)*
+                                                                                                                                            (vertsInSilhouette/2 -
+                                                                                                                                                1));
 
-                    MeshHelper.Encode2DListIntoArray(_primHeightPerDeck + 1, (vertsInSilhouette / 2), ref hullMesh, sVerts);
-                    //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
-                    MeshHelper.ConvertMeshToVertList(hullMesh, hullNormals, ref hullVerticies);
-                    if (i != deckSVerts.Length) {
-                        return HullSplitter.SplitLayerGeometry(0.5f, hullVerticies, i);
-                    }
-                    return null;
-                };
+                                                                                                                            //get the hull normals for this part of the hull from the total normals
+                                                                                                                            for (int x = 0;
+                                                                                                                                x < _primHeightPerDeck + 1;
+                                                                                                                                x++){
+                                                                                                                                for (int z = start;
+                                                                                                                                    z < end;
+                                                                                                                                    z++){
+                                                                                                                                    hullNormals[x, z - start] =
+                                                                                                                                        normalMesh[
+                                                                                                                                            i*_primHeightPerDeck +
+                                                                                                                                                x, z];
+                                                                                                                                }
+                                                                                                                            }
+                                                                                                                            //convert the 2d list heightmap into a 2d array heightmap
+                                                                                                                            //this gets hella messy because gotta subsection the 2d array
+                                                                                                                            var sVerts =
+                                                                                                                                new Vector3[deckSVerts[i].Length
+                                                                                                                                    ][];
+                                                                                                                            for (int j = 0;
+                                                                                                                                j < deckSVerts[i].Length;
+                                                                                                                                j++){
+                                                                                                                                sVerts[j] =
+                                                                                                                                    new Vector3[end - start];
+                                                                                                                                for (int k = start;
+                                                                                                                                    k < end;
+                                                                                                                                    k++){
+                                                                                                                                    sVerts[j][k - start] =
+                                                                                                                                        deckSVerts[i][j][k];
+                                                                                                                                }
+                                                                                                                            }
+
+                                                                                                                            MeshHelper.Encode2DListIntoArray
+                                                                                                                                (_primHeightPerDeck + 1,
+                                                                                                                                    (vertsInSilhouette/2),
+                                                                                                                                    ref hullMesh, sVerts);
+                                                                                                                            //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
+                                                                                                                            MeshHelper.ConvertMeshToVertList
+                                                                                                                                (hullMesh, hullNormals,
+                                                                                                                                    ref hullVerticies);
+                                                                                                                            if (i != deckSVerts.Length){
+                                                                                                                                return
+                                                                                                                                    HullSplitter.
+                                                                                                                                        SplitLayerGeometry
+                                                                                                                                        (0.5f, hullVerticies, i);
+                                                                                                                            }
+                                                                                                                            return null;
+                                                                                                                        };
                 // ReSharper restore AccessToModifiedClosure
+
                 #endregion
 
-                var triangles = (generateBuff(0, vertsInSilhouette / 2));
-                triangles.AddRange(generateBuff(vertsInSilhouette / 2, vertsInSilhouette));
+                var triangles = (generateBuff(0, vertsInSilhouette/2));
+                triangles.AddRange(generateBuff(vertsInSilhouette/2, vertsInSilhouette));
 
                 var buff = new ObjectBuffer<int>(triangles.Count, 1, 3, 3, "Shader_AirshipHull");
 
@@ -556,7 +599,8 @@ namespace Forge.Core.Airship.Generation {
                     float endZ = deckFloorMesh[layer][0, index + 1].Z;
                     float zBounding1, zBounding2;
 
-                    var interpolator = new Interpolate(
+                    var interpolator = new Interpolate
+                        (
                         startZ,
                         endZ,
                         endX - startX
@@ -569,7 +613,8 @@ namespace Forge.Core.Airship.Generation {
                     else{
                         zBounding1 = interpolator.GetLinearValue(boxCreatorPos - startX);
                         if (index + 2 != numHorizontalPrimitives){
-                            var interpolator2 = new Interpolate(
+                            var interpolator2 = new Interpolate
+                                (
                                 deckFloorMesh[layer][0, index + 1].Z,
                                 deckFloorMesh[layer][0, index + 2].Z,
                                 deckFloorMesh[layer][0, index + 2].X - deckFloorMesh[layer][0, index + 1].X
@@ -593,19 +638,23 @@ namespace Forge.Core.Airship.Generation {
 
 
                     for (int i = -numZBoxes; i < numZBoxes; i++){
-                        layerBBoxes.Add(
-                            new BoundingBox(
-                                new Vector3(
-                                    boxCreatorPos,
-                                    yLayer,
-                                    i*floorBBoxWidth
-                                    ),
-                                new Vector3(
-                                    boxCreatorPos + floorBBoxWidth,
-                                    yLayer,
-                                    (i + 1)*floorBBoxWidth
+                        layerBBoxes.Add
+                            (
+                                new BoundingBox
+                                    (
+                                    new Vector3
+                                        (
+                                        boxCreatorPos,
+                                        yLayer,
+                                        i*floorBBoxWidth
+                                        ),
+                                    new Vector3
+                                        (
+                                        boxCreatorPos + floorBBoxWidth,
+                                        yLayer,
+                                        (i + 1)*floorBBoxWidth
+                                        )
                                     )
-                                )
                             );
                     }
 
@@ -615,18 +664,21 @@ namespace Forge.Core.Airship.Generation {
             }
             ret.DeckBoundingBoxes = deckBoundingBoxes;
 
-            ret.BoxMin = ret.DeckBoundingBoxes.Min(
-                layer => layer.Min(
-                    box => box.Min.X
-                    )
-            );
+            ret.BoxMin = ret.DeckBoundingBoxes.Min
+                (
+                    layer => layer.Min
+                        (
+                            box => box.Min.X
+                        )
+                );
 
-            ret.BoxMax = ret.DeckBoundingBoxes.Max(
-                layer => layer.Max(
-                    box => box.Max.X
-                    )
-             );
-
+            ret.BoxMax = ret.DeckBoundingBoxes.Max
+                (
+                    layer => layer.Max
+                        (
+                            box => box.Max.X
+                        )
+                );
 
 
             var wallSelectionBoxes = deckBoundingBoxes;
@@ -659,12 +711,11 @@ namespace Forge.Core.Airship.Generation {
                 (
                     from layer in wallSelectionPoints
                     select layer.ToList()
-                ).ToArray();
+                    ).ToArray();
             return ret;
         }
 
         static HullSectionContainer GenerateHullSections(Dictionary<IEquatable<HullSectionIdentifier>, int> hullIdRef, ObjectBuffer<int>[] buffers){
-
             var hullIdRefInv = hullIdRef.ToDictionary(pair => pair.Value, pair => pair.Key);
 
             //first obtain all the shard data via objectbuffer dump
@@ -672,7 +723,7 @@ namespace Forge.Core.Airship.Generation {
             var totalShardData = new List<ObjectBuffer<int>.ObjectData>(estTotSize);
             foreach (var buffer in buffers){
                 var dump = buffer.DumpObjectData();
-                foreach (ObjectBuffer<int>.ObjectData obj in dump) {
+                foreach (ObjectBuffer<int>.ObjectData obj in dump){
                     totalShardData.Add(obj);
                 }
             }
@@ -680,7 +731,7 @@ namespace Forge.Core.Airship.Generation {
 
             //group the shard data into sections
             var groupedSections = (from section in totalShardData
-                                   group section by section.Identifier).ToArray();
+                group section by section.Identifier).ToArray();
 
 
             var hullSections = new List<HullSection>(groupedSections.Count());
@@ -691,7 +742,7 @@ namespace Forge.Core.Airship.Generation {
                     //first obtain the aliased vertexes of the section
                     var cumulativeVerts = new List<Vector3>(30);
                     foreach (var shard in section){
-                        cumulativeVerts.AddRange(from v in shard.Verticies select (Vector3)v.Position);
+                        cumulativeVerts.AddRange(from v in shard.Verticies select (Vector3) v.Position);
                     }
                     float maxY = cumulativeVerts.Max(v => v.Y);
                     float minY = cumulativeVerts.Min(v => v.Y);
@@ -735,20 +786,22 @@ namespace Forge.Core.Airship.Generation {
                     Debug.Assert(maxXminY != invalidVert);
                     Debug.Assert(minXminY != invalidVert);
 
-                    aliasedVertexes = new[] { maxXmaxY, minXmaxY, minXminY, maxXmaxY, maxXminY, minXminY };
+                    aliasedVertexes = new[]{maxXmaxY, minXmaxY, minXminY, maxXmaxY, maxXminY, minXminY};
                 }
 
-                int uid = (int)section.First().Identifier;
+                int uid = (int) section.First().Identifier;
 
-                var identifier = (HullSectionIdentifier)hullIdRefInv[uid];
+                var identifier = (HullSectionIdentifier) hullIdRefInv[uid];
                 var homeBuffer = from buff in buffers where buff.Contains(uid) select buff;
 
-                hullSections.Add(new HullSection(
-                    uid,
-                    aliasedVertexes,
-                    identifier,
-                    homeBuffer.Single()
-                    )
+                hullSections.Add
+                    (new HullSection
+                        (
+                        uid,
+                        aliasedVertexes,
+                        identifier,
+                        homeBuffer.Single()
+                        )
                     );
             }
 
@@ -758,10 +811,10 @@ namespace Forge.Core.Airship.Generation {
         #region Nested type: BoundingBoxResult
 
         struct BoundingBoxResult{
+            public float BoxMax;
+            public float BoxMin;
             public List<BoundingBox>[] DeckBoundingBoxes;
             public List<Vector3>[] DeckVertexes;
-            public float BoxMin;
-            public float BoxMax;
         }
 
         #endregion
@@ -784,10 +837,10 @@ namespace Forge.Core.Airship.Generation {
         struct GenerateHullResults{
             public float Berth;
             public Vector3[][][] DeckSilhouetteVerts;
+            public float Depth;
             public Vector3[][] LayerSilhouetteVerts;
             public float Length;
             public int NumDecks;
-            public float Depth;
         }
 
         #endregion
@@ -805,10 +858,10 @@ namespace Forge.Core.Airship.Generation {
     internal class HullGeometryInfo{
         public Vector3 CenterPoint;
         public float DeckHeight;
+        public DeckSectionContainer DeckSectionContainer;
+        public HullSectionContainer HullSections;
         public Vector2 MaxBoundingBoxDims;
         public int NumDecks;
         public float WallResolution;
-        public HullSectionContainer HullSections;
-        public DeckSectionContainer DeckSectionContainer;
     }
 }

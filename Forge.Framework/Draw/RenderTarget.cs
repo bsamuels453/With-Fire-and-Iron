@@ -26,6 +26,7 @@ namespace Forge.Framework.Draw{
         readonly RenderTarget2D _targetCanvas;
         public float Depth;
         public Vector2 Offset;
+        bool _disposed;
 
         static RenderTarget(){
             _cumulativeSpriteBatch = new SpriteBatch(Resource.Device);
@@ -38,7 +39,8 @@ namespace Forge.Framework.Draw{
 
         public RenderTarget(int x, int y, int width, int height, float depth = 1){
             SpriteBatch = new SpriteBatch(Resource.Device);
-            _targetCanvas = new RenderTarget2D(
+            _targetCanvas = new RenderTarget2D
+                (
                 Resource.Device,
                 width,
                 height,
@@ -60,7 +62,8 @@ namespace Forge.Framework.Draw{
         /// <param name="depth"> </param>
         public RenderTarget(float depth = 1){
             SpriteBatch = new SpriteBatch(Resource.Device);
-            _targetCanvas = new RenderTarget2D(
+            _targetCanvas = new RenderTarget2D
+                (
                 Resource.Device,
                 Resource.ScreenSize.X,
                 Resource.ScreenSize.Y,
@@ -91,8 +94,6 @@ namespace Forge.Framework.Draw{
 
         #region IDisposable Members
 
-        bool _disposed;
-
         public void Dispose(){
             Debug.Assert(!_disposed);
             _renderTargets.Remove(this);
@@ -101,12 +102,12 @@ namespace Forge.Framework.Draw{
             _disposed = true;
         }
 
+        #endregion
+
         ~RenderTarget(){
             if (!_disposed)
                 throw new ResourceNotDisposedException();
         }
-
-        #endregion
 
         public void Bind(){
             CurTarg = this;
@@ -117,18 +118,19 @@ namespace Forge.Framework.Draw{
         }
 
         public void Draw(Matrix viewMatrix, Color fillColor){
-            bool dontUnbindTarget = CurTarg != null;//this has to exist because of globalrendertarget abomination
+            bool dontUnbindTarget = CurTarg != null; //this has to exist because of globalrendertarget abomination
 
             CurTarg = this;
             Resource.Device.SetRenderTarget(_targetCanvas);
             Resource.Device.Clear(fillColor);
             Resource.Device.DepthStencilState = _universalDepthStencil;
-            SpriteBatch.Begin(
-                SpriteSortMode.BackToFront,
-                BlendState.AlphaBlend,
-                SamplerState.LinearWrap,
-                DepthStencilState.Default,
-                RasterizerState.CullNone
+            SpriteBatch.Begin
+                (
+                    SpriteSortMode.BackToFront,
+                    BlendState.AlphaBlend,
+                    SamplerState.LinearWrap,
+                    DepthStencilState.Default,
+                    RasterizerState.CullNone
                 );
             foreach (var buffer in _buffers){
                 buffer.Draw(viewMatrix);
@@ -148,24 +150,26 @@ namespace Forge.Framework.Draw{
 
         public static void EndDraw(){
             Resource.Device.SetRenderTarget(null);
-            _cumulativeSpriteBatch.Begin(
-                SpriteSortMode.BackToFront,
-                BlendState.NonPremultiplied,
-                SamplerState.LinearWrap,
-                DepthStencilState.Default,
-                RasterizerState.CullNone
+            _cumulativeSpriteBatch.Begin
+                (
+                    SpriteSortMode.BackToFront,
+                    BlendState.NonPremultiplied,
+                    SamplerState.LinearWrap,
+                    DepthStencilState.Default,
+                    RasterizerState.CullNone
                 );
             foreach (var target in _renderTargets){
-                _cumulativeSpriteBatch.Draw(
-                    target._targetCanvas,
-                    target.Offset,
-                    null,
-                    Color.White,
-                    0,
-                    Vector2.Zero,
-                    1,
-                    SpriteEffects.None,
-                    target.Depth
+                _cumulativeSpriteBatch.Draw
+                    (
+                        target._targetCanvas,
+                        target.Offset,
+                        null,
+                        Color.White,
+                        0,
+                        Vector2.Zero,
+                        1,
+                        SpriteEffects.None,
+                        target.Depth
                     );
             }
             _cumulativeSpriteBatch.End();

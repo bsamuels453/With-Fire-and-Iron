@@ -31,6 +31,7 @@ namespace Forge.Framework.UI.Widgets{
 
         public Button[] ToolbarButtons;
         IToolbarTool _activeTool;
+        bool _disposed;
 
         bool _enabled;
 
@@ -113,6 +114,18 @@ namespace Forge.Framework.UI.Widgets{
             }
         }
 
+        #region IDisposable Members
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            foreach (var tool in _buttonTools){
+                tool.Dispose();
+            }
+            _disposed = true;
+        }
+
+        #endregion
+
         #region IInputUpdates Members
 
         public void UpdateInput(ref InputState state){
@@ -160,6 +173,11 @@ namespace Forge.Framework.UI.Widgets{
             }
         }
 
+        ~Toolbar(){
+            if (!_disposed)
+                throw new ResourceNotDisposedException();
+        }
+
         #region Nested type: ToolbarCtorData
 
         struct ToolbarCtorData{
@@ -200,20 +218,5 @@ namespace Forge.Framework.UI.Widgets{
         }
 
         #endregion
-
-        bool _disposed;
-
-        public void Dispose(){
-            Debug.Assert(!_disposed);
-            foreach (var tool in _buttonTools){
-                tool.Dispose();
-            }
-            _disposed = true;
-        }
-
-        ~Toolbar(){
-            if (!_disposed)
-                throw new ResourceNotDisposedException();
-        }
     }
 }

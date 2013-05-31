@@ -1,14 +1,16 @@
-﻿//#define WIREFRAME_OVERLAY
+﻿#region
 
 using System;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Framework.Draw;
 using Forge.Core.Util;
+using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Forge.Core.Terrain {
-    class TerrainChunk : IDisposable{
+#endregion
+
+namespace Forge.Core.Terrain{
+    internal class TerrainChunk : IDisposable{
         public XZPair Identifier;
 
         readonly GeometryBuffer<VertexPositionTexture> _buffer;
@@ -36,14 +38,14 @@ namespace Forge.Core.Terrain {
             _wbuff.ShaderParams["Alpha"].SetValue(0.25f);
 #endif
 
-        Debug.Assert(_bufferDataSet == false);
-            _buffer.IndexBuffer.SetData((int[])_indicies.Clone());
+            Debug.Assert(_bufferDataSet == false);
+            _buffer.IndexBuffer.SetData((int[]) _indicies.Clone());
             _buffer.VertexBuffer.SetData(_verticies);
             _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
             _buffer.ShaderParams["BinormalMapTexture"].SetValue(_binormals);
             _buffer.ShaderParams["TangentMapTexture"].SetValue(_tangents);
 #if WIREFRAME_OVERLAY
-            //we need to explode the indice list from triangle list to line list
+    //we need to explode the indice list from triangle list to line list
             var wireframeInds = new int[_indicies.Length * 2];
             int srcIdx = 0;
             for (int i = 0; i < _indicies.Length * 2; i += 6) {
@@ -66,7 +68,6 @@ namespace Forge.Core.Terrain {
         }
 
         public void SetBufferData(){
-
             _bufferDataSet = true;
         }
 

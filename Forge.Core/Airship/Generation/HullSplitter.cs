@@ -13,40 +13,41 @@ using MonoGameUtility;
 
 namespace Forge.Core.Airship.Generation{
     /// <summary>
-    /// This class is used to subdivide sections of hull into pieces of a static size. These hull pieces can be toggled on and off through the objectbuffer that is returned.
+    ///   This class is used to subdivide sections of hull into pieces of a static size. These hull pieces can be toggled on and off through the objectbuffer that is returned.
     /// </summary>
     internal static class HullSplitter{
         static Quadrant.Side _side;
         static float _boxWidth;
 
         public static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
-            SplitLayerGeometry(float boundingWidth, VertexPositionNormalTexture[] verts, int deck) {
-            if (verts[1].Position.Z > 0) {
+            SplitLayerGeometry(float boundingWidth, VertexPositionNormalTexture[] verts, int deck){
+            if (verts[1].Position.Z > 0){
                 _side = Quadrant.Side.Port;
             }
-            else {
+            else{
                 _side = Quadrant.Side.Starboard;
             }
             _boxWidth = boundingWidth;
 
             var groupedPanels = new List<IEnumerable<VertexPositionNormalTexture>>();
-            for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4) {
+            for (int panelIdx = 0; panelIdx < verts.Length; panelIdx += 4){
                 var temp = verts.Skip(panelIdx).Take(4).ToArray();
-                groupedPanels.Add(new[] { temp[0], temp[1], temp[2] });
-                groupedPanels.Add(new[] { temp[2], temp[3], temp[0] });
+                groupedPanels.Add(new[]{temp[0], temp[1], temp[2]});
+                groupedPanels.Add(new[]{temp[2], temp[3], temp[0]});
             }
 
             var sortedPanels = (from grp in groupedPanels
-                                group grp by grp.Max(x => x.Position.Y) into layers
-                                select layers.ToArray()).ToArray();
+                group grp by grp.Max(x => x.Position.Y)
+                into layers
+                select layers.ToArray()).ToArray();
 
-            var retTuple = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>((int)(400 * 7 / boundingWidth));
+            var retTuple = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>((int) (400*7/boundingWidth));
 
             int layerIdx = 0;
-            foreach (var layer in sortedPanels) {
+            foreach (var layer in sortedPanels){
                 var totalLayerVerts = (from tri in layer
-                                       from vert in tri
-                                       select vert).ToArray();
+                    from vert in tri
+                    select vert).ToArray();
                 retTuple.AddRange(SubdividePanel(totalLayerVerts, layerIdx, deck));
                 layerIdx++;
             }
@@ -71,41 +72,39 @@ namespace Forge.Core.Airship.Generation{
         }
 
         static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
-            SubdividePanel(VertexPositionNormalTexture[] panelVerts, int panelLayer, int deck) {
-
+            SubdividePanel(VertexPositionNormalTexture[] panelVerts, int panelLayer, int deck){
             var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(5);
 
-            var groupedTris = new VertexPositionNormalTexture[panelVerts.Length / 3][];
+            var groupedTris = new VertexPositionNormalTexture[panelVerts.Length/3][];
             float subBoxBeginX;
             float subBoxEndX;
             float maxX;
-            {
-                //sort the panelVerts into triangles
-                int srcIdx = 0;
-                for (int i = 0; i < groupedTris.Length; i++) {
-                    groupedTris[i] = new VertexPositionNormalTexture[3];
-                    for (int triIdx = 0; triIdx < 3; triIdx++) {
-                        groupedTris[i][triIdx] = panelVerts[srcIdx + triIdx];
+                {
+                    //sort the panelVerts into triangles
+                    int srcIdx = 0;
+                    for (int i = 0; i < groupedTris.Length; i++){
+                        groupedTris[i] = new VertexPositionNormalTexture[3];
+                        for (int triIdx = 0; triIdx < 3; triIdx++){
+                            groupedTris[i][triIdx] = panelVerts[srcIdx + triIdx];
+                        }
+                        srcIdx += 3;
                     }
-                    srcIdx += 3;
                 }
-            }
-            {
-                //generate  statistics on this layer
-                float minX = panelVerts.Min(x => x.Position.X);
-                maxX = panelVerts.Max(x => x.Position.X);
-                //float topY = panelVerts.Max(y => y.Position.Y);
-                //float bottomY = panelVerts.Min(y => y.Position.Y);
+                {
+                    //generate  statistics on this layer
+                    float minX = panelVerts.Min(x => x.Position.X);
+                    maxX = panelVerts.Max(x => x.Position.X);
+                    //float topY = panelVerts.Max(y => y.Position.Y);
+                    //float bottomY = panelVerts.Min(y => y.Position.Y);
 
-                subBoxBeginX = 0;
-                while (subBoxBeginX + _boxWidth < minX){
-                    subBoxBeginX += _boxWidth;
+                    subBoxBeginX = 0;
+                    while (subBoxBeginX + _boxWidth < minX){
+                        subBoxBeginX += _boxWidth;
+                    }
+                    subBoxEndX = subBoxBeginX + _boxWidth;
                 }
-                subBoxEndX = subBoxBeginX + _boxWidth;
-            }
 
             while (subBoxBeginX < maxX){
-
                 var sortedTris = CullTriangles(groupedTris, subBoxBeginX, subBoxEndX);
 
                 var id = new HullSectionIdentifier(subBoxBeginX, panelLayer, _side, deck);
@@ -116,19 +115,21 @@ namespace Forge.Core.Airship.Generation{
                 }
 
                 //handling case where one vert is enclosed within the box
-                foreach (var triangle in sortedTris[1]) {
+                foreach (var triangle in sortedTris[1]){
                     ret.AddRange(SliceSingleEnclosureTriangle(triangle, subBoxBeginX, subBoxEndX, id));
                 }
 
                 //handling case where two verts are enclosed within the box
-                foreach (var triangle in sortedTris[2]) {
+                foreach (var triangle in sortedTris[2]){
                     ret.AddRange(SliceDoubleEnclosureTriangle(triangle, subBoxBeginX, subBoxEndX, id));
                 }
 
-                foreach (var triangle in sortedTris[3]) {
+                foreach (var triangle in sortedTris[3]){
                     var idxLi = GenerateIndiceList(triangle);
-                    ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(
-                        triangle, idxLi, id));
+                    ret.Add
+                        (new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>
+                            (
+                            triangle, idxLi, id));
                 }
 
 
@@ -138,7 +139,8 @@ namespace Forge.Core.Airship.Generation{
             return ret;
         }
 
-        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>> SliceZeroEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier) {
+        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>> SliceZeroEnclosureTriangle(VertexPositionNormalTexture[] triangle,
+            float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier){
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
@@ -194,9 +196,9 @@ namespace Forge.Core.Airship.Generation{
 
             var a1 = new VertexPositionNormalTexture(a1Pos, a1Norm, a1UV);
             var a2 = new VertexPositionNormalTexture(a2Pos, a2Norm, a2UV);
-            
-            var t1 = new[] { s1, a1, s2 };
-            var t2 = new[] { a2, s2, a1 };
+
+            var t1 = new[]{s1, a1, s2};
+            var t2 = new[]{a2, s2, a1};
 
 
             var t1I = GenerateIndiceList(t1);
@@ -208,23 +210,23 @@ namespace Forge.Core.Airship.Generation{
             return ret;
         }
 
-        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>> 
-            SliceSingleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier) {
+        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
+            SliceSingleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier){
             var leftSide = (from vert in triangle
-                            where vert.Position.X > subBoxEnd
-                            select vert).ToArray();
+                where vert.Position.X > subBoxEnd
+                select vert).ToArray();
             var rightSide = (from vert in triangle
-                             where vert.Position.X < subBoxBegin
-                             select vert).ToArray();
+                where vert.Position.X < subBoxBegin
+                select vert).ToArray();
             var middle = (from vert in triangle
-                          where vert.Position.X >= subBoxBegin && vert.Position.X <= subBoxEnd
-                          select vert).Single();
+                where vert.Position.X >= subBoxBegin && vert.Position.X <= subBoxEnd
+                select vert).Single();
 
-            if (leftSide.Length == 2 || leftSide.Length == 0) {
+            if (leftSide.Length == 2 || leftSide.Length == 0){
                 VertexPositionNormalTexture[] anchorVerts;
                 float interpLimit;
 
-                if (leftSide.Length == 2) {
+                if (leftSide.Length == 2){
                     //handle case with two verts on left, one in mid, zero on right
                     anchorVerts = leftSide;
                     interpLimit = subBoxEnd;
@@ -246,12 +248,11 @@ namespace Forge.Core.Airship.Generation{
                 var interpVert1 = new VertexPositionNormalTexture(interpPos1, interpNorm1, interpUV1);
                 var interpVert2 = new VertexPositionNormalTexture(interpPos2, interpNorm2, interpUV2);
 
-                var t1 = new[] { interpVert1, middle, interpVert2 };
+                var t1 = new[]{interpVert1, middle, interpVert2};
                 var t1I = GenerateIndiceList(t1);
                 var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
                 ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
                 return ret;
-                 
             }
             else{
                 var leftVert = leftSide.Single();
@@ -281,13 +282,13 @@ namespace Forge.Core.Airship.Generation{
                 var r1 = new VertexPositionNormalTexture(r1Pos, a1Norm, a1UV);
                 var r2 = new VertexPositionNormalTexture(r2Pos, a2Norm, a2UV);
 
-                var t1 = new[] { r1, r2, middle };
-                var t2 = new[] { l1, l2, middle };
+                var t1 = new[]{r1, r2, middle};
+                var t2 = new[]{l1, l2, middle};
 
                 //we want to use the two edge vertexes that are furthest from the middle
                 var t3V1 = Vector3.Distance(l1.Position, middle.Position) < Vector3.Distance(l2.Position, middle.Position) ? l2 : l1;
                 var t3V2 = Vector3.Distance(r1.Position, middle.Position) < Vector3.Distance(r2.Position, middle.Position) ? r2 : r1;
-                var t3 = new[] { t3V1, t3V2, middle };
+                var t3 = new[]{t3V1, t3V2, middle};
 
                 var t1I = GenerateIndiceList(t1);
                 var t2I = GenerateIndiceList(t2);
@@ -302,13 +303,13 @@ namespace Forge.Core.Airship.Generation{
         }
 
         static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
-            SliceDoubleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier) {
+            SliceDoubleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier){
             var sideVert = (from vert in triangle
-                            where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
-                            select vert).Single();
+                where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
+                select vert).Single();
             var middle = (from vert in triangle
-                          where vert.Position.X > subBoxBegin && vert.Position.X < subBoxEnd
-                          select vert).ToArray();
+                where vert.Position.X > subBoxBegin && vert.Position.X < subBoxEnd
+                select vert).ToArray();
 
             float interpLimit = sideVert.Position.X > subBoxEnd ? subBoxEnd : subBoxBegin;
 
@@ -324,8 +325,8 @@ namespace Forge.Core.Airship.Generation{
             var interpVert1 = new VertexPositionNormalTexture(interpPos1, interpNorm1, interpUV1);
             var interpVert2 = new VertexPositionNormalTexture(interpPos2, interpNorm2, interpUV2);
 
-            var t1 = new [] { interpVert1, interpVert2, middle[0] };
-            var t2 = new[] { middle[0], middle[1], interpVert2 };
+            var t1 = new[]{interpVert1, interpVert2, middle[0]};
+            var t2 = new[]{middle[0], middle[1], interpVert2};
 
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
@@ -337,24 +338,24 @@ namespace Forge.Core.Airship.Generation{
         }
 
         /// <summary>
-        /// Culls the triangles that don't cross the x-region defined by subboxbegin and subboxend. Then sorts these triangles into arrays based on how many of their verts intersect the bounding region.
+        ///   Culls the triangles that don't cross the x-region defined by subboxbegin and subboxend. Then sorts these triangles into arrays based on how many of their verts intersect the bounding region.
         /// </summary>
-        /// <param name="groupedTriangles"></param>
-        /// <param name="subBoxBegin"></param>
-        /// <param name="subBoxEnd"></param>
-        /// <returns></returns>
+        /// <param name="groupedTriangles"> </param>
+        /// <param name="subBoxBegin"> </param>
+        /// <param name="subBoxEnd"> </param>
+        /// <returns> </returns>
         static List<VertexPositionNormalTexture[]>[] CullTriangles(
             VertexPositionNormalTexture[][] groupedTriangles,
             float subBoxBegin,
-            float subBoxEnd) {
-
+            float subBoxEnd){
             var retList = new List<VertexPositionNormalTexture[]>[4];
 
             #region anon methods
+
             Func<VertexPositionNormalTexture[], float, float, int> numEnclosedVerts =
-                (triangle, begin, end) => {
+                (triangle, begin, end) =>{
                     int tot = 0;
-                    foreach (var vert in triangle) {
+                    foreach (var vert in triangle){
                         if (vert.Position.X <= end && vert.Position.X >= begin)
                             tot++;
                     }
@@ -362,14 +363,14 @@ namespace Forge.Core.Airship.Generation{
                 };
 
             Func<VertexPositionNormalTexture[], float, float, bool> isTriRelevant =
-                (triangle, end, start) => {
+                (triangle, end, start) =>{
                     //test to see if any of the points of the triangle fall within decal area
                     if (numEnclosedVerts(triangle, end, start) > 0)
                         return true;
 
                     //test to see if the triangle engulfs the decal area
-                    foreach (var v1 in triangle) {
-                        foreach (var v2 in triangle) {
+                    foreach (var v1 in triangle){
+                        foreach (var v2 in triangle){
                             //through the magic of looping only one if statement is required
                             if (v1.Position.X >= end && v2.Position.X <= start)
                                 return true;
@@ -378,18 +379,19 @@ namespace Forge.Core.Airship.Generation{
 
                     return false;
                 };
+
             #endregion
 
             //get rid of irrelevant triangles
             var filteredTris = (from triangle in groupedTriangles
-                                where isTriRelevant(triangle, subBoxBegin, subBoxEnd)
-                                select triangle).ToList();
+                where isTriRelevant(triangle, subBoxBegin, subBoxEnd)
+                select triangle).ToList();
 
             //sorting triangles by number of points enclosed within the decal
-            for (int i = 0; i < retList.Length; i++) {
+            for (int i = 0; i < retList.Length; i++){
                 retList[i] = new List<VertexPositionNormalTexture[]>();
             }
-            foreach (var triangle in filteredTris) {
+            foreach (var triangle in filteredTris){
                 int numContained = numEnclosedVerts(triangle, subBoxBegin, subBoxEnd);
                 retList[numContained].Add(triangle);
             }
@@ -397,25 +399,25 @@ namespace Forge.Core.Airship.Generation{
         }
 
         /// <summary>
-        /// Generates correctly wound indice list for the provided vertexes. Only actually requires the position of the VertexPositionNormalTexture to be defined.
+        ///   Generates correctly wound indice list for the provided vertexes. Only actually requires the position of the VertexPositionNormalTexture to be defined.
         /// </summary>
-        /// <param name="verts"></param>
-        /// <returns></returns>
-        static int[] GenerateIndiceList(VertexPositionNormalTexture[] verts) {
+        /// <param name="verts"> </param>
+        /// <returns> </returns>
+        static int[] GenerateIndiceList(VertexPositionNormalTexture[] verts){
             Debug.Assert(verts != null);
             var cross = Vector3.Cross(verts[1].Position - verts[0].Position, verts[2].Position - verts[0].Position);
 
-            switch (_side) {
+            switch (_side){
                 case Quadrant.Side.Port:
-                    if (cross.Z > 0) {
-                        return new[] { 0,2, 1 };
+                    if (cross.Z > 0){
+                        return new[]{0, 2, 1};
                     }
-                    return new[] { 0, 1, 2 };
+                    return new[]{0, 1, 2};
                 case Quadrant.Side.Starboard:
-                    if (cross.Z > 0) {
-                        return new[] { 0,1, 2 };
+                    if (cross.Z > 0){
+                        return new[]{0, 1, 2};
                     }
-                    return new[] { 0, 2, 1 };
+                    return new[]{0, 2, 1};
             }
             Debug.Assert(false);
             return null;
@@ -424,15 +426,15 @@ namespace Forge.Core.Airship.Generation{
         static Vector3 InterpolateNorm(Vector3 n1, Vector3 n2, Vector3 p1, Vector3 p2, Vector3 mid){
             float d1 = Vector3.Distance(p1, p2);
             float d2 = Vector3.Distance(p1, mid);
-            float t = d2 / d1;
-            return n1 * (1-t) + n2 * (t);
+            float t = d2/d1;
+            return n1*(1 - t) + n2*(t);
         }
 
         static Vector2 InterpolateUV(Vector2 u1, Vector2 u2, Vector3 p1, Vector3 p2, Vector3 mid){
             float d1 = Vector3.Distance(p1, p2);
             float d2 = Vector3.Distance(p1, mid);
-            float t = d2 / d1;
-            Vector2 ret = u1 * (1-t) + u2 * (t);
+            float t = d2/d1;
+            Vector2 ret = u1*(1 - t) + u2*(t);
             /*
             if (ret.X > 1)
                 ret.X = 1;

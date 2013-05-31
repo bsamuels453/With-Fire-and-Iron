@@ -1,7 +1,6 @@
 ﻿#region
 
 using System;
-using System.Diagnostics;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
@@ -12,6 +11,7 @@ namespace Forge.Framework.Draw{
     public abstract class BaseGeometryBuffer<T> : IDrawableBuffer, IDisposable{
         protected readonly IndexBuffer BaseIndexBuffer;
         protected readonly VertexBuffer BaseVertexBuffer;
+        protected readonly string ShaderName;
         readonly int _numIndicies;
         readonly int _numPrimitives;
         readonly PrimitiveType _primitiveType;
@@ -20,10 +20,10 @@ namespace Forge.Framework.Draw{
         public bool Enabled;
         protected RasterizerState Rasterizer;
         protected Effect Shader;
-        protected readonly string ShaderName;
         bool _disposed;
 
-        protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType, CullMode cullMode = CullMode.None){
+        protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType,
+            CullMode cullMode = CullMode.None){
             Enabled = true;
             _numPrimitives = numPrimitives;
             _numIndicies = numIndicies;
@@ -32,14 +32,16 @@ namespace Forge.Framework.Draw{
 
             Rasterizer = new RasterizerState{CullMode = cullMode};
 
-            BaseIndexBuffer = new IndexBuffer(
+            BaseIndexBuffer = new IndexBuffer
+                (
                 Resource.Device,
                 typeof (int),
                 numIndicies,
                 BufferUsage.None
                 );
 
-            BaseVertexBuffer = new VertexBuffer(
+            BaseVertexBuffer = new VertexBuffer
+                (
                 Resource.Device,
                 typeof (T),
                 numVerticies,

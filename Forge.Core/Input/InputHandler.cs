@@ -1,8 +1,8 @@
 ﻿#region
 
 using System.Diagnostics;
-using Microsoft.Xna.Framework.Input;
 using Forge.Framework;
+using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
 #endregion
@@ -42,26 +42,26 @@ namespace Forge.Core.Input{
             newInputState.MouseScrollChange = newMouseState.ScrollWheelValue - _prevMouseState.ScrollWheelValue;
             newInputState.KeyboardState = newKeyboardState;
 
-            if (_prevMouseState.X != newMouseState.X || _prevMouseState.Y != newMouseState.Y) {
+            if (_prevMouseState.X != newMouseState.X || _prevMouseState.Y != newMouseState.Y){
                 newInputState.MouseMoved = true;
             }
 
-            if (_prevMouseState.LeftButton != newMouseState.LeftButton) {
+            if (_prevMouseState.LeftButton != newMouseState.LeftButton){
                 newInputState.LeftButtonChange = true;
 
                 newInputState.AllowLeftButtonInterpretation = true;
-                if (newMouseState.LeftButton == ButtonState.Released) {
+                if (newMouseState.LeftButton == ButtonState.Released){
                     //check if this qualifies as a click
-                    if (_clickTimer.ElapsedMilliseconds < 200) {
+                    if (_clickTimer.ElapsedMilliseconds < 200){
                         newInputState.LeftButtonClick = true;
                         _clickTimer.Reset();
                     }
-                    else {
+                    else{
                         _clickTimer.Reset();
                         newInputState.LeftButtonClick = false;
                     }
                 }
-                else { //button was pressed so start the click timer
+                else{ //button was pressed so start the click timer
                     _clickTimer.Start();
                 }
             }

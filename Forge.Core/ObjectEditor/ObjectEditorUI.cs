@@ -1,23 +1,28 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Diagnostics;
 using Forge.Core.ObjectEditor.Tools;
-using Forge.Framework.Draw;
 using Forge.Framework;
+using Forge.Framework.Draw;
 using Forge.Framework.UI;
 using Forge.Framework.UI.Widgets;
 
-namespace Forge.Core.ObjectEditor {
+#endregion
+
+namespace Forge.Core.ObjectEditor{
     /// <summary>
     ///   this class handles the display of the prototype airship and all of its components
     /// </summary>
-    internal class ObjectEditorUI : IInputUpdates, ILogicUpdates, IDisposable {
+    internal class ObjectEditorUI : IInputUpdates, ILogicUpdates, IDisposable{
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly HullDataManager _hullData;
 
         readonly Toolbar _toolBar;
+        bool _disposed;
 
-        public ObjectEditorUI(HullDataManager hullData, RenderTarget target) {
+        public ObjectEditorUI(HullDataManager hullData, RenderTarget target){
             _hullData = hullData;
 
             var buttonGen = new ButtonGenerator("ToolbarButton64.json");
@@ -39,9 +44,19 @@ namespace Forge.Core.ObjectEditor {
             _toolBar.BindButtonToTool(1, new LadderBuildTool(hullData));
         }
 
+        #region IDisposable Members
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _toolBar.Dispose();
+            _disposed = true;
+        }
+
+        #endregion
+
         #region IInputUpdates Members
 
-        public void UpdateInput(ref InputState state) {
+        public void UpdateInput(ref InputState state){
             _toolBar.UpdateInput(ref state);
         }
 
@@ -49,26 +64,18 @@ namespace Forge.Core.ObjectEditor {
 
         #region ILogicUpdates Members
 
-        public void UpdateLogic(double timeDelta) {
+        public void UpdateLogic(double timeDelta){
             _toolBar.UpdateLogic(timeDelta);
         }
 
         #endregion
 
-        void AddVisibleLevel(int identifier) {
+        void AddVisibleLevel(int identifier){
             _hullData.MoveUpOneDeck();
         }
 
-        void RemoveVisibleLevel(int identifier) {
+        void RemoveVisibleLevel(int identifier){
             _hullData.MoveDownOneDeck();
-        }
-
-        bool _disposed;
-
-        public void Dispose(){
-            Debug.Assert(!_disposed);
-            _toolBar.Dispose();
-            _disposed = true;
         }
 
         ~ObjectEditorUI(){

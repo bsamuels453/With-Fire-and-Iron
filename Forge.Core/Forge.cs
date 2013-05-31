@@ -2,18 +2,12 @@
 
 #region
 
-using System;
 using System.Diagnostics;
-using System.Threading;
-using Forge.Core.Airship;
-using Forge.Core.Logic;
+using Forge.Core.GameState;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Forge.Core.HullEditor;
-using Forge.Core.GameState;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Matrix = MonoGameUtility.Matrix;
 
 #endregion
@@ -38,11 +32,12 @@ namespace Forge.Core{
             Resource.ScreenSize = new ScreenSize(1200, 800);
 
             var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
-            Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                fieldOfView: 3.14f/4,
-                aspectRatio: aspectRatio,
-                nearPlaneDistance: 0.3f,
-                farPlaneDistance: 13000f
+            Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView
+                (
+                    fieldOfView: 3.14f/4,
+                    aspectRatio: aspectRatio,
+                    nearPlaneDistance: 0.3f,
+                    farPlaneDistance: 13000f
                 );
 
             DebugConsole.WriteLine("Resource initialization complete");

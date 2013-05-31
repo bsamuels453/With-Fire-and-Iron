@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
-using Forge.Core.Logic;
 using Forge.Core.Physics;
 using Forge.Framework.Draw;
 using MonoGameUtility;
@@ -23,19 +22,20 @@ namespace Forge.Core.Airship{
         const float _meshOffsetRed = 1.005f;
         const float _meshOffsetOrange = 1.010f;
         const float _meshOffsetGreen = 1.015f;
+        readonly ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
         readonly ObjectBuffer<int> _greenBuff;
 
         readonly ObjectBuffer<int> _orangeBuff;
         readonly ObjectBuffer<int> _redBuff;
-        readonly ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
+        bool _disposed;
 
         public HullIntegrityMesh(
             HullSectionContainer hullSections,
             ProjectilePhysics projectilePhysics,
             Vector3 shipCentroid,
-            float length) {
-
+            float length){
             #region setup collision objects
+
             var hullBuffers = hullSections.HullBuffersByDeck;
             var cumulativeBufferData = new List<ObjectBuffer<int>.ObjectData>(hullBuffers.Length*hullBuffers[0].MaxObjects);
             foreach (var buffer in hullBuffers){
@@ -45,7 +45,7 @@ namespace Forge.Core.Airship{
             var collisionObjects = new List<ProjectilePhysics.CollisionObject>();
 
             foreach (var section in hullSections){
-                var cSection = (HullSection)section;
+                var cSection = (HullSection) section;
                 /*
                 collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
                     new Vector3(-100,-100,-100),
@@ -58,50 +58,59 @@ namespace Forge.Core.Airship{
                     new Vector3(100,-100,100)
                                     }));
                  */
-                
-                collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
-                    cSection.AliasedVertexes[0], 
-                    cSection.AliasedVertexes[1], 
-                    cSection.AliasedVertexes[2] 
-                }));
-                collisionObjects.Add(new ProjectilePhysics.CollisionObject(cSection.Uid, new[] { 
-                    cSection.AliasedVertexes[3], 
-                    cSection.AliasedVertexes[4], 
-                    cSection.AliasedVertexes[5] 
-                }));
+
+                collisionObjects.Add
+                    (new ProjectilePhysics.CollisionObject
+                        (cSection.Uid, new[]{
+                            cSection.AliasedVertexes[0],
+                            cSection.AliasedVertexes[1],
+                            cSection.AliasedVertexes[2]
+                        }));
+                collisionObjects.Add
+                    (new ProjectilePhysics.CollisionObject
+                        (cSection.Uid, new[]{
+                            cSection.AliasedVertexes[3],
+                            cSection.AliasedVertexes[4],
+                            cSection.AliasedVertexes[5]
+                        }));
             }
 
             #endregion
 
             var boundingSphere = new BoundingSphere(shipCentroid, length);
 
-            _collisionObjectHandle = projectilePhysics.AddShipCollisionObjects(
-                collisionObjects.ToArray(), 
-                boundingSphere, 
-                ProjectilePhysics.EntityVariant.EnemyShip, 
-                OnCollision
+            _collisionObjectHandle = projectilePhysics.AddShipCollisionObjects
+                (
+                    collisionObjects.ToArray(),
+                    boundingSphere,
+                    ProjectilePhysics.EntityVariant.EnemyShip,
+                    OnCollision
                 );
 
             //initalize mesh buffers
+
             #region
 
             int numObjs = hullBuffers.Sum(b => b.MaxObjects);
 
-            _redBuff = new ObjectBuffer<int>(
+            _redBuff = new ObjectBuffer<int>
+                (
                 numObjs,
                 hullBuffers[0].IndiciesPerObject/3,
                 hullBuffers[0].VerticiesPerObject,
                 hullBuffers[0].IndiciesPerObject,
                 "Shader_DamageMeshRed"
                 );
-            _orangeBuff = new ObjectBuffer<int>(
+            _orangeBuff = new ObjectBuffer<int>
+                (
                 numObjs,
                 hullBuffers[0].IndiciesPerObject/3,
                 hullBuffers[0].VerticiesPerObject,
                 hullBuffers[0].IndiciesPerObject,
                 "Shader_DamageMeshOrange"
                 );
-            _greenBuff = new ObjectBuffer<int>(
+            _greenBuff = new ObjectBuffer<int>
+                (
                 numObjs,
                 hullBuffers[0].IndiciesPerObject/3,
                 hullBuffers[0].VerticiesPerObject,
@@ -117,27 +126,30 @@ namespace Forge.Core.Airship{
 
             float lenOffset = (length*_meshOffsetRed - length)/2;
 
-            _redBuff.ApplyTransform((vertex) =>{
-                                        vertex.Position *= _meshOffsetRed;
-                                        vertex.Position.X += lenOffset;
-                                        return vertex;
-                                    }
+            _redBuff.ApplyTransform
+                ((vertex) =>{
+                     vertex.Position *= _meshOffsetRed;
+                     vertex.Position.X += lenOffset;
+                     return vertex;
+                 }
                 );
 
             lenOffset = (length*_meshOffsetOrange - length)/2;
-            _orangeBuff.ApplyTransform((vertex) =>{
-                                           vertex.Position *= _meshOffsetOrange;
-                                           vertex.Position.X += lenOffset;
-                                           return vertex;
-                                       }
+            _orangeBuff.ApplyTransform
+                ((vertex) =>{
+                     vertex.Position *= _meshOffsetOrange;
+                     vertex.Position.X += lenOffset;
+                     return vertex;
+                 }
                 );
 
             lenOffset = (length*_meshOffsetGreen - length)/2;
-            _greenBuff.ApplyTransform((vertex) =>{
-                                          vertex.Position *= _meshOffsetGreen;
-                                          vertex.Position.X += lenOffset;
-                                          return vertex;
-                                      }
+            _greenBuff.ApplyTransform
+                ((vertex) =>{
+                     vertex.Position *= _meshOffsetGreen;
+                     vertex.Position.X += lenOffset;
+                     return vertex;
+                 }
                 );
 
             #endregion
@@ -152,19 +164,7 @@ namespace Forge.Core.Airship{
             }
         }
 
-        void OnCollision(int id, Vector3 position, Vector3 velocity){
-            if(_greenBuff.IsObjectEnabled(id)){
-                _greenBuff.DisableObject(id);
-            }
-
-        }
-
-        void UpdateDamageTexture(Vector3 position){
-            //make sure position is unwrapped and is not in world coordinates
-            throw new NotImplementedException();
-        }
-
-        bool _disposed;
+        #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
@@ -172,6 +172,19 @@ namespace Forge.Core.Airship{
             _orangeBuff.Dispose();
             _redBuff.Dispose();
             _disposed = true;
+        }
+
+        #endregion
+
+        void OnCollision(int id, Vector3 position, Vector3 velocity){
+            if (_greenBuff.IsObjectEnabled(id)){
+                _greenBuff.DisableObject(id);
+            }
+        }
+
+        void UpdateDamageTexture(Vector3 position){
+            //make sure position is unwrapped and is not in world coordinates
+            throw new NotImplementedException();
         }
 
         ~HullIntegrityMesh(){
