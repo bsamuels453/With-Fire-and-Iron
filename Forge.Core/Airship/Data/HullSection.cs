@@ -1,17 +1,26 @@
 ﻿using System;
+using System.Diagnostics;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using MonoGameUtility;
+using ProtoBuf;
 
 namespace Forge.Core.Airship.Data {
-    class HullSection : IEquatable<HullSection> {
+    [ProtoContract]
+    class HullSection : IEquatable<HullSection>{
+        [ProtoMember(1)]
         public int Uid { get; private set; }
+        [ProtoMember(2)]
         public Vector3[] AliasedVertexes { get; private set; }
+        [ProtoMember(3)]
         public int Deck { get; private set; }
+        [ProtoMember(4)]
         public int YPanel { get; private set; }
+        [ProtoMember(5)]
         public Quadrant.Side Side { get; private set; }
 
-        readonly Action _hideSection;
-        readonly Action _unhideSection;
+        Action _hideSection;
+        Action _unhideSection;
 
         public HullSection(int uid, Vector3[] aliasedVertexes, HullSectionIdentifier identifier, ObjectBuffer<int> hullBuffer){
             Uid = uid;
@@ -31,6 +40,15 @@ namespace Forge.Core.Airship.Data {
             YPanel = yPanel;
             _hideSection = () => hullBuffer.DisableObject(uid);
             _unhideSection = () => hullBuffer.EnableObject(uid);
+        }
+
+        public void SetDelegates(ObjectBuffer<int> hullBuffer) {
+            Debug.Assert(_hideSection == null && _unhideSection == null);
+            _hideSection = () => hullBuffer.DisableObject(Uid);
+            _unhideSection = () => hullBuffer.EnableObject(Uid);
+        }
+
+        public HullSection() {
         }
 
         public void Hide(){
