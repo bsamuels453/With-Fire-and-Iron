@@ -37,7 +37,7 @@ namespace Forge.Core.GameState {
             
             _terrainUpdater = new TerrainUpdater();
 
-            _airship = AirshipPackager.ImportFromProtocol("Export.airship");
+            _airship = AirshipPackager.ImportFromProtocol("ExportedAirship.protocol");
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
             _cameraController.SetCameraTarget(_airship.Position);
