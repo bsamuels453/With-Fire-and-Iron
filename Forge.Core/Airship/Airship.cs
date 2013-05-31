@@ -40,7 +40,8 @@ namespace Forge.Core.Airship {
             DeckSectionContainer deckSectionContainer,
             HullSectionContainer hullSectionContainer
             ){
-
+            var sw = new Stopwatch();
+            sw.Start();
             ModelAttributes = airshipModel;
             HullSectionContainer = hullSectionContainer;
             DeckSectionContainer = deckSectionContainer;
@@ -55,11 +56,14 @@ namespace Forge.Core.Airship {
                 ModelAttributes,
                 movementState
                 );
-
+            
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _projectilePhysics, _controller.Position, ModelAttributes.Length);
-
+            
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(-25, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
+            sw.Stop();
+            
+            DebugConsole.WriteLine("Airship assembled in " + sw.ElapsedMilliseconds + " ms");
         }
 
         public void Update(ref InputState state, double timeDelta){
