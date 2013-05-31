@@ -5,9 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Forge.Core.Airship.Data;
+using Forge.Core.Logic;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Microsoft.Xna.Framework;
+using Forge.Framework.MonoGame;
 using Microsoft.Xna.Framework.Graphics;
 using ProtoBuf;
 
@@ -34,13 +35,13 @@ namespace Forge.Core.Airship.Export {
 
             //hull sections
             var sections = hull.HullSections;
-            var hullSectionCtorDat = new List<HullSectionCtorDat>(sections.Length);
+            var hullSectionData = new List<HullSectionData>(sections.Length);
             foreach (var section in sections){
-                hullSectionCtorDat.Add(new HullSectionCtorDat(section));
+                hullSectionData.Add(new HullSectionData(section));
             }
 
             //hull buffers
-            var hullBufferCtorDat = new List<HullBufferObjectDataContainer<int>>(hull.NumDecks);
+            var hullBuffers = new List<BufferDataContainer<int>>(hull.NumDecks);
             foreach (var buffer in hull.HullBuffersByDeck) {
                 var bufferDump = buffer.DumpObjectData();
 
@@ -48,17 +49,39 @@ namespace Forge.Core.Airship.Export {
                 foreach (var obj in bufferDump){
                     array.Add(new HullBufferObjectData<int>(obj));
                 }
-                hullBufferCtorDat.Add(new HullBufferObjectDataContainer<int>(array));
+                hullBuffers.Add(new BufferDataContainer<int>(array));
             }
 
+            //deck bounding boxes
+            var boundingBoxes = new BoundingBoxContainer[decks.BoundingBoxesByDeck.Length];
+            for (int i = 0; i < boundingBoxes.Length; i++){
+                boundingBoxes[i] = new BoundingBoxContainer(decks.BoundingBoxesByDeck[i]);
+            }
 
+            //deck vertexes
+            var deckVertexes = new DeckVertexContainer[decks.DeckVertexesByDeck.Length];
+            for (int i = 0; i < deckVertexes.Length; i++) {
+                deckVertexes[i] = new DeckVertexContainer(decks.DeckVertexesByDeck[i]);
+            }
 
+            //deck buffers
+            var deckBuffers = new List<DeckBufferDataContainer>(hull.NumDecks);
+            foreach (var buffer in decks.DeckBufferByDeck){
+                var bufferDump = buffer.DumpObjectData();
 
-
+                var array = new List<DeckBufferObjectData>(bufferDump.Length);
+                foreach (var obj in bufferDump) {
+                    array.Add(new DeckBufferObjectData(obj));
+                }
+                deckBuffers.Add(new DeckBufferDataContainer(array));
+            }
 
             var airship = new AirshipExport();
-            airship.HullBufferCtorDat = hullBufferCtorDat;
-            airship.HullSectionCtorData = hullSectionCtorDat;
+            airship.HullBuffers = hullBuffers;
+            airship.HullSections = hullSectionData;
+            airship.DeckVertexes = deckVertexes;
+            airship.BoundingBoxes = boundingBoxes;
+            airship.DeckBuffers = deckBuffers;
             using (var file = File.Create("airship.bin")) {
                 Serializer.Serialize(file, airship);
             }
@@ -73,21 +96,82 @@ namespace Forge.Core.Airship.Export {
         [ProtoContract]
         struct AirshipExport{
             [ProtoMember(1)]
-            public List<HullSectionCtorDat> HullSectionCtorData;
+            public List<HullSectionData> HullSections;
             [ProtoMember(2)]
-            public List<HullBufferObjectDataContainer<int>> HullBufferCtorDat; 
+            public List<BufferDataContainer<int>> HullBuffers;
+            [ProtoMember(3)]
+            public DeckVertexContainer[] DeckVertexes;
+            [ProtoMember(4)]
+            public BoundingBoxContainer[] BoundingBoxes;
+            [ProtoMember(5)]
+            public List<DeckBufferDataContainer> DeckBuffers;
 
         }
-        #region hullbuffer wrappers
+
+        #region deck wrappers
         [ProtoContract]
-        struct HullBufferObjectDataContainer<T>{
+        struct DeckVertexContainer{
+            [ProtoMember(1)]
+            public List<Vec3Wrap> Vertexes;
+
+            public DeckVertexContainer(List<Vector3> vertexes){
+                Vertexes = new List<Vec3Wrap>(vertexes.Count);
+                foreach (var vertex in vertexes){
+                    Vertexes.Add(vertex);
+                }
+            }
+        }
+
+        [ProtoContract]
+        struct BoundingBoxContainer{
+            [ProtoMember(1)]
+            public List<BoundingBoxWrap> BoundingBoxes;
+
+            public BoundingBoxContainer(List<BoundingBox> other){
+                BoundingBoxes = new List<BoundingBoxWrap>(other.Count);
+                foreach (var boundingBox in other){
+                    BoundingBoxes.Add(new BoundingBoxWrap(boundingBox));
+                }
+            }
+        }
+
+        [ProtoContract]
+        struct ObjectIdentifier{
+            [ProtoMember(1)]
+            public Vec3Wrap Position;
+            [ProtoMember(2)]
+            public ObjectType ObjectType;
+
+            public ObjectIdentifier(AirshipObjectIdentifier other){
+                Position = other.Position;
+                ObjectType = other.ObjectType;
+            }
+
+        }
+
+        #endregion
+
+        #region buffer wrappers
+        [ProtoContract]
+        struct BufferDataContainer<T>{
             [ProtoMember(1)]
             public List<HullBufferObjectData<T>> HullBufferObjData; 
 
-            public HullBufferObjectDataContainer(List<HullBufferObjectData<T>> hullBufferObjData){
+            public BufferDataContainer(List<HullBufferObjectData<T>> hullBufferObjData){
                 HullBufferObjData = hullBufferObjData;
             }
         }
+
+        [ProtoContract]
+        struct DeckBufferDataContainer {
+            [ProtoMember(1)]
+            public List<DeckBufferObjectData> HullBufferObjData;
+
+            public DeckBufferDataContainer(List<DeckBufferObjectData> hullBufferObjData) {
+                HullBufferObjData = hullBufferObjData;
+            }
+        }
+
 
         [ProtoContract]
         struct HullBufferObjectData<T>{
@@ -114,11 +198,38 @@ namespace Forge.Core.Airship.Export {
                 Enabled = objData.Enabled;
             }
         }
+
+        [ProtoContract]
+        struct DeckBufferObjectData {
+            [ProtoMember(1)]
+            public ObjectIdentifier Identifier;
+            [ProtoMember(2)]
+            public int[] Indicies;
+            [ProtoMember(3)]
+            public int ObjectOffset;
+            [ProtoMember(4)]
+            public VertexWrap[] Verticies;
+            [ProtoMember(5)]
+            public bool Enabled;
+
+            public DeckBufferObjectData(ObjectBuffer<AirshipObjectIdentifier>.ObjectData objData) {
+                Identifier = (new ObjectIdentifier((AirshipObjectIdentifier)objData.Identifier));
+                Indicies = objData.Indicies;
+                ObjectOffset = objData.ObjectOffset;
+                Verticies = new VertexWrap[objData.Verticies.Length];
+                for (int i = 0; i < Verticies.Length; i++) {
+                    Verticies[i] = objData.Verticies[i];
+                }
+
+                Enabled = objData.Enabled;
+            }
+        }
+
         #endregion
 
         #region hull section wrappers
         [ProtoContract] 
-        struct HullSectionCtorDat{
+        struct HullSectionData{
             [ProtoMember(1)]
             public int Uid;
             [ProtoMember(2)]
@@ -131,7 +242,7 @@ namespace Forge.Core.Airship.Export {
             public int YPanel;
             //public ObjectBuffer<int> HullBuffer;
 
-            public HullSectionCtorDat(HullSection section){
+            public HullSectionData(HullSection section){
                 Uid = section.Uid;
                 AliasedVertexes = new Vec3Wrap[section.AliasedVertexes.Length];
                 for (int i = 0; i < AliasedVertexes.Length; i++){
@@ -211,6 +322,20 @@ namespace Forge.Core.Airship.Export {
                 return ret;
             }
         }
+
+        [ProtoContract]
+        struct BoundingBoxWrap{
+            [ProtoMember(1)]
+            public Vec3Wrap Min;
+            [ProtoMember(2)]
+            public Vec3Wrap Max;
+
+            public BoundingBoxWrap(BoundingBox other){
+                Min = other.Min;
+                Max = other.Max;
+            }
+        }
+
         #endregion
 
         // ReSharper restore NotAccessedField.Local

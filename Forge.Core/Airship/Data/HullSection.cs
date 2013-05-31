@@ -1,6 +1,6 @@
 ﻿using System;
 using Forge.Framework.Draw;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 namespace Forge.Core.Airship.Data {
     class HullSection : IEquatable<HullSection> {

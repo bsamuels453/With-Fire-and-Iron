@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 namespace Forge.Core.Util {
     internal static class Bezier {

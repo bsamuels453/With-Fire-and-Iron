@@ -5,6 +5,7 @@ using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Vector2 = MonoGameUtility.Vector2;
 
 #endregion
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using MonoGameUtility;
 
 namespace Forge.Core.Util {
     class Vec3Ref {

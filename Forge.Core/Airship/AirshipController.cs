@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 namespace Forge.Core.Airship {
     abstract class AirshipController {

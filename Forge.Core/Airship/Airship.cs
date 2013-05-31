@@ -8,9 +8,9 @@ using Forge.Core.ObjectEditor;
 using Forge.Core.Physics;
 using Forge.Framework.Draw;
 using Forge.Framework;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGameUtility;
 
 namespace Forge.Core.Airship {
     internal class Airship : IDisposable{

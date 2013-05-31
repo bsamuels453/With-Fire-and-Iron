@@ -5,7 +5,6 @@ using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Core.Util;
 using Forge.Framework;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
 #endregion

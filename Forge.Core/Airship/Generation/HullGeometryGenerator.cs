@@ -9,8 +9,8 @@ using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Core.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 
 namespace Forge.Core.Airship.Generation {
     /// <summary>
@@ -691,7 +691,7 @@ namespace Forge.Core.Airship.Generation {
                     //first obtain the aliased vertexes of the section
                     var cumulativeVerts = new List<Vector3>(30);
                     foreach (var shard in section){
-                        cumulativeVerts.AddRange(from v in shard.Verticies select v.Position);
+                        cumulativeVerts.AddRange(from v in shard.Verticies select (Vector3)v.Position);
                     }
                     float maxY = cumulativeVerts.Max(v => v.Y);
                     float minY = cumulativeVerts.Min(v => v.Y);

@@ -6,6 +6,9 @@ using Forge.Core.Logic;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using BoundingBox = MonoGameUtility.BoundingBox;
+using Matrix = MonoGameUtility.Matrix;
+using Vector3 = MonoGameUtility.Vector3;
 
 namespace Forge.Core.ObjectEditor.Tools {
     internal class LadderBuildTool : DeckPlacementBase {

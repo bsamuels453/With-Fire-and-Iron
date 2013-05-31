@@ -6,6 +6,7 @@ using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Vector2 = MonoGameUtility.Vector2;
 
 namespace Forge.Framework.UI.Widgets {
     public class TextBox : IDrawableSprite {

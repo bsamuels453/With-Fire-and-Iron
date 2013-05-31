@@ -5,9 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using BulletSharp;
+using BulletXNA;
+using BulletXNA.BulletCollision;
+using BulletXNA.BulletDynamics;
+using BulletXNA.LinearMath;
 using Forge.Framework;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 using IDisposable = System.IDisposable;
 
 #endregion
@@ -45,13 +48,14 @@ namespace Forge.Core.Physics{
             var constraintSolver = new SequentialImpulseConstraintSolver();
             _worldDynamics = new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
 
-            _worldDynamics.Gravity = new Vector3(0, gravity, 0);
+            //_worldDynamics.Gravity = new Vector3(0, gravity, 0);
+            _worldDynamics.SetGravity(new IndexedVector3(0, gravity, 0));
 
             _boundingObjData = new List<CollisionObjectCollection>();
             _projectiles = new List<Projectile>();
 
             var shape = new SphereShape(_defProjectile.Radius);
-            var nullMotion = new DefaultMotionState(Matrix.Identity);
+            var nullMotion = new DefaultMotionState(); //new DefaultMotionState(Matrix.Identity);
             _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
         }
 
@@ -71,7 +75,8 @@ namespace Forge.Core.Physics{
 
         public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
             var worldMatrix = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
-            _defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
+            //_defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
+            _defaultShotCtor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldMatrix), IndexedMatrix.Identity);
 
             var body = new RigidBody(_defaultShotCtor);
             body.ApplyCentralForce(angle*_defProjectile.FiringForce);

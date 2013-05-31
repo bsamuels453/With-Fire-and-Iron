@@ -8,8 +8,8 @@ using Forge.Core.Airship.Generation;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 
 namespace Forge.Core.ObjectEditor {
     /// <summary>
