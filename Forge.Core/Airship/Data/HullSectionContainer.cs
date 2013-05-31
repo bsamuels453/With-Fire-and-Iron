@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Core.Logic;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
+using ProtoBuf;
 
 namespace Forge.Core.Airship.Data {
     class HullSectionContainer :IEnumerable, IDisposable{
@@ -73,6 +75,35 @@ namespace Forge.Core.Airship.Data {
 
         ~HullSectionContainer(){
             Debug.Assert(_disposed);
+        }
+
+        public Serialized ExtractSerializationStruct() {
+            var hullBuffData = new ObjectBuffer<int>.Serialized[HullBuffersByDeck.Length];
+            for (int i = 0; i < HullBuffersByDeck.Length; i++){
+                hullBuffData[i] = HullBuffersByDeck[i].ExtractSerializationStruct();
+            }
+
+            var ret = new Serialized(
+                NumDecks,
+                _hullSections,
+                hullBuffData
+                );
+            return ret;
+        }
+        [ProtoContract]
+        public struct Serialized{
+            [ProtoMember(1)]
+            public readonly int NumDecks;
+            [ProtoMember(2)]
+            public readonly HullSection[] HullSections;
+            [ProtoMember(3)]
+            public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+
+            public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck){
+                NumDecks = numDecks;
+                HullSections = hullSections;
+                HullBuffersByDeck = hullBuffersByDeck;
+            }
         }
     }
 }
