@@ -79,12 +79,12 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Materials\WhiteBox.png">
+    <Compile Include="Materials\WhiteBox.png">
       <Name>WhiteBox</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <ProcessorParameters_GenerateMipmaps>True</ProcessorParameters_GenerateMipmaps>
-    </Content>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Fonts\SpriteFont.spritefont">
@@ -160,16 +160,16 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Effects\SolidBlack.png">
+    <Compile Include="Effects\SolidBlack.png">
       <Name>SolidBlack</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
-    </Content>
-    <Content Include="Effects\SolidYellow.png">
+    </Compile>
+    <Compile Include="Effects\SolidYellow.png">
       <Name>SolidYellow</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
-    </Content>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\Ladder.fbx">
