@@ -283,7 +283,7 @@ namespace Forge.Framework.Draw{
         }
 
         public ObjectBuffer(Serialized s) :
-            base(s.IndiciesPerObject * s.MaxObjects, s.VerticiesPerObject*s.MaxObjects, s.IndiciesPerObject/3, s.ShaderName, PrimitiveType.TriangleList) {
+            base(s.IndiciesPerObject * s.MaxObjects, s.VerticiesPerObject*s.MaxObjects, s.MaxObjects*s.IndiciesPerObject/3, s.ShaderName, PrimitiveType.TriangleList) {
             Rasterizer = new RasterizerState { CullMode = CullMode.None };
 
             _objectData = new List<ObjectData>(s.MaxObjects);
@@ -295,6 +295,7 @@ namespace Forge.Framework.Draw{
             MaxObjects = s.MaxObjects;
             _isSlotOccupied = new bool[s.MaxObjects];
 
+            //set buffer data
             UpdateBufferManually = true;
             foreach (var objData in s.ObjectDatas){
                 var verticies = new VertexPositionNormalTexture[objData.Verticies.Length];
@@ -310,13 +311,25 @@ namespace Forge.Framework.Draw{
                     );
                 _isSlotOccupied[objData.Offset] = true;
             }
-            
-            UpdateBuffers();
-            foreach (var objData in s.ObjectDatas){
-                if (!objData.Enabled){
+           
+            //set index/vertex buffers
+            for (int i = 0; i < _objectData.Count; i ++) {
+                for (int idx = 0; idx < IndiciesPerObject; idx++){
+                    _indicies[i*IndiciesPerObject + idx] = _objectData[i].Indicies[idx];
+                }
+            }
+            for (int i = 0; i < _objectData.Count; i++) {
+                for (int idx = 0; idx < VerticiesPerObject; idx++) {
+                    _verticies[i * VerticiesPerObject + idx] = _objectData[i].Verticies[idx];
+                }
+            }
+
+            foreach (var objData in s.ObjectDatas) {
+                if (!objData.Enabled) {
                     DisableObject(objData.Identifier);
                 }
             }
+
             UpdateBuffers();
             UpdateBufferManually = false;
         }
