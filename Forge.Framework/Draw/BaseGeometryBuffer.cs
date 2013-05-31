@@ -20,6 +20,7 @@ namespace Forge.Framework.Draw{
         public bool Enabled;
         protected RasterizerState Rasterizer;
         protected Effect Shader;
+        protected readonly string ShaderName;
         bool _disposed;
 
         protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType, CullMode cullMode = CullMode.None){
@@ -45,6 +46,7 @@ namespace Forge.Framework.Draw{
                 BufferUsage.None
                 );
 
+            ShaderName = shader;
             Resource.LoadShader(shader, out Shader);
             Shader.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
             Shader.Parameters["World"].SetValue(Matrix.Identity);
