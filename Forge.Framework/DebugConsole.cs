@@ -77,7 +77,7 @@ namespace Forge.Framework{
             public void Dispose(){
                 if (ExternConsoleEnabled) {
                     try {
-                        SendToConsole("---------- GAME TERMINATED ----------");
+                        WriteLine("---------- GAME TERMINATED ----------");
                     }
                     catch {
                         int test = 5;
