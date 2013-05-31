@@ -114,6 +114,10 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\Lib\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="protobuf-net, Version=2.0.0.622, Culture=neutral, PublicKeyToken=257b51d87d2e4d67, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Bin\protobuf-net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -136,6 +140,7 @@
     <Compile Include="Draw\RenderTarget.cs" />
     <Compile Include="Draw\Sprite2D.cs" />
     <Compile Include="FloatingRectangle.cs" />
+    <Compile Include="ProtoBuffWrappers.cs" />
     <Compile Include="Resources\HLSLShaderLoader.cs" />
     <Compile Include="Resources\OpenCLScriptLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
