@@ -11,6 +11,10 @@ using Forge.Framework.UI.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using BoundingBox = MonoGameUtility.BoundingBox;
+using Matrix = MonoGameUtility.Matrix;
+using Ray = MonoGameUtility.Ray;
+using Vector3 = MonoGameUtility.Vector3;
 
 namespace Forge.Core.ObjectEditor.Tools {
     internal abstract class DeckPlacementBase : IToolbarTool {

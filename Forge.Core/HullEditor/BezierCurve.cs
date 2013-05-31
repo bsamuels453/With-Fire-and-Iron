@@ -8,6 +8,7 @@ using Forge.Core.Util;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using MouseState = Microsoft.Xna.Framework.Input.MouseState;
+using Vector2 = MonoGameUtility.Vector2;
 
 namespace Forge.Core.HullEditor {
     /// <summary>

@@ -5,7 +5,7 @@ using Forge.Framework;
 using System.Xml;
 using Forge.Framework.Draw;
 using Forge.Core.Util;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 namespace Forge.Core.HullEditor {
     internal class BezierCurveCollection : IEnumerable<BezierCurve> {

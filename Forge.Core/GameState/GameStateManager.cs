@@ -9,7 +9,6 @@ using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Forge.Framework.UI;
 using Forge.Core.Util;
-using Microsoft.Xna.Framework;
 
 #endregion
 

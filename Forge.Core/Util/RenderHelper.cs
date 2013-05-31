@@ -1,5 +1,5 @@
-﻿using Microsoft.Xna.Framework;
-using Forge.Framework;
+﻿using Forge.Framework;
+using MonoGameUtility;
 
 namespace Forge.Core.Util {
     static class RenderHelper {

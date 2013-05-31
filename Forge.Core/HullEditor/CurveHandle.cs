@@ -2,7 +2,7 @@
 using Forge.Framework;
 using Forge.Framework.UI;
 using Forge.Framework.UI.Components;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 namespace Forge.Core.HullEditor {
     internal class CurveHandle {

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Forge.Core.Airship;
+using Forge.Core.Airship.Export;
 using Forge.Core.Airship.Generation;
 using Forge.Core.Camera;
 using Forge.Core.ObjectEditor;
@@ -66,7 +67,7 @@ namespace Forge.Core.GameState {
 
 
             if(state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.S)){
-                AirshipPackager.Export("Export.airship", _backCurveInfo, _sideCurveInfo, _topCurveInfo);
+                AirshipPackager.ExportAirshipDefinition("ExportedAirship.def", _backCurveInfo, _sideCurveInfo, _topCurveInfo);
             }
 
             #endregion

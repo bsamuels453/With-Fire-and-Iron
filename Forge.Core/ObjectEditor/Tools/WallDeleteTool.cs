@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using Forge.Framework.Draw;
 using Forge.Core.Util;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 
 namespace Forge.Core.ObjectEditor.Tools {
     internal class WallDeleteTool : DeckPlacementBase {

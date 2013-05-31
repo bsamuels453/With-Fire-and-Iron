@@ -4,7 +4,7 @@ using System;
 using Forge.Core.Logic;
 using Forge.Framework;
 using Forge.Core.Util;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 #endregion
 

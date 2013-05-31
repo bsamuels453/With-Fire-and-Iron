@@ -5,8 +5,8 @@ using Forge.Core.HullEditor;
 using Forge.Framework;
 using Forge.Framework.Resources;
 using Forge.Framework.UI;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using MonoGameUtility;
 
 namespace Forge.Core.GameState {
     internal class HullEditorState : IGameState {

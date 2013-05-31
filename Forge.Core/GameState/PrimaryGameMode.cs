@@ -1,4 +1,9 @@
-﻿using Forge.Core.Airship;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using Forge.Core.Airship;
+using Forge.Core.Airship.Data;
+using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
 using Forge.Core.Logic;
 using Forge.Core.Terrain;
@@ -6,6 +11,7 @@ using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
+using ProtoBuf;
 
 namespace Forge.Core.GameState {
     class PrimaryGameMode : IGameState{
@@ -31,7 +37,7 @@ namespace Forge.Core.GameState {
             
             _terrainUpdater = new TerrainUpdater();
 
-            _airship = AirshipPackager.Import("Export.airship");
+            _airship = AirshipPackager.ImportFromProtocol("ExportedAirship.protocol");
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
             _cameraController.SetCameraTarget(_airship.Position);

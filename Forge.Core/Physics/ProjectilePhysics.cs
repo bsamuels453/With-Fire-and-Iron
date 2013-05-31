@@ -5,9 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using BulletSharp;
+using BulletXNA;
+using BulletXNA.BulletCollision;
+using BulletXNA.BulletDynamics;
+using BulletXNA.LinearMath;
 using Forge.Framework;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 using IDisposable = System.IDisposable;
 
 #endregion
@@ -45,13 +48,14 @@ namespace Forge.Core.Physics{
             var constraintSolver = new SequentialImpulseConstraintSolver();
             _worldDynamics = new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
 
-            _worldDynamics.Gravity = new Vector3(0, gravity, 0);
+            //_worldDynamics.Gravity = new Vector3(0, gravity, 0);
+            _worldDynamics.SetGravity(new IndexedVector3(0, gravity, 0));
 
             _boundingObjData = new List<CollisionObjectCollection>();
             _projectiles = new List<Projectile>();
 
             var shape = new SphereShape(_defProjectile.Radius);
-            var nullMotion = new DefaultMotionState(Matrix.Identity);
+            var nullMotion = new DefaultMotionState(); //new DefaultMotionState(Matrix.Identity);
             _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
         }
 
@@ -71,19 +75,21 @@ namespace Forge.Core.Physics{
 
         public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
             var worldMatrix = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
-            _defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
+            //_defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
+            _defaultShotCtor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldMatrix), IndexedMatrix.Identity);
 
             var body = new RigidBody(_defaultShotCtor);
-            body.ApplyCentralForce(angle*_defProjectile.FiringForce);
+            var force_i = (IndexedVector3)angle * _defProjectile.FiringForce;
+            body.ApplyCentralForce(ref force_i);
             _worldDynamics.AddRigidBody(body);
 
             var projectile = new Projectile(
                 body,
-                getPosition: () => body.CenterOfMassPosition,
+                getPosition: () => body.GetCenterOfMassPosition(),
                 terminate: (proj) =>{
                                _projectiles.Remove(proj);
                                _worldDynamics.RemoveRigidBody(body);
-                               body.Dispose();
+                               body.Cleanup();
                                foreach (var collisionObjectCollection in _boundingObjData){
                                    collisionObjectCollection.BlacklistedProjectiles.Remove(proj);
                                }
@@ -100,10 +106,10 @@ namespace Forge.Core.Physics{
             Debug.Assert(!_disposed);
             foreach (var projectile in _projectiles) {
                 _worldDynamics.RemoveRigidBody(projectile.Body);
-                projectile.Body.Dispose();
+                projectile.Body.Cleanup();
             }
-            _defaultShotCtor.Dispose();
-            _worldDynamics.Dispose();
+            //_defaultShotCtor.Dispose();
+            _worldDynamics.Cleanup();
             _disposed = true;
         }
 
@@ -130,11 +136,14 @@ namespace Forge.Core.Physics{
                     }
 
 
-                    var projectileMtx = projectile.Body.MotionState.WorldTransform;
+                    var projectileMtx_i = new IndexedMatrix();
+
+                    projectile.Body.GetMotionState().GetWorldTransform(out projectileMtx_i);
+                    var projectileMtx = (Matrix)projectileMtx_i;
                     var shipMtx = shipDat.WorldMatrix;
 
                     var invShipMtx = Matrix.Invert(shipMtx);
-                    var projectilePos = Common.MultMatrix(invShipMtx, projectileMtx.Translation);
+                    var projectilePos = Common.MultMatrix(invShipMtx, ((Matrix)projectileMtx).Translation);
 
                     if (Vector3.Distance(projectilePos, Vector3.Zero) > shipDat.ShipSOI.Radius)
                         continue;
@@ -146,7 +155,8 @@ namespace Forge.Core.Physics{
                                 //object confirmed to be in general area
                                 //now check to see if its movement path intersects the object's triangles
                                 var worldPt = Common.MultMatrix(shipMtx, point);
-                                var velocity = projectile.Body.GetVelocityInLocalPoint(worldPt);
+                                var worldPt_i = (IndexedVector3)worldPt;
+                                var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPt_i);
                                 if (velocity.Length() == 0)
                                     continue;
                                 var rawvel = velocity;

@@ -3,9 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Core.Logic;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
+using ProtoBuf;
 
 namespace Forge.Core.Airship.Data {
     class HullSectionContainer :IEnumerable, IDisposable{
@@ -19,20 +21,28 @@ namespace Forge.Core.Airship.Data {
         public HullSectionContainer(List<HullSection> hullSections, ObjectBuffer<int>[] hullBuffersByDeck){
             HullBuffersByDeck = hullBuffersByDeck;
             _hullSections = hullSections.ToArray();
-            var groupedByDeck = (from section in hullSections
-                                 group section by section.Deck).ToArray();
+            HullSectionByDeck = GroupSectionsByDeck(_hullSections);
 
-            HullSectionByDeck = new HullSection[groupedByDeck.Length][];
-            foreach (var grouping in groupedByDeck){
-                HullSectionByDeck[grouping.Key] = grouping.ToArray();
-            }
-            foreach (var hullBuff in HullSectionByDeck){
-                Debug.Assert(hullBuff != null);
-            }
             NumDecks = HullBuffersByDeck.Length;
             TopExpIdx = 0;
             TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
             Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
+        }
+
+        static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
+            var groupedByDeck = (from section in hullSections
+                                 group section by section.Deck).ToArray();
+
+            var hullSectionByDeck = new HullSection[groupedByDeck.Length][];
+            foreach (var grouping in groupedByDeck) {
+                hullSectionByDeck[grouping.Key] = grouping.ToArray();
+            }
+
+            foreach (var layer in hullSectionByDeck) {
+                Debug.Assert(layer != null);
+            }
+
+            return hullSectionByDeck;
         }
 
         public int SetTopVisibleDeck(int deck){
@@ -74,5 +84,55 @@ namespace Forge.Core.Airship.Data {
         ~HullSectionContainer(){
             Debug.Assert(_disposed);
         }
+
+        #region serialization
+        public HullSectionContainer(Serialized serializedStruct){
+            NumDecks = serializedStruct.NumDecks;
+            _hullSections = serializedStruct.HullSections;
+
+            HullBuffersByDeck = new ObjectBuffer<int>[NumDecks];
+            for (int i = 0; i < NumDecks; i++) {
+                HullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
+            }
+
+            foreach (var hullSection in _hullSections){
+                hullSection.SetDelegates(HullBuffersByDeck[hullSection.Deck]);
+            }
+
+            HullSectionByDeck = GroupSectionsByDeck(_hullSections);
+            TopExpIdx = 0;
+            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+            Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
+        }
+
+        public Serialized ExtractSerializationStruct() {
+            var hullBuffData = new ObjectBuffer<int>.Serialized[NumDecks];
+            for (int i = 0; i < NumDecks; i++) {
+                hullBuffData[i] = HullBuffersByDeck[i].ExtractSerializationStruct();
+            }
+
+            var ret = new Serialized(
+                NumDecks,
+                _hullSections,
+                hullBuffData
+                );
+            return ret;
+        }
+        [ProtoContract]
+        public struct Serialized{
+            [ProtoMember(1)]
+            public readonly int NumDecks;
+            [ProtoMember(2)]
+            public readonly HullSection[] HullSections;
+            [ProtoMember(3)]
+            public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+
+            public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck){
+                NumDecks = numDecks;
+                HullSections = hullSections;
+                HullBuffersByDeck = hullBuffersByDeck;
+            }
+        }
+        #endregion
     }
 }

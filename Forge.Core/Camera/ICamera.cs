@@ -1,7 +1,7 @@
 ﻿#region
 
 using Forge.Framework;
-using Microsoft.Xna.Framework;
+using MonoGameUtility;
 
 #endregion
 

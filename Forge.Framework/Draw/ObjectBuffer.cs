@@ -5,8 +5,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using ProtoBuf;
 
 #endregion
 
@@ -244,6 +244,98 @@ namespace Forge.Framework.Draw{
             return data;
         }
 
+        #region serialization
+        public Serialized ExtractSerializationStruct(){
+            var objectData = new ObjectData.ChildSerialized[_objectData.Count];
+            for(int i=0; i<_objectData.Count; i++){
+                objectData[i] = _objectData[i].ExtractSerializationStruct();
+            }
+
+            var ret = new Serialized(
+                MaxObjects,
+                VerticiesPerObject,
+                IndiciesPerObject,
+                objectData,
+                base.ShaderName
+                );
+            return ret;
+        }
+        [ProtoContract]
+        public struct Serialized {
+            [ProtoMember(1)]
+            public readonly int MaxObjects;
+            [ProtoMember(2)]
+            public readonly int VerticiesPerObject;
+            [ProtoMember(3)]
+            public readonly int IndiciesPerObject;
+            [ProtoMember(4)]
+            public readonly ObjectData.ChildSerialized[] ObjectDatas;
+            [ProtoMember(5)]
+            public readonly string ShaderName;
+
+            public Serialized(int maxObjects, int verticiesPerObject, int indiciesPerObject, ObjectData.ChildSerialized[] objectData, string shaderName) {
+                MaxObjects = maxObjects;
+                VerticiesPerObject = verticiesPerObject;
+                IndiciesPerObject = indiciesPerObject;
+                ObjectDatas = objectData;
+                ShaderName = shaderName;
+            }
+        }
+
+        public ObjectBuffer(Serialized s) :
+            base(s.IndiciesPerObject * s.MaxObjects, s.VerticiesPerObject*s.MaxObjects, s.MaxObjects*s.IndiciesPerObject/3, s.ShaderName, PrimitiveType.TriangleList) {
+            Rasterizer = new RasterizerState { CullMode = CullMode.None };
+
+            _objectData = new List<ObjectData>(s.MaxObjects);
+            _indicies = new int[s.MaxObjects * s.IndiciesPerObject];
+            _verticies = new VertexPositionNormalTexture[s.MaxObjects * s.VerticiesPerObject];
+
+            IndiciesPerObject = s.IndiciesPerObject;
+            VerticiesPerObject = s.VerticiesPerObject;
+            MaxObjects = s.MaxObjects;
+            _isSlotOccupied = new bool[s.MaxObjects];
+
+            //set buffer data
+            UpdateBufferManually = true;
+            foreach (var objData in s.ObjectDatas){
+                var verticies = new VertexPositionNormalTexture[objData.Verticies.Length];
+                for (int i = 0; i < verticies.Length; i++) {
+                    verticies[i] = objData.Verticies[i];
+                }
+
+                _objectData.Add(new ObjectData(
+                    objData.Identifier,
+                    objData.Offset,
+                    objData.Indicies,
+                    verticies)
+                    );
+                _isSlotOccupied[objData.Offset] = true;
+            }
+           
+            //set index/vertex buffers
+            for (int i = 0; i < _objectData.Count; i ++) {
+                for (int idx = 0; idx < IndiciesPerObject; idx++){
+                    _indicies[i*IndiciesPerObject + idx] = _objectData[i].Indicies[idx];
+                }
+            }
+            for (int i = 0; i < _objectData.Count; i++) {
+                for (int idx = 0; idx < VerticiesPerObject; idx++) {
+                    _verticies[i * VerticiesPerObject + idx] = _objectData[i].Verticies[idx];
+                }
+            }
+
+            foreach (var objData in s.ObjectDatas) {
+                if (!objData.Enabled) {
+                    DisableObject(objData.Identifier);
+                }
+            }
+
+            UpdateBuffers();
+            UpdateBufferManually = false;
+        }
+
+        #endregion
+
         #region Nested type: ObjectData
 
         public class ObjectData{
@@ -262,6 +354,46 @@ namespace Forge.Framework.Draw{
                 Indicies = indicies;
                 Verticies = verticies;
             }
+
+            #region serialization
+            public ChildSerialized ExtractSerializationStruct(){
+                var verts = new ProtoBuffWrappers.VertexWrapper[Verticies.Length];
+                for (int i = 0; i < Verticies.Length; i++){
+                    verts[i] = Verticies[i];
+                }
+
+                var ret = new ChildSerialized(
+                    (TIdentifier)Identifier,
+                    Indicies,
+                    verts,
+                    Enabled,
+                    ObjectOffset
+                    );
+                return ret;
+            }
+
+            [ProtoContract]
+            public struct ChildSerialized{
+                [ProtoMember(1)]
+                public readonly TIdentifier Identifier;
+                [ProtoMember(2)]
+                public readonly int[] Indicies;
+                [ProtoMember(3)]
+                public readonly ProtoBuffWrappers.VertexWrapper[] Verticies;
+                [ProtoMember(4)]
+                public readonly bool Enabled;
+                [ProtoMember(5)]
+                public readonly int Offset;
+
+                public ChildSerialized(TIdentifier identifier, int[] indicies, ProtoBuffWrappers.VertexWrapper[] verticies, bool enabled, int offset){
+                    Identifier = identifier;
+                    Indicies = indicies;
+                    Verticies = verticies;
+                    Enabled = enabled;
+                    Offset = offset;
+                }
+            }
+            #endregion
         }
 
         #endregion

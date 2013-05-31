@@ -9,6 +9,7 @@ using Forge.Framework.UI.Components;
 using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Vector2 = MonoGameUtility.Vector2;
 
 #endregion
 

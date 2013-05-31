@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+﻿using MonoGameUtility;
 
 namespace Forge.Core.Airship.Data {
     public struct AirshipMovementData {
