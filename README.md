@@ -1,11 +1,17 @@
 Airship combat simulator I'm working on in my spare time. Most of the code is based on one of my older sim projects, Forge.
 
 There's a lot of components in this project, so here's a quick overview of what's been implemented.
+
 -OpenCL terrain generation
+
 -OpenCL terrain quantization (quadtree)
+
 -Airship hull modeling using bezier curves/surfaces
+
 -Partially completed object/airship internals editor
+
 -Airship firing/cannonball collision mechanics.
+
 
 For now, this code is licenced under the Mozilla Public Licence.
 http://www.mozilla.org/MPL/2.0/
