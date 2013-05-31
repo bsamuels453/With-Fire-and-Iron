@@ -7,227 +7,36 @@ using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
 using Forge.Core.Util;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using ProtoBuf;
 
 #endregion
 
 namespace Forge.Core.Airship.Export{
     internal static class AirshipPackager{
-        const int _version = 0;
 
-        public static void Export(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo) {
+        public static void ExportAirshipDefinition(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo) {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             JObject jObj = new JObject();
-            jObj["Version"] = _version;
             jObj["FrontBezierSurf"] = JToken.FromObject(backCurveInfo);
             jObj["SideBezierSurf"] = JToken.FromObject(sideCurveInfo);
             jObj["TopBezierSurf"] = JToken.FromObject(topCurveInfo);
-            /*
-            jObj["NumDecks"] = hullData.NumDecks;
 
-            var hullInds = new int[hullData.NumDecks][];
-            var hullVerts = new VertexPositionNormalTexture[hullData.NumDecks][];
-
-            for (int i = 0; i < hullData.NumDecks; i++){
-                //fixme
-                //hullInds[i] = hullData.HullBuffers[i].DumpIndicies();
-                //hullVerts[i] = hullData.HullBuffers[i].DumpVerticies();
-            }
-
-            var center = CalculateCenter(hullVerts);
-            jObj["Centroid"] = JToken.FromObject(center);
-
-            jObj["HullVerticies"] = JToken.FromObject(hullVerts);
-            jObj["HullIndicies"] = JToken.FromObject(hullInds);
-
-
-            var deckPlateInds = new List<int>[hullData.NumDecks];
-            var deckPlateVerts = new List<VertexPositionNormalTexture>[hullData.NumDecks];
-
-            for (int i = 0; i < hullData.NumDecks; i++){
-                ConcatDeckPlates(
-                    hullData.DeckBuffers[i].DumpObjectData(),
-                    0.5f,
-                    out deckPlateInds[i],
-                    out deckPlateVerts[i]
-                    );
-            }
-
-            jObj["DeckVerticies"] = JToken.FromObject(deckPlateVerts);
-            jObj["DeckIndicies"] = JToken.FromObject(deckPlateInds);
-
-             */
             var sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
             sw.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             sw.Close();
+            stopwatch.Stop();
+            DebugConsole.WriteLine("Airship serialized to definition in " + stopwatch.ElapsedMilliseconds + " ms");
         }
 
-        static Vector3 CalculateCenter(VertexPositionNormalTexture[][] airshipVertexes){
-            var ret = new Vector3(0, 0, 0);
-            int numVerts = 0;
-            foreach (var layer in airshipVertexes){
-                numVerts += layer.Length;
-                foreach (var vert in layer){
-                    ret += (Vector3)vert.Position;
-                }
-            }
-            ret /= numVerts;
-            return ret;
-        }
-
-        static void ConcatDeckPlates(
-            ObjectBuffer<AirshipObjectIdentifier>.ObjectData[] objectData,
-            float deckPlateWidth,
-            out List<int> indicies,
-            out List<VertexPositionNormalTexture> verticies){
-            //this identifies deck boards that aren't part of the main mesh
-            var nullIdentifier = new AirshipObjectIdentifier(ObjectType.Misc, Vector3.Zero);
-
-            //get extrema
-            float minX = float.MaxValue, minZ = float.MaxValue, maxX = 0, maxZ = 0;
-            foreach (var data in objectData){
-                if (data.Identifier.Equals(nullIdentifier))
-                    continue;
-
-                foreach (var point in data.Verticies){
-                    if (point.Position.X > maxX)
-                        maxX = point.Position.X;
-                    if (point.Position.Z > maxZ)
-                        maxZ = point.Position.Z;
-                    if (point.Position.X < minX)
-                        minX = point.Position.X;
-                    if (point.Position.Z < minZ)
-                        minZ = point.Position.Z;
-                }
-            }
-            float y = objectData[0].Verticies[0].Position.Y;
-            float mult = 1/deckPlateWidth;
-
-            Func<float, int> toArrX = f => (int) ((f - minX)*mult);
-            Func<float, int> toArrZ = f => (int) ((f - minZ)*mult);
-
-            Func<int, float> fromArrX = f => (float) f/mult + minX;
-            Func<int, float> fromArrZ = f => (float) f/mult + minZ;
-
-            var vertArr = new bool[toArrX(maxX) + 1,toArrZ(maxZ) + 1];
-            var disabledVerts = new List<Tuple<int, int>>();
-            //generate reference array
-            foreach (var data in objectData){
-                if (data.Identifier.Equals(nullIdentifier))
-                    continue;
-
-                if (data.Enabled){
-                    foreach (var vertex in data.Verticies){
-                        int x = toArrX(vertex.Position.X);
-                        int z = toArrZ(vertex.Position.Z);
-                        vertArr[x, z] = true;
-                    }
-                }
-                else{
-                    foreach (var vertex in data.Verticies){
-                        disabledVerts.Add(new Tuple<int, int>(
-                                              toArrX(vertex.Position.X),
-                                              toArrZ(vertex.Position.Z)
-                                              ));
-                    }
-                }
-            }
-
-            //generate strips of deck based on reference array
-            var listInds = new List<int>();
-            var listVerts = new List<VertexPositionNormalTexture>();
-            int numPlates = 0;
-            var idxWinding = new[]{0, 2, 1, 0, 3, 2};
-            for (int xIdx = 0; xIdx < vertArr.GetLength(0) - 1; xIdx++){
-                int zIdx = 0;
-
-                while (true){
-                    while (!vertArr[xIdx, zIdx] || !vertArr[xIdx + 1, zIdx])
-                        zIdx++;
-
-                    int initlZ = zIdx;
-
-                    while ((vertArr[xIdx, zIdx] && vertArr[xIdx + 1, zIdx])){
-                        zIdx++;
-                        if (zIdx + 1 > vertArr.GetLength(1))
-                            break;
-                    }
-
-                    Func<int, int, int, int, bool> addVertex = (x, z, texU, texV) => {
-                        listVerts.Add(new VertexPositionNormalTexture(
-                                          new Vector3(
-                                              fromArrX(x),
-                                              y,
-                                              fromArrZ(z)
-                                              ),
-                                          Vector3.Up,
-                                          new Vector2(texU, texV)
-                                          )
-                            );
-                        return true;
-                    };
-
-                    zIdx--;
-                    addVertex(xIdx, initlZ, 0, 0);
-                    addVertex(xIdx, zIdx, 1, 0);
-                    addVertex(xIdx + 1, zIdx, 1, 1);
-                    addVertex(xIdx + 1, initlZ, 0, 1);
-                    int offset = numPlates*4;
-
-                    var winding = (int[]) idxWinding.Clone();
-                    for (int i = 0; i < 6; i++){
-                        winding[i] += offset;
-                    }
-                    listInds.AddRange(winding);
-                    numPlates++;
-
-                    //xxxx untested
-                    if (!disabledVerts.Contains(new Tuple<int, int>(xIdx, zIdx))){
-                        break;
-                    }
-                }
-            }
-
-            //now add the plates that aren't part of the main mesh
-            var otherPlates = new List<ObjectBuffer<AirshipObjectIdentifier>.ObjectData>();
-            foreach (var data in objectData){
-                if (data.Identifier.Equals(nullIdentifier))
-                    otherPlates.Add(data);
-            }
-            foreach (var data in otherPlates){
-                int lowest = data.Indicies[0];
-                int offset = numPlates*4;
-
-                for (int i = 0; i < 6; i++){
-                    data.Indicies[i] -= lowest;
-                    data.Indicies[i] += offset;
-                }
-
-                listInds.AddRange(data.Indicies);
-                listVerts.AddRange(data.Verticies);
-                numPlates++;
-            }
-            /*
-            var bmp = new Bitmap(vertArr.GetLength(0), vertArr.GetLength(1));
-            for (int x = 0; x < vertArr.GetLength(0); x++){
-                for (int z = 0; z < vertArr.GetLength(1); z++){
-                    if (vertArr[x, z]){
-                        bmp.SetPixel(x, z, Color.Red);
-                    }
-                }
-            }
-            bmp.Save("hello.png");
-            */
-
-            indicies = listInds;
-            verticies = listVerts;
-        }
-
-        public static Airship Import(string fileName){
+        public static Airship ImportFromDefinition(string fileName) {
             var sw = new Stopwatch();
             sw.Start();
             var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
@@ -254,51 +63,67 @@ namespace Forge.Core.Airship.Export{
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;
             modelAttribs.Centroid = new Vector3(modelAttribs.Length / 3, 0, 0);
+            sw.Stop();
 
-            /*
-            int numDecks = jObj["NumDecks"].ToObject<int>();
-            modelAttribs.NumDecks = numDecks;
-            modelAttribs.Centroid = jObj["Centroid"].ToObject<Vector3>();
-
-            var hullVerts = jObj["HullVerticies"].ToObject<VertexPositionNormalTexture[][]>();
-            var hullInds = jObj["HullIndicies"].ToObject<int[][]>();
-
-            var deckVerts = jObj["DeckVerticies"].ToObject<VertexPositionNormalTexture[][]>();
-            var deckInds = jObj["DeckIndicies"].ToObject<int[][]>();
-
-            var deckBuffs = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
-            var hullBuffs = new GeometryBuffer<VertexPositionNormalTexture>[numDecks];
-
-            //reflect vertexes to fix orientation
-            //xxx THIS BREAKS THE NORMALS
-            var reflection = new Vector3(1, 0, 0);
-            for (int i = 0; i < numDecks; i++){
-                for (int vert = 0; vert < deckVerts[i].Length; vert++){
-                    deckVerts[i][vert].Position = Vector3.Reflect(deckVerts[i][vert].Position, reflection);
-                }
-                for (int vert = 0; vert < hullVerts[i].Length; vert++) {
-                    hullVerts[i][vert].Position = Vector3.Reflect(hullVerts[i][vert].Position, reflection);
-                }
-            }
-
-
-            for (int i = 0; i < numDecks; i++){
-                deckBuffs[i] = new GeometryBuffer<VertexPositionNormalTexture>(deckInds[i].Length, deckVerts[i].Length, deckVerts[i].Length / 2, "Shader_AirshipDeck");
-                deckBuffs[i].IndexBuffer.SetData(deckInds[i]);
-                deckBuffs[i].VertexBuffer.SetData(deckVerts[i]);
-
-
-                hullBuffs[i] = new GeometryBuffer<VertexPositionNormalTexture>(hullInds[i].Length, hullVerts[i].Length, hullVerts[i].Length / 2, "Shader_AirshipHull");
-                hullBuffs[i].IndexBuffer.SetData(hullInds[i]);
-                hullBuffs[i].VertexBuffer.SetData(hullVerts[i]);
-            }
-            */
-
+            DebugConsole.WriteLine("Airship deserialized from definition in " + sw.ElapsedMilliseconds + " ms");
 
             var ret = new Airship(modelAttribs, hullData.DeckSectionContainer, hullData.HullSections);
-            sw.Stop();
-            double d = sw.ElapsedMilliseconds;
+            return ret;
+        }
 
+        public static void ExportToProtocol(string fileName, HullSectionContainer hullSectionContainer, DeckSectionContainer deckSectionContainer, ModelAttributes attributes){
+            var sw = new Stopwatch();
+            sw.Start();
+            var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\" + fileName, FileMode.Create);
+            var sections = hullSectionContainer.ExtractSerializationStruct();
+            var decks = deckSectionContainer.ExtractSerializationStruct();
+            var aship = new AirshipSerializationStruct();
+            aship.DeckSections = decks;
+            aship.HullSections = sections;
+            aship.ModelAttributes = attributes;
+            Serializer.Serialize(fs, aship);
+            fs.Close();
+            sw.Stop();
+            DebugConsole.WriteLine("Airship serialized to protocol in " + sw.ElapsedMilliseconds + " ms");
+        }
+
+        public static Airship ImportFromProtocol(string fileName){
+            var sw = new Stopwatch();
+            sw.Start();
+            var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\" + fileName, FileMode.Open);
+            var serializedStruct = Serializer.Deserialize<AirshipSerializationStruct>(fs);
+            fs.Close();
+            var hullSections = new HullSectionContainer(serializedStruct.HullSections);
+            var deckSections = new DeckSectionContainer(serializedStruct.DeckSections);
+            var modelAttribs = serializedStruct.ModelAttributes;
+            sw.Stop();
+
+            DebugConsole.WriteLine("Airship deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
+
+            var ret = new Airship(modelAttribs, deckSections, hullSections);
+            return ret;
+        }
+
+        [ProtoContract]
+        struct AirshipSerializationStruct{
+            [ProtoMember(1)]
+            public HullSectionContainer.Serialized HullSections;
+            [ProtoMember(2)]
+            public DeckSectionContainer.Serialized DeckSections;
+            [ProtoMember(3)]
+            public ModelAttributes ModelAttributes;
+        }
+
+        static Vector3 CalculateCenter(VertexPositionNormalTexture[][] airshipVertexes) {
+            var ret = new Vector3(0, 0, 0);
+            int numVerts = 0;
+            foreach (var layer in airshipVertexes) {
+                numVerts += layer.Length;
+                foreach (var vert in layer) {
+                    ret += (Vector3)vert.Position;
+                }
+            }
+            ret /= numVerts;
             return ret;
         }
     }
