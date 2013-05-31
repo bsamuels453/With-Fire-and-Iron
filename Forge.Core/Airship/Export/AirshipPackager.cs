@@ -108,7 +108,7 @@ namespace Forge.Core.Airship.Export{
             foreach (var layer in airshipVertexes){
                 numVerts += layer.Length;
                 foreach (var vert in layer){
-                    ret += vert.Position;
+                    ret += (Vector3)vert.Position;
                 }
             }
             ret /= numVerts;
