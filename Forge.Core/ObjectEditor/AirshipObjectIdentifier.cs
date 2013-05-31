@@ -18,6 +18,10 @@ namespace Forge.Core.Logic {
             Position = position;
         }
 
+        public AirshipObjectIdentifier(){
+
+        }
+
         #region IEquatable<AirshipObjectIdentifier> Members
 
         public bool Equals(AirshipObjectIdentifier other) {
