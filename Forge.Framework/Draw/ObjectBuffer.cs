@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Xna.Framework.Graphics;
+using ProtoBuf;
 
 #endregion
 
@@ -243,6 +244,39 @@ namespace Forge.Framework.Draw{
             return data;
         }
 
+        public Serialized ExtractSerializationStruct(){
+            var objectData = new ObjectData.ChildSerialized[_objectData.Count];
+            for(int i=0; i<_objectData.Count; i++){
+                objectData[i] = _objectData[i].ExtractSerializationStruct();
+            }
+
+            var ret = new Serialized(
+                MaxObjects,
+                VerticiesPerObject,
+                IndiciesPerObject,
+                objectData
+                );
+            return ret;
+        }
+        [ProtoContract]
+        public struct Serialized {
+            [ProtoMember(1)]
+            public readonly int MaxObjects;
+            [ProtoMember(2)]
+            public readonly int VerticiesPerObject;
+            [ProtoMember(3)]
+            public readonly int IndiciesPerObject;
+            [ProtoMember(4)]
+            public readonly ObjectData.ChildSerialized[] ObjectDatas;
+
+            public Serialized(int maxObjects, int verticiesPerObject, int indiciesPerObject, ObjectData.ChildSerialized[] objectData) {
+                MaxObjects = maxObjects;
+                VerticiesPerObject = verticiesPerObject;
+                IndiciesPerObject = indiciesPerObject;
+                ObjectDatas = objectData;
+            }
+        }
+
         #region Nested type: ObjectData
 
         public class ObjectData{
@@ -260,6 +294,44 @@ namespace Forge.Framework.Draw{
                 ObjectOffset = objectOffset;
                 Indicies = indicies;
                 Verticies = verticies;
+            }
+
+            public ChildSerialized ExtractSerializationStruct(){
+                var verts = new ProtoBuffWrappers.VertexWrapper[Verticies.Length];
+                for (int i = 0; i < Verticies.Length; i++){
+                    verts[i] = Verticies[i];
+                }
+
+                var ret = new ChildSerialized(
+                    (TIdentifier)Identifier,
+                    Indicies,
+                    ObjectOffset,
+                    verts,
+                    Enabled
+                    );
+                return ret;
+            }
+
+            [ProtoContract]
+            public struct ChildSerialized{
+                [ProtoMember(1)]
+                public readonly TIdentifier Identifier;
+                [ProtoMember(2)]
+                public readonly int[] Indicies;
+                [ProtoMember(3)]
+                public readonly int ObjectOffset;
+                [ProtoMember(4)]
+                public readonly ProtoBuffWrappers.VertexWrapper[] Verticies;
+                [ProtoMember(5)]
+                public readonly bool Enabled;
+
+                public ChildSerialized(TIdentifier identifier, int[] indicies, int objectOffset, ProtoBuffWrappers.VertexWrapper[] verticies, bool enabled){
+                    Identifier = identifier;
+                    Indicies = indicies;
+                    ObjectOffset = objectOffset;
+                    Verticies = verticies;
+                    Enabled = enabled;
+                }
             }
         }
 
