@@ -9,8 +9,8 @@ using Forge.Core.Airship.Generation;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Core.Logic;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -72,7 +72,7 @@ namespace Forge.Core.Airship.Export{
             foreach (var layer in airshipVertexes){
                 numVerts += layer.Length;
                 foreach (var vert in layer){
-                    ret += vert.Position;
+                    ret += (Vector3)vert.Position;
                 }
             }
             ret /= numVerts;
