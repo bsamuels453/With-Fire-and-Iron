@@ -30,14 +30,16 @@ SOFTWARE.
 
 using System;
 using System.Collections.Generic;
+using ProtoBuf;
 
 namespace MonoGameUtility {
+    [ProtoContract]
     public struct BoundingBox : IEquatable<BoundingBox> {
 
         #region Public Fields
-
+        [ProtoMember(1)]
         public Vector3 Min;
-
+        [ProtoMember(2)]
         public Vector3 Max;
 
         public const int CornerCount = 8;
