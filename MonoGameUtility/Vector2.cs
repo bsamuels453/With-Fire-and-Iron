@@ -27,8 +27,10 @@ SOFTWARE.
 
 using System;
 using System.Globalization;
+using ProtoBuf;
 
 namespace MonoGameUtility {
+    [ProtoContract]
     public struct Vector2 : IEquatable<Vector2> {
         #region Private Fields
 
@@ -41,9 +43,9 @@ namespace MonoGameUtility {
 
 
         #region Public Fields
-
+        [ProtoMember(1)]
         public float X;
-
+        [ProtoMember(2)]
         public float Y;
 
         #endregion Public Fields

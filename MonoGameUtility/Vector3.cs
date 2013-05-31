@@ -28,8 +28,10 @@ SOFTWARE.
 using System;
 using System.Diagnostics;
 using System.Text;
+using ProtoBuf;
 
 namespace MonoGameUtility {
+    [ProtoContract]
     public struct Vector3 : IEquatable<Vector3> {
         #region Private Fields
 
@@ -49,11 +51,11 @@ namespace MonoGameUtility {
 
 
         #region Public Fields
-
+        [ProtoMember(1)]
         public float X;
-
+        [ProtoMember(2)]
         public float Y;
-
+        [ProtoMember(3)]
         public float Z;
 
         #endregion Public Fields
