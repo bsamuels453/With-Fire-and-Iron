@@ -244,6 +244,7 @@ namespace Forge.Framework.Draw{
             return data;
         }
 
+        #region serialization
         public Serialized ExtractSerializationStruct(){
             var objectData = new ObjectData.ChildSerialized[_objectData.Count];
             for(int i=0; i<_objectData.Count; i++){
@@ -254,7 +255,8 @@ namespace Forge.Framework.Draw{
                 MaxObjects,
                 VerticiesPerObject,
                 IndiciesPerObject,
-                objectData
+                objectData,
+                base.ShaderName
                 );
             return ret;
         }
@@ -268,14 +270,58 @@ namespace Forge.Framework.Draw{
             public readonly int IndiciesPerObject;
             [ProtoMember(4)]
             public readonly ObjectData.ChildSerialized[] ObjectDatas;
+            [ProtoMember(5)]
+            public readonly string ShaderName;
 
-            public Serialized(int maxObjects, int verticiesPerObject, int indiciesPerObject, ObjectData.ChildSerialized[] objectData) {
+            public Serialized(int maxObjects, int verticiesPerObject, int indiciesPerObject, ObjectData.ChildSerialized[] objectData, string shaderName) {
                 MaxObjects = maxObjects;
                 VerticiesPerObject = verticiesPerObject;
                 IndiciesPerObject = indiciesPerObject;
                 ObjectDatas = objectData;
+                ShaderName = shaderName;
             }
         }
+
+        public ObjectBuffer(Serialized s) :
+            base(s.IndiciesPerObject * s.MaxObjects, s.VerticiesPerObject*s.MaxObjects, s.IndiciesPerObject/3, s.ShaderName, PrimitiveType.TriangleList) {
+            Rasterizer = new RasterizerState { CullMode = CullMode.None };
+
+            _objectData = new List<ObjectData>(s.MaxObjects);
+            _indicies = new int[s.MaxObjects * s.IndiciesPerObject];
+            _verticies = new VertexPositionNormalTexture[s.MaxObjects * s.VerticiesPerObject];
+
+            IndiciesPerObject = s.IndiciesPerObject;
+            VerticiesPerObject = s.VerticiesPerObject;
+            MaxObjects = s.MaxObjects;
+            _isSlotOccupied = new bool[s.MaxObjects];
+
+            UpdateBufferManually = true;
+            foreach (var objData in s.ObjectDatas){
+                var verticies = new VertexPositionNormalTexture[objData.Verticies.Length];
+                for (int i = 0; i < verticies.Length; i++) {
+                    verticies[i] = objData.Verticies[i];
+                }
+
+                _objectData.Add(new ObjectData(
+                    objData.Identifier,
+                    objData.Offset,
+                    objData.Indicies,
+                    verticies)
+                    );
+                _isSlotOccupied[objData.Offset] = true;
+            }
+            
+            UpdateBuffers();
+            foreach (var objData in s.ObjectDatas){
+                if (!objData.Enabled){
+                    DisableObject(objData.Identifier);
+                }
+            }
+            UpdateBuffers();
+            UpdateBufferManually = false;
+        }
+
+        #endregion
 
         #region Nested type: ObjectData
 
@@ -296,6 +342,7 @@ namespace Forge.Framework.Draw{
                 Verticies = verticies;
             }
 
+            #region serialization
             public ChildSerialized ExtractSerializationStruct(){
                 var verts = new ProtoBuffWrappers.VertexWrapper[Verticies.Length];
                 for (int i = 0; i < Verticies.Length; i++){
@@ -305,9 +352,9 @@ namespace Forge.Framework.Draw{
                 var ret = new ChildSerialized(
                     (TIdentifier)Identifier,
                     Indicies,
-                    ObjectOffset,
                     verts,
-                    Enabled
+                    Enabled,
+                    ObjectOffset
                     );
                 return ret;
             }
@@ -319,20 +366,21 @@ namespace Forge.Framework.Draw{
                 [ProtoMember(2)]
                 public readonly int[] Indicies;
                 [ProtoMember(3)]
-                public readonly int ObjectOffset;
-                [ProtoMember(4)]
                 public readonly ProtoBuffWrappers.VertexWrapper[] Verticies;
-                [ProtoMember(5)]
+                [ProtoMember(4)]
                 public readonly bool Enabled;
+                [ProtoMember(5)]
+                public readonly int Offset;
 
-                public ChildSerialized(TIdentifier identifier, int[] indicies, int objectOffset, ProtoBuffWrappers.VertexWrapper[] verticies, bool enabled){
+                public ChildSerialized(TIdentifier identifier, int[] indicies, ProtoBuffWrappers.VertexWrapper[] verticies, bool enabled, int offset){
                     Identifier = identifier;
                     Indicies = indicies;
-                    ObjectOffset = objectOffset;
                     Verticies = verticies;
                     Enabled = enabled;
+                    Offset = offset;
                 }
             }
+            #endregion
         }
 
         #endregion
