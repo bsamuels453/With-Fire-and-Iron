@@ -17,6 +17,34 @@ using ProtoBuf;
 
 namespace Forge.Core.Airship.Export{
     internal static class AirshipPackager{
+        static readonly Dictionary<string, AirshipSerializationStruct> _airshipCache;
+
+        static AirshipPackager(){
+            _airshipCache = new Dictionary<string, AirshipSerializationStruct>();
+        }
+
+        public static Airship LoadAirship(string fileName){
+            AirshipSerializationStruct airship;
+            if (_airshipCache.ContainsKey(fileName)) {
+                airship = _airshipCache[fileName];
+                DebugConsole.WriteLine("Airship serialization structure loaded from cache");
+            }
+            else{
+                DebugConsole.WriteLine("Airship serialization structure not in cache, importing protocol...");
+                _airshipCache.Add(
+                    fileName,
+                    ImportFromProtocol(fileName)
+                    );
+                airship = _airshipCache[fileName];
+            }
+
+            var hullSections = new HullSectionContainer(airship.HullSections);
+            var deckSections = new DeckSectionContainer(airship.DeckSections);
+            var modelAttribs = airship.ModelAttributes;
+            var ret = new Airship(modelAttribs, deckSections, hullSections);
+            return ret;
+        }
+
         public static void ExportAirshipDefinition(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo){
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -32,7 +60,7 @@ namespace Forge.Core.Airship.Export{
             DebugConsole.WriteLine("Airship serialized to definition in " + stopwatch.ElapsedMilliseconds + " ms");
         }
 
-        public static Airship ImportFromDefinition(string fileName){
+        static Airship ImportFromDefinition(string fileName){
             var sw = new Stopwatch();
             sw.Start();
             var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + fileName);
@@ -85,21 +113,18 @@ namespace Forge.Core.Airship.Export{
             DebugConsole.WriteLine("Airship serialized to protocol in " + sw.ElapsedMilliseconds + " ms");
         }
 
-        public static Airship ImportFromProtocol(string fileName){
+        static AirshipSerializationStruct ImportFromProtocol(string fileName) {
             var sw = new Stopwatch();
             sw.Start();
             var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\" + fileName, FileMode.Open);
             var serializedStruct = Serializer.Deserialize<AirshipSerializationStruct>(fs);
             fs.Close();
-            var hullSections = new HullSectionContainer(serializedStruct.HullSections);
-            var deckSections = new DeckSectionContainer(serializedStruct.DeckSections);
-            var modelAttribs = serializedStruct.ModelAttributes;
+
             sw.Stop();
 
             DebugConsole.WriteLine("Airship deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
 
-            var ret = new Airship(modelAttribs, deckSections, hullSections);
-            return ret;
+            return serializedStruct;
         }
 
         static Vector3 CalculateCenter(VertexPositionNormalTexture[][] airshipVertexes){
