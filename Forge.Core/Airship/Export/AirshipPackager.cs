@@ -1,10 +1,12 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
+using Forge.Core.Physics;
 using Forge.Core.Util;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -23,7 +25,7 @@ namespace Forge.Core.Airship.Export{
             _airshipCache = new Dictionary<string, AirshipSerializationStruct>();
         }
 
-        public static Airship LoadAirship(string fileName){
+        public static Airship LoadAirship(string fileName, bool usePlayerController, ProjectilePhysics physicsEngine){
             AirshipSerializationStruct airship;
             if (_airshipCache.ContainsKey(fileName)) {
                 airship = _airshipCache[fileName];
@@ -41,7 +43,7 @@ namespace Forge.Core.Airship.Export{
             var hullSections = new HullSectionContainer(airship.HullSections);
             var deckSections = new DeckSectionContainer(airship.DeckSections);
             var modelAttribs = airship.ModelAttributes;
-            var ret = new Airship(modelAttribs, deckSections, hullSections);
+            var ret = new Airship(modelAttribs, deckSections, hullSections, usePlayerController, physicsEngine);
             return ret;
         }
 
@@ -91,8 +93,8 @@ namespace Forge.Core.Airship.Export{
             sw.Stop();
 
             DebugConsole.WriteLine("Airship deserialized from definition in " + sw.ElapsedMilliseconds + " ms");
-
-            var ret = new Airship(modelAttribs, hullData.DeckSectionContainer, hullData.HullSections);
+            throw new NotImplementedException();
+            var ret = new Airship(modelAttribs, hullData.DeckSectionContainer, hullData.HullSections, true, null);
             return ret;
         }
 
