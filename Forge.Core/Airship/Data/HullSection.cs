@@ -63,7 +63,6 @@ namespace Forge.Core.Airship.Data{
         #endregion
 
         public void SetDelegates(ObjectBuffer<int> hullBuffer){
-            Debug.Assert(_hideSection == null && _unhideSection == null);
             _hideSection = () => hullBuffer.DisableObject(Uid);
             _unhideSection = () => hullBuffer.EnableObject(Uid);
         }
