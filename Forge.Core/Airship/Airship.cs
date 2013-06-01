@@ -22,30 +22,44 @@ namespace Forge.Core.Airship{
         public Airship(
             ModelAttributes airshipModel,
             DeckSectionContainer deckSectionContainer,
-            HullSectionContainer hullSectionContainer
+            HullSectionContainer hullSectionContainer,
+            bool usePlayerController,
+            ProjectilePhysics physicsEngine
             ){
             var sw = new Stopwatch();
             sw.Start();
             ModelAttributes = airshipModel;
             HullSectionContainer = hullSectionContainer;
             DeckSectionContainer = deckSectionContainer;
-            _projectilePhysics = new ProjectilePhysics(); //oh my god get this out of here
+
+            _projectilePhysics = physicsEngine;
+
+            _hardPoints = new List<Hardpoint>();
+            _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
 
             var movementState = new AirshipMovementData();
             movementState.Angle = new Vector3(0, 0, 0);
             movementState.CurPosition = new Vector3(airshipModel.Length/3, 2000, 0);
-
-            _controller = new PlayerAirshipController
-                (
-                SetAirshipWMatrix,
-                ModelAttributes,
-                movementState
-                );
+            if (usePlayerController) {
+                _controller = new PlayerAirshipController
+                    (
+                    SetAirshipWMatrix,
+                    ModelAttributes,
+                    movementState,
+                    _hardPoints
+                    );
+            }
+            else{
+                _controller = new AIAirshipController(
+                    SetAirshipWMatrix,
+                    ModelAttributes,
+                    movementState,
+                    _hardPoints
+                    );
+            }
 
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _projectilePhysics, _controller.Position, ModelAttributes.Length);
 
-            _hardPoints = new List<Hardpoint>();
-            _hardPoints.Add(new Hardpoint(new Vector3(-25, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
             sw.Stop();
 
             DebugConsole.WriteLine("Airship assembled in " + sw.ElapsedMilliseconds + " ms");
@@ -72,7 +86,6 @@ namespace Forge.Core.Airship{
 
         public void Dispose(){
             Debug.Assert(!_disposed);
-            _projectilePhysics.Dispose();
             _hullIntegrityMesh.Dispose();
 
             DeckSectionContainer.Dispose();
@@ -89,14 +102,8 @@ namespace Forge.Core.Airship{
         public void Update(ref InputState state, double timeDelta){
             _controller.Update(ref state, timeDelta);
 
-
             foreach (var hardPoint in _hardPoints){
                 hardPoint.Update(timeDelta);
-            }
-            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space)){
-                foreach (var hardpoint in _hardPoints){
-                    hardpoint.Fire();
-                }
             }
 
             _projectilePhysics.Update(timeDelta);
