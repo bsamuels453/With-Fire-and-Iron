@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -23,8 +24,8 @@ namespace Forge.Core.Airship{
         public TurnState CurTurnState;
         int _engineSpeed;
 
-        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData) :
-            base(setWorldMatrix, modelData, movementData){
+        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData, List<Hardpoint> hardPoints) :
+            base(setWorldMatrix, modelData, movementData, hardPoints){
         }
 
         public int EngineSpeed{
@@ -39,6 +40,10 @@ namespace Forge.Core.Airship{
         protected override void UpdateController(ref InputState state, double timeDelta){
             var keyState = state.KeyboardState;
             var prevKeyState = state.PrevState.KeyboardState;
+
+            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space) && state.KeyboardState.IsKeyUp(Keys.Space)) {
+                Fire();
+            }
 
             if (keyState.IsKeyUp(Keys.W) && prevKeyState.IsKeyDown(Keys.W)){
                 EngineSpeed++;
@@ -88,7 +93,7 @@ namespace Forge.Core.Airship{
                     break;
             }
 
-            base.AngularVelocity = turnValue*base.AirshipModelData.MaxTurnSpeed;
+            base.AngularVelocity = turnValue*base.AirshipModelData.MaxTurnSpeed*10;
             base.Velocity = engineDutyCycle*base.AirshipModelData.MaxForwardSpeed;
             base.AscentVelocity = altitudeDutyCycle*base.AirshipModelData.MaxAscentSpeed;
         }
