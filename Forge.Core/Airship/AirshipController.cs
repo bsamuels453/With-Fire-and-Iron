@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Collections.Generic;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using MonoGameUtility;
@@ -20,7 +21,9 @@ namespace Forge.Core.Airship{
         bool _noAngleTarget;
         float _velocity;
 
-        protected AirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData){
+        List<Hardpoint> _hardPoints;
+
+        protected AirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData, List<Hardpoint> hardPoints){
             _setAirshipWMatrix = setWorldMatrix;
             AirshipModelData = modelData;
 
@@ -31,6 +34,8 @@ namespace Forge.Core.Airship{
             _angleTarget = movementData.AngleTarget;
             VelocityTarget = movementData.VelocityTarget;
             _altitudeTarget = movementData.AltitudeTarget;
+
+            _hardPoints = hardPoints;
         }
 
         protected ModelAttributes AirshipModelData { get; private set; }
@@ -47,10 +52,10 @@ namespace Forge.Core.Airship{
             get { return _angleVel; }
             protected set{
                 float turnSpeed = value;
-                if (value > AirshipModelData.MaxTurnSpeed)
-                    turnSpeed = AirshipModelData.MaxTurnSpeed;
-                if (value < -AirshipModelData.MaxTurnSpeed)
-                    turnSpeed = -AirshipModelData.MaxTurnSpeed;
+                if (value > AirshipModelData.MaxTurnSpeed*100)
+                    turnSpeed = AirshipModelData.MaxTurnSpeed * 100;
+                if (value < -AirshipModelData.MaxTurnSpeed * 100)
+                    turnSpeed = -AirshipModelData.MaxTurnSpeed * 100;
                 _angleVel = turnSpeed;
                 _noAngleTarget = true;
             }
@@ -116,7 +121,9 @@ namespace Forge.Core.Airship{
         #endregion
 
         protected void Fire(){
-            throw new NotImplementedException();
+            foreach (var hardPoint in _hardPoints) {
+                hardPoint.Fire();
+            }
         }
 
         public void Update(ref InputState state, double timeDelta){
