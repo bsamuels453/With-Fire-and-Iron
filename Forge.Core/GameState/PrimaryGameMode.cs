@@ -2,6 +2,7 @@
 
 using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
+using Forge.Core.Physics;
 using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -13,6 +14,7 @@ using Microsoft.Xna.Framework;
 namespace Forge.Core.GameState{
     internal class PrimaryGameMode : IGameState{
         readonly Airship.Airship _airship;
+        readonly Airship.Airship _otherAirship;
         readonly BodyCenteredCamera _cameraController;
 
         readonly Button _deckDownButton;
@@ -21,6 +23,8 @@ namespace Forge.Core.GameState{
         readonly RenderTarget _renderTarget;
 
         readonly TerrainUpdater _terrainUpdater;
+
+        readonly ProjectilePhysics _projectilePhysics;
 
         readonly UIElementCollection _uiElementCollection;
         Button _speedIndicator;
@@ -33,7 +37,12 @@ namespace Forge.Core.GameState{
 
             _terrainUpdater = new TerrainUpdater();
 
-            _airship = AirshipPackager.LoadAirship("ExportedAirship.protocol");
+            _projectilePhysics = new ProjectilePhysics();
+
+            _airship = AirshipPackager.LoadAirship("ExportedAirship.protocol", true, _projectilePhysics);
+            _otherAirship = AirshipPackager.LoadAirship("ExportedAirship.protocol", false, _projectilePhysics); ;
+
+
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
             _cameraController.SetCameraTarget(_airship.Position);
@@ -87,6 +96,7 @@ namespace Forge.Core.GameState{
             _uiElementCollection.UpdateInput(ref state);
             _uiElementCollection.UpdateLogic(timeDelta);
             _airship.Update(ref state, timeDelta);
+            _otherAirship.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_airship.Position);
             _cameraController.Update(ref state, timeDelta);
 
@@ -106,8 +116,10 @@ namespace Forge.Core.GameState{
 
         public void Dispose(){
             _airship.Dispose();
+            _otherAirship.Dispose();
             _terrainUpdater.Dispose();
             _renderTarget.Dispose();
+            _projectilePhysics.Dispose();
         }
 
         #endregion
