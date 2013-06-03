@@ -13,18 +13,17 @@ using Microsoft.Xna.Framework;
 
 namespace Forge.Core.GameState{
     internal class PrimaryGameMode : IGameState{
-        readonly Airship.Airship _airship;
-        readonly Airship.Airship _otherAirship;
         readonly BodyCenteredCamera _cameraController;
 
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly Button[] _highlightMasks;
+        readonly Airship.Airship[] _otherAirships;
+        readonly Airship.Airship _playerAirship;
+        readonly ProjectilePhysics _projectilePhysics;
         readonly RenderTarget _renderTarget;
 
         readonly TerrainUpdater _terrainUpdater;
-
-        readonly ProjectilePhysics _projectilePhysics;
 
         readonly UIElementCollection _uiElementCollection;
         Button _speedIndicator;
@@ -36,17 +35,16 @@ namespace Forge.Core.GameState{
             _renderTarget.Bind();
 
             _terrainUpdater = new TerrainUpdater();
-
             _projectilePhysics = new ProjectilePhysics();
 
-            _airship = AirshipPackager.LoadAirship("ExportedAirship", true, _projectilePhysics);
-            //_otherAirship = AirshipPackager.LoadAirship("ExportedAirship.protocol", false, _projectilePhysics); ;
+            _playerAirship = AirshipPackager.LoadAirship("PlayerShip", _projectilePhysics);
+            _otherAirships = new Airship.Airship[1];
+            _otherAirships[0] = AirshipPackager.LoadAirship("AIShip", _projectilePhysics);
 
 
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
-            _cameraController.SetCameraTarget(_airship.Position);
-
+            _cameraController.SetCameraTarget(_playerAirship.Position);
 
             var buttonGen = new ButtonGenerator();
             const int yPos = 100;
@@ -84,8 +82,8 @@ namespace Forge.Core.GameState{
             buttonGen.Y = 200 + 32;
             buttonGen.TextureName = "Icons/DownArrow";
             _deckDownButton = buttonGen.GenerateButton();
-            _deckUpButton.OnLeftClickDispatcher += _airship.AddVisibleLayer;
-            _deckDownButton.OnLeftClickDispatcher += _airship.RemoveVisibleLayer;
+            _deckUpButton.OnLeftClickDispatcher += _playerAirship.AddVisibleLayer;
+            _deckDownButton.OnLeftClickDispatcher += _playerAirship.RemoveVisibleLayer;
 
             _uiElementCollection.Unbind();
         }
@@ -95,12 +93,14 @@ namespace Forge.Core.GameState{
         public void Update(InputState state, double timeDelta){
             _uiElementCollection.UpdateInput(ref state);
             _uiElementCollection.UpdateLogic(timeDelta);
-            _airship.Update(ref state, timeDelta);
-            //_otherAirship.Update(ref state, timeDelta);
-            _cameraController.SetCameraTarget(_airship.Position);
+            _playerAirship.Update(ref state, timeDelta);
+            foreach (var airship in _otherAirships){
+                airship.Update(ref state, timeDelta);
+            }
+            _cameraController.SetCameraTarget(_playerAirship.Position);
             _cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int) ((_airship.Velocity/_airship.ModelAttributes.MaxForwardSpeed)*3);
+            int incremental = (int) ((_playerAirship.Velocity/_playerAirship.ModelAttributes.MaxForwardSpeed)*3);
 
             int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
@@ -115,8 +115,10 @@ namespace Forge.Core.GameState{
         }
 
         public void Dispose(){
-            _airship.Dispose();
-            //_otherAirship.Dispose();
+            _playerAirship.Dispose();
+            foreach (var airship in _otherAirships){
+                airship.Dispose();
+            }
             _terrainUpdater.Dispose();
             _renderTarget.Dispose();
             _projectilePhysics.Dispose();
