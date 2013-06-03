@@ -14,6 +14,7 @@
     /// </summary>
     public enum AirshipControllerType{
         Player,
-        AI
+        AI,
+        None
     }
 }
