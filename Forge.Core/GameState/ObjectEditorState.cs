@@ -71,7 +71,7 @@ namespace Forge.Core.GameState{
 
 
             if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.S)){
-                AirshipPackager.ExportAirshipDefinition("ExportedAirship.def", _backCurveInfo, _sideCurveInfo, _topCurveInfo);
+                AirshipPackager.ExportAirshipDefinition("ExportedAirship", _backCurveInfo, _sideCurveInfo, _topCurveInfo);
             }
 
             #endregion

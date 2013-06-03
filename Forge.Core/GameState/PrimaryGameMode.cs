@@ -39,8 +39,8 @@ namespace Forge.Core.GameState{
 
             _projectilePhysics = new ProjectilePhysics();
 
-            _airship = AirshipPackager.LoadAirship("ExportedAirship.protocol", true, _projectilePhysics);
-            _otherAirship = AirshipPackager.LoadAirship("ExportedAirship.protocol", false, _projectilePhysics); ;
+            _airship = AirshipPackager.LoadAirship("ExportedAirship", true, _projectilePhysics);
+            //_otherAirship = AirshipPackager.LoadAirship("ExportedAirship.protocol", false, _projectilePhysics); ;
 
 
             _cameraController = new BodyCenteredCamera();
@@ -96,7 +96,7 @@ namespace Forge.Core.GameState{
             _uiElementCollection.UpdateInput(ref state);
             _uiElementCollection.UpdateLogic(timeDelta);
             _airship.Update(ref state, timeDelta);
-            _otherAirship.Update(ref state, timeDelta);
+            //_otherAirship.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_airship.Position);
             _cameraController.Update(ref state, timeDelta);
 
@@ -116,7 +116,7 @@ namespace Forge.Core.GameState{
 
         public void Dispose(){
             _airship.Dispose();
-            _otherAirship.Dispose();
+            //_otherAirship.Dispose();
             _terrainUpdater.Dispose();
             _renderTarget.Dispose();
             _projectilePhysics.Dispose();
