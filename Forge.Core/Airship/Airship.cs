@@ -22,7 +22,7 @@ namespace Forge.Core.Airship{
             ModelAttributes airshipModel,
             DeckSectionContainer deckSectionContainer,
             HullSectionContainer hullSectionContainer,
-            bool usePlayerController,
+            AirshipStateData stateData,
             ProjectilePhysics physicsEngine
             ){
             var sw = new Stopwatch();
@@ -36,24 +36,28 @@ namespace Forge.Core.Airship{
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
 
-            var stateData = new AirshipStateData();
-            stateData.Angle = new Vector3(0, 0, 0);
-            stateData.Position = new Vector3(airshipModel.Length/3, 2000, 0);
-            if (usePlayerController){
-                _controller = new PlayerAirshipController
-                    (
-                    ModelAttributes,
-                    stateData,
-                    _hardPoints
-                    );
-            }
-            else{
-                _controller = new AIAirshipController
-                    (
-                    ModelAttributes,
-                    stateData,
-                    _hardPoints
-                    );
+            //stateData.Angle = new Vector3(0, 0, 0);
+            //stateData.Position = new Vector3(airshipModel.Length/3, 2000, 0);
+
+            switch (stateData.ControllerType){
+                case AirshipControllerType.AI:
+                    _controller = new AIAirshipController
+                        (
+                        ModelAttributes,
+                        stateData,
+                        _hardPoints
+                        );
+                    break;
+
+                case AirshipControllerType.Player:
+                    _controller = new PlayerAirshipController
+                        (
+                        ModelAttributes,
+                        stateData,
+                        _hardPoints
+                        );
+                    break;
+
             }
 
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _projectilePhysics, _controller.Position, ModelAttributes.Length);
