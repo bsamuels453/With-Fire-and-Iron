@@ -9,7 +9,12 @@ namespace Forge.Core.Airship.Data{
     /// <summary>
     ///   Contains information relevant to the current "state" of the airship. Includes things like position, orientation, controller, damage, etc.
     /// </summary>
-    internal struct AirshipStateData{
+    internal class AirshipStateData{
+        public string Model;
+        public int AirshipId;
+
+        public int FactionId;
+
         public Vector3 Position;
         public Vector3 Angle;
 
@@ -22,6 +27,12 @@ namespace Forge.Core.Airship.Data{
         public ManeuverTypeEnum CurrentManeuver;
         public object[] ManeuverParameters;
 
-        public int FactionId;
+        public AirshipStateData(){
+            AirshipId = -1;
+            FactionId = -1;
+            ActiveBuffs = new List<AirshipBuff>();
+            ManeuverParameters = new object[0];
+            ControllerType = AirshipControllerType.None; 
+        }
     }
 }
