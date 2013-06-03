@@ -11,7 +11,7 @@ float DiffuseIntensity;
 
 texture Texture;
 sampler2D textureSampler = sampler_state {
-    Texture = (Texture);
+    Texture = <Texture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -33,8 +33,8 @@ struct VertexShaderOutput
 {
     float4 Position : POSITION0;
     float4 Color : COLOR0;
-    float3 Normal : TEXCOORD0;
-    float2 TextureCoordinate : TEXCOORD1;
+    //float3 Normal : TEXCOORD0;
+    float2 TextureCoordinate : TEXCOORD0;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
@@ -42,6 +42,11 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     VertexShaderOutput output;
 	float4x4 WorldInverseTranspose = transpose(World);
     float4 worldPosition = mul(input.Position, World);
+	
+	//valid alternative
+	//float4x4 test = mul (View, Projection);
+	//output.Position = mul(worldPosition, test);
+	
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
 
@@ -53,7 +58,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	float lightIntensity = dot(normal, DiffuseLightDirection) * DiffuseIntensity;
     output.Color = saturate(AmbientColor * AmbientIntensity + lightIntensity);
 
-    output.Normal = normal;
+    //output.Normal = normal;
     output.TextureCoordinate = input.TextureCoordinate;
 
     return output;

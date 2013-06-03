@@ -1,6 +1,7 @@
 ﻿#region
 
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using MonoGameUtility;
@@ -10,35 +11,47 @@ using MonoGameUtility;
 namespace Forge.Core.Airship{
     internal abstract class AirshipController{
         const float _degreesPerRadian = 0.0174532925f;
-        readonly Action<Matrix> _setAirshipWMatrix;
-        float _altitudeTarget;
-        float _angleTarget;
+        readonly List<Hardpoint> _hardPoints;
         float _angleVel;
-
-        float _ascentVel;
-        bool _noAltitudeTarget;
-        bool _noAngleTarget;
+        float _ascentRate;
         float _velocity;
 
-        protected AirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData){
-            _setAirshipWMatrix = setWorldMatrix;
+        protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints){
             AirshipModelData = modelData;
+            _hardPoints = hardPoints;
 
-            Position = movementData.CurPosition;
-            Angle = movementData.Angle;
-            _velocity = movementData.CurVelocity;
-            _ascentVel = movementData.CurAltitudeVelocity;
-            _angleTarget = movementData.AngleTarget;
-            VelocityTarget = movementData.VelocityTarget;
-            _altitudeTarget = movementData.AltitudeTarget;
+            Position = stateData.Position;
+            Angle = stateData.Angle;
+            _velocity = stateData.Velocity;
+            _ascentRate = stateData.AscentRate;
+            VelocityTarget = stateData.Velocity;
+
+            MaxVelocityMod = 1;
+            MaxTurnRateMod = 1;
+            MaxAscentRateMod = 1;
+            MaxAccelerationMod = 1;
+            MaxTurnAccelerationMod = 1;
+            MaxAscentAccelerationMod = 1;
+
+            ActiveBuffs = stateData.ActiveBuffs;
+            RecalculateBuffs();
         }
 
         protected ModelAttributes AirshipModelData { get; private set; }
 
         public Vector3 Position { get; private set; }
         public Vector3 Angle { get; private set; }
+        public Matrix WorldMatrix { get; private set; }
+        public List<AirshipBuff> ActiveBuffs { get; private set; }
 
-        #region properties
+        public float MaxVelocityMod { get; private set; }
+        public float MaxTurnRateMod { get; private set; }
+        public float MaxAscentRateMod { get; private set; }
+        public float MaxAccelerationMod { get; private set; }
+        public float MaxTurnAccelerationMod { get; private set; }
+        public float MaxAscentAccelerationMod { get; private set; }
+
+        #region Movement Properties
 
         /// <summary>
         ///   Sets angular velocity of the ship on the XZ plane. Scales from -MaxTurnSpeed to MaxTurnSpeed, where negative indicates a turn to port. Measured in degrees/second.
@@ -47,27 +60,11 @@ namespace Forge.Core.Airship{
             get { return _angleVel; }
             protected set{
                 float turnSpeed = value;
-                if (value > AirshipModelData.MaxTurnSpeed)
-                    turnSpeed = AirshipModelData.MaxTurnSpeed;
-                if (value < -AirshipModelData.MaxTurnSpeed)
-                    turnSpeed = -AirshipModelData.MaxTurnSpeed;
+                if (value > AirshipModelData.MaxTurnSpeed*100)
+                    turnSpeed = AirshipModelData.MaxTurnSpeed*100;
+                if (value < -AirshipModelData.MaxTurnSpeed*100)
+                    turnSpeed = -AirshipModelData.MaxTurnSpeed*100;
                 _angleVel = turnSpeed;
-                _noAngleTarget = true;
-            }
-        }
-
-        /// <summary>
-        ///   Sets the angle target of the airship. Scales from 0 to 360. xx (make sure this is enforced) Measured in degrees.
-        /// </summary>
-        public float AngleTarget{
-            get{
-                if (_noAngleTarget)
-                    throw new Exception("No angle target set");
-                return _angleTarget;
-            }
-            protected set{
-                _angleTarget = value;
-                _noAltitudeTarget = false;
             }
         }
 
@@ -75,28 +72,9 @@ namespace Forge.Core.Airship{
         ///   Sets ascent velocity of the ship on the XZ plane. Scales from -MaxAscentSpeed to MaxAscentSpeed, where negative indicates moving down. Measured in meters per second.
         /// </summary>
         public float AscentVelocity{
-            get { return _ascentVel; }
-            protected set{
-                _ascentVel = value;
-                _noAltitudeTarget = true;
-            }
+            get { return _ascentRate; }
+            protected set { _ascentRate = value; }
         }
-
-        /// <summary>
-        ///   Sets the altitude target of the airship. Measured in meters.
-        /// </summary>
-        public float AltitudeTarget{
-            get{
-                if (_noAltitudeTarget)
-                    throw new Exception("No altitude target set");
-                return _altitudeTarget;
-            }
-            protected set{
-                _altitudeTarget = value;
-                _noAltitudeTarget = false;
-            }
-        }
-
 
         /// <summary>
         ///   Sets airship velocity target scalar. Scales from -MaxReverseSpeed to MaxForwardSpeed Measured in meters per second.
@@ -115,8 +93,61 @@ namespace Forge.Core.Airship{
 
         #endregion
 
+        public void SetAutoPilot(){
+        }
+
+        /// <summary>
+        ///   Applies a specified buff to the airship to modify how it moves.
+        /// </summary>
+        public void ApplyBuff(AirshipBuff newBuff){
+            ActiveBuffs.Add(newBuff);
+            RecalculateBuffs();
+        }
+
+        /// <summary>
+        ///   Recalculates the attribute modifiers based off of the buffs in ActiveBuffs.
+        /// </summary>
+        void RecalculateBuffs(){
+            var activeBuffsGrouped =
+                from buff in ActiveBuffs
+                group buff by buff.Type;
+
+            foreach (var buffType in activeBuffsGrouped){
+                float statModifier = 1;
+
+                foreach (var buff in buffType){
+                    statModifier = statModifier*buff.Modifier;
+                }
+                switch (buffType.Key){
+                    case AirshipBuff.BuffType.MaxAscentAcceleration:
+                        MaxAscentAccelerationMod = statModifier;
+                        break;
+                    case AirshipBuff.BuffType.MaxTurnAcceleration:
+                        MaxTurnAccelerationMod = statModifier;
+                        break;
+                    case AirshipBuff.BuffType.MaxAcceleration:
+                        MaxAccelerationMod = statModifier;
+                        break;
+                    case AirshipBuff.BuffType.MaxAscentRate:
+                        MaxAscentRateMod = statModifier;
+                        break;
+                    case AirshipBuff.BuffType.MaxTurnRate:
+                        MaxTurnRateMod = statModifier;
+                        break;
+                    case AirshipBuff.BuffType.MaxVelocity:
+                        MaxVelocityMod = statModifier;
+                        break;
+                    default:
+                        DebugConsole.WriteLine("WARNING: Unhandled buff type detected: " + buffType);
+                        break;
+                }
+            }
+        }
+
         protected void Fire(){
-            throw new NotImplementedException();
+            foreach (var hardPoint in _hardPoints){
+                hardPoint.Fire();
+            }
         }
 
         public void Update(ref InputState state, double timeDelta){
@@ -131,11 +162,10 @@ namespace Forge.Core.Airship{
             var position = Position;
             position.X += unitVec.X*_velocity*timeDeltaSeconds;
             position.Z += -unitVec.Y*_velocity*timeDeltaSeconds;
-            position.Y += _ascentVel*timeDeltaSeconds;
+            position.Y += _ascentRate*timeDeltaSeconds;
             Position = position;
 
-            var worldMatrix = Common.GetWorldTranslation(Position, Angle, AirshipModelData.Length);
-            _setAirshipWMatrix.Invoke(worldMatrix);
+            WorldMatrix = Common.GetWorldTranslation(Position, Angle, AirshipModelData.Length);
         }
 
         protected abstract void UpdateController(ref InputState state, double timeDelta);
