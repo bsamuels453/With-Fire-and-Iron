@@ -37,7 +37,7 @@ namespace Forge.Core.Physics{
         bool _disposed;
 
         public ProjectilePhysics(){
-            _defProjectile = new ProjectileAttributes(832, 0.0285f, 2f);
+            _defProjectile = new ProjectileAttributes(8320, 0.0285f, 2f);
             const float gravity = -10;
             var broadphase = new DbvtBroadphase();
             var collisionConfig = new DefaultCollisionConfiguration();
