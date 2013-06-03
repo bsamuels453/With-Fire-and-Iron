@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Input;
 
 #endregion
 
-namespace Forge.Core.Airship{
+namespace Forge.Core.Airship.Controllers{
     internal class PlayerAirshipController : AirshipController{
         #region TurnState enum
 

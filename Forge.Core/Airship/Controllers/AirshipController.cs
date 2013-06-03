@@ -8,7 +8,7 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.Airship{
+namespace Forge.Core.Airship.Controllers{
     internal abstract class AirshipController{
         const float _degreesPerRadian = 0.0174532925f;
         readonly List<Hardpoint> _hardPoints;

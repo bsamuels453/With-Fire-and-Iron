@@ -150,9 +150,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Airship\AIAirshipController.cs" />
+    <Compile Include="Airship\Controllers\AIAirshipController.cs" />
     <Compile Include="Airship\Airship.cs" />
-    <Compile Include="Airship\AirshipController.cs" />
+    <Compile Include="Airship\Controllers\AirshipController.cs" />
     <Compile Include="Airship\Data\AirshipBuff.cs" />
     <Compile Include="Airship\Data\AirshipEnums.cs" />
     <Compile Include="Airship\Data\AirshipStateData.cs" />
@@ -165,7 +165,7 @@
     <Compile Include="Airship\Data\HullSectionContainer.cs" />
     <Compile Include="Airship\Data\HullSectionIdentifier.cs" />
     <Compile Include="Airship\Data\ModelAttributes.cs" />
-    <Compile Include="Airship\PlayerAirshipController.cs" />
+    <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="Physics\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
