@@ -42,7 +42,7 @@ namespace Forge.Core.GameState{
             _otherAirships[0] = AirshipPackager.LoadAirship("AIShip", _projectilePhysics);
 
 
-            _cameraController = new BodyCenteredCamera();
+            _cameraController = new BodyCenteredCamera(false);
             GamestateManager.CameraController = _cameraController;
             _cameraController.SetCameraTarget(_playerAirship.Position);
 
