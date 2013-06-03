@@ -153,10 +153,12 @@
     <Compile Include="Airship\AIAirshipController.cs" />
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\AirshipController.cs" />
+    <Compile Include="Airship\Data\AirshipBuff.cs" />
+    <Compile Include="Airship\Data\AirshipEnums.cs" />
+    <Compile Include="Airship\Data\AirshipStateData.cs" />
     <Compile Include="Airship\Data\DeckSectionContainer.cs" />
     <Compile Include="Airship\Export\AirshipPackager.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
-    <Compile Include="Airship\Data\AirshipMovementData.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
     <Compile Include="Airship\HullIntegrityMesh.cs" />
     <Compile Include="Airship\Data\HullSection.cs" />
