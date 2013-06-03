@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Forge.Core.Airship.Data;
 using Forge.Core.Physics;
 using Forge.Framework;
-using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
 #endregion
@@ -37,23 +36,22 @@ namespace Forge.Core.Airship{
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
 
-            var movementState = new AirshipMovementData();
-            movementState.Angle = new Vector3(0, 0, 0);
-            movementState.CurPosition = new Vector3(airshipModel.Length/3, 2000, 0);
-            if (usePlayerController) {
+            var stateData = new AirshipStateData();
+            stateData.Angle = new Vector3(0, 0, 0);
+            stateData.Position = new Vector3(airshipModel.Length/3, 2000, 0);
+            if (usePlayerController){
                 _controller = new PlayerAirshipController
                     (
-                    SetAirshipWMatrix,
                     ModelAttributes,
-                    movementState,
+                    stateData,
                     _hardPoints
                     );
             }
             else{
-                _controller = new AIAirshipController(
-                    SetAirshipWMatrix,
+                _controller = new AIAirshipController
+                    (
                     ModelAttributes,
-                    movementState,
+                    stateData,
                     _hardPoints
                     );
             }
@@ -101,6 +99,7 @@ namespace Forge.Core.Airship{
 
         public void Update(ref InputState state, double timeDelta){
             _controller.Update(ref state, timeDelta);
+            SetAirshipWMatrix(_controller.WorldMatrix);
 
             foreach (var hardPoint in _hardPoints){
                 hardPoint.Update(timeDelta);
