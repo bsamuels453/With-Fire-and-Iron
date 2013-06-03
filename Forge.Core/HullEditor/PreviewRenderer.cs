@@ -31,7 +31,7 @@ namespace Forge.Core.HullEditor{
 
         public PreviewRenderer(BezierCurveCollection sideCurves, BezierCurveCollection topCurves, BezierCurveCollection backCurves){
             _camera = new BodyCenteredCamera
-                (new Rectangle
+                (boundingBox: new Rectangle
                     (
                     Resource.ScreenSize.GetScreenValueX(0.5f),
                     Resource.ScreenSize.GetScreenValueY(0.5f),

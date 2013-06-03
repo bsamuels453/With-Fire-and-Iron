@@ -15,6 +15,7 @@ namespace Forge.Core.Camera{
     internal sealed class BodyCenteredCamera : ICamera{
         const float _camAngularSpeed = 0.005f; //0.01f
         const float _camScrollSpeedDivisor = 100f;
+        readonly bool _allowCamTargChange;
         public Vector3 CameraPosition;
         public Vector3 CameraTarget;
         Rectangle _boundingBox;
@@ -25,8 +26,10 @@ namespace Forge.Core.Camera{
         /// <summary>
         ///   default constructor makes it recieve from entire screen
         /// </summary>
+        /// <param name="allowCamTargChange"> whether or not the right click drag should be allowed to change the camera's target </param>
         /// <param name="boundingBox"> </param>
-        public BodyCenteredCamera(Rectangle? boundingBox = null){
+        public BodyCenteredCamera(bool allowCamTargChange = true, Rectangle? boundingBox = null){
+            _allowCamTargChange = allowCamTargChange;
             _cameraPhi = 1.19f;
             _cameraTheta = -3.65f;
             _cameraDistance = 29.4f;
@@ -43,7 +46,7 @@ namespace Forge.Core.Camera{
         public void Update(ref InputState state, double timeDelta){
             if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
                 if (state.RightButtonState == ButtonState.Pressed){
-                    if (!state.KeyboardState.IsKeyDown(Keys.LeftControl)){
+                    if (!state.KeyboardState.IsKeyDown(Keys.LeftControl) || !_allowCamTargChange){
                         int dx = state.MousePos.X - state.PrevState.MousePos.X;
                         int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
 
@@ -66,22 +69,24 @@ namespace Forge.Core.Camera{
                         state.AllowMouseMovementInterpretation = false;
                     }
                     else{
-                        int dx = state.MousePos.X - state.PrevState.MousePos.X;
-                        int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
+                        if (_allowCamTargChange){
+                            int dx = state.MousePos.X - state.PrevState.MousePos.X;
+                            int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
 
-                        _cameraPhi -= dy*0.005f;
-                        _cameraTheta += dx*0.005f;
+                            _cameraPhi -= dy*0.005f;
+                            _cameraTheta += dx*0.005f;
 
-                        if (_cameraPhi > (float) Math.PI - 0.01f){
-                            _cameraPhi = (float) Math.PI - 0.01f;
+                            if (_cameraPhi > (float) Math.PI - 0.01f){
+                                _cameraPhi = (float) Math.PI - 0.01f;
+                            }
+                            if (_cameraPhi < 0.01f){
+                                _cameraPhi = 0.01f;
+                            }
+
+                            CameraTarget.X = ((float) (_cameraDistance*Math.Sin(_cameraPhi + Math.PI)*Math.Cos(_cameraTheta + Math.PI)) - CameraPosition.X)*-1;
+                            CameraTarget.Z = ((float) (_cameraDistance*Math.Sin(_cameraPhi + Math.PI)*Math.Sin(_cameraTheta + Math.PI)) - CameraPosition.Z)*-1;
+                            CameraTarget.Y = ((float) (_cameraDistance*Math.Cos(_cameraPhi + Math.PI)) + CameraPosition.Y)*1;
                         }
-                        if (_cameraPhi < 0.01f){
-                            _cameraPhi = 0.01f;
-                        }
-
-                        CameraTarget.X = ((float) (_cameraDistance*Math.Sin(_cameraPhi + Math.PI)*Math.Cos(_cameraTheta + Math.PI)) - CameraPosition.X)*-1;
-                        CameraTarget.Z = ((float) (_cameraDistance*Math.Sin(_cameraPhi + Math.PI)*Math.Sin(_cameraTheta + Math.PI)) - CameraPosition.Z)*-1;
-                        CameraTarget.Y = ((float) (_cameraDistance*Math.Cos(_cameraPhi + Math.PI)) + CameraPosition.Y)*1;
                     }
                 }
             }
