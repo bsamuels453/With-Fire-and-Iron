@@ -1,11 +1,9 @@
 ﻿#region
 
-using System;
 using System.Collections.Generic;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Input;
-using MonoGameUtility;
 
 #endregion
 
@@ -24,8 +22,8 @@ namespace Forge.Core.Airship{
         public TurnState CurTurnState;
         int _engineSpeed;
 
-        public PlayerAirshipController(Action<Matrix> setWorldMatrix, ModelAttributes modelData, AirshipMovementData movementData, List<Hardpoint> hardPoints) :
-            base(setWorldMatrix, modelData, movementData, hardPoints){
+        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints) :
+            base(modelData, stateData, hardPoints){
         }
 
         public int EngineSpeed{
@@ -41,7 +39,7 @@ namespace Forge.Core.Airship{
             var keyState = state.KeyboardState;
             var prevKeyState = state.PrevState.KeyboardState;
 
-            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space) && state.KeyboardState.IsKeyUp(Keys.Space)) {
+            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space) && state.KeyboardState.IsKeyUp(Keys.Space)){
                 Fire();
             }
 
