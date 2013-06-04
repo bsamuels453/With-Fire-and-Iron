@@ -15,6 +15,7 @@ namespace Forge.Core.Airship.Controllers{
         float _angleVel;
         float _ascentRate;
         float _velocity;
+        float _velocityTarget;
 
         protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints){
             AirshipModelData = modelData;
@@ -60,31 +61,48 @@ namespace Forge.Core.Airship.Controllers{
             get { return _angleVel; }
             protected set{
                 float turnSpeed = value;
-                if (value > AirshipModelData.MaxTurnSpeed)
-                    turnSpeed = AirshipModelData.MaxTurnSpeed;
-                if (value < -AirshipModelData.MaxTurnSpeed)
-                    turnSpeed = -AirshipModelData.MaxTurnSpeed;
+                if (value > AirshipModelData.MaxTurnSpeed*MaxTurnRateMod)
+                    turnSpeed = AirshipModelData.MaxTurnSpeed*MaxTurnRateMod;
+                if (value < -AirshipModelData.MaxTurnSpeed*MaxTurnRateMod)
+                    turnSpeed = -AirshipModelData.MaxTurnSpeed*MaxTurnRateMod;
                 _angleVel = turnSpeed;
             }
         }
 
         /// <summary>
-        ///   Sets ascent velocity of the ship on the XZ plane. Scales from -MaxAscentSpeed to MaxAscentSpeed, where negative indicates moving down. Measured in meters per second.
+        ///   Sets ascent velocity of the ship on the XZ plane. Scales from -MaxAscentRate to MaxAscentRate, where negative indicates moving down. Measured in meters per second.
         /// </summary>
-        public float AscentVelocity{
+        public float AscentRate{
             get { return _ascentRate; }
-            protected set { _ascentRate = value; }
+            protected set{
+                float ascentRate = value;
+                if (value > AirshipModelData.MaxAscentRate*MaxAscentRateMod)
+                    ascentRate = AirshipModelData.MaxAscentRate*MaxAscentRateMod;
+                if (value < -AirshipModelData.MaxAscentRate*MaxAscentRateMod)
+                    ascentRate = -AirshipModelData.MaxAscentRate*MaxAscentRateMod;
+                _ascentRate = ascentRate;
+            }
         }
 
         /// <summary>
-        ///   Sets airship velocity target scalar. Scales from -MaxReverseSpeed to MaxForwardSpeed Measured in meters per second.
+        ///   Sets airship velocity target scalar. Scales from -MaxReverseVelocity to MaxForwardVelocity Measured in meters per second.
         /// </summary>
-        public float VelocityTarget { get; protected set; }
+        public float VelocityTarget{
+            get { return _velocityTarget; }
+            protected set{
+                float velocityTarget = value;
+                if (value > AirshipModelData.MaxForwardVelocity*MaxVelocityMod)
+                    velocityTarget = AirshipModelData.MaxForwardVelocity*MaxVelocityMod;
+                if (value < -AirshipModelData.MaxReverseVelocity*MaxVelocityMod)
+                    velocityTarget = -AirshipModelData.MaxReverseVelocity*MaxVelocityMod;
+                _velocityTarget = velocityTarget;
+            }
+        }
 
 
         //todo: depreciate this
         /// <summary>
-        ///   Sets airship velocity scalar. Scales from -MaxReverseSpeed to MaxForwardSpeed Measured in meters per second.
+        ///   Sets airship velocity scalar. Scales from -MaxReverseVelocity to MaxForwardSpeed Measured in meters per second.
         /// </summary>
         public float Velocity{
             get { return _velocity; }
