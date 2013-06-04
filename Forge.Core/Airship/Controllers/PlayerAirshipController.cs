@@ -93,7 +93,7 @@ namespace Forge.Core.Airship.Controllers{
 
             base.TurnVelocity = turnValue*base.AirshipModelData.MaxTurnSpeed;
             base.Velocity = engineDutyCycle*base.AirshipModelData.MaxForwardSpeed;
-            base.AscentVelocity = altitudeDutyCycle*base.AirshipModelData.MaxAscentSpeed;
+            base.AscentRate = altitudeDutyCycle*base.AirshipModelData.MaxAscentRate;
         }
     }
 }

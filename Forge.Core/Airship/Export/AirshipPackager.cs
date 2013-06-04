@@ -252,9 +252,9 @@ namespace Forge.Core.Airship.Export{
             var modelAttribs = new ModelAttributes();
             //in the future these attributes will be defined based off analyzing the hull
             modelAttribs.Length = 50;
-            modelAttribs.MaxAscentSpeed = 10;
-            modelAttribs.MaxForwardSpeed = 30;
-            modelAttribs.MaxReverseSpeed = 10;
+            modelAttribs.MaxAscentRate = 10;
+            modelAttribs.MaxForwardVelocity = 30;
+            modelAttribs.MaxReverseVelocity = 10;
             modelAttribs.MaxTurnSpeed = 4f;
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;

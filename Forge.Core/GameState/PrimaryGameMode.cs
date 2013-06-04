@@ -100,7 +100,7 @@ namespace Forge.Core.GameState{
             _cameraController.SetCameraTarget(_playerAirship.Position);
             _cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int) ((_playerAirship.Velocity/_playerAirship.ModelAttributes.MaxForwardSpeed)*3);
+            int incremental = (int) ((_playerAirship.Velocity/_playerAirship.ModelAttributes.MaxForwardVelocity)*3);
 
             int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
