@@ -13,6 +13,8 @@ using MonoGameUtility;
 
 namespace Forge.Core.Airship{
     internal class Airship : IDisposable{
+        public readonly int FactionId;
+        public readonly int Uid;
         readonly AirshipController _controller;
         readonly List<Hardpoint> _hardPoints;
         readonly HullIntegrityMesh _hullIntegrityMesh;
@@ -37,8 +39,8 @@ namespace Forge.Core.Airship{
             _hardPoints = new List<Hardpoint>();
             _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
 
-            //stateData.Angle = new Vector3(0, 0, 0);
-            //stateData.Position = new Vector3(airshipModel.Length/3, 2000, 0);
+            FactionId = stateData.FactionId;
+            Uid = stateData.AirshipId;
 
             switch (stateData.ControllerType){
                 case AirshipControllerType.AI:
@@ -58,7 +60,6 @@ namespace Forge.Core.Airship{
                         _hardPoints
                         );
                     break;
-
             }
 
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _projectilePhysics, _controller.Position, ModelAttributes.Length);
