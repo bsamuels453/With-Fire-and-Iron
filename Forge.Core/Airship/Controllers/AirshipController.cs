@@ -56,7 +56,7 @@ namespace Forge.Core.Airship.Controllers{
         /// <summary>
         ///   Sets angular velocity of the ship on the XZ plane. Scales from -MaxTurnSpeed to MaxTurnSpeed, where negative indicates a turn to port. Measured in degrees/second.
         /// </summary>
-        public float AngularVelocity{
+        public float TurnVelocity{
             get { return _angleVel; }
             protected set{
                 float turnSpeed = value;
