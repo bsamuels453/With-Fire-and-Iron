@@ -45,6 +45,7 @@ namespace Forge.Core.Airship.Export{
         /// <param name="physicsEngine"> The physics engine handle the airship will use. </param>
         /// <returns> </returns>
         public static Airship LoadAirship(string stateName, ProjectilePhysics physicsEngine){
+            DebugConsole.WriteLine("Loading airship as defined by: " + stateName + ".json");
             var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + stateName + ".json");
             var stateData = DeserializeStateFromReader(stateReader);
 
@@ -54,9 +55,8 @@ namespace Forge.Core.Airship.Export{
             var deckSections = new DeckSectionContainer(airship.DeckSections);
             var modelAttribs = airship.ModelAttributes;
 
-            Debug.WriteLine("Warning, statedata being loaded in code rather than from file");
-
             var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, physicsEngine);
+            DebugConsole.WriteLine(stateName + " loading completed");
             return ret;
         }
 
@@ -69,14 +69,13 @@ namespace Forge.Core.Airship.Export{
         /// <returns> </returns>
         public static Airship GenerateNewAirship(string stateDataName, AirshipStateData stateData, ProjectilePhysics physicsEngine){
             stateData.AirshipId = _uidGenerator.NextUid();
-            Debug.WriteLine("New airship being generated with uid " + stateData.AirshipId);
+            DebugConsole.WriteLine("New airship being generated with uid " + stateData.AirshipId);
 
             var model = LoadAirshipModel(stateData.Model);
 
             var writer = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\" + stateDataName + ".json");
 
             SerializeStateToWriter(stateData, writer);
-            Debug.WriteLine("New airship's statedata has been serialized");
 
             return InstantiateAirshipFromSerialized(model, stateData, physicsEngine);
         }
@@ -190,6 +189,7 @@ namespace Forge.Core.Airship.Export{
 
             writer.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             writer.Close();
+            DebugConsole.WriteLine("Airship state data serialized successfully.");
         }
 
         /// <summary>
@@ -291,7 +291,7 @@ namespace Forge.Core.Airship.Export{
             hullData.DeckSectionContainer.Dispose();
             hullData.HullSections.Dispose();
 
-            DebugConsole.WriteLine("Airship converted from definition to protocol in " + sw.ElapsedMilliseconds + " ms");
+            DebugConsole.WriteLine("Airship converted from definition  to protocol in " + sw.ElapsedMilliseconds + " ms");
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ namespace Forge.Core.Airship.Export{
 
             sw.Stop();
 
-            DebugConsole.WriteLine("Airship deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
+            DebugConsole.WriteLine("Airship protocol deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
 
             return serializedStruct;
         }
