@@ -41,7 +41,6 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Loads an airship's model/state and instantiates it.
         /// </summary>
-        /// <param name="modelName"> The name of the model's file, without extension. </param>
         /// <param name="stateName"> The filename of the airship's state. </param>
         /// <param name="physicsEngine"> The physics engine handle the airship will use. </param>
         /// <returns> </returns>
@@ -252,10 +251,10 @@ namespace Forge.Core.Airship.Export{
             var modelAttribs = new ModelAttributes();
             //in the future these attributes will be defined based off analyzing the hull
             modelAttribs.Length = 50;
-            modelAttribs.MaxAscentRate = 10;
-            modelAttribs.MaxForwardVelocity = 30;
-            modelAttribs.MaxReverseVelocity = 10;
-            modelAttribs.MaxTurnSpeed = 4f;
+            modelAttribs.MaxAscentRate = 25;
+            modelAttribs.MaxForwardVelocity = 40;
+            modelAttribs.MaxReverseVelocity = 20;
+            modelAttribs.MaxTurnSpeed = 50f;
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;
             modelAttribs.Centroid = new Vector3(modelAttribs.Length/3, 0, 0);
