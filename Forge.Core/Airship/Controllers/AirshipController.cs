@@ -60,10 +60,10 @@ namespace Forge.Core.Airship.Controllers{
             get { return _angleVel; }
             protected set{
                 float turnSpeed = value;
-                if (value > AirshipModelData.MaxTurnSpeed*100)
-                    turnSpeed = AirshipModelData.MaxTurnSpeed*100;
-                if (value < -AirshipModelData.MaxTurnSpeed*100)
-                    turnSpeed = -AirshipModelData.MaxTurnSpeed*100;
+                if (value > AirshipModelData.MaxTurnSpeed)
+                    turnSpeed = AirshipModelData.MaxTurnSpeed;
+                if (value < -AirshipModelData.MaxTurnSpeed)
+                    turnSpeed = -AirshipModelData.MaxTurnSpeed;
                 _angleVel = turnSpeed;
             }
         }
