@@ -65,7 +65,7 @@ namespace Forge.Core.Airship{
 
             sw.Stop();
 
-            DebugConsole.WriteLine("Airship assembled in " + sw.ElapsedMilliseconds + " ms");
+            DebugConsole.WriteLine("Airship class assembled in " + sw.ElapsedMilliseconds + " ms");
         }
 
         public ModelAttributes ModelAttributes { get; private set; }
