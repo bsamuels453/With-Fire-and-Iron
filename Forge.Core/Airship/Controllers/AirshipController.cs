@@ -12,13 +12,14 @@ namespace Forge.Core.Airship.Controllers{
     internal abstract class AirshipController{
         const float _degreesPerRadian = 0.0174532925f;
         readonly List<Hardpoint> _hardPoints;
+        ModelAttributes _airshipModelData;
         float _angleVel;
         float _ascentRate;
         float _velocity;
         float _velocityTarget;
 
         protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints){
-            AirshipModelData = modelData;
+            _airshipModelData = modelData;
             _hardPoints = hardPoints;
 
             Position = stateData.Position;
@@ -38,7 +39,7 @@ namespace Forge.Core.Airship.Controllers{
             RecalculateBuffs();
         }
 
-        protected ModelAttributes AirshipModelData { get; private set; }
+        #region statistical properties
 
         public Vector3 Position { get; private set; }
         public Vector3 Angle { get; private set; }
@@ -52,6 +53,32 @@ namespace Forge.Core.Airship.Controllers{
         public float MaxTurnAccelerationMod { get; private set; }
         public float MaxAscentAccelerationMod { get; private set; }
 
+        public float MaxVelocity{
+            get { return _airshipModelData.MaxForwardVelocity*MaxVelocityMod; }
+        }
+
+        public float MaxTurnRate{
+            get { return _airshipModelData.MaxTurnSpeed*MaxTurnRateMod; }
+        }
+
+        public float MaxAscentRate{
+            get { return _airshipModelData.MaxAscentRate*MaxAscentRateMod; }
+        }
+
+        public float MaxAcceleration{
+            get { return _airshipModelData.MaxAcceleration*MaxAccelerationMod; }
+        }
+
+        public float MaxTurnAcceleration{
+            get { return _airshipModelData.MaxTurnAcceleration*MaxTurnAccelerationMod; }
+        }
+
+        public float MaxAscentAcceleration{
+            get { return _airshipModelData.MaxAscentAcceleration*MaxAscentAccelerationMod; }
+        }
+
+        #endregion
+
         #region Movement Properties
 
         /// <summary>
@@ -61,10 +88,10 @@ namespace Forge.Core.Airship.Controllers{
             get { return _angleVel; }
             protected set{
                 float turnSpeed = value;
-                if (value > AirshipModelData.MaxTurnSpeed*MaxTurnRateMod)
-                    turnSpeed = AirshipModelData.MaxTurnSpeed*MaxTurnRateMod;
-                if (value < -AirshipModelData.MaxTurnSpeed*MaxTurnRateMod)
-                    turnSpeed = -AirshipModelData.MaxTurnSpeed*MaxTurnRateMod;
+                if (value > _airshipModelData.MaxTurnSpeed*MaxTurnRateMod)
+                    turnSpeed = _airshipModelData.MaxTurnSpeed*MaxTurnRateMod;
+                if (value < -_airshipModelData.MaxTurnSpeed*MaxTurnRateMod)
+                    turnSpeed = -_airshipModelData.MaxTurnSpeed*MaxTurnRateMod;
                 _angleVel = turnSpeed;
             }
         }
@@ -76,10 +103,10 @@ namespace Forge.Core.Airship.Controllers{
             get { return _ascentRate; }
             protected set{
                 float ascentRate = value;
-                if (value > AirshipModelData.MaxAscentRate*MaxAscentRateMod)
-                    ascentRate = AirshipModelData.MaxAscentRate*MaxAscentRateMod;
-                if (value < -AirshipModelData.MaxAscentRate*MaxAscentRateMod)
-                    ascentRate = -AirshipModelData.MaxAscentRate*MaxAscentRateMod;
+                if (value > _airshipModelData.MaxAscentRate*MaxAscentRateMod)
+                    ascentRate = _airshipModelData.MaxAscentRate*MaxAscentRateMod;
+                if (value < -_airshipModelData.MaxAscentRate*MaxAscentRateMod)
+                    ascentRate = -_airshipModelData.MaxAscentRate*MaxAscentRateMod;
                 _ascentRate = ascentRate;
             }
         }
@@ -91,10 +118,10 @@ namespace Forge.Core.Airship.Controllers{
             get { return _velocityTarget; }
             protected set{
                 float velocityTarget = value;
-                if (value > AirshipModelData.MaxForwardVelocity*MaxVelocityMod)
-                    velocityTarget = AirshipModelData.MaxForwardVelocity*MaxVelocityMod;
-                if (value < -AirshipModelData.MaxReverseVelocity*MaxVelocityMod)
-                    velocityTarget = -AirshipModelData.MaxReverseVelocity*MaxVelocityMod;
+                if (value > _airshipModelData.MaxForwardVelocity*MaxVelocityMod)
+                    velocityTarget = _airshipModelData.MaxForwardVelocity*MaxVelocityMod;
+                if (value < -_airshipModelData.MaxReverseVelocity*MaxVelocityMod)
+                    velocityTarget = -_airshipModelData.MaxReverseVelocity*MaxVelocityMod;
                 _velocityTarget = velocityTarget;
             }
         }
@@ -183,7 +210,7 @@ namespace Forge.Core.Airship.Controllers{
             position.Y += _ascentRate*timeDeltaSeconds;
             Position = position;
 
-            WorldMatrix = Common.GetWorldTranslation(Position, Angle, AirshipModelData.Length);
+            WorldMatrix = Common.GetWorldTranslation(Position, Angle, _airshipModelData.Length);
         }
 
         protected abstract void UpdateController(ref InputState state, double timeDelta);
