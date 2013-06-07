@@ -65,26 +65,44 @@ namespace Forge.Core.Airship.Controllers{
         public float MaxTurnAccelerationMod { get; private set; }
         public float MaxAscentAccelerationMod { get; private set; }
 
+        /// <summary>
+        ///   Meters per second
+        /// </summary>
         public float MaxVelocity{
             get { return _airshipModelData.MaxForwardVelocity*MaxVelocityMod; }
         }
 
+        /// <summary>
+        ///   Radians per second
+        /// </summary>
         public float MaxTurnRate{
             get { return _airshipModelData.MaxTurnSpeed*MaxTurnRateMod; }
         }
 
+        /// <summary>
+        ///   Meters per second
+        /// </summary>
         public float MaxAscentRate{
             get { return _airshipModelData.MaxAscentRate*MaxAscentRateMod; }
         }
 
+        /// <summary>
+        ///   Meters per second squared
+        /// </summary>
         public float MaxAcceleration{
             get { return _airshipModelData.MaxAcceleration*MaxAccelerationMod; }
         }
 
+        /// <summary>
+        ///   Radians per second squared
+        /// </summary>
         public float MaxTurnAcceleration{
             get { return _airshipModelData.MaxTurnAcceleration*MaxTurnAccelerationMod; }
         }
 
+        /// <summary>
+        ///   Meters per second squared
+        /// </summary>
         public float MaxAscentAcceleration{
             get { return _airshipModelData.MaxAscentAcceleration*MaxAscentAccelerationMod; }
         }
