@@ -15,10 +15,10 @@ namespace Forge.Core.Airship{
     internal class Airship : IDisposable{
         public readonly int FactionId;
         public readonly int Uid;
+        readonly Battlefield _battlefield;
         readonly AirshipController _controller;
         readonly List<Hardpoint> _hardPoints;
         readonly HullIntegrityMesh _hullIntegrityMesh;
-        readonly Battlefield _battlefield;
         bool _disposed;
 
         public Airship(

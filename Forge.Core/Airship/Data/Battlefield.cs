@@ -1,25 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#region
+
+using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using Forge.Core.Physics;
 using Forge.Framework;
 
-namespace Forge.Core.Airship.Data {
+#endregion
+
+namespace Forge.Core.Airship.Data{
     /// <summary>
-    /// This class contains all of the information relevant to the current battlefield, for use by the airship class' AI, physics engine, etc.
+    ///   This class contains all of the information relevant to the current battlefield, for use by the airship class' AI, physics engine, etc.
     /// </summary>
-    class Battlefield : IDisposable {
-        public readonly AirshipIndexer ShipsOnField;
+    internal class Battlefield : IDisposable{
         public readonly ProjectilePhysics ProjectileEngine;
+        public readonly AirshipIndexer ShipsOnField;
+
+        bool _disposed;
 
         public Battlefield(){
             ShipsOnField = new AirshipIndexer();
             ProjectileEngine = new ProjectilePhysics();
         }
 
-        bool _disposed;
+        #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
@@ -30,12 +33,13 @@ namespace Forge.Core.Airship.Data {
             _disposed = true;
         }
 
+        #endregion
+
         public void Update(ref InputState state, double timeDelta){
             foreach (Airship airship in ShipsOnField){
                 airship.Update(ref state, timeDelta);
             }
             ProjectileEngine.Update(timeDelta);
-
         }
 
         ~Battlefield(){

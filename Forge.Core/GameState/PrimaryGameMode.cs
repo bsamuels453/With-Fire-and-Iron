@@ -3,7 +3,6 @@
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
-using Forge.Core.Physics;
 using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -14,6 +13,7 @@ using Microsoft.Xna.Framework;
 
 namespace Forge.Core.GameState{
     internal class PrimaryGameMode : IGameState{
+        readonly Battlefield _battlefield;
         readonly BodyCenteredCamera _cameraController;
 
         readonly Button _deckDownButton;
@@ -25,7 +25,6 @@ namespace Forge.Core.GameState{
         readonly TerrainUpdater _terrainUpdater;
 
         readonly UIElementCollection _uiElementCollection;
-        readonly Battlefield _battlefield;
 
         Button _speedIndicator;
 
@@ -99,7 +98,7 @@ namespace Forge.Core.GameState{
             _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].Position);
             _cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int)((_battlefield.ShipsOnField[0].Velocity / _battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity) * 3);
+            int incremental = (int) ((_battlefield.ShipsOnField[0].Velocity/_battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity)*3);
 
             int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
