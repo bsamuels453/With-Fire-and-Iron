@@ -18,7 +18,7 @@ namespace Forge.Core.Airship{
         readonly AirshipController _controller;
         readonly List<Hardpoint> _hardPoints;
         readonly HullIntegrityMesh _hullIntegrityMesh;
-        readonly ProjectilePhysics _projectilePhysics;
+        readonly Battlefield _battlefield;
         bool _disposed;
 
         public Airship(
@@ -26,7 +26,7 @@ namespace Forge.Core.Airship{
             DeckSectionContainer deckSectionContainer,
             HullSectionContainer hullSectionContainer,
             AirshipStateData stateData,
-            ProjectilePhysics physicsEngine
+            Battlefield battlefield
             ){
             var sw = new Stopwatch();
             sw.Start();
@@ -34,10 +34,10 @@ namespace Forge.Core.Airship{
             HullSectionContainer = hullSectionContainer;
             DeckSectionContainer = deckSectionContainer;
 
-            _projectilePhysics = physicsEngine;
+            _battlefield = battlefield;
 
             _hardPoints = new List<Hardpoint>();
-            _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _projectilePhysics, ProjectilePhysics.EntityVariant.EnemyShip));
+            _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _battlefield.ProjectileEngine, ProjectilePhysics.EntityVariant.EnemyShip));
 
             FactionId = stateData.FactionId;
             Uid = stateData.AirshipId;
@@ -62,7 +62,7 @@ namespace Forge.Core.Airship{
                     break;
             }
 
-            _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _projectilePhysics, _controller.Position, ModelAttributes.Length);
+            _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, _controller.Position, ModelAttributes.Length);
 
             sw.Stop();
 
@@ -110,8 +110,6 @@ namespace Forge.Core.Airship{
             foreach (var hardPoint in _hardPoints){
                 hardPoint.Update(timeDelta);
             }
-
-            _projectilePhysics.Update(timeDelta);
         }
 
         public void AddVisibleLayer(int _){
