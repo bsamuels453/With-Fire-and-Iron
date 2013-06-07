@@ -41,9 +41,21 @@ namespace Forge.Core.Airship.Controllers{
 
         #region statistical properties
 
+        /// <summary>
+        ///   Position of the airship.
+        /// </summary>
         public Vector3 Position { get; private set; }
+
+        /// <summary>
+        ///   3D angle of the airship in radians.
+        /// </summary>
         public Vector3 Angle { get; private set; }
+
+        /// <summary>
+        ///   The worldmatrix used to translate the position of the airship into model space.
+        /// </summary>
         public Matrix WorldMatrix { get; private set; }
+
         public List<AirshipBuff> ActiveBuffs { get; private set; }
 
         public float MaxVelocityMod { get; private set; }
