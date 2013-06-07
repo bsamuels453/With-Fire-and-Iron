@@ -1,6 +1,4 @@
-﻿//#define CONVERT_TO_PROTOCOL
-
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
-using Forge.Core.Physics;
 using Forge.Core.Util;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -42,9 +39,9 @@ namespace Forge.Core.Airship.Export{
         ///   Loads an airship's model/state and instantiates it.
         /// </summary>
         /// <param name="stateName"> The filename of the airship's state. </param>
-        /// <param name="physicsEngine"> The physics engine handle the airship will use. </param>
+        /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship LoadAirship(string stateName, ProjectilePhysics physicsEngine){
+        public static Airship LoadAirship(string stateName, Battlefield battlefield){
             DebugConsole.WriteLine("Loading airship as defined by: " + stateName + ".json");
             var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + stateName + ".json");
             var stateData = DeserializeStateFromReader(stateReader);
@@ -55,7 +52,7 @@ namespace Forge.Core.Airship.Export{
             var deckSections = new DeckSectionContainer(airship.DeckSections);
             var modelAttribs = airship.ModelAttributes;
 
-            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, physicsEngine);
+            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, battlefield);
             DebugConsole.WriteLine(stateName + " loading completed");
             return ret;
         }
@@ -65,9 +62,9 @@ namespace Forge.Core.Airship.Export{
         /// </summary>
         /// <param name="stateDataName"> </param>
         /// <param name="stateData"> The state data that will be used to initalize the airship. If you specify an Id in this structure, it will be ignored. </param>
-        /// <param name="physicsEngine"> The physics engine handle the airship will use. </param>
+        /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship GenerateNewAirship(string stateDataName, AirshipStateData stateData, ProjectilePhysics physicsEngine){
+        public static Airship GenerateNewAirship(string stateDataName, AirshipStateData stateData, Battlefield battlefield){
             stateData.AirshipId = _uidGenerator.NextUid();
             DebugConsole.WriteLine("New airship being generated with uid " + stateData.AirshipId);
 
@@ -77,7 +74,7 @@ namespace Forge.Core.Airship.Export{
 
             SerializeStateToWriter(stateData, writer);
 
-            return InstantiateAirshipFromSerialized(model, stateData, physicsEngine);
+            return InstantiateAirshipFromSerialized(model, stateData, battlefield);
         }
 
         /// <summary>
@@ -157,12 +154,12 @@ namespace Forge.Core.Airship.Export{
         /// </summary>
         /// <param name="model"> </param>
         /// <param name="stateData"> </param>
-        /// <param name="physicsEngine"> </param>
+        /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        static Airship InstantiateAirshipFromSerialized(AirshipSerializationStruct model, AirshipStateData stateData, ProjectilePhysics physicsEngine){
+        static Airship InstantiateAirshipFromSerialized(AirshipSerializationStruct model, AirshipStateData stateData, Battlefield battlefield){
             var hullSections = new HullSectionContainer(model.HullSections);
             var deckSections = new DeckSectionContainer(model.DeckSections);
-            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, physicsEngine);
+            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, battlefield);
         }
 
         /// <summary>
