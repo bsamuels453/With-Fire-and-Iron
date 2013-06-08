@@ -1,44 +1,53 @@
-﻿#region
+﻿#define PROFILE_PATHS
+
+#region
 
 using System;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using Forge.Framework;
 using MonoGameUtility;
+using Point = MonoGameUtility.Point;
 
 #endregion
 
 namespace Forge.Core.Airship.Controllers.AutoPilot{
     internal static class Pathfinder{
-        const float _simulationSecondsPerTick = 1.0f;
-
         static int SimulatePath(Vector3 target, AirshipController controller, bool useReverse){
             //this constant is used to convert the units of input data from X/sec to X/tick
+            const float simulationSecondsPerTick = 1.0f;
+#if PROFILE_PATHS
+            var difff = target - controller.Position;
+            var bmp = new Bitmap((int) difff.X*2, (int) difff.Z*2);
+            var offset = new Point((int) difff.X, (int) difff.Y);
+#endif
 
             var sw = new Stopwatch();
             sw.Start();
 
             int numTicks = 0;
 
-            float maxVelocity = controller.MaxVelocity*_simulationSecondsPerTick;
-            float maxTurnRate = controller.MaxTurnRate*_simulationSecondsPerTick;
-            float maxAscentRate = controller.MaxAscentRate*_simulationSecondsPerTick;
-            float maxAcceleration = controller.MaxAcceleration*_simulationSecondsPerTick;
-            float maxTurnAcceleration = controller.MaxTurnAcceleration*_simulationSecondsPerTick;
-            float maxAscentAcceleration = controller.MaxAscentAcceleration*_simulationSecondsPerTick;
+            float maxVelocity = controller.MaxVelocity*simulationSecondsPerTick;
+            float maxTurnRate = controller.MaxTurnRate*simulationSecondsPerTick;
+            float maxAscentRate = controller.MaxAscentRate*simulationSecondsPerTick;
+            float maxAcceleration = controller.MaxAcceleration*simulationSecondsPerTick;
+            float maxTurnAcceleration = controller.MaxTurnAcceleration*simulationSecondsPerTick;
+            float maxAscentAcceleration = controller.MaxAscentAcceleration*simulationSecondsPerTick;
 
             Vector3 curPosition = controller.Position;
-            float curAscentRate = controller.AscentRate*_simulationSecondsPerTick;
+            float curAscentRate = controller.AscentRate*simulationSecondsPerTick;
             Vector3 curAngle;
             float curTurnVel, curVelocity;
             if (useReverse){
                 curAngle = controller.Angle + new Vector3(0, (float) Math.PI, 0);
-                curTurnVel = -controller.TurnVelocity*_simulationSecondsPerTick;
-                curVelocity = -controller.Velocity*_simulationSecondsPerTick;
+                curTurnVel = -controller.TurnVelocity*simulationSecondsPerTick;
+                curVelocity = -controller.Velocity*simulationSecondsPerTick;
             }
             else{
                 curAngle = controller.Angle;
-                curTurnVel = controller.TurnVelocity*_simulationSecondsPerTick;
-                curVelocity = controller.Velocity*_simulationSecondsPerTick;
+                curTurnVel = controller.TurnVelocity*simulationSecondsPerTick;
+                curVelocity = controller.Velocity*simulationSecondsPerTick;
             }
 
             Func<float, float> clampTurnRate = v =>{
@@ -117,14 +126,29 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
 
                 curPosition.X = newPos.X;
                 curPosition.Z = newPos.Y;
-
+#if PROFILE_PATHS
+                var color = Color.FromArgb(255, 255 - (int) (curVelocity/maxVelocity*255), 255);
+                try{
+                    bmp.SetPixel((int) curPosition.X + offset.X, (int) curPosition.Z + offset.Y, color);
+                }
+                catch{
+                    break;
+                }
+#endif
                 if (Vector3.Distance(target, curPosition) < maxVelocity){
                     break;
                 }
             }
+#if PROFILE_PATHS
+            bmp.SetPixel((int) controller.Position.X + offset.X, (int) controller.Position.Z + offset.Y, Color.Red);
+            bmp.SetPixel((int) target.X + offset.X, (int) target.Z + offset.Y, Color.Red);
 
+            bmp.Save("Test.png", ImageFormat.Png);
+            bmp.Dispose();
+#endif
 
             sw.Stop();
+
             double d = sw.ElapsedMilliseconds;
 
             return numTicks;
