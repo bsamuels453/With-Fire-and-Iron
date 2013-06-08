@@ -156,6 +156,7 @@
     <Compile Include="Airship\Controllers\AutoPilot\AirshipAutoPilot.cs" />
     <Compile Include="Airship\Controllers\AutoPilot\KeepAtRange.cs" />
     <Compile Include="Airship\Controllers\AutoPilot\Orbit.cs" />
+    <Compile Include="Airship\Controllers\AutoPilot\Pathfinder.cs" />
     <Compile Include="Airship\Data\AirshipBuff.cs" />
     <Compile Include="Airship\Data\AirshipEnums.cs" />
     <Compile Include="Airship\Data\AirshipStateData.cs" />
