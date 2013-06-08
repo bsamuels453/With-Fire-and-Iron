@@ -29,7 +29,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
 
         int SimulatePath(Vector3 target, bool useReverse){
             //this constant is used to convert the units of input data from X/sec to X/tick
-            const float secondsPerTick = 0.1f;
+            const float secondsPerTick = 1.5f;
 
             var sw = new Stopwatch();
             sw.Start();
@@ -99,7 +99,6 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                         curAngle.Y,
                         destXZAngle,
                         maxTurnAcceleration,
-                        maxTurnRate,
                         curTurnVel,
                         clampTurnRate,
                         out curAngle.Y,
@@ -111,7 +110,6 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                         curPosition.Y,
                         target.Y,
                         maxAscentAcceleration,
-                        maxAscentRate,
                         curAscentRate,
                         clampAscentRate,
                         out curPosition.Y,
@@ -125,8 +123,8 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                         new Vector2(curPosition.X, curPosition.Z),
                         new Vector2(target.X, target.Z),
                         curAngle.Y,
+                        destXZAngle,
                         maxAcceleration,
-                        maxVelocity,
                         curVelocity,
                         clampVelocity,
                         out newPos,
@@ -135,7 +133,8 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
 
                 curPosition.X = newPos.X;
                 curPosition.Z = newPos.Y;
-                if (Vector3.Distance(target, curPosition) < 10){
+
+                if (Vector3.Distance(target, curPosition) < maxVelocity){
                     break;
                 }
             }
@@ -147,7 +146,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             throw new Exception();
         }
 
-        void CalculateNewScalar(float pos, float target, float maxAcceleration, float maxVelocity, float curVelocity, Func<float, float> clamp,
+        void CalculateNewScalar(float pos, float target, float maxAcceleration, float curVelocity, Func<float, float> clamp,
             out float newPos, out float newVel){
             float diff = target - pos;
 
@@ -157,7 +156,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             else
                 sign = -1;
 
-            var newVelocity = curVelocity + sign*maxVelocity;
+            var newVelocity = curVelocity + sign*maxAcceleration;
             newVelocity = clamp.Invoke(newVelocity);
 
             var breakoffDist = GetCoveredDistanceByAccel(Math.Abs(newVelocity), maxAcceleration);
@@ -173,11 +172,11 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             newVel = newVelocity;
         }
 
-        void CalculateNewVector(Vector2 pos, Vector2 target, float angle, float maxAcceleration, float maxVelocity, float curVelocity, Func<float, float> clamp,
+        void CalculateNewVector(Vector2 pos, Vector2 target, float angle, float angleTarget, float maxAcceleration, float curVelocity, Func<float, float> clamp,
             out Vector2 newPos, out float newVel){
             Vector2 diff = target - pos;
 
-            var newVelocity = curVelocity + maxVelocity;
+            var newVelocity = curVelocity + maxAcceleration;
             newVelocity = clamp.Invoke(newVelocity);
 
             var breakoffDist = GetCoveredDistanceByAccel(Math.Abs(newVelocity), maxAcceleration);
@@ -190,14 +189,16 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                 newVelocity = clamp.Invoke(newVelocity);
             }
 
+            float theta = Math.Abs(angleTarget - angle);
+
             Vector2 change = new Vector2();
             var unitVec = Common.GetComponentFromAngle(-angle, 1);
-            change.X += unitVec.X*posDiff;
-            change.Y += -unitVec.Y*posDiff;
+            change.X += unitVec.X*posDiff*theta;
+            change.Y += -unitVec.Y*posDiff*theta;
 
 
             newPos = (pos + change);
-            newVel = newVelocity;
+            newVel = newVelocity*theta;
         }
 
 
