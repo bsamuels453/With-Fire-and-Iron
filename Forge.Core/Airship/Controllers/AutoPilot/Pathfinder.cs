@@ -172,6 +172,16 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             return false;
         }
 
+        /// <summary>
+        /// Calculates the next position and velocity of the provided scalar.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="target"></param>
+        /// <param name="maxAcceleration"></param>
+        /// <param name="curVelocity"></param>
+        /// <param name="clamp"></param>
+        /// <param name="newPos"></param>
+        /// <param name="newVel"></param>
         static void CalculateNewScalar(float pos, float target, float maxAcceleration, float curVelocity, Func<float, float> clamp,
             out float newPos, out float newVel){
             float diff = target - pos;
@@ -198,6 +208,20 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             newVel = newVelocity;
         }
 
+        /// <summary>
+        /// Calculates the next position and velocity of the provided vector. A modifier is applied that takes
+        /// into consideration the angle between the movement vector and the target vector in order to prevent
+        /// the airship from moving full steam ahead in the tangential direction.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="target"></param>
+        /// <param name="angle"></param>
+        /// <param name="angleTarget"></param>
+        /// <param name="maxAcceleration"></param>
+        /// <param name="curVelocity"></param>
+        /// <param name="clamp"></param>
+        /// <param name="newPos"></param>
+        /// <param name="newVel"></param>
         static void CalculateNewVector(Vector2 pos, Vector2 target, float angle, float angleTarget, float maxAcceleration, float curVelocity,
             Func<float, float> clamp,
             out Vector2 newPos, out float newVel){
