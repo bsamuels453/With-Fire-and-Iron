@@ -130,7 +130,20 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             return numTicks;
         }
 
-        static bool ShouldReverseBeUsed(
+        /// <summary>
+        /// Very lazy algorithm for figuring out whether a target should be approached in reverse, or if a turn
+        /// should be executed and the approach made in forewards direction.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <param name="target"></param>
+        /// <param name="curAngle"></param>
+        /// <param name="maxAngularSpeed"></param>
+        /// <param name="maxAngularAcceleration">not used yet</param>
+        /// <param name="maxVelocity"></param>
+        /// <param name="maxReverseVelocity"></param>
+        /// <param name="maxAcceleration">not used yet</param>
+        /// <returns></returns>
+        public static bool ShouldReverseBeUsed(
             Vector3 pos,
             Vector3 target,
             float curAngle,
@@ -139,22 +152,24 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             float maxVelocity,
             float maxReverseVelocity,
             float maxAcceleration){
-
             float destXZAngle, distToTarget;
             Vector3 diff = target - pos;
             Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
             var tarAngle = destXZAngle - curAngle;
 
             //if the angle terminates behind us...
-            if (tarAngle > Math.PI || tarAngle < -Math.PI) {
+            if (tarAngle > Math.PI || tarAngle < -Math.PI){
+                float timeToTurn = tarAngle/maxAngularSpeed;
+                float timeToTravel = diff.Length()/maxVelocity;
 
-            }
-            else{
+                float timeToTravelReverse = diff.Length()/maxReverseVelocity;
+
+                if (timeToTurn + timeToTravel > timeToTravelReverse){
+                    return true;
+                }
                 return false;
             }
-
-
-            throw new Exception();
+            return false;
         }
 
         static void CalculateNewScalar(float pos, float target, float maxAcceleration, float curVelocity, Func<float, float> clamp,
