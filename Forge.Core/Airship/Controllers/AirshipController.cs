@@ -73,6 +73,13 @@ namespace Forge.Core.Airship.Controllers{
         }
 
         /// <summary>
+        ///   Meters per second
+        /// </summary>
+        public float MaxReverseVelocity{
+            get { return _airshipModelData.MaxReverseVelocity*MaxVelocityMod; }
+        }
+
+        /// <summary>
         ///   Radians per second
         /// </summary>
         public float MaxTurnRate{
