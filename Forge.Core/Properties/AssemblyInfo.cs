@@ -9,11 +9,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 
-[assembly: AssemblyTitle("Forge")]
-[assembly: AssemblyProduct("Forge")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2012")]
+[assembly: AssemblyTitle("With Fire and Iron")]
+[assembly: AssemblyProduct("InDev Version")]
+[assembly: AssemblyDescription("Development Version")]
+[assembly: AssemblyCompany("Zalzane Software")]
+[assembly: AssemblyCopyright("Copyright © Zalzane 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
