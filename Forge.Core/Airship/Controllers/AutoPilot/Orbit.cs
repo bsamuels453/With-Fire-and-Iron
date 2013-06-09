@@ -5,10 +5,10 @@ using System.Text;
 
 namespace Forge.Core.Airship.Controllers.AutoPilot {
     class Orbit : AirshipAutoPilot{
-        public Orbit(AirshipController controller, AirshipIndexer airships) : base(controller, airships){
+        public Orbit(AirshipController controller, AirshipIndexer airships){
         }
 
-        protected override void UpdateChild(double timeDelta){
+        public override Pathfinder.RetAttributes CalculateNextPosition(double timeDelta){
             throw new NotImplementedException();
         }
     }
