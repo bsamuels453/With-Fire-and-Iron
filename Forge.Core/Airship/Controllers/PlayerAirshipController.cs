@@ -22,8 +22,8 @@ namespace Forge.Core.Airship.Controllers{
         public TurnState CurTurnState;
         int _engineSpeed;
 
-        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints) :
-            base(modelData, stateData, hardPoints){
+        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints, AirshipIndexer airships) :
+            base(modelData, stateData, airships, hardPoints){
         }
 
         public int EngineSpeed{
@@ -90,10 +90,11 @@ namespace Forge.Core.Airship.Controllers{
                     turnValue = -1;
                     break;
             }
-
-            base.TurnVelocity = turnValue*base.MaxTurnRate;
-            base.Velocity = engineDutyCycle*base.MaxVelocity;
-            base.AscentRate = altitudeDutyCycle*base.MaxAscentRate;
+            if (!AutoPilotActive){
+                base.TurnVelocity = turnValue*base.MaxTurnRate;
+                base.Velocity = engineDutyCycle*base.MaxVelocity;
+                base.AscentRate = altitudeDutyCycle*base.MaxAscentRate;
+            }
         }
     }
 }
