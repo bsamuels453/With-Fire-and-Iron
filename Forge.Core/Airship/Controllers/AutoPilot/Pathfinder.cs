@@ -6,6 +6,7 @@ using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using Forge.Core.Airship.Data;
 using Forge.Framework;
 using MonoGameUtility;
 using Point = MonoGameUtility.Point;
@@ -18,32 +19,38 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
         /// Calculates the path of the airship at the next tick.
         /// </summary>
         /// <param name="target">The target position the airship should be approaching.</param>
-        /// <param name="controller">The controller of the airship calling this method.</param>
+        /// <param name="selfStateData"> </param>
         /// <param name="timeDelta">The amount of delta time that should be taken into consideration for velocities, in milliseconds. </param>
         /// <param name="useReverse">Whether or not the approach should be made in reverse.</param>
-        public static RetAttributes CalculateAirshipPath(Vector3 target, AirshipController controller, float timeDelta, bool useReverse){
+        /// <param name="attributes"> </param>
+        public static RetAttributes CalculateAirshipPath(
+            Vector3 target, 
+            ModelAttributes attributes, 
+            AirshipStateData selfStateData, 
+            float timeDelta, 
+            bool useReverse){
             float timeFrac = timeDelta/1000f;
-            float maxTurnRate = controller.MaxTurnRate*timeFrac;
-            float maxAscentRate = controller.MaxAscentRate*timeFrac;
-            float maxAcceleration = controller.MaxAcceleration*timeFrac;
-            float maxTurnAcceleration = controller.MaxTurnAcceleration*timeFrac;
-            float maxAscentAcceleration = controller.MaxAscentAcceleration*timeFrac;
+            float maxTurnRate = attributes.MaxTurnSpeed;
+            float maxAscentRate = attributes.MaxAscentRate;
+            float maxAcceleration = attributes.MaxAcceleration * timeFrac;
+            float maxTurnAcceleration = attributes.MaxTurnAcceleration * timeFrac;
+            float maxAscentAcceleration = attributes.MaxAscentAcceleration * timeFrac;
 
-            Vector3 curPosition = controller.Position;
-            float curAscentRate = controller.AscentRate*timeFrac;
+            Vector3 curPosition = selfStateData.Position;
+            float curAscentRate = selfStateData.AscentRate;
             Vector3 curAngle;
             float curTurnVel, curVelocity, maxVelocity;
             if (useReverse){
-                curAngle = controller.Angle + new Vector3(0, (float) Math.PI, 0);
-                curTurnVel = -controller.TurnVelocity*timeFrac;
-                curVelocity = -controller.Velocity*timeFrac;
-                maxVelocity = controller.MaxReverseVelocity*timeFrac;
+                curAngle = selfStateData.Angle + new Vector3(0, (float)Math.PI, 0);
+                curTurnVel = -selfStateData.TurnRate;
+                curVelocity = -selfStateData.Velocity;
+                maxVelocity = attributes.MaxReverseVelocity;
             }
             else{
-                curAngle = controller.Angle;
-                curTurnVel = controller.TurnVelocity*timeFrac;
-                curVelocity = controller.Velocity*timeFrac;
-                maxVelocity = controller.MaxVelocity*timeFrac;
+                curAngle = selfStateData.Angle;
+                curTurnVel = selfStateData.TurnRate;
+                curVelocity = selfStateData.Velocity;
+                maxVelocity = attributes.MaxForwardVelocity;
             }
 
             Func<float, float> clampTurnRate = v =>{
@@ -89,7 +96,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curAngle.Y,
                     out curTurnVel
                 );
-
+            /*
             CalculateNewScalar
                 (
                     curPosition.Y,
@@ -100,6 +107,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curPosition.Y,
                     out curAscentRate
                 );
+             */
 
             Vector2 newPos;
 
@@ -245,7 +253,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
 
 
             newPos = (pos + change);
-            newVel = newVelocity*theta;
+            newVel = newVelocity;//*theta;
         }
 
 
