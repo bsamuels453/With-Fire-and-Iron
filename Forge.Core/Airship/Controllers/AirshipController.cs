@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Forge.Core.Airship.Controllers.AutoPilot;
@@ -269,8 +270,8 @@ namespace Forge.Core.Airship.Controllers{
             float timeDeltaSeconds = (float) timeDelta/1000;
 
             var ang = Angle;
-            ang.Y += StateData.TurnRate * timeDeltaSeconds;
-            var unitVec = Common.GetComponentFromAngle(ang.Y, 1);
+            ang.Y += StateData.TurnRate*timeDeltaSeconds;
+            var unitVec = Common.GetComponentFromAngle(ang.Y - (float) Math.PI/2, 1);
             Angle = ang;
 
             var position = Position;
@@ -279,7 +280,7 @@ namespace Forge.Core.Airship.Controllers{
             position.Y += StateData.AscentRate*timeDeltaSeconds;
             Position = position;
 
-            WorldMatrix = Common.GetWorldTranslation(Position, Angle, _airshipModelData.Length);
+            WorldMatrix = Common.GetWorldTranslation(Position, Angle + new Vector3(0, -(float) Math.PI/2, 0), _airshipModelData.Length);
         }
 
         protected abstract void UpdateController(ref InputState state, double timeDelta);
