@@ -8,7 +8,7 @@ using Forge.Framework;
 #endregion
 
 namespace Forge.Core.Terrain{
-    internal class TerrainUpdater : IDisposable{
+    public class TerrainUpdater : IDisposable{
         readonly TerrainGen _generator;
         readonly List<TerrainChunk> _loadedChunks;
 

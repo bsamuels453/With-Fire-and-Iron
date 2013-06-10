@@ -9,7 +9,7 @@ using MonoGameUtility;
 
 namespace Forge.Core.Util{
     //depreciated
-    internal class Interpolate{
+    public class Interpolate{
         /// <summary>
         ///   the distance between the two points being interpolated. Only matters if value is going to be queried for distances outside the range of 0-1.
         /// </summary>
@@ -116,7 +116,7 @@ namespace Forge.Core.Util{
         #endregion
     }
 
-    internal static class Lerp{
+    public static class Lerp{
         public static Vector3 Lerp3(Vector3 start, Vector3 end, float t){
             var posVec = (end - start);
             var uVec = posVec;

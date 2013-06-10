@@ -8,7 +8,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Input{
-    internal class InputHandler{
+    public class InputHandler{
         readonly Stopwatch _clickTimer;
         public InputState CurrentInputState;
         MouseState _prevMouseState;

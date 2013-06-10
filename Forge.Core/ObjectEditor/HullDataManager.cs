@@ -17,7 +17,7 @@ namespace Forge.Core.ObjectEditor{
     /// <summary>
     ///   NOTICE: the next time work is done on the editor, encapsulate ObjectModelBuffer, WallIdentifiers, and WallBuffer
     /// </summary>
-    internal class HullDataManager : IDisposable{
+    public class HullDataManager : IDisposable{
         #region Delegates
 
         public delegate void CurDeckChanged(int oldDeck, int newDeck);

@@ -8,7 +8,7 @@ using ProtoBuf;
 
 namespace Forge.Core.Logic{
     [ProtoContract]
-    internal class AirshipObjectIdentifier : IEquatable<AirshipObjectIdentifier>{
+    public class AirshipObjectIdentifier : IEquatable<AirshipObjectIdentifier>{
         [ProtoMember(1)] public readonly ObjectType ObjectType;
         [ProtoMember(2)] public readonly Vector3 Position;
 
@@ -29,7 +29,7 @@ namespace Forge.Core.Logic{
         #endregion
     }
 
-    internal enum ObjectType{
+    public enum ObjectType{
         Ladder,
         Deckboard,
         Misc

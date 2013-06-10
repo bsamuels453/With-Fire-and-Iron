@@ -13,9 +13,9 @@ namespace Forge.Core.Airship.Data{
         [ProtoMember(3)] public float Length;
         [ProtoMember(4)] public float MaxAcceleration;
         [ProtoMember(5)] public float MaxAscentAcceleration;
-        [ProtoMember(6)] public float MaxAscentSpeed;
-        [ProtoMember(7)] public float MaxForwardSpeed;
-        [ProtoMember(8)] public float MaxReverseSpeed;
+        [ProtoMember(6)] public float MaxAscentRate;
+        [ProtoMember(7)] public float MaxForwardVelocity;
+        [ProtoMember(8)] public float MaxReverseVelocity;
         [ProtoMember(9)] public float MaxTurnAcceleration;
         [ProtoMember(10)] public float MaxTurnSpeed;
         [ProtoMember(11)] public int NumDecks;

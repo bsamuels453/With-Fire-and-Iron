@@ -1,5 +1,5 @@
 ﻿namespace Forge.Core.Airship.Data{
-    internal class AirshipBuff{
+    public class AirshipBuff{
         #region BuffType enum
 
         /// <summary>

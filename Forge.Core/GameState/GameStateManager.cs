@@ -1,15 +1,16 @@
 ﻿#region
 
 using System.Diagnostics;
+using System.Threading;
 using Forge.Core.Camera;
 using Forge.Core.Input;
 
 #endregion
 
 namespace Forge.Core.GameState{
-    internal delegate void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera);
+    public delegate void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera);
 
-    internal static class GamestateManager{
+    public static class GamestateManager{
         static readonly InputHandler _inputHandler;
 
         static IGameState _activeState;
@@ -39,6 +40,13 @@ namespace Forge.Core.GameState{
 
             _stopwatch.Stop();
             double d = _stopwatch.ElapsedMilliseconds;
+            if (d <= 1){
+                _stopwatch.Restart();
+                Thread.Sleep(5);
+                _stopwatch.Stop();
+                d = _stopwatch.ElapsedMilliseconds;
+            }
+
             _activeState.Update(_inputHandler.CurrentInputState, d);
             _stopwatch.Restart();
         }

@@ -12,7 +12,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.HullEditor{
-    internal class BezierCurveCollection : IEnumerable<BezierCurve>{
+    public class BezierCurveCollection : IEnumerable<BezierCurve>{
         #region fields
 
         public readonly float PixelsPerMeter;
@@ -349,7 +349,7 @@ namespace Forge.Core.HullEditor{
 
     #region nested struct
 
-    internal class CurveInitalizeData{
+    public class CurveInitalizeData{
         public float Angle;
         public float HandlePosX;
         public float HandlePosY;

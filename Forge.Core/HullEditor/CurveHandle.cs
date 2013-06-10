@@ -9,7 +9,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.HullEditor{
-    internal class CurveHandle{
+    public class CurveHandle{
         #region HandleMovementRestriction enum
 
         public enum HandleMovementRestriction{
@@ -34,7 +34,7 @@ namespace Forge.Core.HullEditor{
         public TranslateDragToExtern TranslateToExtern;
         ClampByNeighbors _clampByNeighbors;
         bool _dontTranslateHandles;
-        bool _internalSymmetry;
+        bool _publicSymmetry;
         int _reflectionX;
         int _reflectionY;
         HandleMovementRestriction _rotRestriction;
@@ -108,8 +108,8 @@ namespace Forge.Core.HullEditor{
             TranslateToExtern = null;
         }
 
-        public void SetReflectionType(PanelAlias panelType, HandleMovementRestriction restrictionType, bool hasInternalSymmetry = false){
-            _internalSymmetry = hasInternalSymmetry;
+        public void SetReflectionType(PanelAlias panelType, HandleMovementRestriction restrictionType, bool haspublicSymmetry = false){
+            _publicSymmetry = haspublicSymmetry;
             switch (panelType){
                 case PanelAlias.Side:
                     _rotRestriction = restrictionType; //vert
@@ -124,7 +124,7 @@ namespace Forge.Core.HullEditor{
                     _reflectionY = -1;
                     _dontTranslateHandles = false;
                     _clampByNeighbors = TopNeighborClamp;
-                    if (hasInternalSymmetry){
+                    if (haspublicSymmetry){
                         _reflectionX = 0;
                     }
                     break;
@@ -134,7 +134,7 @@ namespace Forge.Core.HullEditor{
                     _reflectionY = 1;
                     _dontTranslateHandles = false;
                     _clampByNeighbors = BackNeighborClamp;
-                    if (hasInternalSymmetry){
+                    if (haspublicSymmetry){
                         _reflectionY = 0;
                     }
                     break;
@@ -152,12 +152,12 @@ namespace Forge.Core.HullEditor{
             var button = (Button) owner;
             float dx = x - oldX;
             float dy = y - oldY;
-            InternalMovementClamp(ref dx, ref dy, button);
+            publicMovementClamp(ref dx, ref dy, button);
             x = (int) dx + oldX;
             y = (int) dy + oldY;
         }
 
-        void InternalMovementClamp(ref float dx, ref float dy, Button button){
+        void publicMovementClamp(ref float dx, ref float dy, Button button){
             #region region clamp
 
             if (_rotRestriction == HandleMovementRestriction.Vertical || _rotRestriction == HandleMovementRestriction.Quadrant){
@@ -497,7 +497,7 @@ namespace Forge.Core.HullEditor{
                     break;
                 case HandleType.Prev:
                     _prevLine.TranslateDestination(dx, dy);
-                    if (_internalSymmetry){
+                    if (_publicSymmetry){
                         RawNextTranslate(dx*_reflectionX, dy*_reflectionY);
                     }
                     else{
@@ -514,7 +514,7 @@ namespace Forge.Core.HullEditor{
                     break;
                 case HandleType.Next:
                     _nextLine.TranslateDestination(dx, dy);
-                    if (_internalSymmetry){
+                    if (_publicSymmetry){
                         RawPrevTranslate(dx*_reflectionX, dy*_reflectionY);
                     }
                     else{

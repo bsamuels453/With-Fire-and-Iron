@@ -8,6 +8,8 @@ using MonoGameUtility;
 
 namespace Forge.Framework{
     public static class Common{
+        public const float DegreesPerRadian = 0.0174532925f;
+
         /// <summary>
         ///   gets the components of a vector
         /// </summary>

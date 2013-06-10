@@ -1,8 +1,9 @@
 ﻿#region
 
+using Forge.Core.Airship.Controllers.AutoPilot;
+using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
-using Forge.Core.Physics;
 using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -12,20 +13,20 @@ using Microsoft.Xna.Framework;
 #endregion
 
 namespace Forge.Core.GameState{
-    internal class PrimaryGameMode : IGameState{
+    public class PrimaryGameMode : IGameState{
+        readonly Battlefield _battlefield;
         readonly BodyCenteredCamera _cameraController;
 
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly Button[] _highlightMasks;
-        readonly Airship.Airship[] _otherAirships;
-        readonly Airship.Airship _playerAirship;
-        readonly ProjectilePhysics _projectilePhysics;
+
         readonly RenderTarget _renderTarget;
 
         readonly TerrainUpdater _terrainUpdater;
 
         readonly UIElementCollection _uiElementCollection;
+
         Button _speedIndicator;
 
         public PrimaryGameMode(){
@@ -35,16 +36,27 @@ namespace Forge.Core.GameState{
             _renderTarget.Bind();
 
             _terrainUpdater = new TerrainUpdater();
-            _projectilePhysics = new ProjectilePhysics();
 
-            _playerAirship = AirshipPackager.LoadAirship("PlayerShip", _projectilePhysics);
-            _otherAirships = new Airship.Airship[1];
-            _otherAirships[0] = AirshipPackager.LoadAirship("AIShip", _projectilePhysics);
+            _battlefield = new Battlefield();
+            //AirshipPackager.ConvertDefToProtocolFile("ExportedAirship");
+
+            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
+            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
+
+            _battlefield.ShipsOnField[1].SetAutoPilot
+                (new KeepAtRange
+                    (
+                    _battlefield.ShipsOnField[1],
+                    _battlefield.ShipsOnField,
+                    0,
+                    50
+                    )
+                );
 
 
             _cameraController = new BodyCenteredCamera(false);
             GamestateManager.CameraController = _cameraController;
-            _cameraController.SetCameraTarget(_playerAirship.Position);
+            _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
 
             var buttonGen = new ButtonGenerator();
             const int yPos = 100;
@@ -82,8 +94,8 @@ namespace Forge.Core.GameState{
             buttonGen.Y = 200 + 32;
             buttonGen.TextureName = "Icons/DownArrow";
             _deckDownButton = buttonGen.GenerateButton();
-            _deckUpButton.OnLeftClickDispatcher += _playerAirship.AddVisibleLayer;
-            _deckDownButton.OnLeftClickDispatcher += _playerAirship.RemoveVisibleLayer;
+            _deckUpButton.OnLeftClickDispatcher += _battlefield.ShipsOnField[0].AddVisibleLayer;
+            _deckDownButton.OnLeftClickDispatcher += _battlefield.ShipsOnField[0].RemoveVisibleLayer;
 
             _uiElementCollection.Unbind();
         }
@@ -93,20 +105,19 @@ namespace Forge.Core.GameState{
         public void Update(InputState state, double timeDelta){
             _uiElementCollection.UpdateInput(ref state);
             _uiElementCollection.UpdateLogic(timeDelta);
-            _playerAirship.Update(ref state, timeDelta);
-            foreach (var airship in _otherAirships){
-                airship.Update(ref state, timeDelta);
-            }
-            _cameraController.SetCameraTarget(_playerAirship.Position);
+
+            _battlefield.Update(ref state, timeDelta);
+            _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
             _cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int) ((_playerAirship.Velocity/_playerAirship.ModelAttributes.MaxForwardSpeed)*3);
-
+            int incremental = (int) ((_battlefield.ShipsOnField[0].StateData.Velocity/_battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity)*3);
+            /*
             int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
                 button.Alpha = 0.65f;
             }
             _highlightMasks[absSpeed].Alpha = 0;
+             */
             _terrainUpdater.Update(state, timeDelta);
         }
 
@@ -115,13 +126,9 @@ namespace Forge.Core.GameState{
         }
 
         public void Dispose(){
-            _playerAirship.Dispose();
-            foreach (var airship in _otherAirships){
-                airship.Dispose();
-            }
             _terrainUpdater.Dispose();
             _renderTarget.Dispose();
-            _projectilePhysics.Dispose();
+            _battlefield.Dispose();
         }
 
         #endregion

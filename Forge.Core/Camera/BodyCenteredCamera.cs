@@ -12,7 +12,7 @@ namespace Forge.Core.Camera{
     /// <summary>
     ///   this abstract class creates a camera that rotates around a point
     /// </summary>
-    internal sealed class BodyCenteredCamera : ICamera{
+    public sealed class BodyCenteredCamera : ICamera{
         const float _camAngularSpeed = 0.005f; //0.01f
         const float _camScrollSpeedDivisor = 100f;
         readonly bool _allowCamTargChange;

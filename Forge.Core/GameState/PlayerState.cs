@@ -7,7 +7,7 @@
 namespace Forge.Core.GameState{
     //old class from when the freecam hack was enabled; i dont see any use for this any time soon so I'm going to leave it here instead of reimplementing it in new system.
     /*
-    internal class PlayerState : IGameState{
+    public class PlayerState : IGameState{
         readonly SubmarineCamera _cameraController;
         readonly Point _viewportSize;
         bool _clampMouse;

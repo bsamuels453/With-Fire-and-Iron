@@ -11,7 +11,7 @@ namespace Forge.Core.Util{
     /// <summary>
     ///   helper class for use with rectangular meshes
     /// </summary>
-    internal static class MeshHelper{
+    public static class MeshHelper{
         public static int[] CreateQuadIndiceArray(int numQuads){
             //construct indice list
             //remember the clockwise-fu

@@ -7,7 +7,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Util{
-    internal static class Bezier{
+    public static class Bezier{
         #region generation methods
 
         static void Lerp(ref Vector2 dest, Vector2 a, Vector2 b, float t){
@@ -82,7 +82,7 @@ namespace Forge.Core.Util{
 
         #region Nested type: DVector2
 
-        internal struct DVector2{
+        public struct DVector2{
             public double X;
             public double Y;
 
@@ -106,7 +106,7 @@ namespace Forge.Core.Util{
     /// <summary>
     ///   generates bezier intersection point from an independent value do note that x is treated as an independent v variable, and y is dependent
     /// </summary>
-    internal class BezierDependentGenerator{
+    public class BezierDependentGenerator{
         readonly List<BoundCache> _boundCache;
         readonly List<BezierInfo> _curveinfo;
         readonly float _largestX;
@@ -282,7 +282,7 @@ namespace Forge.Core.Util{
     /// <summary>
     ///   generates points from a set of bezier curves via brute force do note that x is treated as an independent v variable, and y is dependent
     /// </summary>
-    internal class BruteBezierGenerator{
+    public class BruteBezierGenerator{
         readonly List<int> _curveStartIndexes; //contains a list of indexes that specify where a curve starts in the pointCache 
         readonly List<Vector2> _pointCache;
         List<float> _curveSegmentLengths;

@@ -12,7 +12,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship{
-    internal class HullIntegrityMesh : IDisposable{
+    public class HullIntegrityMesh : IDisposable{
         //-creates overlay mesh for damaged portions
         //-removes hull portions if damage exceeds limits
         //-generates physics block for deflected blows

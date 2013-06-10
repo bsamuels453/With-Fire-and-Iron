@@ -10,7 +10,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
-    internal class WallDeleteTool : DeckPlacementBase{
+    public class WallDeleteTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         List<WallSegmentIdentifier> _prevIdentifiers;
 

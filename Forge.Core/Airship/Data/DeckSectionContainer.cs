@@ -12,7 +12,7 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Core.Airship.Data{
-    internal class DeckSectionContainer : IDisposable{
+    public class DeckSectionContainer : IDisposable{
         public readonly ObjectBuffer<AirshipObjectIdentifier>[] DeckBufferByDeck;
         public readonly int NumDecks;
         bool _disposed;

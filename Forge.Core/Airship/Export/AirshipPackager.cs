@@ -1,6 +1,4 @@
-﻿//#define CONVERT_TO_PROTOCOL
-
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -8,7 +6,6 @@ using System.Diagnostics;
 using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
-using Forge.Core.Physics;
 using Forge.Core.Util;
 using Forge.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,7 +17,7 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Core.Airship.Export{
-    internal static class AirshipPackager{
+    public static class AirshipPackager{
         const string _stateDataSerializerVersion = "0.1";
 
         /// <summary>
@@ -41,11 +38,11 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Loads an airship's model/state and instantiates it.
         /// </summary>
-        /// <param name="modelName"> The name of the model's file, without extension. </param>
         /// <param name="stateName"> The filename of the airship's state. </param>
-        /// <param name="physicsEngine"> The physics engine handle the airship will use. </param>
+        /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship LoadAirship(string stateName, ProjectilePhysics physicsEngine){
+        public static Airship LoadAirship(string stateName, Battlefield battlefield){
+            DebugConsole.WriteLine("Loading airship as defined by: " + stateName + ".json");
             var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + stateName + ".json");
             var stateData = DeserializeStateFromReader(stateReader);
 
@@ -55,9 +52,8 @@ namespace Forge.Core.Airship.Export{
             var deckSections = new DeckSectionContainer(airship.DeckSections);
             var modelAttribs = airship.ModelAttributes;
 
-            Debug.WriteLine("Warning, statedata being loaded in code rather than from file");
-
-            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, physicsEngine);
+            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, battlefield);
+            DebugConsole.WriteLine(stateName + " loading completed");
             return ret;
         }
 
@@ -66,20 +62,19 @@ namespace Forge.Core.Airship.Export{
         /// </summary>
         /// <param name="stateDataName"> </param>
         /// <param name="stateData"> The state data that will be used to initalize the airship. If you specify an Id in this structure, it will be ignored. </param>
-        /// <param name="physicsEngine"> The physics engine handle the airship will use. </param>
+        /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship GenerateNewAirship(string stateDataName, AirshipStateData stateData, ProjectilePhysics physicsEngine){
+        public static Airship GenerateNewAirship(string stateDataName, AirshipStateData stateData, Battlefield battlefield){
             stateData.AirshipId = _uidGenerator.NextUid();
-            Debug.WriteLine("New airship being generated with uid " + stateData.AirshipId);
+            DebugConsole.WriteLine("New airship being generated with uid " + stateData.AirshipId);
 
             var model = LoadAirshipModel(stateData.Model);
 
             var writer = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\" + stateDataName + ".json");
 
             SerializeStateToWriter(stateData, writer);
-            Debug.WriteLine("New airship's statedata has been serialized");
 
-            return InstantiateAirshipFromSerialized(model, stateData, physicsEngine);
+            return InstantiateAirshipFromSerialized(model, stateData, battlefield);
         }
 
         /// <summary>
@@ -159,12 +154,12 @@ namespace Forge.Core.Airship.Export{
         /// </summary>
         /// <param name="model"> </param>
         /// <param name="stateData"> </param>
-        /// <param name="physicsEngine"> </param>
+        /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        static Airship InstantiateAirshipFromSerialized(AirshipSerializationStruct model, AirshipStateData stateData, ProjectilePhysics physicsEngine){
+        static Airship InstantiateAirshipFromSerialized(AirshipSerializationStruct model, AirshipStateData stateData, Battlefield battlefield){
             var hullSections = new HullSectionContainer(model.HullSections);
             var deckSections = new DeckSectionContainer(model.DeckSections);
-            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, physicsEngine);
+            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, battlefield);
         }
 
         /// <summary>
@@ -191,6 +186,7 @@ namespace Forge.Core.Airship.Export{
 
             writer.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             writer.Close();
+            DebugConsole.WriteLine("Airship state data serialized successfully.");
         }
 
         /// <summary>
@@ -231,7 +227,7 @@ namespace Forge.Core.Airship.Export{
         ///   Converts the airship stored in the specified .def file to .protocol format. Base directory is \\Data\\AirshipSchematics\\
         /// </summary>
         /// <param name="fileName"> The filename of the .def file, without extension </param>
-        static void ConvertDefToProtocolFile(string fileName){
+        public static void ConvertDefToProtocolFile(string fileName){
             var sw = new Stopwatch();
             sw.Start();
             var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".def");
@@ -252,13 +248,16 @@ namespace Forge.Core.Airship.Export{
             var modelAttribs = new ModelAttributes();
             //in the future these attributes will be defined based off analyzing the hull
             modelAttribs.Length = 50;
-            modelAttribs.MaxAscentSpeed = 10;
-            modelAttribs.MaxForwardSpeed = 30;
-            modelAttribs.MaxReverseSpeed = 10;
-            modelAttribs.MaxTurnSpeed = 4f;
+            modelAttribs.MaxAscentRate = 25;
+            modelAttribs.MaxForwardVelocity = 40;
+            modelAttribs.MaxReverseVelocity = 20;
+            modelAttribs.MaxTurnSpeed = 0.87265f;
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;
             modelAttribs.Centroid = new Vector3(modelAttribs.Length/3, 0, 0);
+            modelAttribs.MaxAcceleration = 10;
+            modelAttribs.MaxAscentAcceleration = 7f;
+            modelAttribs.MaxTurnAcceleration = 0.22685f;
 
             /*
             var stateData = new AirshipStateData();
@@ -292,7 +291,7 @@ namespace Forge.Core.Airship.Export{
             hullData.DeckSectionContainer.Dispose();
             hullData.HullSections.Dispose();
 
-            DebugConsole.WriteLine("Airship converted from definition to protocol in " + sw.ElapsedMilliseconds + " ms");
+            DebugConsole.WriteLine("Airship converted from definition  to protocol in " + sw.ElapsedMilliseconds + " ms");
         }
 
         /// <summary>
@@ -309,7 +308,7 @@ namespace Forge.Core.Airship.Export{
 
             sw.Stop();
 
-            DebugConsole.WriteLine("Airship deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
+            DebugConsole.WriteLine("Airship protocol deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
 
             return serializedStruct;
         }

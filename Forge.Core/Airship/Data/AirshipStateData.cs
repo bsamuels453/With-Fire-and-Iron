@@ -9,7 +9,7 @@ namespace Forge.Core.Airship.Data{
     /// <summary>
     ///   Contains information relevant to the current "state" of the airship. Includes things like position, orientation, controller, damage, etc.
     /// </summary>
-    internal class AirshipStateData{
+    public class AirshipStateData{
         public string Model;
         public int AirshipId;
 

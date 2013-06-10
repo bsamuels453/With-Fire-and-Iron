@@ -7,8 +7,8 @@ using Microsoft.Xna.Framework.Input;
 
 #endregion
 
-namespace Forge.Core.Airship{
-    internal class PlayerAirshipController : AirshipController{
+namespace Forge.Core.Airship.Controllers{
+    public class PlayerAirshipController : AirshipController{
         #region TurnState enum
 
         public enum TurnState{
@@ -22,8 +22,8 @@ namespace Forge.Core.Airship{
         public TurnState CurTurnState;
         int _engineSpeed;
 
-        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints) :
-            base(modelData, stateData, hardPoints){
+        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints, AirshipIndexer airships) :
+            base(modelData, stateData, airships, hardPoints){
         }
 
         public int EngineSpeed{
@@ -90,10 +90,11 @@ namespace Forge.Core.Airship{
                     turnValue = -1;
                     break;
             }
-
-            base.AngularVelocity = turnValue*base.AirshipModelData.MaxTurnSpeed*10;
-            base.Velocity = engineDutyCycle*base.AirshipModelData.MaxForwardSpeed;
-            base.AscentVelocity = altitudeDutyCycle*base.AirshipModelData.MaxAscentSpeed;
+            if (!AutoPilotActive){
+                base.TurnVelocity = turnValue*base.MaxTurnRate;
+                base.Velocity = engineDutyCycle*base.MaxVelocity;
+                base.AscentRate = altitudeDutyCycle*base.MaxAscentRate;
+            }
         }
     }
 }

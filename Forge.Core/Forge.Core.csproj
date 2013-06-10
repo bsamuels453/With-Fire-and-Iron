@@ -8,7 +8,7 @@
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Forge.Core</RootNamespace>
-    <AssemblyName>Forge.Core</AssemblyName>
+    <AssemblyName>With Fire and Iron</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <XnaFrameworkVersion>v4.0</XnaFrameworkVersion>
@@ -150,14 +150,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Airship\AIAirshipController.cs" />
+    <Compile Include="Airship\Controllers\AIAirshipController.cs" />
     <Compile Include="Airship\Airship.cs" />
-    <Compile Include="Airship\AirshipController.cs" />
+    <Compile Include="Airship\Controllers\AirshipController.cs" />
+    <Compile Include="Airship\Controllers\AutoPilot\AirshipAutoPilot.cs" />
+    <Compile Include="Airship\Controllers\AutoPilot\KeepAtRange.cs" />
+    <Compile Include="Airship\Controllers\AutoPilot\Orbit.cs" />
+    <Compile Include="Airship\Controllers\AutoPilot\Pathfinder.cs" />
     <Compile Include="Airship\Data\AirshipBuff.cs" />
     <Compile Include="Airship\Data\AirshipEnums.cs" />
     <Compile Include="Airship\Data\AirshipStateData.cs" />
+    <Compile Include="Airship\Data\Battlefield.cs" />
     <Compile Include="Airship\Data\DeckSectionContainer.cs" />
     <Compile Include="Airship\Export\AirshipPackager.cs" />
+    <Compile Include="Airship\AirshipIndexer.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
     <Compile Include="Airship\HullIntegrityMesh.cs" />
@@ -165,7 +171,7 @@
     <Compile Include="Airship\Data\HullSectionContainer.cs" />
     <Compile Include="Airship\Data\HullSectionIdentifier.cs" />
     <Compile Include="Airship\Data\ModelAttributes.cs" />
-    <Compile Include="Airship\PlayerAirshipController.cs" />
+    <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="Physics\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
