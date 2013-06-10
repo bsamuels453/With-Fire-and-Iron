@@ -52,13 +52,25 @@ namespace Pathfinding{
         }
 
         public Bitmap Tick(out float velocity, out float turnVel, out float angleDiff, out float curAngle){
+
+            bool useReverse = ShouldReverseBeUsed(
+                _stateData.Position,
+                _targPos, 
+                _stateData.Angle.Y,
+                _attributes.MaxTurnSpeed, 
+                _attributes.MaxTurnAcceleration,
+                _attributes.MaxForwardVelocity,
+                _attributes.MaxReverseVelocity, 
+                _attributes.MaxAcceleration
+                );
+
             var ret = CalculateAirshipPath
                 (
                     _targPos,
                     _attributes,
                     _stateData,
                     _timeDelta,
-                    false);
+                    useReverse);
 
             _stateData.TurnRate = ret.TurnVelocity;
             _stateData.Velocity = ret.ForwardVelocity;
@@ -169,22 +181,7 @@ namespace Pathfinding{
 
             float targAngle = targAngle1 < targAngle2 ? targAngle1 : targAngle2;
 
-            //restrict both angles to between 0 and 2pi
-            while (destXZAngle >= Math.PI * 2)
-                destXZAngle -= (float)Math.PI * 2;
-            while (destXZAngle < 0)
-                destXZAngle += (float)Math.PI * 2;
-            while (curAngle.Y >= Math.PI * 2)
-                curAngle.Y -= (float)Math.PI * 2;
-            while (curAngle.Y < 0)
-                curAngle.Y += (float)Math.PI * 2;
-
-            //calculate the diff between the target angle and the current angle
-            float d1 = destXZAngle - curAngle.Y;
-            float shifter = 2 * (float)Math.PI - (destXZAngle > curAngle.Y ? destXZAngle : curAngle.Y);
-            float shifted = destXZAngle < curAngle.Y ? destXZAngle : curAngle.Y;
-            float d2 = shifter + shifted;
-            float turnDiff = Math.Abs(d1) < Math.Abs(d2) ? d1 : d2;
+            float turnDiff = GetAngularDistance(curAngle.Y, destXZAngle);
 
             CalculateNewScalar
                 (
@@ -259,10 +256,10 @@ namespace Pathfinding{
             float destXZAngle, distToTarget;
             Vector3 diff = target - pos;
             Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
-            var tarAngle = destXZAngle - curAngle;
+            var tarAngle = GetAngularDistance(curAngle, destXZAngle);
 
             //if the angle terminates behind us...
-            if (tarAngle > Math.PI || tarAngle < -Math.PI){
+            if (tarAngle > Math.PI/2 || tarAngle < -Math.PI/2){
                 float timeToTurn = tarAngle/maxAngularSpeed;
                 float timeToTravel = diff.Length()/maxVelocity;
 
@@ -315,6 +312,30 @@ namespace Pathfinding{
         }
 
         /// <summary>
+        /// Gets the angular distance between the  two provided angles, in radians.
+        /// </summary>
+        /// <param name="a1">Reference angle</param>
+        /// <param name="a2">Target angle</param>
+        /// <returns></returns>
+        static float GetAngularDistance(float a1, float a2){
+            while (a2 >= Math.PI * 2)
+                a2 -= (float)Math.PI * 2;
+            while (a2 < 0)
+                a2 += (float)Math.PI * 2;
+            while (a1 >= Math.PI * 2)
+                a1 -= (float)Math.PI * 2;
+            while (a1 < 0)
+                a1 += (float)Math.PI * 2;
+
+            //calculate the diff between the target angle and the current angle
+            float d1 = a2 - a1;
+            float shifter = 2 * (float)Math.PI - (a2 > a1 ? a2 : a1);
+            float shifted = a2 < a1 ? a2 : a1;
+            float d2 = shifter + shifted;
+            return Math.Abs(d1) < Math.Abs(d2) ? d1 : d2;
+        }
+
+        /// <summary>
         /// Calculates the next position and velocity of the provided vector. A modifier is applied that takes
         /// into consideration the angle between the movement vector and the target vector in order to prevent
         /// the airship from moving full steam ahead in the tangential direction.
@@ -346,7 +367,9 @@ namespace Pathfinding{
                 newVelocity = clamp.Invoke(newVelocity);
             }
 
-            float theta = Math.Abs(angleTarget - angle);
+            float theta = (float)Math.Cos(Math.Abs(angleTarget - angle)) + 0.5f;
+            //if (theta > 1)
+                theta = 1;
 
             Vector2 change = new Vector2();
             var unitVec = Common.GetComponentFromAngle(angle, 1);
@@ -361,7 +384,7 @@ namespace Pathfinding{
 
 
             newPos = (pos + change);
-            newVel = newVelocity; //*theta;
+            newVel = newVelocity *theta;
         }
 
 
