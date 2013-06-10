@@ -32,7 +32,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             float maxTurnAcceleration = attributes.MaxTurnAcceleration*timeFrac;
             float maxAscentAcceleration = attributes.MaxAscentAcceleration*timeFrac;
 
-            Vector3 curPosition = new Vector3(selfStateData.Position.Z, selfStateData.Position.Y, selfStateData.Position.X);
+            var curPosition = new Vector3(selfStateData.Position.Z, selfStateData.Position.Y, selfStateData.Position.X);
             float curAscentRate = selfStateData.AscentRate;
             Vector3 curAngle;
             float curTurnVel, curVelocity, maxVelocity;
@@ -95,8 +95,8 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curAngle.Y,
                     out curTurnVel
                 );
-
-            float altDiff = target.Y - curPosition.Y;
+            /*
+            float altDiff = -(target.Y - curPosition.Y);
             CalculateNewScalar
                 (
                     curPosition.Y,
@@ -107,6 +107,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curPosition.Y,
                     out curAscentRate
                 );
+             */
 
 
             Vector2 newPos;
