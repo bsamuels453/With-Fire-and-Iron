@@ -1,8 +1,6 @@
 ﻿#region
 
-using System.Diagnostics;
-using Forge.Core.Airship.Data;
-using MonoGameUtility;
+
 
 #endregion
 
@@ -21,20 +19,14 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
         }
 
         public override Pathfinder.RetAttributes CalculateNextPosition(double timeDelta){
-
             var attributes = _selfShip.BuffedModelAttributes;
             var stateData = _selfShip.StateData;
 
             //get target position
-            /*
+
             var diff = stateData.Position - _targetAirship.StateData.Position;
             diff.Normalize();
             var targetPos = diff*_preferredRange + _targetAirship.StateData.Position;
-             */
-
-            var diff = stateData.Position - new Vector3(500, 2000, 500);
-            diff.Normalize();
-            var targetPos = diff * _preferredRange + new Vector3(500, 2000, 500);
 
             //figure out if we should go forwards or backwards
 
@@ -49,17 +41,13 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     attributes.MaxReverseVelocity,
                     attributes.MaxAcceleration
                 );
-            if (useReverse){
-                //useReverse = false;
-                int gfg = 5;
-            }
 
             var ret = Pathfinder.CalculateAirshipPath
                 (
                     targetPos,
                     attributes,
                     stateData,
-                    (float)timeDelta,
+                    (float) timeDelta,
                     useReverse
                 );
             return ret;
