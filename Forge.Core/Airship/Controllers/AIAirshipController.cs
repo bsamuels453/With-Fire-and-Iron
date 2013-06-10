@@ -8,8 +8,8 @@ using Forge.Framework;
 
 namespace Forge.Core.Airship.Controllers{
     internal class AIAirshipController : AirshipController{
-        public AIAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints) :
-            base(modelData, stateData, hardPoints){
+        public AIAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints, AirshipIndexer airships) :
+            base(modelData, stateData, airships, hardPoints){
         }
 
         protected override void UpdateController(ref InputState state, double timeDelta){
