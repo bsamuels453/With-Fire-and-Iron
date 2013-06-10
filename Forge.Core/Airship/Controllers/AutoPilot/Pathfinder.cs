@@ -271,144 +271,28 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             return numerator/denominator;
         }
 
-        static int SimulatePath(Vector3 target, AirshipController controller, bool useReverse){
-            //this constant is used to convert the units of input data from X/sec to X/tick
-            const float simulationSecondsPerTick = 1.0f;
-#if PROFILE_PATHS
-            var difff = target - controller.Position;
-            var bmp = new Bitmap((int) difff.X*2, (int) difff.Z*2);
-            var offset = new Point((int) difff.X, (int) difff.Y);
-#endif
+        /// <summary>
+        /// Gets the angular distance between the  two provided angles, in radians.
+        /// </summary>
+        /// <param name="a1">Reference angle</param>
+        /// <param name="a2">Target angle</param>
+        /// <returns></returns>
+        static float GetAngularDistance(float a1, float a2) {
+            while (a2 >= Math.PI * 2)
+                a2 -= (float)Math.PI * 2;
+            while (a2 < 0)
+                a2 += (float)Math.PI * 2;
+            while (a1 >= Math.PI * 2)
+                a1 -= (float)Math.PI * 2;
+            while (a1 < 0)
+                a1 += (float)Math.PI * 2;
 
-            var sw = new Stopwatch();
-            sw.Start();
-
-            int numTicks = 0;
-
-            float maxVelocity = controller.MaxVelocity*simulationSecondsPerTick;
-            float maxTurnRate = controller.MaxTurnRate*simulationSecondsPerTick;
-            float maxAscentRate = controller.MaxAscentRate*simulationSecondsPerTick;
-            float maxAcceleration = controller.MaxAcceleration*simulationSecondsPerTick;
-            float maxTurnAcceleration = controller.MaxTurnAcceleration*simulationSecondsPerTick;
-            float maxAscentAcceleration = controller.MaxAscentAcceleration*simulationSecondsPerTick;
-
-            Vector3 curPosition = controller.Position;
-            float curAscentRate = controller.AscentRate*simulationSecondsPerTick;
-            Vector3 curAngle;
-            float curTurnVel, curVelocity;
-            if (useReverse){
-                curAngle = controller.Angle + new Vector3(0, (float) Math.PI, 0);
-                curTurnVel = -controller.TurnVelocity*simulationSecondsPerTick;
-                curVelocity = -controller.Velocity*simulationSecondsPerTick;
-            }
-            else{
-                curAngle = controller.Angle;
-                curTurnVel = controller.TurnVelocity*simulationSecondsPerTick;
-                curVelocity = controller.Velocity*simulationSecondsPerTick;
-            }
-
-            Func<float, float> clampTurnRate = v =>{
-                                                   if (v > maxTurnRate){
-                                                       v = maxTurnRate;
-                                                   }
-                                                   if (v < -maxTurnRate){
-                                                       v = -maxTurnRate;
-                                                   }
-                                                   return v;
-                                               };
-
-
-            Func<float, float> clampAscentRate = v =>{
-                                                     if (v > maxAscentRate){
-                                                         v = maxAscentRate;
-                                                     }
-                                                     if (v < -maxAscentRate){
-                                                         v = -maxAscentRate;
-                                                     }
-                                                     return v;
-                                                 };
-
-            Func<float, float> clampVelocity = v =>{
-                                                   if (v > maxVelocity){
-                                                       v = maxVelocity;
-                                                   }
-                                                   if (v < -maxVelocity){
-                                                       v = -maxVelocity;
-                                                   }
-                                                   return v;
-                                               };
-
-
-            while (true){
-                numTicks++;
-                float destXZAngle, distToTarget;
-                Vector3 diff = target - curPosition;
-                Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
-                CalculateNewScalar
-                    (
-                        curAngle.Y,
-                        destXZAngle,
-                        maxTurnAcceleration,
-                        curTurnVel,
-                        clampTurnRate,
-                        out curAngle.Y,
-                        out curTurnVel
-                    );
-
-                CalculateNewScalar
-                    (
-                        curPosition.Y,
-                        target.Y,
-                        maxAscentAcceleration,
-                        curAscentRate,
-                        clampAscentRate,
-                        out curPosition.Y,
-                        out curAscentRate
-                    );
-
-                Vector2 newPos;
-
-                CalculateNewVector
-                    (
-                        new Vector2(curPosition.X, curPosition.Z),
-                        new Vector2(target.X, target.Z),
-                        curAngle.Y,
-                        destXZAngle,
-                        maxAcceleration,
-                        curVelocity,
-                        clampVelocity,
-                        out newPos,
-                        out curVelocity
-                    );
-
-                curPosition.X = newPos.X;
-                curPosition.Z = newPos.Y;
-#if PROFILE_PATHS
-                var color = Color.FromArgb(255, 255 - (int) (curVelocity/maxVelocity*255), 255);
-                try{
-                    bmp.SetPixel((int) curPosition.X + offset.X, (int) curPosition.Z + offset.Y, color);
-                }
-                catch{
-                    break;
-                }
-#endif
-                if (Vector3.Distance(target, curPosition) < maxVelocity){
-                    break;
-                }
-            }
-#if PROFILE_PATHS
-            bmp.SetPixel((int) controller.Position.X + offset.X, (int) controller.Position.Z + offset.Y, Color.Red);
-            bmp.SetPixel((int) target.X + offset.X, (int) target.Z + offset.Y, Color.Red);
-
-            bmp.Save("Test.png", ImageFormat.Png);
-            bmp.Dispose();
-#endif
-
-            sw.Stop();
-
-            double d = sw.ElapsedMilliseconds;
-
-            return numTicks;
+            //calculate the diff between the target angle and the current angle
+            float d1 = a2 - a1;
+            float shifter = 2 * (float)Math.PI - (a2 > a1 ? a2 : a1);
+            float shifted = a2 < a1 ? a2 : a1;
+            float d2 = shifter + shifted;
+            return Math.Abs(d1) < Math.Abs(d2) ? d1 : d2;
         }
 
         #region Nested type: RetAttributes
