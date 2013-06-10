@@ -227,7 +227,7 @@ namespace Forge.Core.Airship.Export{
         ///   Converts the airship stored in the specified .def file to .protocol format. Base directory is \\Data\\AirshipSchematics\\
         /// </summary>
         /// <param name="fileName"> The filename of the .def file, without extension </param>
-        static void ConvertDefToProtocolFile(string fileName){
+        public static void ConvertDefToProtocolFile(string fileName){
             var sw = new Stopwatch();
             sw.Start();
             var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".def");
@@ -251,10 +251,13 @@ namespace Forge.Core.Airship.Export{
             modelAttribs.MaxAscentRate = 25;
             modelAttribs.MaxForwardVelocity = 40;
             modelAttribs.MaxReverseVelocity = 20;
-            modelAttribs.MaxTurnSpeed = 50f;
+            modelAttribs.MaxTurnSpeed = 0.87265f;
             modelAttribs.Berth = 13.95f;
             modelAttribs.NumDecks = hullData.NumDecks;
             modelAttribs.Centroid = new Vector3(modelAttribs.Length/3, 0, 0);
+            modelAttribs.MaxAcceleration = 10;
+            modelAttribs.MaxAscentAcceleration = 7f;
+            modelAttribs.MaxTurnAcceleration = 0.22685f;
 
             /*
             var stateData = new AirshipStateData();
