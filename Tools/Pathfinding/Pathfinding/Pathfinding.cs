@@ -46,7 +46,7 @@ namespace Pathfinding{
 
             _targPos = new Vector3(200, 0, 200);
 
-            Bmp.Dot(_bmp, 50, 50, Color.Green);
+            Bmp.Dot(_bmp, 200, 50, Color.Green);
             Bmp.Dot(_bmp, 200, 200, Color.Red);
 
         }
@@ -162,30 +162,6 @@ namespace Pathfinding{
             float destXZAngle, distToTarget;
             Vector3 diff = target - curPosition;
             Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
-            
-            if (destXZAngle < 0){
-                destXZAngle += (float)Math.PI * 2;
-            }
-            if (destXZAngle > 2 * Math.PI) {
-                destXZAngle -= (float)Math.PI * 2;
-            }
-
-            if (curAngle.Y < 0) {
-                curAngle.Y += (float)Math.PI * 2;
-            }
-            if (curAngle.Y > 2 * Math.PI) {
-                curAngle.Y -= (float)Math.PI * 2;
-            }
-
-
-            /*
-            if (curAngle.Y > 2 * Math.PI) {
-                curAngle.Y -= (float)Math.PI * 2;
-            }
-            if (curAngle.Y < -2 * Math.PI) {
-                curAngle.Y += (float)Math.PI * 2;
-            }
-             */
 
             float targAngle1 = curAngle.Y - destXZAngle;
 
@@ -193,10 +169,27 @@ namespace Pathfinding{
 
             float targAngle = targAngle1 < targAngle2 ? targAngle1 : targAngle2;
 
+            //restrict both angles to between 0 and 2pi
+            while (destXZAngle >= Math.PI * 2)
+                destXZAngle -= (float)Math.PI * 2;
+            while (destXZAngle < 0)
+                destXZAngle += (float)Math.PI * 2;
+            while (curAngle.Y >= Math.PI * 2)
+                curAngle.Y -= (float)Math.PI * 2;
+            while (curAngle.Y < 0)
+                curAngle.Y += (float)Math.PI * 2;
+
+            //calculate the diff between the target angle and the current angle
+            float d1 = destXZAngle - curAngle.Y;
+            float shifter = 2 * (float)Math.PI - (destXZAngle > curAngle.Y ? destXZAngle : curAngle.Y);
+            float shifted = destXZAngle < curAngle.Y ? destXZAngle : curAngle.Y;
+            float d2 = shifter + shifted;
+            float turnDiff = Math.Abs(d1) < Math.Abs(d2) ? d1 : d2;
+
             CalculateNewScalar
                 (
                     curAngle.Y,
-                    destXZAngle,
+                    turnDiff,
                     maxTurnAcceleration,
                     curTurnVel,
                     clampTurnRate,
@@ -287,32 +280,16 @@ namespace Pathfinding{
         /// Calculates the next position and velocity of the provided scalar.
         /// </summary>
         /// <param name="pos"></param>
-        /// <param name="target"></param>
+        /// <param name="diff"></param>
         /// <param name="maxAcceleration"></param>
         /// <param name="curVelocity"></param>
         /// <param name="clamp"></param>
         /// <param name="newPos"></param>
         /// <param name="newVel"></param>
-        static void CalculateNewScalar(float pos, float target, float maxAcceleration, float curVelocity, Func<float, float> clamp,
+        static void CalculateNewScalar(float pos, float diff, float maxAcceleration, float curVelocity, Func<float, float> clamp,
             out float newPos, out float newVel){
 
-            while (target >= Math.PI * 2)
-                target -= (float)Math.PI * 2;
-            while (target < 0)
-                target += (float)Math.PI * 2;
-            while (pos >= Math.PI * 2)
-                pos -= (float)Math.PI * 2;
-            while (pos < 0)
-                pos += (float)Math.PI * 2;
-            //now both angles are >0 && <6.28
-            float d1 = pos - target;
-            float d2 = (float)Math.PI * 2 - pos - target;
-            float d3 = pos - (float)Math.PI * 2 -target;
-            float diff = -(d1 < d2 ? d1 : d2);
 
-            float potentialDiff1 = pos - target;
-            float potentialDiff2 = target - pos;
-            //float diff = potentialDiff1 > potentialDiff2 ? potentialDiff1 : potentialDiff2;
 
             float sign;
             if (diff > 0)
