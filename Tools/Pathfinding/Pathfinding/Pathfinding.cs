@@ -51,7 +51,7 @@ namespace Pathfinding{
 
         }
 
-        public Bitmap Tick(out float velocity, out float turnVel){
+        public Bitmap Tick(out float velocity, out float turnVel, out float angleDiff, out float curAngle){
             var ret = CalculateAirshipPath
                 (
                     _targPos,
@@ -60,7 +60,7 @@ namespace Pathfinding{
                     _timeDelta,
                     false);
 
-            _stateData.TurnRate = -ret.TurnVelocity;
+            _stateData.TurnRate = ret.TurnVelocity;
             _stateData.Velocity = ret.ForwardVelocity;
 
 
@@ -73,7 +73,7 @@ namespace Pathfinding{
 
             var position = _stateData.Position;
             position.X += unitVec.X*_stateData.Velocity*timeDeltaSeconds;
-            position.Z += -unitVec.Y*_stateData.Velocity*timeDeltaSeconds;
+            position.Z += unitVec.Y*_stateData.Velocity*timeDeltaSeconds;
             position.Y += _stateData.AscentRate*timeDeltaSeconds;
             _stateData.Position = position;
 
@@ -85,6 +85,8 @@ namespace Pathfinding{
 
             velocity = _stateData.Velocity;
             turnVel = _stateData.TurnRate;
+            angleDiff = ret.AngleDiff;
+            curAngle = _stateData.Angle.Y;
             return _bmp;
         }
 
@@ -160,10 +162,13 @@ namespace Pathfinding{
             float destXZAngle, distToTarget;
             Vector3 diff = target - curPosition;
             Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
+
+            float targAngle = destXZAngle;
+
             CalculateNewScalar
                 (
                     curAngle.Y,
-                    destXZAngle,
+                    targAngle,
                     maxTurnAcceleration,
                     curTurnVel,
                     clampTurnRate,
@@ -205,7 +210,7 @@ namespace Pathfinding{
                 curTurnVel = -curTurnVel;
             }
 
-            return new RetAttributes(curAscentRate, curTurnVel, curVelocity);
+            return new RetAttributes(curAscentRate, curTurnVel, curVelocity, targAngle);
         }
 
         /// <summary>
@@ -282,6 +287,7 @@ namespace Pathfinding{
 
                 newVelocity = clamp.Invoke(newVelocity);
             }
+
             newPos = pos + posDiff;
             newVel = newVelocity;
         }
@@ -321,7 +327,13 @@ namespace Pathfinding{
             float theta = Math.Abs(angleTarget - angle);
 
             Vector2 change = new Vector2();
-            var unitVec = Common.GetComponentFromAngle(-angle, 1);
+            var unitVec = Common.GetComponentFromAngle(angle, 1);
+
+
+            posDiff = 5;
+            newVelocity = 5;
+
+
             change.X += unitVec.X*posDiff*theta;
             change.Y += -unitVec.Y*posDiff*theta;
 
@@ -494,12 +506,14 @@ namespace Pathfinding{
             public readonly float AscentRate;
             public readonly float ForwardVelocity;
             public readonly float TurnVelocity;
+            public readonly float AngleDiff;
 
-            public RetAttributes(float ascentRate, float turnVelocity, float forwardVelocity)
+            public RetAttributes(float ascentRate, float turnVelocity, float forwardVelocity, float angleDiff)
                 : this(){
                 AscentRate = ascentRate;
                 TurnVelocity = turnVelocity;
                 ForwardVelocity = forwardVelocity;
+                AngleDiff = angleDiff;
             }
         }
 
