@@ -1,5 +1,6 @@
 ﻿#region
 
+using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
@@ -37,14 +38,25 @@ namespace Forge.Core.GameState{
             _terrainUpdater = new TerrainUpdater();
 
             _battlefield = new Battlefield();
-
+            //AirshipPackager.ConvertDefToProtocolFile("ExportedAirship");
 
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
-            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
+            //_battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
+
+            _battlefield.ShipsOnField[0].SetAutoPilot
+                (new KeepAtRange
+                    (
+                    _battlefield.ShipsOnField[0],
+                    _battlefield.ShipsOnField,
+                    0,
+                    50
+                    )
+                );
+
 
             _cameraController = new BodyCenteredCamera(false);
             GamestateManager.CameraController = _cameraController;
-            _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].Position);
+            _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
 
             var buttonGen = new ButtonGenerator();
             const int yPos = 100;
@@ -95,16 +107,17 @@ namespace Forge.Core.GameState{
             _uiElementCollection.UpdateLogic(timeDelta);
 
             _battlefield.Update(ref state, timeDelta);
-            _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].Position);
+            _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
             _cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int) ((_battlefield.ShipsOnField[0].Velocity/_battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity)*3);
-
+            int incremental = (int) ((_battlefield.ShipsOnField[0].StateData.Velocity/_battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity)*3);
+            /*
             int absSpeed = 6 - (incremental + 3);
             foreach (var button in _highlightMasks){
                 button.Alpha = 0.65f;
             }
             _highlightMasks[absSpeed].Alpha = 0;
+             */
             _terrainUpdater.Update(state, timeDelta);
         }
 
