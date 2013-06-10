@@ -15,7 +15,7 @@ namespace Forge.Core.Airship.Generation{
     /// <summary>
     ///   This class is used to subdivide sections of hull into pieces of a static size. These hull pieces can be toggled on and off through the objectbuffer that is returned.
     /// </summary>
-    internal static class HullSplitter{
+    public static class HullSplitter{
         static Quadrant.Side _side;
         static float _boxWidth;
 

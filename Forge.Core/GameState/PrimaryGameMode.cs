@@ -13,7 +13,7 @@ using Microsoft.Xna.Framework;
 #endregion
 
 namespace Forge.Core.GameState{
-    internal class PrimaryGameMode : IGameState{
+    public class PrimaryGameMode : IGameState{
         readonly Battlefield _battlefield;
         readonly BodyCenteredCamera _cameraController;
 

@@ -11,7 +11,7 @@ namespace Forge.Core.Airship.Data{
     /// <summary>
     ///   This class contains all of the information relevant to the current battlefield. It acts as a container for that information, and handles the updating/disposal of said information.
     /// </summary>
-    internal class Battlefield : IDisposable{
+    public class Battlefield : IDisposable{
         public readonly ProjectilePhysics ProjectileEngine;
         public readonly AirshipIndexer ShipsOnField;
 

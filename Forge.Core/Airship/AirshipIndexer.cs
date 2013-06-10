@@ -11,7 +11,7 @@ namespace Forge.Core.Airship{
     /// <summary>
     ///   Container class used to index airships according to uid. This class is typically used by the autopilot/AI nav for identifying the locations of and communicating with other airships.
     /// </summary>
-    internal class AirshipIndexer : IEnumerable{
+    public class AirshipIndexer : IEnumerable{
         readonly List<Airship> _airships;
 
         public AirshipIndexer(){

@@ -10,7 +10,7 @@ using Microsoft.Xna.Framework.Graphics;
 #endregion
 
 namespace Forge.Core.Terrain{
-    internal class TerrainChunk : IDisposable{
+    public class TerrainChunk : IDisposable{
         public XZPair Identifier;
 
         readonly GeometryBuffer<VertexPositionTexture> _buffer;

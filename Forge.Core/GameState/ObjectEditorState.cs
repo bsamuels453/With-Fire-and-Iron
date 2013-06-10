@@ -16,7 +16,7 @@ using Microsoft.Xna.Framework.Input;
 #endregion
 
 namespace Forge.Core.GameState{
-    internal class ObjectEditorState : IGameState{
+    public class ObjectEditorState : IGameState{
         readonly BezierInfo[] _backCurveInfo;
         readonly BodyCenteredCamera _cameraController;
         readonly ObjectEditorUI _doodadUI;

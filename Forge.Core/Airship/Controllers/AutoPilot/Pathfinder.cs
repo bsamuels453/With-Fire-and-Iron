@@ -14,7 +14,7 @@ using Point = MonoGameUtility.Point;
 #endregion
 
 namespace Forge.Core.Airship.Controllers.AutoPilot{
-    internal static class Pathfinder{
+    public static class Pathfinder{
         /// <summary>
         /// Calculates the path of the airship at the next tick.
         /// </summary>

@@ -13,7 +13,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Physics{
-    internal class ProjectilePhysics : IDisposable{
+    public class ProjectilePhysics : IDisposable{
         #region Delegates
 
         public delegate void CollisionCallback(int id, Vector3 intersectPos, Vector3 velocity);
@@ -73,16 +73,16 @@ namespace Forge.Core.Physics{
 
         public CollisionObjectHandle AddShipCollisionObjects(CollisionObject[] collisionObjects, BoundingSphere soi, EntityVariant variant,
             CollisionCallback collisionCallback){
-            var objInternalData = new CollisionObjectCollection(collisionObjects, variant, soi);
+            var objpublicData = new CollisionObjectCollection(collisionObjects, variant, soi);
 
             var objPublicInterface = new CollisionObjectHandle
                 (
-                setObjectMatrix: matrix => objInternalData.WorldMatrix = matrix,
-                terminate: () => _boundingObjData.Remove(objInternalData)
+                setObjectMatrix: matrix => objpublicData.WorldMatrix = matrix,
+                terminate: () => _boundingObjData.Remove(objpublicData)
                 );
 
-            objInternalData.CollisionEventDispatcher = collisionCallback;
-            _boundingObjData.Add(objInternalData);
+            objpublicData.CollisionEventDispatcher = collisionCallback;
+            _boundingObjData.Add(objpublicData);
 
             return objPublicInterface;
         }
@@ -221,7 +221,7 @@ namespace Forge.Core.Physics{
         #region Nested type: CollisionObjectCollection
 
         /// <summary>
-        ///   Internal class that's used to group together collision objects, such as the plates on the side of an airship, into one class.
+        ///   public class that's used to group together collision objects, such as the plates on the side of an airship, into one class.
         /// </summary>
         class CollisionObjectCollection{
             public readonly List<Projectile> BlacklistedProjectiles;

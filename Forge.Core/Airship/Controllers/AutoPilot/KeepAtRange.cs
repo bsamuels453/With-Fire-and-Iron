@@ -7,7 +7,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship.Controllers.AutoPilot{
-    internal class KeepAtRange : AirshipAutoPilot{
+    public class KeepAtRange : AirshipAutoPilot{
         readonly AirshipIndexer _airships;
         readonly float _preferredRange;
         readonly Airship _selfShip;

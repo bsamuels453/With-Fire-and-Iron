@@ -12,7 +12,7 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Core.Airship.Data{
-    internal class HullSectionContainer : IEnumerable, IDisposable{
+    public class HullSectionContainer : IEnumerable, IDisposable{
         public readonly ObjectBuffer<int>[] HullBuffersByDeck;
         public readonly HullSection[][] HullSectionByDeck;
         public readonly int NumDecks;

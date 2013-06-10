@@ -8,7 +8,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Camera{
-    internal class SubmarineCamera : ICamera{
+    public class SubmarineCamera : ICamera{
         public Angle3 LookAng;
         public Vector3 Position;
 

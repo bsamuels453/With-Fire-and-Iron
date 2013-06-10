@@ -20,7 +20,7 @@ namespace Forge.Core.Airship.Generation{
     /// <summary>
     ///   Generates the geometry for airship hulls. This differs from PreviewRenderer in that this class generates the geometry so that things like windows, portholes, or other extremities can be added easily without modifying/removing much of the geometry. In more mathematical terms, it means that the horizontal boundaries between adjacent quads are parallel to the XZ plane. This class can also take a few seconds to do its thing because it isnt going to be updating every tick like previewrenderer does.
     /// </summary>
-    internal static class HullGeometryGenerator{
+    public static class HullGeometryGenerator{
         const int _primHeightPerDeck = 5;
         const int _horizontalPrimDivisor = 2;
         const float _deckHeight = 2.13f;
@@ -855,7 +855,7 @@ namespace Forge.Core.Airship.Generation{
         #endregion
     }
 
-    internal class HullGeometryInfo{
+    public class HullGeometryInfo{
         public Vector3 CenterPoint;
         public float DeckHeight;
         public DeckSectionContainer DeckSectionContainer;

@@ -14,7 +14,7 @@ namespace Forge.Core.ObjectEditor{
     /// <summary>
     ///   this class handles the display of the prototype airship and all of its components
     /// </summary>
-    internal class ObjectEditorUI : IInputUpdates, ILogicUpdates, IDisposable{
+    public class ObjectEditorUI : IInputUpdates, ILogicUpdates, IDisposable{
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly HullDataManager _hullData;

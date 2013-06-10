@@ -17,7 +17,7 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Core.Airship.Export{
-    internal static class AirshipPackager{
+    public static class AirshipPackager{
         const string _stateDataSerializerVersion = "0.1";
 
         /// <summary>

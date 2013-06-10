@@ -17,7 +17,7 @@ using Vector3 = MonoGameUtility.Vector3;
 #endregion
 
 namespace Forge.Core.HullEditor{
-    internal class PreviewRenderer{
+    public class PreviewRenderer{
         const int _meshVertexWidth = 64; //this is in primitives
         readonly BezierCurveCollection _backCurves;
         readonly BodyCenteredCamera _camera;
@@ -103,7 +103,7 @@ namespace Forge.Core.HullEditor{
             }
 
 
-            _sideCurves.GetParameterizedPoint(0, true); //this refreshes internal fields
+            _sideCurves.GetParameterizedPoint(0, true); //this refreshes public fields
             //orient controllers correctly for the bezierintersect
             var li = _sideCurves.Select
                 (bezierCurve => new BezierInfo

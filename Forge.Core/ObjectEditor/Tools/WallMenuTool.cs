@@ -8,7 +8,7 @@ using Forge.Framework.UI.Widgets;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
-    internal class WallMenuTool : IToolbarTool{
+    public class WallMenuTool : IToolbarTool{
         readonly Toolbar _toolbar;
         bool _disposed;
         //todo: break this and put it in doodadui

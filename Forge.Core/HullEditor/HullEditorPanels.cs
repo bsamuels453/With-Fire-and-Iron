@@ -15,18 +15,18 @@ namespace Forge.Core.HullEditor{
 
     #region namespace target stuff
 
-    internal delegate void TranslateDragToExtern(object caller, ref float dx, ref float dy, bool doClampCheck);
+    public delegate void TranslateDragToExtern(object caller, ref float dx, ref float dy, bool doClampCheck);
 
-    //internal delegate void RecieveDragFromExtern(HandleAlias handleAlias, ref float dx, ref float dy, bool doApplyChange);
+    //public delegate void RecieveDragFromExtern(HandleAlias handleAlias, ref float dx, ref float dy, bool doApplyChange);
 
-    internal enum HandleAlias{
+    public enum HandleAlias{
         First,
         Middle,
         Last,
         ExtremaY //the handle this alias cooresponds to changes depending on which handle has the highest Y value
     }
 
-    internal enum PanelAlias{
+    public enum PanelAlias{
         Side,
         Top,
         Back
@@ -36,7 +36,7 @@ namespace Forge.Core.HullEditor{
 
     #region abstract target class
 
-    internal abstract class HullEditorPanel{
+    public abstract class HullEditorPanel{
         protected readonly Button Background;
         protected readonly FloatingRectangle BoundingBox;
         public BezierCurveCollection Curves;
@@ -170,7 +170,7 @@ namespace Forge.Core.HullEditor{
 
     #region sidepanel impl
 
-    internal class SideEditorPanel : HullEditorPanel{
+    public class SideEditorPanel : HullEditorPanel{
         public BackEditorPanel BackPanel;
         public TopEditorPanel TopPanel;
 
@@ -228,7 +228,7 @@ namespace Forge.Core.HullEditor{
 
     #region toppanel impl
 
-    internal class TopEditorPanel : HullEditorPanel{
+    public class TopEditorPanel : HullEditorPanel{
         public BackEditorPanel BackPanel;
         public SideEditorPanel SidePanel;
 
@@ -285,7 +285,7 @@ namespace Forge.Core.HullEditor{
 
     #region backpanel impl
 
-    internal class BackEditorPanel : HullEditorPanel{
+    public class BackEditorPanel : HullEditorPanel{
         public SideEditorPanel SidePanel;
         public TopEditorPanel TopPanel;
 

@@ -13,7 +13,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship{
-    internal class Hardpoint : IDisposable{
+    public class Hardpoint : IDisposable{
         readonly List<ProjectilePhysics.Projectile> _activeProjectiles;
         readonly Vector3 _aimDir;
         readonly ProjectilePhysics.EntityVariant _enemyVariant;

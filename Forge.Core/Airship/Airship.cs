@@ -14,7 +14,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship{
-    internal class Airship : IDisposable{
+    public class Airship : IDisposable{
         public readonly int FactionId;
         public readonly int Uid;
         readonly Battlefield _battlefield;

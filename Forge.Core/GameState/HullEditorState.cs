@@ -13,7 +13,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.GameState{
-    internal class HullEditorState : IGameState{
+    public class HullEditorState : IGameState{
         readonly BackEditorPanel _backpanel;
         readonly UIElementCollection _elementCollection;
 

@@ -20,7 +20,7 @@ using Vector3 = MonoGameUtility.Vector3;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
-    internal abstract class DeckPlacementBase : IToolbarTool{
+    public abstract class DeckPlacementBase : IToolbarTool{
         protected readonly float GridResolution;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
         protected readonly HullDataManager HullData;

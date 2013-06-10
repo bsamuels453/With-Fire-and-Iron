@@ -11,7 +11,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
-    internal class WallBuildTool : DeckPlacementBase{
+    public class WallBuildTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         readonly List<WallSegmentIdentifier> _tempWallIdentifiers;
         readonly float _wallHeight;
@@ -127,7 +127,7 @@ namespace Forge.Core.ObjectEditor.Tools{
 
     #region wallidentifier
 
-    internal struct WallSegmentIdentifier : IEquatable<WallSegmentIdentifier>{
+    public struct WallSegmentIdentifier : IEquatable<WallSegmentIdentifier>{
         public readonly Vector3 RefPoint1;
         public readonly Vector3 RefPoint2;
 

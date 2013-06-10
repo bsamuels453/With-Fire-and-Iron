@@ -14,7 +14,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Terrain{
-    internal class TerrainGen{
+    public class TerrainGen{
         readonly ComputeBuffer<byte> _activeVerts;
         readonly ComputeBuffer<byte> _binormals;
         readonly int _blockWidth;

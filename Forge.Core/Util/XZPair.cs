@@ -9,7 +9,7 @@ namespace Forge.Core.Util{
     /// <summary>
     ///   each XZpair cooresponds to an x and z value. SERIALIZABLE CLONEABLE
     /// </summary>
-    internal struct XZPair : ICloneable{
+    public struct XZPair : ICloneable{
         public int X;
         public int Z;
 

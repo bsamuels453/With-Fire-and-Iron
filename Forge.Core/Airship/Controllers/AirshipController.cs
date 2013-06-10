@@ -10,7 +10,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship.Controllers{
-    internal abstract class AirshipController{
+    public abstract class AirshipController{
         readonly AirshipIndexer _airships;
         readonly List<Hardpoint> _hardPoints;
         protected bool AutoPilotActive;

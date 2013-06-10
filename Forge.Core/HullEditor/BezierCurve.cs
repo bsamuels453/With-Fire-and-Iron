@@ -17,7 +17,7 @@ namespace Forge.Core.HullEditor{
     /// <summary>
     ///   this class is a fucking mess, here's to hoping it never has to be used again
     /// </summary>
-    internal class BezierCurve{
+    public class BezierCurve{
         #region private fields
 
         const int _linesPerSide = 50;

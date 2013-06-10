@@ -6,7 +6,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Camera{
-    internal interface ICamera{
+    public interface ICamera{
         Matrix ViewMatrix { get; }
         void Update(ref InputState state, double timeDelta);
     }

@@ -10,7 +10,7 @@ using ProtoBuf;
 
 namespace Forge.Core.Airship.Data{
     [ProtoContract]
-    internal class HullSection : IEquatable<HullSection>{
+    public class HullSection : IEquatable<HullSection>{
         Action _hideSection;
         Action _unhideSection;
 

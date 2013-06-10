@@ -7,7 +7,7 @@ using Forge.Framework;
 #endregion
 
 namespace Forge.Core.Airship.Controllers{
-    internal class AIAirshipController : AirshipController{
+    public class AIAirshipController : AirshipController{
         public AIAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints, AirshipIndexer airships) :
             base(modelData, stateData, airships, hardPoints){
         }
