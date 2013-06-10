@@ -95,8 +95,8 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curAngle.Y,
                     out curTurnVel
                 );
-            /*
-            float altDiff = -(target.Y - curPosition.Y);
+
+            float altDiff = (target.Y - curPosition.Y);
             CalculateNewScalar
                 (
                     curPosition.Y,
@@ -107,7 +107,6 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curPosition.Y,
                     out curAscentRate
                 );
-             */
 
 
             Vector2 newPos;
@@ -129,7 +128,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
 
             if (useReverse){
                 curVelocity = -curVelocity;
-                curTurnVel = curTurnVel;
+                curTurnVel = -curTurnVel;
             }
 
             return new RetAttributes(curAscentRate, curTurnVel, curVelocity);
@@ -158,8 +157,10 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             float maxReverseVelocity,
             float maxAcceleration){
             float destXZAngle, distToTarget;
-            Vector3 diff = target - pos;
-            Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
+            var target2 = new Vector2(target.X, target.Z);
+            var pos2 = new Vector2(pos.X, pos.Z);
+            Vector2 diff = target2 - pos2;
+            Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Y);
             var tarAngle = GetAngularDistance(curAngle, destXZAngle);
 
             //if the angle terminates behind us...
