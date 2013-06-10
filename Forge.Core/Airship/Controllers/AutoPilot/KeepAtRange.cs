@@ -1,41 +1,65 @@
-﻿namespace Forge.Core.Airship.Controllers.AutoPilot{
+﻿#region
+
+using System.Diagnostics;
+using Forge.Core.Airship.Data;
+using MonoGameUtility;
+
+#endregion
+
+namespace Forge.Core.Airship.Controllers.AutoPilot{
     internal class KeepAtRange : AirshipAutoPilot{
         readonly AirshipIndexer _airships;
-        readonly AirshipController _controller;
         readonly float _preferredRange;
+        readonly Airship _selfShip;
         readonly Airship _targetAirship;
 
-        public KeepAtRange(int targetUid, float range, AirshipController controller, AirshipIndexer airships){
+        public KeepAtRange(Airship selfShip, AirshipIndexer airships, int targetUid, float range){
             _preferredRange = range;
-            _targetAirship = _airships[targetUid];
-            _controller = controller;
             _airships = airships;
+            _targetAirship = _airships[targetUid];
+            _selfShip = selfShip;
         }
 
         public override Pathfinder.RetAttributes CalculateNextPosition(double timeDelta){
+
+            var attributes = _selfShip.BuffedModelAttributes;
+            var stateData = _selfShip.StateData;
+
             //get target position
-            var diff = _controller.Position - _targetAirship.Position;
+            /*
+            var diff = stateData.Position - _targetAirship.StateData.Position;
             diff.Normalize();
-            var targetPos = diff*_preferredRange;
+            var targetPos = diff*_preferredRange + _targetAirship.StateData.Position;
+             */
+
+            var diff = stateData.Position - new Vector3(500, 2000, 500);
+            diff.Normalize();
+            var targetPos = diff * _preferredRange + new Vector3(500, 2000, 500);
 
             //figure out if we should go forwards or backwards
+
             bool useReverse = Pathfinder.ShouldReverseBeUsed
                 (
-                    _controller.Position,
+                    stateData.Position,
                     targetPos,
-                    _controller.Angle.Y,
-                    _controller.MaxTurnRate,
-                    _controller.MaxTurnAcceleration,
-                    _controller.MaxVelocity,
-                    _controller.MaxReverseVelocity,
-                    _controller.MaxAcceleration
+                    stateData.Angle.Y,
+                    attributes.MaxTurnSpeed,
+                    attributes.MaxTurnAcceleration,
+                    attributes.MaxForwardVelocity,
+                    attributes.MaxReverseVelocity,
+                    attributes.MaxAcceleration
                 );
+            if (useReverse){
+                //useReverse = false;
+                int gfg = 5;
+            }
 
             var ret = Pathfinder.CalculateAirshipPath
                 (
                     targetPos,
-                    _controller,
-                    (float) timeDelta,
+                    attributes,
+                    stateData,
+                    (float)timeDelta,
                     useReverse
                 );
             return ret;
