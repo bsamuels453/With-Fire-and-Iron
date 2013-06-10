@@ -8,7 +8,6 @@ using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Core.Physics;
 using Forge.Framework;
-using Forge.Framework.Draw;
 using MonoGameUtility;
 
 #endregion
@@ -72,9 +71,9 @@ namespace Forge.Core.Airship{
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, _controller.Position, ModelAttributes.Length);
 #endif
 
-            DebugText.CreateText("x:", 0, 0);
-            DebugText.CreateText("y:", 0, 15);
-            DebugText.CreateText("z:", 0, 30);
+            //DebugText.CreateText("x:", 0, 0);
+            //DebugText.CreateText("y:", 0, 15);
+            //DebugText.CreateText("z:", 0, 30);
 
             sw.Stop();
 
@@ -119,9 +118,9 @@ namespace Forge.Core.Airship{
         }
 
         public void Update(ref InputState state, double timeDelta){
-            DebugText.SetText("x:", "x:" + _controller.StateData.Position.X);
-            DebugText.SetText("y:", "y:" + _controller.StateData.Position.Y);
-            DebugText.SetText("z:", "z:" + _controller.StateData.Position.Z);
+            //DebugText.SetText("x:", "x:" + _controller.StateData.Position.X);
+            //DebugText.SetText("y:", "y:" + _controller.StateData.Position.Y);
+            //DebugText.SetText("z:", "z:" + _controller.StateData.Position.Z);
 
 
             _controller.Update(ref state, timeDelta);
