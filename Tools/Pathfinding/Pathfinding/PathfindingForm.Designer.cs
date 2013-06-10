@@ -29,6 +29,11 @@
             this.VelocityVal = new System.Windows.Forms.Label();
             this.TurnRateVal = new System.Windows.Forms.Label();
             this.StartSimButton = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.AngleDiffField = new System.Windows.Forms.Label();
+            this.label4 = new System.Windows.Forms.Label();
+            this.CurAngleText = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -88,18 +93,70 @@
             this.StartSimButton.UseVisualStyleBackColor = true;
             this.StartSimButton.Click += new System.EventHandler(this.StartSimButton_Click);
             // 
-            // Form1
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(576, 55);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(53, 13);
+            this.label3.TabIndex = 6;
+            this.label3.Text = "AngleDiff:";
+            // 
+            // AngleDiffField
+            // 
+            this.AngleDiffField.AutoSize = true;
+            this.AngleDiffField.Location = new System.Drawing.Point(635, 55);
+            this.AngleDiffField.Name = "AngleDiffField";
+            this.AngleDiffField.Size = new System.Drawing.Size(24, 13);
+            this.AngleDiffField.TabIndex = 7;
+            this.AngleDiffField.Text = "n/a";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(576, 85);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(53, 13);
+            this.label4.TabIndex = 8;
+            this.label4.Text = "CurAngle:";
+            this.label4.Click += new System.EventHandler(this.label4_Click);
+            // 
+            // CurAngleText
+            // 
+            this.CurAngleText.AutoSize = true;
+            this.CurAngleText.Location = new System.Drawing.Point(635, 85);
+            this.CurAngleText.Name = "CurAngleText";
+            this.CurAngleText.Size = new System.Drawing.Size(24, 13);
+            this.CurAngleText.TabIndex = 9;
+            this.CurAngleText.Text = "n/a";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(612, 575);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 10;
+            this.button1.Text = "Pause";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // PathfindingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(694, 648);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.CurAngleText);
+            this.Controls.Add(this.label4);
+            this.Controls.Add(this.AngleDiffField);
+            this.Controls.Add(this.label3);
             this.Controls.Add(this.StartSimButton);
             this.Controls.Add(this.TurnRateVal);
             this.Controls.Add(this.VelocityVal);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.pictureBox1);
-            this.Name = "Form1";
+            this.Name = "PathfindingForm";
             this.Text = "Airship Pathfinding Simulator";
             this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
@@ -116,6 +173,11 @@
         private System.Windows.Forms.Label VelocityVal;
         private System.Windows.Forms.Label TurnRateVal;
         private System.Windows.Forms.Button StartSimButton;
+        private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label AngleDiffField;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label CurAngleText;
+        private System.Windows.Forms.Button button1;
     }
 }
 

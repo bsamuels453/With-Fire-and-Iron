@@ -23,7 +23,14 @@ namespace Pathfinding {
         private void StartSimButton_Click(object sender, EventArgs e) {
             var task = new Task(Invoke);
             task.Start();
+            allowTick = true;
 
+            var f1 = (float)Math.Atan2(0, 1);
+            var f2 = (float)Math.Atan2(1, 0);
+            var f3 = (float)Math.Atan2(0, -1);
+            var f4 = (float)Math.Atan2(-1, 0);
+
+            int g = 5;
         }
 
         void Invoke(){
@@ -31,12 +38,15 @@ namespace Pathfinding {
             var sw = new Stopwatch();
             for (float i = 0; i < _span; i += _timeDelta) {
                 sw.Start();
-                float vel, turn;
-                var ret = pathfinder.Tick(out vel, out turn);
-                Action t = () => SetPicture(ret, vel, turn);
-                this.Invoke(t);
-                
-                while (sw.ElapsedMilliseconds < _timeMultiplier) {
+                float vel, turn, angleDiff, curAngle;
+                var ret = pathfinder.Tick(out vel, out turn, out angleDiff, out curAngle);
+                Action t = () => SetPicture(ret, vel, turn, angleDiff, curAngle);
+                try {
+                    this.Invoke(t);
+                }
+                catch{
+                }
+                while (sw.ElapsedMilliseconds < _timeMultiplier || !allowTick) {
                     Thread.Sleep(1);
                 }
                 sw.Reset();
@@ -44,10 +54,12 @@ namespace Pathfinding {
 
         }
 
-        public void SetPicture(Bitmap bmp, float vel, float turn){
+        public void SetPicture(Bitmap bmp, float vel, float turn, float angleDiff, float curAngle){
             pictureBox1.Image = bmp;
             VelocityVal.Text = vel.ToString();
             TurnRateVal.Text = turn.ToString();
+            AngleDiffField.Text = angleDiff.ToString();
+            CurAngleText.Text = curAngle.ToString();
         }
 
         private void pictureBox1_Click(object sender, EventArgs e) {
@@ -60,6 +72,16 @@ namespace Pathfinding {
 
         private void VelocityVal_Click(object sender, EventArgs e) {
 
+        }
+
+        private void label4_Click(object sender, EventArgs e) {
+
+        }
+
+
+        bool allowTick;
+        private void button1_Click(object sender, EventArgs e) {
+            allowTick = !allowTick;
         }
     }
 }
