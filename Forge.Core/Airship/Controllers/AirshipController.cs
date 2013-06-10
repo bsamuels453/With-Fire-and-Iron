@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Framework;
 using MonoGameUtility;
@@ -10,22 +11,21 @@ using MonoGameUtility;
 
 namespace Forge.Core.Airship.Controllers{
     internal abstract class AirshipController{
-        const float _degreesPerRadian = 0.0174532925f;
+        readonly AirshipIndexer _airships;
         readonly List<Hardpoint> _hardPoints;
+        protected bool AutoPilotActive;
         ModelAttributes _airshipModelData;
-        float _angleVel;
-        float _ascentRate;
-        float _velocity;
+        AirshipAutoPilot _autoPilot;
         float _velocityTarget;
 
-        protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints){
+        protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, AirshipIndexer airships, List<Hardpoint> hardPoints){
             _airshipModelData = modelData;
             _hardPoints = hardPoints;
+            _airships = airships;
+            StateData = stateData;
 
             Position = stateData.Position;
             Angle = stateData.Angle;
-            _velocity = stateData.Velocity;
-            _ascentRate = stateData.AscentRate;
             VelocityTarget = stateData.Velocity;
 
             MaxVelocityMod = 1;
@@ -44,12 +44,18 @@ namespace Forge.Core.Airship.Controllers{
         /// <summary>
         ///   Position of the airship.
         /// </summary>
-        public Vector3 Position { get; private set; }
+        public Vector3 Position{
+            get { return StateData.Position; }
+            private set { StateData.Position = value; }
+        }
 
         /// <summary>
         ///   3D angle of the airship in radians.
         /// </summary>
-        public Vector3 Angle { get; private set; }
+        public Vector3 Angle{
+            get { return StateData.Angle; }
+            private set { StateData.Angle = value; }
+        }
 
         /// <summary>
         ///   The worldmatrix used to translate the position of the airship into model space.
@@ -122,14 +128,14 @@ namespace Forge.Core.Airship.Controllers{
         ///   Sets angular velocity of the ship on the XZ plane. Scales from -MaxTurnSpeed to MaxTurnSpeed, where negative indicates a turn to port. Measured in degrees/second.
         /// </summary>
         public float TurnVelocity{
-            get { return _angleVel; }
+            get { return StateData.TurnRate; }
             protected set{
                 float turnSpeed = value;
                 if (value > _airshipModelData.MaxTurnSpeed*MaxTurnRateMod)
                     turnSpeed = _airshipModelData.MaxTurnSpeed*MaxTurnRateMod;
                 if (value < -_airshipModelData.MaxTurnSpeed*MaxTurnRateMod)
                     turnSpeed = -_airshipModelData.MaxTurnSpeed*MaxTurnRateMod;
-                _angleVel = turnSpeed;
+                StateData.TurnRate = turnSpeed;
             }
         }
 
@@ -137,14 +143,14 @@ namespace Forge.Core.Airship.Controllers{
         ///   Sets ascent velocity of the ship on the XZ plane. Scales from -MaxAscentRate to MaxAscentRate, where negative indicates moving down. Measured in meters per second.
         /// </summary>
         public float AscentRate{
-            get { return _ascentRate; }
+            get { return StateData.AscentRate; }
             protected set{
                 float ascentRate = value;
                 if (value > _airshipModelData.MaxAscentRate*MaxAscentRateMod)
                     ascentRate = _airshipModelData.MaxAscentRate*MaxAscentRateMod;
                 if (value < -_airshipModelData.MaxAscentRate*MaxAscentRateMod)
                     ascentRate = -_airshipModelData.MaxAscentRate*MaxAscentRateMod;
-                _ascentRate = ascentRate;
+                StateData.AscentRate = ascentRate;
             }
         }
 
@@ -169,13 +175,17 @@ namespace Forge.Core.Airship.Controllers{
         ///   Sets airship velocity scalar. Scales from -MaxReverseVelocity to MaxForwardSpeed Measured in meters per second.
         /// </summary>
         public float Velocity{
-            get { return _velocity; }
-            protected set { _velocity = value; }
+            get { return StateData.Velocity; }
+            protected set { StateData.Velocity = value; }
         }
 
         #endregion
 
-        public void SetAutoPilot(){
+        public AirshipStateData StateData { get; private set; }
+
+        public void SetAutoPilot(AirshipAutoPilot autoPilot){
+            _autoPilot = autoPilot;
+            AutoPilotActive = true;
         }
 
         /// <summary>
@@ -232,19 +242,41 @@ namespace Forge.Core.Airship.Controllers{
             }
         }
 
+        public ModelAttributes GetBuffedAttributes(){
+            var ret = new ModelAttributes();
+            ret.Length = _airshipModelData.Length;
+            ret.NumDecks = _airshipModelData.NumDecks;
+            ret.MaxAcceleration = MaxAcceleration;
+            ret.MaxAscentAcceleration = MaxAscentAcceleration;
+            ret.MaxAscentRate = MaxAscentRate;
+            ret.MaxTurnAcceleration = MaxTurnAcceleration;
+            ret.MaxTurnSpeed = MaxTurnRate;
+            ret.MaxForwardVelocity = MaxVelocity;
+            ret.MaxReverseVelocity = MaxReverseVelocity;
+            return ret;
+        }
+
         public void Update(ref InputState state, double timeDelta){
             UpdateController(ref state, timeDelta);
+
+            if (AutoPilotActive){
+                var ret = _autoPilot.CalculateNextPosition(timeDelta);
+                AscentRate = ret.AscentRate;
+                Velocity = ret.ForwardVelocity;
+                TurnVelocity = ret.TurnVelocity;
+            }
+
             float timeDeltaSeconds = (float) timeDelta/1000;
 
             var ang = Angle;
-            ang.Y += _angleVel*_degreesPerRadian*timeDeltaSeconds;
+            ang.Y += StateData.TurnRate * timeDeltaSeconds;
             var unitVec = Common.GetComponentFromAngle(ang.Y, 1);
             Angle = ang;
 
             var position = Position;
-            position.X += unitVec.X*_velocity*timeDeltaSeconds;
-            position.Z += -unitVec.Y*_velocity*timeDeltaSeconds;
-            position.Y += _ascentRate*timeDeltaSeconds;
+            position.X += unitVec.X*StateData.Velocity*timeDeltaSeconds;
+            position.Z += -unitVec.Y*StateData.Velocity*timeDeltaSeconds;
+            position.Y += StateData.AscentRate*timeDeltaSeconds;
             Position = position;
 
             WorldMatrix = Common.GetWorldTranslation(Position, Angle, _airshipModelData.Length);
