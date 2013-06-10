@@ -34,6 +34,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             var diff = curPosition - target;
             diff.Normalize();
             var targetPos = diff*_preferredRange + target;
+            targetPos.Y = target.Y;
 
             //figure out if we should go forwards or backwards
 
