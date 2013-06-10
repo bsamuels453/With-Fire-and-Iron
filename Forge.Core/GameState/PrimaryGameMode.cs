@@ -41,12 +41,12 @@ namespace Forge.Core.GameState{
             //AirshipPackager.ConvertDefToProtocolFile("ExportedAirship");
 
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
-            //_battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
+            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
 
-            _battlefield.ShipsOnField[0].SetAutoPilot
+            _battlefield.ShipsOnField[1].SetAutoPilot
                 (new KeepAtRange
                     (
-                    _battlefield.ShipsOnField[0],
+                    _battlefield.ShipsOnField[1],
                     _battlefield.ShipsOnField,
                     0,
                     50
