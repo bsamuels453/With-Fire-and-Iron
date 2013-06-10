@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Diagnostics;
+using System.Threading;
 using Forge.Core.Camera;
 using Forge.Core.Input;
 
@@ -39,6 +40,13 @@ namespace Forge.Core.GameState{
 
             _stopwatch.Stop();
             double d = _stopwatch.ElapsedMilliseconds;
+            if (d <= 1){
+                _stopwatch.Restart();
+                Thread.Sleep(5);
+                _stopwatch.Stop();
+                d = _stopwatch.ElapsedMilliseconds;
+            }
+
             _activeState.Update(_inputHandler.CurrentInputState, d);
             _stopwatch.Restart();
         }
