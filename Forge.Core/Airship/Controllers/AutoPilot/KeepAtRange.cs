@@ -1,6 +1,6 @@
 ﻿#region
 
-
+using MonoGameUtility;
 
 #endregion
 
@@ -24,15 +24,22 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
 
             //get target position
 
-            var diff = stateData.Position - _targetAirship.StateData.Position;
+            var curPosition = stateData.Position;
+            var target = _targetAirship.StateData.Position;
+
+            //apply hack to fix the weird axis
+            curPosition = new Vector3(curPosition.Z, curPosition.Y, curPosition.X);
+            target = new Vector3(target.Z, target.Y, target.X);
+
+            var diff = curPosition - target;
             diff.Normalize();
-            var targetPos = diff*_preferredRange + _targetAirship.StateData.Position;
+            var targetPos = diff*_preferredRange + target;
 
             //figure out if we should go forwards or backwards
 
             bool useReverse = Pathfinder.ShouldReverseBeUsed
                 (
-                    stateData.Position,
+                    curPosition,
                     targetPos,
                     stateData.Angle.Y,
                     attributes.MaxTurnSpeed,
@@ -41,6 +48,10 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     attributes.MaxReverseVelocity,
                     attributes.MaxAcceleration
                 );
+
+            if (useReverse){
+                int f = 4;
+            }
 
             var ret = Pathfinder.CalculateAirshipPath
                 (
