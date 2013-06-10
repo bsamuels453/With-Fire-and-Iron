@@ -34,13 +34,13 @@ namespace Pathfinding{
             _attributes.MaxAscentRate = 1;
             _attributes.MaxForwardVelocity = 20;
             _attributes.MaxReverseVelocity = 1;
-            _attributes.MaxTurnAcceleration = 1;
-            _attributes.MaxTurnSpeed = 5;
+            _attributes.MaxTurnAcceleration =0.3f;
+            _attributes.MaxTurnSpeed =0.3f;
 
             _stateData = new AirshipStateData();
-            _stateData.Angle = new Vector3();
+            _stateData.Angle = new Vector3(0,-0.5f,0);
             _stateData.AscentRate = 0;
-            _stateData.Position = new Vector3(50, 0, 50);
+            _stateData.Position = new Vector3(200, 0, 50);
             _stateData.TurnRate = 0;
             _stateData.Velocity = 0;
 
@@ -162,13 +162,41 @@ namespace Pathfinding{
             float destXZAngle, distToTarget;
             Vector3 diff = target - curPosition;
             Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
+            
+            if (destXZAngle < 0){
+                destXZAngle += (float)Math.PI * 2;
+            }
+            if (destXZAngle > 2 * Math.PI) {
+                destXZAngle -= (float)Math.PI * 2;
+            }
 
-            float targAngle = destXZAngle;
+            if (curAngle.Y < 0) {
+                curAngle.Y += (float)Math.PI * 2;
+            }
+            if (curAngle.Y > 2 * Math.PI) {
+                curAngle.Y -= (float)Math.PI * 2;
+            }
+
+
+            /*
+            if (curAngle.Y > 2 * Math.PI) {
+                curAngle.Y -= (float)Math.PI * 2;
+            }
+            if (curAngle.Y < -2 * Math.PI) {
+                curAngle.Y += (float)Math.PI * 2;
+            }
+             */
+
+            float targAngle1 = curAngle.Y - destXZAngle;
+
+            float targAngle2 = destXZAngle - curAngle.Y;
+
+            float targAngle = targAngle1 < targAngle2 ? targAngle1 : targAngle2;
 
             CalculateNewScalar
                 (
                     curAngle.Y,
-                    targAngle,
+                    destXZAngle,
                     maxTurnAcceleration,
                     curTurnVel,
                     clampTurnRate,
@@ -267,7 +295,24 @@ namespace Pathfinding{
         /// <param name="newVel"></param>
         static void CalculateNewScalar(float pos, float target, float maxAcceleration, float curVelocity, Func<float, float> clamp,
             out float newPos, out float newVel){
-            float diff = target - pos;
+
+            while (target >= Math.PI * 2)
+                target -= (float)Math.PI * 2;
+            while (target < 0)
+                target += (float)Math.PI * 2;
+            while (pos >= Math.PI * 2)
+                pos -= (float)Math.PI * 2;
+            while (pos < 0)
+                pos += (float)Math.PI * 2;
+            //now both angles are >0 && <6.28
+            float d1 = pos - target;
+            float d2 = (float)Math.PI * 2 - pos - target;
+            float d3 = pos - (float)Math.PI * 2 -target;
+            float diff = -(d1 < d2 ? d1 : d2);
+
+            float potentialDiff1 = pos - target;
+            float potentialDiff2 = target - pos;
+            //float diff = potentialDiff1 > potentialDiff2 ? potentialDiff1 : potentialDiff2;
 
             float sign;
             if (diff > 0)
