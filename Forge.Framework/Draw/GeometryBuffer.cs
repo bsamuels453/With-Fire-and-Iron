@@ -44,12 +44,12 @@ namespace Forge.Framework.Draw{
             set { BaseWorldMatrix = value; }
         }
 
-        public IndexBuffer IndexBuffer{
-            get { return base.BaseIndexBuffer; }
+        public void SetIndexBufferData(int[] data){
+            BaseIndexBuffer.SetData(data);
         }
 
-        public VertexBuffer VertexBuffer{
-            get { return base.BaseVertexBuffer; }
+        public void SetVertexBufferData(T[] data){
+            BaseVertexBuffer.SetData(data);
         }
 
         public CullMode CullMode{

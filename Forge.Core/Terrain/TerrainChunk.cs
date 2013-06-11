@@ -39,8 +39,8 @@ namespace Forge.Core.Terrain{
 #endif
 
             Debug.Assert(_bufferDataSet == false);
-            _buffer.IndexBuffer.SetData((int[]) _indicies.Clone());
-            _buffer.VertexBuffer.SetData(_verticies);
+            _buffer.SetIndexBufferData((int[]) _indicies.Clone());
+            _buffer.SetVertexBufferData(_verticies);
             _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
             _buffer.ShaderParams["BinormalMapTexture"].SetValue(_binormals);
             _buffer.ShaderParams["TangentMapTexture"].SetValue(_tangents);

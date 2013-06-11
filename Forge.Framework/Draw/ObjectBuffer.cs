@@ -181,7 +181,7 @@ namespace Forge.Framework.Draw{
                     objectData.Verticies[i] = _verticies[offset + i];
                 }
             }
-            VertexBuffer.SetData(_verticies);
+            SetVertexBufferData(_verticies);
         }
 
         public bool Contains(IEquatable<TIdentifier> identifier){
