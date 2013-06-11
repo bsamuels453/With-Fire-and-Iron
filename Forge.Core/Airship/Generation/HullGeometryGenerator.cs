@@ -865,4 +865,4 @@ namespace Forge.Core.Airship.Generation{
         public int NumDecks;
         public float WallResolution;
     }
-}m
+}
