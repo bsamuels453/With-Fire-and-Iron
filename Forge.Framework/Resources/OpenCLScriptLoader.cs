@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Cloo;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,16 +20,16 @@ namespace Forge.Framework.Resources{
     ///   Used to wrap OpenCL script loading, compiling, and saving.
     /// </summary>
     internal class OpenCLScriptLoader : ResourceLoader{
+        readonly Task _asyncLoadTask;
         readonly List<ComputeDevice> _devices;
         readonly ComputePlatform _platform;
         readonly ComputeContextPropertyList _properties;
         readonly List<OpenCLScript> _scripts;
+        ComputeCommandQueue _commandQueue;
+        ComputeContext _computeContext;
 
         public OpenCLScriptLoader(){
             //first initlze opencl
-            DebugConsole.WriteLine("Initializing OpenCL context");
-            var timer = new Stopwatch();
-            timer.Start();
             _platform = ComputePlatform.Platforms[0];
             /*
 #if CPU_DEBUG
@@ -40,8 +41,49 @@ namespace Forge.Framework.Resources{
             _devices = new List<ComputeDevice>();
             _devices.Add(_platform.Devices[0]);
             _properties = new ComputeContextPropertyList(_platform);
-            ComputeContext = new ComputeContext(_devices, _properties, null, IntPtr.Zero);
-            CommandQueue = new ComputeCommandQueue(ComputeContext, _devices[0], ComputeCommandQueueFlags.None);
+            _scripts = new List<OpenCLScript>();
+            _asyncLoadTask = new Task(AsyncLoad);
+            _asyncLoadTask.Start();
+        }
+
+        /// <summary>
+        ///   The context in which openCL scripts will be run.
+        /// </summary>
+        public ComputeContext ComputeContext{
+            get{
+                BlockForLoader();
+                return _computeContext;
+            }
+        }
+
+        /// <summary>
+        ///   The queue of commands for the context to execute.
+        /// </summary>
+        public ComputeCommandQueue CommandQueue{
+            get{
+                BlockForLoader();
+                return _commandQueue;
+            }
+        }
+
+
+        /// <summary>
+        /// blocks the thread of execution until the _asyncLoadTask has completed
+        /// </summary>
+        void BlockForLoader(){
+            if (_asyncLoadTask.Status != TaskStatus.RanToCompletion)
+                _asyncLoadTask.Wait();
+        }
+
+        /// <summary>
+        /// Asynchronously load the opencl context and compile scripts, if necessary.
+        /// </summary>
+        void AsyncLoad(){
+            var timer = new Stopwatch();
+            timer.Start();
+            DebugConsole.WriteLine("Initializing OpenCL context");
+            _computeContext = new ComputeContext(_devices, _properties, null, IntPtr.Zero);
+            _commandQueue = new ComputeCommandQueue(_computeContext, _devices[0], ComputeCommandQueueFlags.None);
             DebugConsole.WriteLine("OpenCL context initialized in " + timer.ElapsedMilliseconds + " ms");
 
             //now we check to make sure none of the scripts have changed since the last time they were compiled.
@@ -69,18 +111,8 @@ namespace Forge.Framework.Resources{
                 compiledScripts = LoadScripts(scriptFiles);
                 DebugConsole.WriteLine("Loaded OpenCL script binaries.");
             }
-            _scripts = compiledScripts;
+            _scripts.AddRange(compiledScripts);
         }
-
-        /// <summary>
-        ///   The context in which openCL scripts will be run.
-        /// </summary>
-        public ComputeContext ComputeContext { get; private set; }
-
-        /// <summary>
-        ///   The queue of commands for the context to execute.
-        /// </summary>
-        public ComputeCommandQueue CommandQueue { get; private set; }
 
         /// <summary>
         ///   Saves md5 to the //Data//Hashes.json file under the Scripts category.
@@ -104,6 +136,7 @@ namespace Forge.Framework.Resources{
         /// <param name="fileName"> The relative file location of the script. </param>
         /// <returns> </returns>
         public ComputeProgram LoadOpenclScript(string fileName){
+            BlockForLoader();
             var scriptEnumerable = from s in _scripts where s.SrcFileInfo.RelativeFileLocation.Equals(fileName) select s;
             var script = scriptEnumerable.Single(); //defensive precaution
             return script.Program;
@@ -155,7 +188,7 @@ namespace Forge.Framework.Resources{
                         (
                         new ComputeProgram
                             (
-                            ComputeContext,
+                            _computeContext,
                             binary,
                             _devices
                             ),
