@@ -53,8 +53,8 @@ namespace Forge.Framework.Draw{
 
         public void UpdateBuffers(){
             Debug.Assert(UpdateBufferManually, "cannot update a buffer that's set to automatic updating");
-            base.SetIndexBufferData(_indicies);
-            base.SetVertexBufferData(_verticies);
+            base.SetIndexBufferData(_indicies, true);
+            base.SetVertexBufferData(_verticies, true);
         }
 
         public void AddObject(IEquatable<TIdentifier> identifier, int[] indicies, VertexPositionNormalTexture[] verticies){
@@ -80,8 +80,8 @@ namespace Forge.Framework.Draw{
             indicies.CopyTo(_indicies, index*IndiciesPerObject);
             verticies.CopyTo(_verticies, index*VerticiesPerObject);
             if (!UpdateBufferManually){
-                base.SetIndexBufferData(_indicies);
-                base.SetVertexBufferData(_verticies);
+                base.SetIndexBufferData(_indicies, true);
+                base.SetVertexBufferData(_verticies, true);
             }
         }
 
@@ -99,7 +99,7 @@ namespace Forge.Framework.Draw{
                     _indicies[objectToRemove[objIdx].ObjectOffset*IndiciesPerObject + i] = 0;
                 }
                 if (!UpdateBufferManually){
-                    base.SetIndexBufferData(_indicies);
+                    base.SetIndexBufferData(_indicies, true);
                 }
                 _objectData.Remove(objectToRemove[objIdx]);
             }
@@ -113,7 +113,7 @@ namespace Forge.Framework.Draw{
             for (int i = 0; i < MaxObjects*IndiciesPerObject; i++){
                 _indicies[i] = 0;
             }
-            base.SetIndexBufferData(_indicies);
+            base.SetIndexBufferData(_indicies, true);
         }
 
         public bool EnableObject(IEquatable<TIdentifier> identifier){
@@ -131,7 +131,7 @@ namespace Forge.Framework.Draw{
                 obj.Indicies.CopyTo(_indicies, obj.ObjectOffset*IndiciesPerObject);
             }
             if (!UpdateBufferManually){
-                base.SetIndexBufferData(_indicies);
+                base.SetIndexBufferData(_indicies, true);
             }
             return true;
         }
@@ -153,7 +153,7 @@ namespace Forge.Framework.Draw{
                 indicies.CopyTo(_indicies, obj.ObjectOffset*IndiciesPerObject);
             }
             if (!UpdateBufferManually){
-                base.SetIndexBufferData(_indicies);
+                base.SetIndexBufferData(_indicies, true);
             }
             return true;
         }
