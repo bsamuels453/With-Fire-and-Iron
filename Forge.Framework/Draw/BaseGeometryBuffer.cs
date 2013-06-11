@@ -8,9 +8,9 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.Draw{
-    public abstract class BaseGeometryBuffer<T> : IDrawableBuffer, IDisposable{
-        protected readonly IndexBuffer BaseIndexBuffer;
-        protected readonly VertexBuffer BaseVertexBuffer;
+    public abstract class BaseGeometryBuffer<T> :IDrawableBuffer, IDisposable  where T : struct{
+        readonly IndexBuffer _baseIndexBuffer;
+        readonly VertexBuffer _baseVertexBuffer;
         protected readonly string ShaderName;
         readonly int _numIndicies;
         readonly int _numPrimitives;
@@ -21,6 +21,14 @@ namespace Forge.Framework.Draw{
         protected RasterizerState Rasterizer;
         protected Effect Shader;
         bool _disposed;
+
+        protected void SetIndexBufferData(int[] data){
+            _baseIndexBuffer.SetData(data);
+        }
+
+        protected void SetVertexBufferData(T[] data){
+            _baseVertexBuffer.SetData(data);
+        }
 
         protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType,
             CullMode cullMode = CullMode.None){
@@ -33,7 +41,7 @@ namespace Forge.Framework.Draw{
             Rasterizer = new RasterizerState{CullMode = cullMode};
 
             lock (Resource.Device){
-                BaseIndexBuffer = new IndexBuffer
+                _baseIndexBuffer = new IndexBuffer
                     (
                     Resource.Device,
                     typeof (int),
@@ -41,7 +49,7 @@ namespace Forge.Framework.Draw{
                     BufferUsage.None
                     );
 
-                BaseVertexBuffer = new VertexBuffer
+                _baseVertexBuffer = new VertexBuffer
                     (
                     Resource.Device,
                     typeof (T),
@@ -66,8 +74,8 @@ namespace Forge.Framework.Draw{
         public void Dispose(){
             if (!_disposed){
                 RenderTarget.Buffers.Remove(this);
-                BaseIndexBuffer.Dispose();
-                BaseVertexBuffer.Dispose();
+                _baseIndexBuffer.Dispose();
+                _baseVertexBuffer.Dispose();
                 _disposed = true;
             }
         }
@@ -84,8 +92,8 @@ namespace Forge.Framework.Draw{
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){
                     pass.Apply();
-                    Resource.Device.Indices = BaseIndexBuffer;
-                    Resource.Device.SetVertexBuffer(BaseVertexBuffer);
+                    Resource.Device.Indices = _baseIndexBuffer;
+                    Resource.Device.SetVertexBuffer(_baseVertexBuffer);
                     Resource.Device.DrawIndexedPrimitives(_primitiveType, 0, 0, _numIndicies, 0, _numPrimitives);
                 }
                 Resource.Device.SetVertexBuffer(null);

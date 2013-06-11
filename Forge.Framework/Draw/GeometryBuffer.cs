@@ -44,18 +44,18 @@ namespace Forge.Framework.Draw{
             set { BaseWorldMatrix = value; }
         }
 
-        public void SetIndexBufferData(int[] data){
-            BaseIndexBuffer.SetData(data);
+        public new void SetIndexBufferData(int[] data){
+            base.SetIndexBufferData(data);
         }
 
-        public void SetVertexBufferData(T[] data){
-            BaseVertexBuffer.SetData(data);
+        public new void SetVertexBufferData(T[] data){
+            base.SetVertexBufferData(data);
         }
 
         public CullMode CullMode{
             set { Rasterizer = new RasterizerState{CullMode = value}; }
         }
-
+        /*
         public T[] DumpVerticies(){
             T[] data = new T[BaseVertexBuffer.VertexCount];
             base.BaseVertexBuffer.GetData(data);
@@ -67,7 +67,7 @@ namespace Forge.Framework.Draw{
             base.BaseIndexBuffer.GetData(data);
             return data;
         }
-
+         */
         public void Translate(Vector3 diff){
             _position += diff;
             UpdateWorldMatrix();
