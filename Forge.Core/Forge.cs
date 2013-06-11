@@ -71,14 +71,14 @@ namespace Forge.Core{
         protected override void Update(GameTime gameTime){
             GamestateManager.Update();
             base.Update(gameTime);
-            //Exit();
-        }
 
-        protected override void Draw(GameTime gameTime){
             RenderTarget.BeginDraw();
             GamestateManager.Draw();
             RenderTarget.EndDraw();
             base.Draw(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime){
         }
     }
 }
