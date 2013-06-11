@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Threading.Tasks;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
@@ -8,10 +9,10 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.Draw{
-    public abstract class BaseGeometryBuffer<T> :IDrawableBuffer, IDisposable  where T : struct{
+    public abstract class BaseGeometryBuffer<T> : IDrawableBuffer, IDisposable where T : struct{
+        protected readonly string ShaderName;
         readonly IndexBuffer _baseIndexBuffer;
         readonly VertexBuffer _baseVertexBuffer;
-        protected readonly string ShaderName;
         readonly int _numIndicies;
         readonly int _numPrimitives;
         readonly PrimitiveType _primitiveType;
@@ -22,13 +23,6 @@ namespace Forge.Framework.Draw{
         protected Effect Shader;
         bool _disposed;
 
-        protected void SetIndexBufferData(int[] data){
-            _baseIndexBuffer.SetData(data);
-        }
-
-        protected void SetVertexBufferData(T[] data){
-            _baseVertexBuffer.SetData(data);
-        }
 
         protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType,
             CullMode cullMode = CullMode.None){
@@ -101,6 +95,26 @@ namespace Forge.Framework.Draw{
         }
 
         #endregion
+
+        protected void SetIndexBufferData(int[] data){
+            var update = new Task
+                (() =>{
+                     lock (Resource.Device){
+                         _baseIndexBuffer.SetData((int[]) data.Clone());
+                     }
+                 });
+            RenderTarget.AddAsynchronousBufferUpdate(update);
+        }
+
+        protected void SetVertexBufferData(T[] data){
+            var update = new Task
+                (() =>{
+                     lock (Resource.Device){
+                         _baseVertexBuffer.SetData((T[]) data.Clone());
+                     }
+                 });
+            RenderTarget.AddAsynchronousBufferUpdate(update);
+        }
 
         ~BaseGeometryBuffer(){
             if (!_disposed)

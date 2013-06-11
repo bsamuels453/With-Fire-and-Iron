@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,6 +19,7 @@ namespace Forge.Framework.Draw{
         static readonly SpriteBatch _cumulativeSpriteBatch;
         static readonly List<RenderTarget> _renderTargets;
         public static RenderTarget CurTarg;
+        static readonly List<Task> _bufferUpdateTasks;
         public readonly Rectangle BoundingBox;
         public readonly SpriteBatch SpriteBatch;
         readonly List<IDrawableBuffer> _buffers;
@@ -35,6 +37,7 @@ namespace Forge.Framework.Draw{
             _universalDepthStencil = new DepthStencilState();
             _universalDepthStencil.DepthBufferEnable = true;
             _universalDepthStencil.DepthBufferWriteEnable = true;
+            _bufferUpdateTasks = new List<Task>();
         }
 
         public RenderTarget(int x, int y, int width, int height, float depth = 1){
@@ -104,6 +107,11 @@ namespace Forge.Framework.Draw{
 
         #endregion
 
+        public static void AddAsynchronousBufferUpdate(Task update){
+            update.Start();
+            _bufferUpdateTasks.Add(update);
+        }
+
         ~RenderTarget(){
             if (!_disposed)
                 throw new ResourceNotDisposedException();
@@ -118,30 +126,37 @@ namespace Forge.Framework.Draw{
         }
 
         public void Draw(Matrix viewMatrix, Color fillColor){
-            bool dontUnbindTarget = CurTarg != null; //this has to exist because of globalrendertarget abomination
+            foreach (var updateTask in _bufferUpdateTasks){
+                updateTask.Wait();
+            }
+            _bufferUpdateTasks.Clear();
 
-            CurTarg = this;
-            Resource.Device.SetRenderTarget(_targetCanvas);
-            Resource.Device.Clear(fillColor);
-            Resource.Device.DepthStencilState = _universalDepthStencil;
-            SpriteBatch.Begin
-                (
-                    SpriteSortMode.BackToFront,
-                    BlendState.AlphaBlend,
-                    SamplerState.LinearWrap,
-                    DepthStencilState.Default,
-                    RasterizerState.CullNone
-                );
-            foreach (var buffer in _buffers){
-                buffer.Draw(viewMatrix);
-            }
-            foreach (var sprite in _sprites){
-                sprite.Draw();
-            }
-            SpriteBatch.End();
-            Resource.Device.SetRenderTarget(null);
-            if (!dontUnbindTarget){
-                CurTarg = null;
+            lock (Resource.Device){
+                bool dontUnbindTarget = CurTarg != null; //this has to exist because of globalrendertarget abomination
+
+                CurTarg = this;
+                Resource.Device.SetRenderTarget(_targetCanvas);
+                Resource.Device.Clear(fillColor);
+                Resource.Device.DepthStencilState = _universalDepthStencil;
+                SpriteBatch.Begin
+                    (
+                        SpriteSortMode.BackToFront,
+                        BlendState.AlphaBlend,
+                        SamplerState.LinearWrap,
+                        DepthStencilState.Default,
+                        RasterizerState.CullNone
+                    );
+                foreach (var buffer in _buffers){
+                    buffer.Draw(viewMatrix);
+                }
+                foreach (var sprite in _sprites){
+                    sprite.Draw();
+                }
+                SpriteBatch.End();
+                Resource.Device.SetRenderTarget(null);
+                if (!dontUnbindTarget){
+                    CurTarg = null;
+                }
             }
         }
 
