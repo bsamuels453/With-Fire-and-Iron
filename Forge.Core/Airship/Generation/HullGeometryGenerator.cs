@@ -477,71 +477,72 @@ namespace Forge.Core.Airship.Generation{
 
                 #region generateBuff
 
-                Func<int, int, List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>> generateBuff = (start, end) =>{
-                                                                                                                            var hullMesh =
-                                                                                                                                new Vector3[
-                                                                                                                                    _primHeightPerDeck + 1,
-                                                                                                                                    vertsInSilhouette/2];
-                                                                                                                            var hullNormals =
-                                                                                                                                new Vector3[
-                                                                                                                                    _primHeightPerDeck + 1,
-                                                                                                                                    vertsInSilhouette/2];
-                                                                                                                            //int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
-                                                                                                                            VertexPositionNormalTexture[]
-                                                                                                                                hullVerticies =
-                                                                                                                                    MeshHelper.
-                                                                                                                                        CreateTexcoordedVertexList
-                                                                                                                                        ((_primHeightPerDeck)*
-                                                                                                                                            (vertsInSilhouette/2 -
-                                                                                                                                                1));
+                Func<int, int, List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>> generateBuff =
+                    (start, end) =>{
+                        var hullMesh =
+                            new Vector3[
+                                _primHeightPerDeck + 1,
+                                vertsInSilhouette/2];
+                        var hullNormals =
+                            new Vector3[
+                                _primHeightPerDeck + 1,
+                                vertsInSilhouette/2];
+                        //int[] hullIndicies = MeshHelper.CreateQuadIndiceArray((primitivesPerDeck) * (vertsInSilhouette / 2-1));
+                        VertexPositionNormalTexture[]
+                            hullVerticies =
+                                MeshHelper.
+                                    CreateTexcoordedVertexList
+                                    ((_primHeightPerDeck)*
+                                        (vertsInSilhouette/2 -
+                                            1));
 
-                                                                                                                            //get the hull normals for this part of the hull from the total normals
-                                                                                                                            for (int x = 0;
-                                                                                                                                x < _primHeightPerDeck + 1;
-                                                                                                                                x++){
-                                                                                                                                for (int z = start;
-                                                                                                                                    z < end;
-                                                                                                                                    z++){
-                                                                                                                                    hullNormals[x, z - start] =
-                                                                                                                                        normalMesh[
-                                                                                                                                            i*_primHeightPerDeck +
-                                                                                                                                                x, z];
-                                                                                                                                }
-                                                                                                                            }
-                                                                                                                            //convert the 2d list heightmap into a 2d array heightmap
-                                                                                                                            //this gets hella messy because gotta subsection the 2d array
-                                                                                                                            var sVerts =
-                                                                                                                                new Vector3[deckSVerts[i].Length
-                                                                                                                                    ][];
-                                                                                                                            for (int j = 0;
-                                                                                                                                j < deckSVerts[i].Length;
-                                                                                                                                j++){
-                                                                                                                                sVerts[j] =
-                                                                                                                                    new Vector3[end - start];
-                                                                                                                                for (int k = start;
-                                                                                                                                    k < end;
-                                                                                                                                    k++){
-                                                                                                                                    sVerts[j][k - start] =
-                                                                                                                                        deckSVerts[i][j][k];
-                                                                                                                                }
-                                                                                                                            }
+                        //get the hull normals for this part of the hull from the total normals
+                        for (int x = 0;
+                            x < _primHeightPerDeck + 1;
+                            x++){
+                            for (int z = start;
+                                z < end;
+                                z++){
+                                hullNormals[x, z - start] =
+                                    normalMesh[
+                                        i*_primHeightPerDeck +
+                                            x, z];
+                            }
+                        }
+                        //convert the 2d list heightmap into a 2d array heightmap
+                        //this gets hella messy because gotta subsection the 2d array
+                        var sVerts =
+                            new Vector3[deckSVerts[i].Length
+                                ][];
+                        for (int j = 0;
+                            j < deckSVerts[i].Length;
+                            j++){
+                            sVerts[j] =
+                                new Vector3[end - start];
+                            for (int k = start;
+                                k < end;
+                                k++){
+                                sVerts[j][k - start] =
+                                    deckSVerts[i][j][k];
+                            }
+                        }
 
-                                                                                                                            MeshHelper.Encode2DListIntoArray
-                                                                                                                                (_primHeightPerDeck + 1,
-                                                                                                                                    (vertsInSilhouette/2),
-                                                                                                                                    ref hullMesh, sVerts);
-                                                                                                                            //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
-                                                                                                                            MeshHelper.ConvertMeshToVertList
-                                                                                                                                (hullMesh, hullNormals,
-                                                                                                                                    ref hullVerticies);
-                                                                                                                            if (i != deckSVerts.Length){
-                                                                                                                                return
-                                                                                                                                    HullSplitter.
-                                                                                                                                        SplitLayerGeometry
-                                                                                                                                        (0.5f, hullVerticies, i);
-                                                                                                                            }
-                                                                                                                            return null;
-                                                                                                                        };
+                        MeshHelper.Encode2DListIntoArray
+                            (_primHeightPerDeck + 1,
+                                (vertsInSilhouette/2),
+                                ref hullMesh, sVerts);
+                        //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
+                        MeshHelper.ConvertMeshToVertList
+                            (hullMesh, hullNormals,
+                                ref hullVerticies);
+                        if (i != deckSVerts.Length){
+                            return
+                                HullSplitter.
+                                    SplitLayerGeometry
+                                    (0.5f, hullVerticies, i);
+                        }
+                        return null;
+                    };
                 // ReSharper restore AccessToModifiedClosure
 
                 #endregion
@@ -864,4 +865,4 @@ namespace Forge.Core.Airship.Generation{
         public int NumDecks;
         public float WallResolution;
     }
-}
+}m
