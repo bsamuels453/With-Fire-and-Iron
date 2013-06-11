@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using System.Threading.Tasks;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
@@ -8,10 +9,10 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.Draw{
-    public abstract class BaseGeometryBuffer<T> : IDrawableBuffer, IDisposable{
-        protected readonly IndexBuffer BaseIndexBuffer;
-        protected readonly VertexBuffer BaseVertexBuffer;
+    public abstract class BaseGeometryBuffer<T> : IDrawableBuffer, IDisposable where T : struct{
         protected readonly string ShaderName;
+        readonly IndexBuffer _baseIndexBuffer;
+        readonly VertexBuffer _baseVertexBuffer;
         readonly int _numIndicies;
         readonly int _numPrimitives;
         readonly PrimitiveType _primitiveType;
@@ -21,6 +22,7 @@ namespace Forge.Framework.Draw{
         protected RasterizerState Rasterizer;
         protected Effect Shader;
         bool _disposed;
+
 
         protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType,
             CullMode cullMode = CullMode.None){
@@ -32,22 +34,23 @@ namespace Forge.Framework.Draw{
 
             Rasterizer = new RasterizerState{CullMode = cullMode};
 
-            BaseIndexBuffer = new IndexBuffer
-                (
-                Resource.Device,
-                typeof (int),
-                numIndicies,
-                BufferUsage.None
-                );
+            lock (Resource.Device){
+                _baseIndexBuffer = new IndexBuffer
+                    (
+                    Resource.Device,
+                    typeof (int),
+                    numIndicies,
+                    BufferUsage.None
+                    );
 
-            BaseVertexBuffer = new VertexBuffer
-                (
-                Resource.Device,
-                typeof (T),
-                numVerticies,
-                BufferUsage.None
-                );
-
+                _baseVertexBuffer = new VertexBuffer
+                    (
+                    Resource.Device,
+                    typeof (T),
+                    numVerticies,
+                    BufferUsage.None
+                    );
+            }
             ShaderName = shader;
             Resource.LoadShader(shader, out Shader);
             Shader.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
@@ -65,8 +68,8 @@ namespace Forge.Framework.Draw{
         public void Dispose(){
             if (!_disposed){
                 RenderTarget.Buffers.Remove(this);
-                BaseIndexBuffer.Dispose();
-                BaseVertexBuffer.Dispose();
+                _baseIndexBuffer.Dispose();
+                _baseVertexBuffer.Dispose();
                 _disposed = true;
             }
         }
@@ -83,8 +86,8 @@ namespace Forge.Framework.Draw{
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){
                     pass.Apply();
-                    Resource.Device.Indices = BaseIndexBuffer;
-                    Resource.Device.SetVertexBuffer(BaseVertexBuffer);
+                    Resource.Device.Indices = _baseIndexBuffer;
+                    Resource.Device.SetVertexBuffer(_baseVertexBuffer);
                     Resource.Device.DrawIndexedPrimitives(_primitiveType, 0, 0, _numIndicies, 0, _numPrimitives);
                 }
                 Resource.Device.SetVertexBuffer(null);
@@ -92,6 +95,26 @@ namespace Forge.Framework.Draw{
         }
 
         #endregion
+
+        protected void SetIndexBufferData(int[] data){
+            var update = new Task
+                (() =>{
+                     lock (Resource.Device){
+                         _baseIndexBuffer.SetData((int[]) data.Clone());
+                     }
+                 });
+            RenderTarget.AddAsynchronousBufferUpdate(update);
+        }
+
+        protected void SetVertexBufferData(T[] data){
+            var update = new Task
+                (() =>{
+                     lock (Resource.Device){
+                         _baseVertexBuffer.SetData((T[]) data.Clone());
+                     }
+                 });
+            RenderTarget.AddAsynchronousBufferUpdate(update);
+        }
 
         ~BaseGeometryBuffer(){
             if (!_disposed)

@@ -67,7 +67,7 @@ namespace Forge.Core.HullEditor{
             _topCurves = topCurves;
             _backCurves = backCurves;
 
-            _geometryBuffer.IndexBuffer.SetData(_indicies);
+            _geometryBuffer.SetIndexBufferData(_indicies);
             _renderTarget.Unbind();
         }
 
@@ -143,7 +143,7 @@ namespace Forge.Core.HullEditor{
             MeshHelper.GenerateMeshNormals(_mesh, ref normals);
             MeshHelper.ConvertMeshToVertList(_mesh, normals, ref _verticies);
 
-            _geometryBuffer.VertexBuffer.SetData(_verticies);
+            _geometryBuffer.SetVertexBufferData(_verticies);
 
             var p = new Vector3();
             p += _mesh[0, 0];

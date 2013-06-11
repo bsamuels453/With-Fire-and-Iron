@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using Cloo;
 using Forge.Core.Util;
+using Forge.Framework;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
@@ -14,7 +15,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Terrain{
-    public class TerrainGen{
+    public class TerrainGen : IDisposable{
         readonly ComputeBuffer<byte> _activeVerts;
         readonly ComputeBuffer<byte> _binormals;
         readonly int _blockWidth;
@@ -40,6 +41,7 @@ namespace Forge.Core.Terrain{
         readonly ComputeBuffer<float> _uvCoords;
         readonly ComputeKernel _winderKernel;
         readonly ComputeProgram _winderPrgm;
+        bool _disposed;
 
         public TerrainGen(){
             _context = Resource.CLContext;
@@ -145,6 +147,29 @@ namespace Forge.Core.Terrain{
 
             _cmdQueue.Finish();
         }
+
+        #region IDisposable Members
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            _activeVerts.Dispose();
+            _binormals.Dispose();
+            _crossCullKernel.Dispose();
+            _dummy.Dispose();
+            _genConstants.Dispose();
+            _geometry.Dispose();
+            _normals.Dispose();
+            _normalGenKernel.Dispose();
+            _indicies.Dispose();
+            _qTreeKernel.Dispose();
+            _tangents.Dispose();
+            _terrainGenKernel.Dispose();
+            _uvCoords.Dispose();
+            _winderKernel.Dispose();
+            _disposed = true;
+        }
+
+        #endregion
 
         public TerrainChunk GenerateChunk(XZPair id){
             int offsetX = id.X*_blockWidth*(_chunkWidthInBlocks);
@@ -343,6 +368,12 @@ namespace Forge.Core.Terrain{
                 sw.Write('\n');
             }
             sw.Close();
+        }
+
+        ~TerrainGen(){
+            if (!_disposed){
+                throw new ResourceNotDisposedException();
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Cloo;
@@ -29,6 +30,7 @@ namespace Forge.Framework.Resources{
         public static Matrix ProjectionMatrix;
         public static ScreenSize ScreenSize;
         static OpenCLScriptLoader _openCLScriptLoader;
+        static bool _disposed;
         public static GraphicsDevice Device { get; private set; }
 
         public static void Initialize(ContentManager content, GraphicsDevice device){
@@ -79,7 +81,11 @@ namespace Forge.Framework.Resources{
         /// <param name="identifier"> The name of the content to be loaded. Be sure to include subfolders, if relevant./ </param>
         /// <returns> </returns>
         public static T LoadContent<T>(string identifier){
-            return _contentManager.Load<T>(identifier);
+            T ret;
+            lock (Device){
+                ret = _contentManager.Load<T>(identifier);
+            }
+            return ret;
         }
 
         /// <summary>
@@ -123,7 +129,9 @@ namespace Forge.Framework.Resources{
 
             for (int i = 0; i < configs.Count; i++){
                 if (configs[i] == "Shader"){
-                    effect = _contentManager.Load<Effect>(configValues[i]).Clone();
+                    lock (Device){
+                        effect = _contentManager.Load<Effect>(configValues[i]).Clone();
+                    }
                     if (effect == null){
                         throw new Exception("Shader not found");
                     }
@@ -171,7 +179,10 @@ namespace Forge.Framework.Resources{
                     if (name == "Shader")
                         continue;
                     //it's a string, and in the context of shader settings, strings always coorespond with texture names
-                    var texture = _contentManager.Load<Texture2D>(configVal);
+                    Texture2D texture;
+                    lock (Device){
+                        texture = _contentManager.Load<Texture2D>(configVal);
+                    }
                     effect.Parameters[name].SetValue(texture);
                     continue;
                 }
@@ -185,6 +196,13 @@ namespace Forge.Framework.Resources{
                 //assume its an integer
                 effect.Parameters[name].SetValue(int.Parse(configVal));
             }
+        }
+
+        public static void Dispose(){
+            Debug.Assert(!_disposed);
+            _openCLScriptLoader.Dispose();
+            _contentManager.Dispose();
+            _disposed = true;
         }
 
         #region opencl

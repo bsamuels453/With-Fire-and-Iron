@@ -66,19 +66,20 @@ namespace Forge.Core{
             timer.Stop();
             DebugConsole.WriteLine("Game-state resources released in " + timer.ElapsedMilliseconds + " ms");
             DebugConsole.DisposeStatic();
+            Resource.Dispose();
         }
 
         protected override void Update(GameTime gameTime){
             GamestateManager.Update();
             base.Update(gameTime);
-            //Exit();
-        }
 
-        protected override void Draw(GameTime gameTime){
             RenderTarget.BeginDraw();
             GamestateManager.Draw();
             RenderTarget.EndDraw();
             base.Draw(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime){
         }
     }
 }

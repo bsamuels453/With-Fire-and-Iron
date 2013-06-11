@@ -55,7 +55,7 @@ namespace Forge.Core.ObjectEditor.Tools{
 
             _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Shader_Wireframe", PrimitiveType.LineList);
             var selectionIndicies = new[]{0, 1};
-            _cursorBuff.IndexBuffer.SetData(selectionIndicies);
+            _cursorBuff.SetIndexBufferData(selectionIndicies);
             _cursorBuff.Enabled = false;
             _cursorBuff.ShaderParams["Alpha"].SetValue(1);
 
@@ -253,7 +253,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 for (int si = 0; si < 8*numBoxes; si += 1){
                     guideDotIndicies[si] = si;
                 }
-                GuideGridBuffers[i].IndexBuffer.SetData(guideDotIndicies);
+                GuideGridBuffers[i].SetIndexBufferData(guideDotIndicies);
 
                 #endregion
 
@@ -291,7 +291,7 @@ namespace Forge.Core.ObjectEditor.Tools{
 
                     vertIndex += 8;
                 }
-                GuideGridBuffers[i].VertexBuffer.SetData(verts);
+                GuideGridBuffers[i].SetVertexBufferData(verts);
 
                 #endregion
 
@@ -339,7 +339,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     ),
                 Color.White
                 );
-            _cursorBuff.VertexBuffer.SetData(verts);
+            _cursorBuff.SetVertexBufferData(verts);
             _cursorBuff.Enabled = true;
             if (_isDrawing){
                 StrokeEnd = CursorPosition;

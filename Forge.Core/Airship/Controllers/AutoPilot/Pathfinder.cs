@@ -190,6 +190,11 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
         /// <param name="newVel"></param>
         static void CalculateNewScalar(float pos, float diff, float maxAcceleration, float curVelocity, Func<float, float> clamp,
             out float newPos, out float newVel){
+            if (diff == 0){
+                newPos = pos;
+                newVel = curVelocity;
+                return;
+            }
             float sign;
             if (diff > 0)
                 sign = 1;

@@ -35,16 +35,18 @@ namespace Forge.Framework{
         }
 
         public static void WriteLine(string s){
-            string timeStamp = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "] ";
-            var line = timeStamp + s;
-            if (_wrapper.ExternConsoleEnabled){
-                try{
-                    _wrapper.SendToConsole(line);
-                    _wrapper.FileWriter.WriteLine(line);
-                }
-                catch{
-                    _wrapper.FileWriter.WriteLine(line);
-                    _wrapper.ExternConsoleEnabled = false;
+            lock (_wrapper){
+                string timeStamp = "[" + DateTime.Now.Hour + ":" + DateTime.Now.Minute + ":" + DateTime.Now.Second + "] ";
+                var line = timeStamp + s;
+                if (_wrapper.ExternConsoleEnabled){
+                    try{
+                        _wrapper.SendToConsole(line);
+                        _wrapper.FileWriter.WriteLine(line);
+                    }
+                    catch{
+                        _wrapper.FileWriter.WriteLine(line);
+                        _wrapper.ExternConsoleEnabled = false;
+                    }
                 }
             }
         }
