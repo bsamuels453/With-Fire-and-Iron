@@ -2,6 +2,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Forge.Core.Util;
 using Forge.Framework;
 
@@ -11,15 +13,30 @@ namespace Forge.Core.Terrain{
     public class TerrainUpdater : IDisposable{
         readonly TerrainGen _generator;
         readonly List<TerrainChunk> _loadedChunks;
+        List<Task<TerrainChunk>> _generationTasks;
 
         public TerrainUpdater(){
             _loadedChunks = new List<TerrainChunk>();
+            _generationTasks = new List<Task<TerrainChunk>>(400);
 
             _generator = new TerrainGen();
             for (int x = 0; x < 10; x++){
                 for (int z = 0; z < 10; z++){
-                    var chunk = _generator.GenerateChunk(new XZPair(x, z));
-                    _loadedChunks.Add(chunk);
+                    int x1 = x;
+                    int z1 = z;
+                    _generationTasks.Add
+                        (new Task<TerrainChunk>
+                            (delegate{
+                                 TerrainChunk ret;
+                                 lock (_generator){
+                                     //NESTED LOCK WARNING: child locks Resource.Device
+                                     ret = _generator.GenerateChunk(new XZPair(x1, z1));
+                                 }
+                                 return ret;
+                             }
+                            ));
+                    //var chunk = _generator.GenerateChunk(new XZPair(x, z));
+                    //_loadedChunks.Add(chunk);
 
                     //var sw = new StreamWriter("chunk"+x+" "+z);
                     //var jobj = new JObject();
@@ -33,6 +50,11 @@ namespace Forge.Core.Terrain{
                     //sw.Close();
                 }
             }
+
+            foreach (var generationTask in _generationTasks){
+                generationTask.Start();
+            }
+
             /*
             for (int x = 0; x < 2; x++){
                 for (int z = 0; z < 2; z++){
@@ -71,6 +93,15 @@ namespace Forge.Core.Terrain{
         #endregion
 
         public void Update(InputState state, double timeDelta){
+            foreach (var generationTask in _generationTasks){
+                if (generationTask.Status == TaskStatus.RanToCompletion){
+                    _loadedChunks.Add(generationTask.Result);
+                }
+            }
+
+            _generationTasks = (from task in _generationTasks
+                where task.Status != TaskStatus.RanToCompletion
+                select task).ToList();
         }
     }
 }
