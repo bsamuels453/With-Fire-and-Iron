@@ -79,7 +79,11 @@ namespace Forge.Framework.Resources{
         /// <param name="identifier"> The name of the content to be loaded. Be sure to include subfolders, if relevant./ </param>
         /// <returns> </returns>
         public static T LoadContent<T>(string identifier){
-            return _contentManager.Load<T>(identifier);
+            T ret;
+            lock (Resource.Device){
+                ret = _contentManager.Load<T>(identifier);
+            }
+            return ret;
         }
 
         /// <summary>
@@ -123,7 +127,9 @@ namespace Forge.Framework.Resources{
 
             for (int i = 0; i < configs.Count; i++){
                 if (configs[i] == "Shader"){
-                    effect = _contentManager.Load<Effect>(configValues[i]).Clone();
+                    lock (Resource.Device){
+                        effect = _contentManager.Load<Effect>(configValues[i]).Clone();
+                    }
                     if (effect == null){
                         throw new Exception("Shader not found");
                     }
@@ -171,7 +177,10 @@ namespace Forge.Framework.Resources{
                     if (name == "Shader")
                         continue;
                     //it's a string, and in the context of shader settings, strings always coorespond with texture names
-                    var texture = _contentManager.Load<Texture2D>(configVal);
+                    Texture2D texture;
+                    lock (Resource.Device){
+                        texture = _contentManager.Load<Texture2D>(configVal);
+                    }
                     effect.Parameters[name].SetValue(texture);
                     continue;
                 }
