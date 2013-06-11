@@ -16,7 +16,7 @@ namespace Forge.Framework.Draw{
         readonly int _numIndicies;
         readonly int _numPrimitives;
         readonly PrimitiveType _primitiveType;
-        protected Matrix BaseWorldMatrix;
+        protected Matrix BaseWorldTransform;
 
         public bool Enabled;
         protected RasterizerState Rasterizer;
@@ -30,7 +30,7 @@ namespace Forge.Framework.Draw{
             _numPrimitives = numPrimitives;
             _numIndicies = numIndicies;
             _primitiveType = primitiveType;
-            BaseWorldMatrix = Matrix.Identity;
+            BaseWorldTransform = Matrix.Identity;
 
             Rasterizer = new RasterizerState{CullMode = cullMode};
 
@@ -81,7 +81,7 @@ namespace Forge.Framework.Draw{
         public void Draw(Matrix viewMatrix){
             if (Enabled){
                 Shader.Parameters["View"].SetValue(viewMatrix);
-                Shader.Parameters["World"].SetValue(BaseWorldMatrix);
+                Shader.Parameters["World"].SetValue(BaseWorldTransform);
                 Resource.Device.RasterizerState = Rasterizer;
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){

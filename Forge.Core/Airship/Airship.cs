@@ -124,7 +124,7 @@ namespace Forge.Core.Airship{
 
 
             _controller.Update(ref state, timeDelta);
-            SetAirshipWMatrix(_controller.WorldMatrix);
+            SetAirshipWMatrix(_controller.WorldTransform);
 
             foreach (var hardPoint in _hardPoints){
                 hardPoint.Update(timeDelta);
@@ -141,21 +141,21 @@ namespace Forge.Core.Airship{
             DeckSectionContainer.SetTopVisibleDeck(DeckSectionContainer.TopExpIdx + 1);
         }
 
-        void SetAirshipWMatrix(Matrix worldMatrix){
+        void SetAirshipWMatrix(Matrix worldTransform){
 #if ENABLE_DAMAGEMESH
-            _hullIntegrityMesh.WorldMatrix = worldMatrix;
+            _hullIntegrityMesh.WorldTransform = worldTransform;
 #endif
 
             foreach (var hullLayer in HullSectionContainer.HullBuffersByDeck){
-                hullLayer.WorldMatrix = worldMatrix;
+                hullLayer.WorldTransform = worldTransform;
             }
 
             foreach (var deckLayer in DeckSectionContainer.DeckBufferByDeck){
-                deckLayer.WorldMatrix = worldMatrix;
+                deckLayer.WorldTransform = worldTransform;
             }
 
             foreach (var hardPoint in _hardPoints){
-                hardPoint.ShipTranslationMtx = worldMatrix;
+                hardPoint.ShipTranslationMtx = worldTransform;
             }
         }
 

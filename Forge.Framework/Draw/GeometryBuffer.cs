@@ -27,7 +27,7 @@ namespace Forge.Framework.Draw{
             get { return _rotation; }
             set{
                 _rotation = value;
-                UpdateWorldMatrix();
+                UpdateWorldTransform();
             }
         }
 
@@ -35,13 +35,13 @@ namespace Forge.Framework.Draw{
             get { return _position; }
             set{
                 _position = value;
-                UpdateWorldMatrix();
+                UpdateWorldTransform();
             }
         }
 
-        public Matrix WorldMatrix{
-            get { return BaseWorldMatrix; }
-            set { BaseWorldMatrix = value; }
+        public Matrix WorldTransform{
+            get { return BaseWorldTransform; }
+            set { BaseWorldTransform = value; }
         }
 
         public new void SetIndexBufferData(int[] data){
@@ -70,18 +70,18 @@ namespace Forge.Framework.Draw{
          */
         public void Translate(Vector3 diff){
             _position += diff;
-            UpdateWorldMatrix();
+            UpdateWorldTransform();
         }
 
         public void Rotate(Angle3 diff){
             _rotation += diff.ToVec();
-            UpdateWorldMatrix();
+            UpdateWorldTransform();
         }
 
-        void UpdateWorldMatrix(){
-            BaseWorldMatrix = Matrix.Identity;
-            BaseWorldMatrix *= Matrix.CreateRotationX(Rotation.X)*Matrix.CreateRotationY(Rotation.Y)*Matrix.CreateRotationZ(Rotation.Z);
-            BaseWorldMatrix *= Matrix.CreateTranslation(Position.X, Position.Y, Position.Z);
+        void UpdateWorldTransform(){
+            BaseWorldTransform = Matrix.Identity;
+            BaseWorldTransform *= Matrix.CreateRotationX(Rotation.X)*Matrix.CreateRotationY(Rotation.Y)*Matrix.CreateRotationZ(Rotation.Z);
+            BaseWorldTransform *= Matrix.CreateTranslation(Position.X, Position.Y, Position.Z);
         }
     }
 }

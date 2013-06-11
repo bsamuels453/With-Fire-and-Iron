@@ -173,11 +173,11 @@ namespace Forge.Framework{
         }
 
         public static Matrix GetWorldTranslation(Vector3 position, Vector3 angle, float objLength){
-            var worldMatrix = Matrix.Identity;
-            worldMatrix *= Matrix.CreateTranslation(objLength/2, 0, 0);
-            worldMatrix *= Matrix.CreateRotationX(angle.X)*Matrix.CreateRotationY(angle.Y)*Matrix.CreateRotationZ(angle.Z);
-            worldMatrix *= Matrix.CreateTranslation(position.X, position.Y, position.Z);
-            return worldMatrix;
+            var worldTransform = Matrix.Identity;
+            worldTransform *= Matrix.CreateTranslation(objLength/2, 0, 0);
+            worldTransform *= Matrix.CreateRotationX(angle.X)*Matrix.CreateRotationY(angle.Y)*Matrix.CreateRotationZ(angle.Z);
+            worldTransform *= Matrix.CreateTranslation(position.X, position.Y, position.Z);
+            return worldTransform;
         }
 
         /// <summary>

@@ -155,11 +155,11 @@ namespace Forge.Core.Airship{
             #endregion
         }
 
-        public Matrix WorldMatrix{
+        public Matrix WorldTransform{
             set{
-                _redBuff.WorldMatrix = value;
-                _orangeBuff.WorldMatrix = value;
-                _greenBuff.WorldMatrix = value;
+                _redBuff.WorldTransform = value;
+                _orangeBuff.WorldTransform = value;
+                _greenBuff.WorldTransform = value;
                 _collisionObjectHandle.SetObjectMatrix(value);
             }
         }

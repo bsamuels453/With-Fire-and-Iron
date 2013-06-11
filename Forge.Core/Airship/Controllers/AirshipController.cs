@@ -61,7 +61,7 @@ namespace Forge.Core.Airship.Controllers{
         /// <summary>
         ///   The worldmatrix used to translate the position of the airship into model space.
         /// </summary>
-        public Matrix WorldMatrix { get; private set; }
+        public Matrix WorldTransform { get; private set; }
 
         public List<AirshipBuff> ActiveBuffs { get; private set; }
 
@@ -280,7 +280,7 @@ namespace Forge.Core.Airship.Controllers{
             position.Y += StateData.AscentRate*timeDeltaSeconds;
             Position = position;
 
-            WorldMatrix = Common.GetWorldTranslation(Position, Angle + new Vector3(0, -(float) Math.PI/2, 0), _airshipModelData.Length);
+            WorldTransform = Common.GetWorldTranslation(Position, Angle + new Vector3(0, -(float) Math.PI/2, 0), _airshipModelData.Length);
         }
 
         protected abstract void UpdateController(ref InputState state, double timeDelta);

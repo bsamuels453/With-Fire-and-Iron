@@ -77,7 +77,7 @@ namespace Forge.Core.Physics{
 
             var objPublicInterface = new CollisionObjectHandle
                 (
-                setObjectMatrix: matrix => objpublicData.WorldMatrix = matrix,
+                setObjectMatrix: matrix => objpublicData.WorldTransform = matrix,
                 terminate: () => _boundingObjData.Remove(objpublicData)
                 );
 
@@ -88,9 +88,9 @@ namespace Forge.Core.Physics{
         }
 
         public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
-            var worldMatrix = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
-            //_defaultShotCtor.MotionState = new DefaultMotionState(worldMatrix);
-            _defaultShotCtor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldMatrix), IndexedMatrix.Identity);
+            var worldTransform = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
+            //_defaultShotCtor.MotionState = new DefaultMotionState(worldTransform);
+            _defaultShotCtor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldTransform), IndexedMatrix.Identity);
 
             var body = new RigidBody(_defaultShotCtor);
             var force_i = (IndexedVector3) angle*_defProjectile.FiringForce;
@@ -141,7 +141,7 @@ namespace Forge.Core.Physics{
 
                     projectile.Body.GetMotionState().GetWorldTransform(out projectileMtx_i);
                     var projectileMtx = (Matrix) projectileMtx_i;
-                    var shipMtx = shipDat.WorldMatrix;
+                    var shipMtx = shipDat.WorldTransform;
 
                     var invShipMtx = Matrix.Invert(shipMtx);
                     var projectilePos = Common.MultMatrix(invShipMtx, (projectileMtx).Translation);
@@ -234,12 +234,12 @@ namespace Forge.Core.Physics{
             /// </summary>
             public CollisionCallback CollisionEventDispatcher;
 
-            public Matrix WorldMatrix;
+            public Matrix WorldTransform;
 
             public CollisionObjectCollection(CollisionObject[] collisionObjects, EntityVariant type, BoundingSphere soi){
                 CollisionObjects = collisionObjects;
                 Type = type;
-                WorldMatrix = Matrix.Identity;
+                WorldTransform = Matrix.Identity;
                 ShipSOI = soi;
                 BlacklistedProjectiles = new List<Projectile>();
             }
