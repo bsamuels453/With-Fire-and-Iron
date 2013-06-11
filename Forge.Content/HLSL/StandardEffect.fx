@@ -40,7 +40,7 @@ struct VertexShaderOutput
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-	float4x4 WorldInverseTranspose = transpose(World);
+	//float4x4 WorldInverseTranspose = transpose(World);
     float4 worldPosition = mul(input.Position, World);
 	
 	//valid alternative
@@ -50,12 +50,16 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
     float4 viewPosition = mul(worldPosition, View);
     output.Position = mul(viewPosition, Projection);
 
-    //float4 normal = mul(input.Normal, WorldInverseTranspose);
 	float4 normal = input.Normal;
+    //float4 normal = mul(input.Normal, View);
+	//normal = mul(normal, Projection);
+	//float4 normal = input.Normal;
 	normal = normalize(normal);
+
+	float4 diffuseDir = mul(DiffuseLightDirection, World);
 	//float3 dir = normalize(DiffuseLightDirection);
     //float lightIntensity = dot(normal, dir) * AmbientIntensity;
-	float lightIntensity = dot(normal, DiffuseLightDirection) * DiffuseIntensity;
+	float lightIntensity = dot(normal, diffuseDir) * DiffuseIntensity;
     output.Color = saturate(AmbientColor * AmbientIntensity + lightIntensity);
 
     //output.Normal = normal;
