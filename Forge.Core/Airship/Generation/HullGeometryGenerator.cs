@@ -25,6 +25,7 @@ namespace Forge.Core.Airship.Generation{
         const int _horizontalPrimDivisor = 2;
         const float _deckHeight = 2.13f;
         const float _bBoxWidth = 0.5f;
+        const float _hullTextureTilingSize = 1f;
 
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
@@ -531,10 +532,84 @@ namespace Forge.Core.Airship.Generation{
                             (_primHeightPerDeck + 1,
                                 (vertsInSilhouette/2),
                                 ref hullMesh, sVerts);
-                        //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture 
+
+                        int f = 5;
+                        //Now we need to assign the real texcoords.
+                        //We have to loop through the mesh in an awkward way in order to make it so the 
+                        //hull texture's edge meets at the bottom of airship perfectly.
+                        //If we were to loop through this in any other way, the polygons that make up the 
+                        //bottom of the ship would meet halfway through the texture, depending on the airship depth.
+
+                        var horizontalDistances = new float[hullMesh.GetLength(0),hullMesh.GetLength(1)];
+
+                        //oh god this hack is so ugly.
+                        //this happens because this function is called twice, and each time it's called the "front" vertex
+                        //is at a different side of the array. In order for this mirroring to work, we have to iterate in
+                        //the opposite direction for one of the buffers
+                        bool reverseVertexIteration = hullMesh[0, 0].X == 0;
+
+                        for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
+                            if (!reverseVertexIteration){
+                                for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1) - 1; vertexIdx++){
+                                    horizontalDistances[layerIdx, vertexIdx] =
+                                        Vector3.Distance
+                                            (
+                                                hullMesh[layerIdx, vertexIdx],
+                                                hullMesh[layerIdx, vertexIdx + 1]
+                                            );
+                                }
+                            }
+                            else{
+                                for (int vertexIdx = hullMesh.GetLength(1) - 1; vertexIdx > 0; vertexIdx--){
+                                    horizontalDistances[layerIdx, vertexIdx] =
+                                        Vector3.Distance
+                                            (
+                                                hullMesh[layerIdx, vertexIdx],
+                                                hullMesh[layerIdx, vertexIdx - 1]
+                                            );
+                                }
+                            }
+                        }
+
+                        var texCoords = new Vector2[hullMesh.GetLength(0),hullMesh.GetLength(1)];
+                        for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
+                            float distSum = 0;
+                            if (!reverseVertexIteration){
+                                for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1); vertexIdx++){
+                                    Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
+
+                                    texCoords[layerIdx, vertexIdx] = new Vector2
+                                        (
+                                        _hullTextureTilingSize/distSum,
+                                        _hullTextureTilingSize/vertPos.Y
+                                        );
+                                    distSum += horizontalDistances[layerIdx, vertexIdx];
+                                }
+                            }
+                            else{
+                                for (int vertexIdx = hullMesh.GetLength(1) - 1; vertexIdx >= 0; vertexIdx--){
+                                    Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
+
+                                    texCoords[layerIdx, vertexIdx] = new Vector2
+                                        (
+                                        _hullTextureTilingSize/distSum,
+                                        _hullTextureTilingSize/vertPos.Y
+                                        );
+                                    distSum += horizontalDistances[layerIdx, vertexIdx];
+                                }
+                            }
+                        }
+
+
+                        //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture[]
                         MeshHelper.ConvertMeshToVertList
-                            (hullMesh, hullNormals,
-                                ref hullVerticies);
+                            (
+                                hullMesh,
+                                hullNormals,
+                                texCoords,
+                                ref hullVerticies
+                            );
+
                         if (i != deckSVerts.Length){
                             return
                                 HullSplitter.
