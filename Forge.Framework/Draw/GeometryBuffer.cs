@@ -44,12 +44,12 @@ namespace Forge.Framework.Draw{
             set { BaseWorldTransform = value; }
         }
 
-        public new void SetIndexBufferData(int[] data){
-            base.SetIndexBufferData(data);
+        public new void SetIndexBufferData(int[] data, bool updateSynchronously = false){
+            base.SetIndexBufferData(data, updateSynchronously);
         }
 
-        public new void SetVertexBufferData(T[] data){
-            base.SetVertexBufferData(data);
+        public new void SetVertexBufferData(T[] data, bool updateSynchronously = false) {
+            base.SetVertexBufferData(data, updateSynchronously);
         }
 
         public CullMode CullMode{

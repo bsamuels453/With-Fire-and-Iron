@@ -96,24 +96,39 @@ namespace Forge.Framework.Draw{
 
         #endregion
 
-        protected void SetIndexBufferData(int[] data){
-            var update = new Task
-                (() =>{
-                     lock (Resource.Device){
-                         _baseIndexBuffer.SetData((int[]) data.Clone());
-                     }
-                 });
-            RenderTarget.AddAsynchronousBufferUpdate(update);
+        protected void SetIndexBufferData(int[] data, bool updateSynchronously = false){
+            if (updateSynchronously) {
+                _baseIndexBuffer.SetData(data);
+            }
+            else{
+                var update = new Task
+                    (() =>{
+                         lock (Resource.Device){
+                             if (!_disposed){
+                                 _baseIndexBuffer.SetData((int[]) data.Clone());
+                             }
+                         }
+                     });
+                RenderTarget.AddAsynchronousBufferUpdate(update);
+            }
         }
 
-        protected void SetVertexBufferData(T[] data){
-            var update = new Task
-                (() =>{
-                     lock (Resource.Device){
-                         _baseVertexBuffer.SetData((T[]) data.Clone());
-                     }
-                 });
-            RenderTarget.AddAsynchronousBufferUpdate(update);
+        protected void SetVertexBufferData(T[] data, bool updateSynchronously = false) {
+            if (updateSynchronously) {
+                _baseVertexBuffer.SetData(data);
+            }
+            else{
+                var update = new Task
+                    (() =>{
+                         lock (Resource.Device){
+                             if (!_disposed){
+                                 _baseVertexBuffer.SetData((T[]) data.Clone());
+                             }
+                         }
+                     });
+                RenderTarget.AddAsynchronousBufferUpdate(update);
+            }
+
         }
 
         ~BaseGeometryBuffer(){
