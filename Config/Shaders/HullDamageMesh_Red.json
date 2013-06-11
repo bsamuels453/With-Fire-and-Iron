@@ -4,5 +4,5 @@
 	"DiffuseIntensity": "0.8",
 	"AmbientIntensity": "0.2",
 	"Texture": "Materials/DamageMesh_Red",
-	"Shader": "HLSL/StandardEffect"
+	"Shader": "HLSL/HullShader"
 }

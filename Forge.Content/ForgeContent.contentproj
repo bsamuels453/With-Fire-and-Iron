@@ -253,11 +253,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HLSL\StandardEffect.fx">
-      <Name>StandardEffect</Name>
-      <Importer>EffectImporter</Importer>
-      <Processor>EffectProcessor</Processor>
-    </Compile>
     <Compile Include="HLSL\TintedModel.fx">
       <Name>TintedModel</Name>
       <Importer>EffectImporter</Importer>
@@ -364,6 +359,23 @@
       <Name>DamageMesh_Red</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HLSL\DeckShader.fx">
+      <Name>DeckShader</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
+    <Compile Include="HLSL\HullShader.fx">
+      <Name>HullShader</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
+    </Compile>
+    <Compile Include="HLSL\StandardEffect.fx">
+      <Name>StandardEffect</Name>
+      <Importer>EffectImporter</Importer>
+      <Processor>EffectProcessor</Processor>
     </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
