@@ -32,22 +32,23 @@ namespace Forge.Framework.Draw{
 
             Rasterizer = new RasterizerState{CullMode = cullMode};
 
-            BaseIndexBuffer = new IndexBuffer
-                (
-                Resource.Device,
-                typeof (int),
-                numIndicies,
-                BufferUsage.None
-                );
+            lock (Resource.Device){
+                BaseIndexBuffer = new IndexBuffer
+                    (
+                    Resource.Device,
+                    typeof (int),
+                    numIndicies,
+                    BufferUsage.None
+                    );
 
-            BaseVertexBuffer = new VertexBuffer
-                (
-                Resource.Device,
-                typeof (T),
-                numVerticies,
-                BufferUsage.None
-                );
-
+                BaseVertexBuffer = new VertexBuffer
+                    (
+                    Resource.Device,
+                    typeof (T),
+                    numVerticies,
+                    BufferUsage.None
+                    );
+            }
             ShaderName = shader;
             Resource.LoadShader(shader, out Shader);
             Shader.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
