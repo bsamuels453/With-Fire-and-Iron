@@ -23,8 +23,6 @@ namespace Forge.Core.Terrain{
         readonly Texture2D _binormals;
         readonly Texture2D _tangents;
 
-        bool _bufferDataSet;
-
         public TerrainChunk(XZPair identifier, VertexPositionTexture[] verticies, int[] indicies, Texture2D normals, Texture2D binormals, Texture2D tangents){
             Identifier = identifier;
             _verticies = verticies;
@@ -38,7 +36,6 @@ namespace Forge.Core.Terrain{
             _wbuff.ShaderParams["Alpha"].SetValue(0.25f);
 #endif
 
-            Debug.Assert(_bufferDataSet == false);
             _buffer.SetIndexBufferData((int[]) _indicies.Clone());
             _buffer.SetVertexBufferData(_verticies);
             _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
@@ -65,10 +62,6 @@ namespace Forge.Core.Terrain{
             _normals.Dispose();
             _binormals.Dispose();
             _tangents.Dispose();
-        }
-
-        public void SetBufferData(){
-            _bufferDataSet = true;
         }
 
         bool _disposed;
