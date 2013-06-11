@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Cloo;
@@ -29,6 +30,7 @@ namespace Forge.Framework.Resources{
         public static Matrix ProjectionMatrix;
         public static ScreenSize ScreenSize;
         static OpenCLScriptLoader _openCLScriptLoader;
+        static bool _disposed;
         public static GraphicsDevice Device { get; private set; }
 
         public static void Initialize(ContentManager content, GraphicsDevice device){
@@ -80,7 +82,7 @@ namespace Forge.Framework.Resources{
         /// <returns> </returns>
         public static T LoadContent<T>(string identifier){
             T ret;
-            lock (Resource.Device){
+            lock (Device){
                 ret = _contentManager.Load<T>(identifier);
             }
             return ret;
@@ -127,7 +129,7 @@ namespace Forge.Framework.Resources{
 
             for (int i = 0; i < configs.Count; i++){
                 if (configs[i] == "Shader"){
-                    lock (Resource.Device){
+                    lock (Device){
                         effect = _contentManager.Load<Effect>(configValues[i]).Clone();
                     }
                     if (effect == null){
@@ -178,7 +180,7 @@ namespace Forge.Framework.Resources{
                         continue;
                     //it's a string, and in the context of shader settings, strings always coorespond with texture names
                     Texture2D texture;
-                    lock (Resource.Device){
+                    lock (Device){
                         texture = _contentManager.Load<Texture2D>(configVal);
                     }
                     effect.Parameters[name].SetValue(texture);
@@ -194,6 +196,13 @@ namespace Forge.Framework.Resources{
                 //assume its an integer
                 effect.Parameters[name].SetValue(int.Parse(configVal));
             }
+        }
+
+        public static void Dispose(){
+            Debug.Assert(!_disposed);
+            _openCLScriptLoader.Dispose();
+            _contentManager.Dispose();
+            _disposed = true;
         }
 
         #region opencl

@@ -66,6 +66,7 @@ namespace Forge.Core{
             timer.Stop();
             DebugConsole.WriteLine("Game-state resources released in " + timer.ElapsedMilliseconds + " ms");
             DebugConsole.DisposeStatic();
+            Resource.Dispose();
         }
 
         protected override void Update(GameTime gameTime){

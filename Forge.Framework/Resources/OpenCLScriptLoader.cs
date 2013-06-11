@@ -209,9 +209,17 @@ namespace Forge.Framework.Resources{
                  */
         }
 
+        public override void Dispose(){
+            foreach (var openCLScript in _scripts){
+                openCLScript.Dispose();
+            }
+            CommandQueue.Dispose();
+            ComputeContext.Dispose();
+        }
+
         #region Nested type: OpenCLScript
 
-        struct OpenCLScript{
+        struct OpenCLScript : IDisposable{
             public readonly ComputeProgram Program;
             public readonly FileAttributes SrcFileInfo;
 
@@ -219,6 +227,14 @@ namespace Forge.Framework.Resources{
                 Program = program;
                 SrcFileInfo = srcFileInfo;
             }
+
+            #region IDisposable Members
+
+            public void Dispose(){
+                Program.Dispose();
+            }
+
+            #endregion
         }
 
         #endregion

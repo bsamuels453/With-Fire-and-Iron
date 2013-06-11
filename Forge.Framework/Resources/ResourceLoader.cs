@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,9 +8,15 @@ using System.Linq;
 #endregion
 
 namespace Forge.Framework.Resources{
-    internal abstract class ResourceLoader{
+    internal abstract class ResourceLoader : IDisposable{
         const int _numEstimatedDirectories = 20;
         const int _numEstimatedFiles = 50;
+
+        #region IDisposable Members
+
+        public abstract void Dispose();
+
+        #endregion
 
         /// <summary>
         ///   Retrieves all files within a given directly, including the files within each subfolder.

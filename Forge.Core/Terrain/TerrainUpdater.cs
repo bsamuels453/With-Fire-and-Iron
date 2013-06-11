@@ -65,6 +65,7 @@ namespace Forge.Core.Terrain{
                 chunk.Dispose();
             }
             _loadedChunks.Clear();
+            _generator.Dispose();
         }
 
         #endregion
