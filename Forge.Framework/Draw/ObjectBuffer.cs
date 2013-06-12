@@ -171,7 +171,7 @@ namespace Forge.Framework.Draw{
             }
         }
 
-        public void ApplyTransform(Func<VertexPositionNormalTexture, VertexPositionNormalTexture> transform){
+        public new void ApplyTransform(Func<VertexPositionNormalTexture, VertexPositionNormalTexture> transform, bool applySynchronously = false){
             for (int i = 0; i < _verticies.Length; i++){
                 _verticies[i] = transform.Invoke(_verticies[i]);
             }
@@ -181,7 +181,7 @@ namespace Forge.Framework.Draw{
                     objectData.Verticies[i] = _verticies[offset + i];
                 }
             }
-            SetVertexBufferData(_verticies);
+            SetVertexBufferData(_verticies, applySynchronously);
         }
 
         public bool Contains(IEquatable<TIdentifier> identifier){
