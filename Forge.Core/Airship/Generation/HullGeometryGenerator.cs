@@ -616,41 +616,17 @@ namespace Forge.Core.Airship.Generation{
 
                         var horizontalDistances = new float[hullMesh.GetLength(0),hullMesh.GetLength(1)];
 
-                        //oh god this hack is so ugly.
-                        //this happens because this function is called twice, and each time it's called the "front" vertex
-                        //is at a different side of the array. In order for this mirroring to work, we have to iterate in
-                        //the opposite direction for one of the buffers
-
-                        //we may find out this hack isnt even needed depending how the final mesh is to be parameterized
-                        bool reverseVertexIteration = hullMesh[0, 0].X == 0;
-
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
-                            if (!reverseVertexIteration){
-                                for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1) - 1; vertexIdx++){
-                                    /*
-                                    horizontalDistances[layerIdx, vertexIdx] =
-                                        Vector3.Distance
-                                            (
-                                                hullMesh[layerIdx, vertexIdx],
-                                                hullMesh[layerIdx, vertexIdx + 1]
-                                            );
-                                     */
-                                    horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx + 1].X);
-                                }
-                            }
-                            else{
-                                for (int vertexIdx = hullMesh.GetLength(1) - 1; vertexIdx > 0; vertexIdx--){
-                                    /*
-                                    horizontalDistances[layerIdx, vertexIdx] =
-                                        Vector3.Distance
-                                            (
-                                                hullMesh[layerIdx, vertexIdx],
-                                                hullMesh[layerIdx, vertexIdx - 1]
-                                            );
-                                     
-                                     */
-                                    horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx - 1].X);
-                                }
+                            for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1) - 1; vertexIdx++){
+                                /*
+                                horizontalDistances[layerIdx, vertexIdx] =
+                                    Vector3.Distance
+                                        (
+                                            hullMesh[layerIdx, vertexIdx],
+                                            hullMesh[layerIdx, vertexIdx + 1]
+                                        );
+                                 */
+                                horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx + 1].X);
                             }
                         }
                         //float _texCoordXMulti = _hullTextureTilingSize / length;
@@ -659,32 +635,17 @@ namespace Forge.Core.Airship.Generation{
                         var texCoords = new Vector2[hullMesh.GetLength(0),hullMesh.GetLength(1)];
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
                             float distSum = 0;
-                            if (!reverseVertexIteration){
-                                for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1); vertexIdx++){
-                                    Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
+                            for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1); vertexIdx++){
+                                Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
 
-                                    texCoords[layerIdx, vertexIdx] = new Vector2
-                                        (
-                                        vertPos.X/(_hullTextureTilingSize),
-                                        Math.Abs(vertPos.Y/(_hullTextureTilingSize))
-                                        );
-                                    distSum += horizontalDistances[layerIdx, vertexIdx];
-                                }
-                            }
-                            else{
-                                for (int vertexIdx = hullMesh.GetLength(1) - 1; vertexIdx >= 0; vertexIdx--){
-                                    Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
-
-                                    texCoords[layerIdx, vertexIdx] = new Vector2
-                                        (
-                                        vertPos.X/(_hullTextureTilingSize),
-                                        Math.Abs(vertPos.Y/_hullTextureTilingSize)
-                                        );
-                                    distSum += horizontalDistances[layerIdx, vertexIdx];
-                                }
+                                texCoords[layerIdx, vertexIdx] = new Vector2
+                                    (
+                                    vertPos.X/(_hullTextureTilingSize),
+                                    Math.Abs(vertPos.Y/(_hullTextureTilingSize))
+                                    );
+                                distSum += horizontalDistances[layerIdx, vertexIdx];
                             }
                         }
-
 
                         //take the 2d array of vertexes and 2d array of normals and stick them in the vertexpositionnormaltexture[]
                         MeshHelper.ConvertMeshToVertList
