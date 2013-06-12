@@ -1,37 +1,39 @@
-float4x4 World;
-float4x4 View;
-float4x4 Projection;
-float TextureScalingFactor;
-float4 AmbientColor;
-float AmbientIntensity;
-float4x4 WorldInverseTranspose;
-float3 DiffuseLightDirection = float3(1, 1, 0);
-float4 DiffuseColor = float4(1, 1, 1, 1);
-float DiffuseIntensity;
+float4x4 mtx_World;
+float4x4 mtx_View;
+float4x4 mtx_Projection;
+float4x4 mtx_WorldInverseTranspose;
+
+float3 f3_DiffuseLightDirection = float3(1, 1, 0);
+float4 f4_AmbientColor;
+float4 f4_DiffuseColor = float4(1, 1, 1, 1);
+
+float f_TextureScalingFactor;
+float f_DiffuseIntensity;
+float f_AmbientIntensity;
 
 ////constant textures
-texture GrassTexture;
-texture DirtTexture;
-texture RockTexture;
-texture IceTexture;
-texture TreeTexture;
-texture TreeBumpTexture;
-texture RockBumpTexture;
-texture SnowBumpTexture;
+texture tex_GrassTexture;
+texture tex_DirtTexture;
+texture tex_RockTexture;
+texture tex_IceTexture;
+texture tex_TreeTexture;
+texture tex_TreeNormalTexture;
+texture tex_RockNormalTexture;
+texture tex_SnowNormalTexture;
 
 ////dynamic textures
-texture NormalMapTexture;
-texture BinormalMapTexture;
-texture TangentMapTexture;
+texture tex_Normalmap;
+texture tex_Binormalmap;
+texture tex_Tangentmap;
 
-texture TerrainCanvasTexture;
-texture InorganicCanvasTexture;
-texture FoliageCanvasTexture;
-texture TreeCanvasTexture;
+texture tex_TerrainCanvasTexture;
+texture tex_InorganicCanvasTexture;
+texture tex_FoliageCanvasTexture;
+texture tex_TreeCanvasTexture;
 
 
-sampler2D GrassSamp = sampler_state {
-    Texture = (GrassTexture);
+sampler2D samp_GrassMaterial = sampler_state {
+    Texture = <tex_GrassTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -39,8 +41,8 @@ sampler2D GrassSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D DirtSamp = sampler_state {
-    Texture = (DirtTexture);
+sampler2D samp_DirtMaterial = sampler_state {
+    Texture = <tex_DirtTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -48,8 +50,8 @@ sampler2D DirtSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D RockSamp = sampler_state {
-    Texture = (RockTexture);
+sampler2D samp_RockMaterial = sampler_state {
+    Texture = <tex_RockTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -57,8 +59,8 @@ sampler2D RockSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D IceSamp = sampler_state {
-    Texture = (IceTexture);
+sampler2D samp_IceMaterial = sampler_state {
+    Texture = <tex_IceTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -66,8 +68,8 @@ sampler2D IceSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D TreeSamp = sampler_state {
-    Texture = (TreeTexture);
+sampler2D samp_TreeMaterial = sampler_state {
+    Texture = <tex_TreeTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -75,8 +77,8 @@ sampler2D TreeSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D TreeBumpSamp = sampler_state {
-    Texture = (TreeBumpTexture);
+sampler2D samp_TreeNormalmap = sampler_state {
+    Texture = <tex_TreeNormalTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -84,8 +86,8 @@ sampler2D TreeBumpSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D RockBumpSamp = sampler_state {
-    Texture = (RockBumpTexture);
+sampler2D samp_RockNormalmap = sampler_state {
+    Texture = <tex_RockNormalTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -93,8 +95,8 @@ sampler2D RockBumpSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D SnowBumpSamp = sampler_state {
-    Texture = (SnowBumpTexture);
+sampler2D samp_SnowNormalmap = sampler_state {
+    Texture = <tex_SnowNormalTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -102,8 +104,8 @@ sampler2D SnowBumpSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D NormalSamp = sampler_state {
-    Texture = (NormalMapTexture);
+sampler2D samp_TerrainNormalmap = sampler_state {
+    Texture = <tex_Normalmap>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -111,8 +113,8 @@ sampler2D NormalSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D BinormalSamp = sampler_state {
-    Texture = (BinormalMapTexture);
+sampler2D samp_TerrainBinormalmap = sampler_state {
+    Texture = <tex_Binormalmap>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -120,8 +122,8 @@ sampler2D BinormalSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D TangentSamp = sampler_state {
-    Texture = (TangentMapTexture);
+sampler2D samp_TerrainTangentmap = sampler_state {
+    Texture = <tex_Tangentmap>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -129,8 +131,8 @@ sampler2D TangentSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D TerrainSamp = sampler_state {
-    Texture = (TerrainCanvasTexture);
+sampler2D samp_TerrainCanvas = sampler_state {
+    Texture = <tex_TerrainCanvasTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -138,8 +140,8 @@ sampler2D TerrainSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D InorganicSamp = sampler_state {
-    Texture = (InorganicCanvasTexture);
+sampler2D samp_InorganicCanvas = sampler_state {
+    Texture = <tex_InorganicCanvasTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -147,8 +149,8 @@ sampler2D InorganicSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D FoliageSamp = sampler_state {
-    Texture = (FoliageCanvasTexture);
+sampler2D samp_FoliageCanvas = sampler_state {
+    Texture = <tex_FoliageCanvasTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -156,8 +158,8 @@ sampler2D FoliageSamp = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D TreeCanvSamp = sampler_state {
-    Texture = (TreeCanvasTexture);
+sampler2D samp_TreeCanvas = sampler_state {
+    Texture = <tex_TreeCanvasTexture>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Clamp;
@@ -183,10 +185,10 @@ struct VertexShaderOutput
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-	float4x4 WorldInverseTranspose = transpose(World);
-    float4 worldPosition = mul(input.Position, World);
-    float4 viewPosition = mul(worldPosition, View);
-    output.Position = mul(viewPosition, Projection);
+	float4x4 mtx_WorldInverseTranspose = transpose(mtx_World);
+    float4 mtx_WorldPosition = mul(input.Position, mtx_World);
+    float4 mtx_ViewPosition = mul(mtx_WorldPosition, mtx_View);
+    output.Position = mul(mtx_ViewPosition, mtx_Projection);
     output.TextureCoordinate = input.TextureCoordinate;
 
     return output;
@@ -200,17 +202,17 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	/////////////
 	//COLORING///
 	/////////////
-    float4 terrainCanvas = tex2D(TerrainSamp, input.TextureCoordinate);
+    float4 terrainCanvas = tex2D(samp_TerrainCanvas, input.TextureCoordinate);
 
-	float4 inorganicCanvas = tex2D(InorganicSamp, input.TextureCoordinate);
-	float4 foliageCanvas   = tex2D(FoliageSamp,   input.TextureCoordinate);
-	float4 treeCanvas      = tex2D(TreeCanvSamp,  input.TextureCoordinate);
+	float4 inorganicCanvas = tex2D(samp_InorganicCanvas, input.TextureCoordinate);
+	float4 foliageCanvas   = tex2D(samp_FoliageCanvas,   input.TextureCoordinate);
+	float4 treeCanvas      = tex2D(samp_TreeCanvas,  input.TextureCoordinate);
 
-	float4 dirtColor  = tex2D(DirtSamp,  input.TextureCoordinate*TextureScalingFactor);
-	float4 rockColor  = tex2D(RockSamp,  input.TextureCoordinate*TextureScalingFactor);
-	float4 iceColor   = tex2D(IceSamp,   input.TextureCoordinate*TextureScalingFactor);
-	float4 grassColor = tex2D(GrassSamp, input.TextureCoordinate*TextureScalingFactor);
-	float4 treeTColor = tex2D(TreeSamp,  input.TextureCoordinate*TextureScalingFactor);
+	float4 dirtColor  = tex2D(samp_DirtMaterial,  input.TextureCoordinate*f_TextureScalingFactor);
+	float4 rockColor  = tex2D(samp_RockMaterial,  input.TextureCoordinate*f_TextureScalingFactor);
+	float4 iceColor   = tex2D(samp_IceMaterial,   input.TextureCoordinate*f_TextureScalingFactor);
+	float4 grassColor = tex2D(samp_GrassMaterial, input.TextureCoordinate*f_TextureScalingFactor);
+	float4 treeTColor = tex2D(samp_TreeMaterial,  input.TextureCoordinate*f_TextureScalingFactor);
 
 	float4 inorganicColor = rockColor   * inorganicCanvas.r + iceColor * inorganicCanvas.g + 0 * inorganicCanvas.b;
 	float4 foliageColor   = grassColor  * foliageCanvas.r   + 0 * foliageCanvas.g          + 0 * foliageCanvas.b;
@@ -222,10 +224,10 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	/////////////
 	///SHADING///
 	/////////////
-	float3 normal = tex2D(NormalSamp, input.TextureCoordinate);
-	float3 treeBump = tex2D(TreeBumpSamp, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
-	float3 rockBump = tex2D(RockBumpSamp, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
-	float3 snowBump = tex2D(SnowBumpSamp, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
+	float3 normal = tex2D(samp_TerrainNormalmap, input.TextureCoordinate);
+	float3 treeBump = tex2D(samp_TreeNormalmap, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
+	float3 rockBump = tex2D(samp_RockNormalmap, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
+	float3 snowBump = tex2D(samp_SnowNormalmap, input.TextureCoordinate * 4) - (0.5, 0.5, 0.5);
 	
 	float rockContrib, iceContrib;
 	
@@ -253,8 +255,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	
 	float4 pixelColor = rockColor*rockContrib+iceColor*iceContrib;
 	
-	float3 tangent = tex2D(TangentSamp, input.TextureCoordinate);
-	float3 binormal = tex2D(BinormalSamp, input.TextureCoordinate);
+	float3 tangent = tex2D(samp_TerrainTangentmap, input.TextureCoordinate);
+	float3 binormal = tex2D(samp_TerrainBinormalmap, input.TextureCoordinate);
 
 	//float3 treeNormal = (treeBump.x * tangent + treeBump.y * binormal) * terrainCanvas.b;
 	float3 rockNormal = (rockBump.x * tangent + rockBump.y * binormal) * rockContrib/8;
@@ -263,8 +265,8 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	normal += (rockNormal);
 	normalize(normal);
 
-    float diffuseQuantity = dot(normalize(DiffuseLightDirection), normal) * DiffuseIntensity;
-	float ambientQuantity = AmbientIntensity * AmbientColor;
+    float diffuseQuantity = dot(normalize(f3_DiffuseLightDirection), normal) * f_DiffuseIntensity;
+	float ambientQuantity = f_AmbientIntensity * f4_AmbientColor;
 
 	float4 diffuseContribution = (pixelColor) *(diffuseQuantity);
 	float4 ambientContribution = (pixelColor) *(ambientQuantity);

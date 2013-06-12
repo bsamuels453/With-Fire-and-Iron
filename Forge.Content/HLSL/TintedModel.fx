@@ -1,8 +1,8 @@
-float4x4 World;
-float4x4 View;
-float4x4 Projection;
-float4 TintColor;
-float4x4 WorldInverseTranspose;
+float4x4 mtx_World;
+float4x4 mtx_View;
+float4x4 mtx_Projection;
+float4x4 mtx_WorldInverseTranspose;
+float4 f4_TintColor;
 
 ////////////////////////////////////////////
 /////////////////VERTEX SHADER//////////////
@@ -22,12 +22,12 @@ struct VertexShaderOutput
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-	float4x4 WorldInverseTranspose = transpose(World);
-    float4 worldPosition = mul(input.Position, World);
-    float4 viewPosition = mul(worldPosition, View);
-    output.Position = mul(viewPosition, Projection);
+	float4x4 mtx_WorldInverseTranspose = transpose(mtx_World);
+    float4 worldPosition = mul(input.Position, mtx_World);
+    float4 viewPosition = mul(worldPosition, mtx_View);
+    output.Position = mul(viewPosition, mtx_Projection);
 
-    float4 normal = mul(input.Normal, WorldInverseTranspose);
+    float4 normal = mul(input.Normal, mtx_WorldInverseTranspose);
 	normal = normalize(normal);
 
     output.Normal = normal;
@@ -40,7 +40,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 ////////////////////////////////////////////
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-	float4 textureColor = TintColor;
+	float4 textureColor = f4_TintColor;
 	textureColor.a = 1;
 	return textureColor;
 }

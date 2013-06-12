@@ -51,9 +51,9 @@ namespace Forge.Framework.Draw{
                         part.Effect = _shader;
                     }
                     foreach (var effect in mesh.Effects){
-                        effect.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
-                        effect.Parameters["World"].SetValue(obj.Transform*_globalTransform);
-                        effect.Parameters["View"].SetValue(viewMatrix);
+                        effect.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
+                        effect.Parameters["mtx_World"].SetValue(obj.Transform*_globalTransform);
+                        effect.Parameters["mtx_View"].SetValue(viewMatrix);
                     }
                     mesh.Draw();
                 }

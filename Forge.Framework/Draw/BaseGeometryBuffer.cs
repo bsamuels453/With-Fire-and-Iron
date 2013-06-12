@@ -53,8 +53,8 @@ namespace Forge.Framework.Draw{
             }
             ShaderName = shader;
             Resource.LoadShader(shader, out Shader);
-            Shader.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
-            Shader.Parameters["World"].SetValue(Matrix.Identity);
+            Shader.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
+            Shader.Parameters["mtx_World"].SetValue(Matrix.Identity);
 
             RenderTarget.Buffers.Add(this);
         }
@@ -80,8 +80,8 @@ namespace Forge.Framework.Draw{
 
         public void Draw(Matrix viewMatrix){
             if (Enabled){
-                Shader.Parameters["View"].SetValue(viewMatrix);
-                Shader.Parameters["World"].SetValue(BaseWorldTransform);
+                Shader.Parameters["mtx_View"].SetValue(viewMatrix);
+                Shader.Parameters["mtx_World"].SetValue(BaseWorldTransform);
                 Resource.Device.RasterizerState = Rasterizer;
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){
