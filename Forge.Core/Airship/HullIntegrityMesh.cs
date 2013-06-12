@@ -61,14 +61,14 @@ namespace Forge.Core.Airship{
 
                 collisionObjects.Add
                     (new ProjectilePhysics.CollisionObject
-                        (cSection.Uid, new[]{
+                        (cSection.GetHashCode(), new[]{
                             cSection.AliasedVertexes[0],
                             cSection.AliasedVertexes[1],
                             cSection.AliasedVertexes[2]
                         }));
                 collisionObjects.Add
                     (new ProjectilePhysics.CollisionObject
-                        (cSection.Uid, new[]{
+                        (cSection.GetHashCode(), new[]{
                             cSection.AliasedVertexes[3],
                             cSection.AliasedVertexes[4],
                             cSection.AliasedVertexes[5]
