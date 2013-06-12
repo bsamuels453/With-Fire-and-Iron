@@ -12,52 +12,37 @@ namespace Forge.Core.Airship.Data{
     /// </summary>
     [ProtoContract]
     public class HullSection{
-        public HullSection(Vector3[] aliasedVertexes, Vector2[] damagemapCoords, int deck, Quadrant.Side side, int yPanel){
-            AliasedVertexes = aliasedVertexes;
-            Deck = deck;
-            Side = side;
-            YPanel = yPanel;
-            DamagemapCoords = damagemapCoords;
-        }
-
-        public HullSection(){
-        }
-
         /// <summary>
         /// The 4 vertexes that make up this hull plate. These are referred to as aliased vertexes because
         /// occasionally a hull plate will consist of more than one quad, and may have subquads or holes in it.
         /// While the aliasedVertexes will always stay the same no matter what the contents of the hullSection is,
         /// it's important to remember that they only represent where the plane on which the geometry lies.
         /// </summary>
-        [ProtoMember(1)]
-        public Vector3[] AliasedVertexes { get; private set; }
+        [ProtoMember(1)] public readonly Vector3[] AliasedVertexes;
 
         /// <summary>
         /// This field represents the texture coordinates of this hull section on the damagemap texture.
         /// </summary>
-        [ProtoMember(2)]
-        public Vector2[] DamagemapCoords { get; private set; }
-
-        /// <summary>
-        /// The deck that this hullsection exists on.
-        /// </summary>
-        [ProtoMember(3)]
-        public int Deck { get; private set; }
-
-        /// <summary>
-        /// The vertical panel id of this hullSection. Each deck has its own yPanel set.
-        /// </summary>
-        [ProtoMember(4)]
-        public int YPanel { get; private set; }
+        [ProtoMember(2)] public readonly Vector2[] DamagemapCoords;
 
         /// <summary>
         /// The side of the airship this panel is on.
         /// </summary>
-        [ProtoMember(5)]
-        public Quadrant.Side Side { get; private set; }
+        [ProtoMember(3)] public readonly Quadrant.Side Side;
+
+        public HullSection(Vector3[] aliasedVertexes, Vector2[] damagemapCoords, Quadrant.Side side){
+            AliasedVertexes = aliasedVertexes;
+            Side = side;
+            DamagemapCoords = damagemapCoords;
+        }
+
+        public HullSection(){
+        }
 
         public override int GetHashCode(){
-            return 0;
+            //the top left of each hullsection is garaunteed to be different for each section
+            int hash = (int) ((DamagemapCoords[0].X*1000) + (DamagemapCoords[0].Y*1000000));
+            return hash;
         }
     }
 }
