@@ -4,5 +4,6 @@
 	"f_DiffuseIntensity": "0.8",
 	"f_AmbientIntensity": "0.2",
 	"tex_Material": "Materials/Planks",
+	"tex_Normalmap": "Materials/PlankNormals",
 	"Shader": "HLSL/HullShader"
 }
