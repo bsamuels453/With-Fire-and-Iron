@@ -892,6 +892,34 @@ namespace Forge.Core.Airship.Generation{
         static HullSectionContainer GenerateHullSections(ObjectBuffer<int>[] buffers){
             var ret = new List<HullSection>();
 
+            foreach (var buffer in buffers){
+                var objData = buffer.DumpObjectData();
+                for (int side = 0; side < 2; side++){
+                    var verts = objData[side].Verticies;
+
+                    for (int vertIdx = 0; vertIdx < verts.Length; vertIdx += 4){
+                        ret.Add
+                            (new HullSection
+                                (
+                                new Vector3[]{
+                                    verts[vertIdx].Position,
+                                    verts[vertIdx + 1].Position,
+                                    verts[vertIdx + 2].Position,
+                                    verts[vertIdx + 3].Position
+                                },
+                                new Vector2[]{
+                                    verts[vertIdx].TextureCoordinate,
+                                    verts[vertIdx + 1].TextureCoordinate,
+                                    verts[vertIdx + 2].TextureCoordinate,
+                                    verts[vertIdx + 3].TextureCoordinate
+                                },
+                                (Quadrant.Side) side
+                                )
+                            );
+                    }
+                }
+            }
+
             #region old section generation code that might be useful eventually
 
             /*
