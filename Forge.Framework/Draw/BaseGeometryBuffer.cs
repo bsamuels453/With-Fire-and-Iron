@@ -97,7 +97,7 @@ namespace Forge.Framework.Draw{
         #endregion
 
         protected void SetIndexBufferData(int[] data, bool updateSynchronously = false){
-            if (updateSynchronously) {
+            if (updateSynchronously){
                 _baseIndexBuffer.SetData(data);
             }
             else{
@@ -113,8 +113,8 @@ namespace Forge.Framework.Draw{
             }
         }
 
-        protected void SetVertexBufferData(T[] data, bool updateSynchronously = false) {
-            if (updateSynchronously) {
+        protected void SetVertexBufferData(T[] data, bool updateSynchronously = false){
+            if (updateSynchronously){
                 _baseVertexBuffer.SetData(data);
             }
             else{
@@ -128,7 +128,6 @@ namespace Forge.Framework.Draw{
                      });
                 RenderTarget.AddAsynchronousBufferUpdate(update);
             }
-
         }
 
         /// <summary>
@@ -145,7 +144,7 @@ namespace Forge.Framework.Draw{
         /// Gets the data currently stored in the vertex buffer. WILL NOT ACCOUNT FOR ASYNCHRONOUS BUFFER UPDATES THAT ARE NOT COMPLETED.
         /// </summary>
         /// <returns></returns>
-        protected T[] DumpVertexBuffer() {
+        protected T[] DumpVertexBuffer(){
             var data = new T[_numIndicies];
             _baseVertexBuffer.GetData(data);
             return data;
