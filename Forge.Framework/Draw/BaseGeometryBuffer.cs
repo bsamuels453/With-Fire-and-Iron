@@ -131,6 +131,26 @@ namespace Forge.Framework.Draw{
 
         }
 
+        /// <summary>
+        /// Gets the data currently stored in the index buffer. WILL NOT ACCOUNT FOR ASYNCHRONOUS BUFFER UPDATES THAT ARE NOT COMPLETED.
+        /// </summary>
+        /// <returns></returns>
+        protected int[] DumpIndexBuffer(){
+            var data = new int[_numIndicies];
+            _baseIndexBuffer.GetData(data);
+            return data;
+        }
+
+        /// <summary>
+        /// Gets the data currently stored in the vertex buffer. WILL NOT ACCOUNT FOR ASYNCHRONOUS BUFFER UPDATES THAT ARE NOT COMPLETED.
+        /// </summary>
+        /// <returns></returns>
+        protected T[] DumpVertexBuffer() {
+            var data = new T[_numIndicies];
+            _baseVertexBuffer.GetData(data);
+            return data;
+        }
+
         ~BaseGeometryBuffer(){
             if (!_disposed)
                 throw new ResourceNotDisposedException();
