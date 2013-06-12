@@ -422,18 +422,53 @@ namespace Forge.Core.Airship.Generation{
                 var vertli = new List<VertexPositionNormalTexture>();
                 for (int i = 0; i < verts.Count; i += 4){
                     vertli.Clear();
-                    vertli.Add(new VertexPositionNormalTexture(verts[i], Vector3.Up, new Vector2(0, 0)));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 1], Vector3.Up, new Vector2(1, 0)));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 2], Vector3.Up, new Vector2(1, 1)));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 3], Vector3.Up, new Vector2(0, 1)));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i], Vector3.Up, 
+                        new Vector2(
+                        verts[i].X / _deckTextureTilingSize,
+                        verts[i].Z/ _deckTextureTilingSize
+                        )));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i + 1], Vector3.Up, 
+                        new Vector2(
+                            verts[i + 1].X / _deckTextureTilingSize,
+                            verts[i + 1].Z / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i + 2], Vector3.Up, 
+                        new Vector2(
+                            verts[i+2].X/ _deckTextureTilingSize,
+                            verts[i + 2].Z/ _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i + 3], Vector3.Up, 
+                        new Vector2(
+                            verts[i + 3].X / _deckTextureTilingSize,
+                            verts[i + 3].Z / _deckTextureTilingSize
+                            )));
                     buff.AddObject(nullidentifier, (int[]) idxWinding.Clone(), vertli.ToArray());
                     //reflect across Z axis
                     vertli.Clear();
                     var reflectVector = new Vector3(1, 1, -1);
-                    vertli.Add(new VertexPositionNormalTexture(verts[i]*reflectVector, Vector3.Up, new Vector2(0, 0)));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 1]*reflectVector, Vector3.Up, new Vector2(1, 0)));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 2]*reflectVector, Vector3.Up, new Vector2(1, 1)));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 3]*reflectVector, Vector3.Up, new Vector2(0, 1)));
+                    var v1 = verts[i] * reflectVector;
+                    var v2 = verts[i+1] * reflectVector;
+                    var v3 = verts[i+2] * reflectVector;
+                    var v4 = verts[i+3] * reflectVector;
+                    vertli.Add(new VertexPositionNormalTexture(verts[i]*reflectVector, Vector3.Up, 
+                        new Vector2(
+                            v1.X/_deckTextureTilingSize,
+                            v1.Z / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i + 1]*reflectVector, Vector3.Up, 
+                        new Vector2(
+                            v2.X / _deckTextureTilingSize,
+                            v2.Z / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i + 2]*reflectVector, Vector3.Up, 
+                        new Vector2(
+                            v3.X / _deckTextureTilingSize,
+                            v3.Z / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(verts[i + 3]*reflectVector, Vector3.Up, new Vector2(
+                        v4.X / _deckTextureTilingSize,
+                        v4.Z / _deckTextureTilingSize
+                        )));
                     buff.AddObject(nullidentifier, (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
 
