@@ -533,7 +533,6 @@ namespace Forge.Core.Airship.Generation{
                                 (vertsInSilhouette/2),
                                 ref hullMesh, sVerts);
 
-                        int f = 5;
                         //Now we need to assign the real texcoords.
                         //We have to loop through the mesh in an awkward way in order to make it so the 
                         //hull texture's edge meets at the bottom of airship perfectly.
