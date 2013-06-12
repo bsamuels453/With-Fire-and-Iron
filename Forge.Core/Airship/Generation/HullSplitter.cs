@@ -19,6 +19,13 @@ namespace Forge.Core.Airship.Generation{
         static Quadrant.Side _side;
         static float _boxWidth;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="boundingWidth"></param>
+        /// <param name="verts">2d strip of geometry enumerated in 1d array</param>
+        /// <param name="deck"></param>
+        /// <returns></returns>
         public static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
             SplitLayerGeometry(float boundingWidth, VertexPositionNormalTexture[] verts, int deck){
             if (verts[1].Position.Z > 0){
