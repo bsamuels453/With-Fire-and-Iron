@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
@@ -44,17 +45,26 @@ namespace Forge.Framework.Draw{
             set { BaseWorldTransform = value; }
         }
 
+        public CullMode CullMode{
+            set { Rasterizer = new RasterizerState{CullMode = value}; }
+        }
+
+        public void ApplyTransform(Func<T, T> transform, bool updateSynchronously = false){
+            var vertData = base.DumpVertexBuffer();
+            for (int i = 0; i < vertData.Length; i++){
+                vertData[i] = transform.Invoke(vertData[i]);
+            }
+            SetVertexBufferData(vertData, updateSynchronously);
+        }
+
         public new void SetIndexBufferData(int[] data, bool updateSynchronously = false){
             base.SetIndexBufferData(data, updateSynchronously);
         }
 
-        public new void SetVertexBufferData(T[] data, bool updateSynchronously = false) {
+        public new void SetVertexBufferData(T[] data, bool updateSynchronously = false){
             base.SetVertexBufferData(data, updateSynchronously);
         }
 
-        public CullMode CullMode{
-            set { Rasterizer = new RasterizerState{CullMode = value}; }
-        }
         /*
         public T[] DumpVerticies(){
             T[] data = new T[BaseVertexBuffer.VertexCount];
@@ -68,6 +78,7 @@ namespace Forge.Framework.Draw{
             return data;
         }
          */
+
         public void Translate(Vector3 diff){
             _position += diff;
             UpdateWorldTransform();
