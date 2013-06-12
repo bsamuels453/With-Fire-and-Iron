@@ -25,7 +25,7 @@ namespace Forge.Core.Airship.Generation{
         const int _horizontalPrimDivisor = 2;
         const float _deckHeight = 2.13f;
         const float _bBoxWidth = 0.5f;
-        const float _hullTextureTilingSize = 1f;
+        const float _hullTextureTilingSize = 4f;
 
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
