@@ -551,25 +551,34 @@ namespace Forge.Core.Airship.Generation{
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
                             if (!reverseVertexIteration){
                                 for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1) - 1; vertexIdx++){
+                                    /*
                                     horizontalDistances[layerIdx, vertexIdx] =
                                         Vector3.Distance
                                             (
                                                 hullMesh[layerIdx, vertexIdx],
                                                 hullMesh[layerIdx, vertexIdx + 1]
                                             );
+                                     */
+                                    horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx + 1].X);
                                 }
                             }
                             else{
                                 for (int vertexIdx = hullMesh.GetLength(1) - 1; vertexIdx > 0; vertexIdx--){
+                                    /*
                                     horizontalDistances[layerIdx, vertexIdx] =
                                         Vector3.Distance
                                             (
                                                 hullMesh[layerIdx, vertexIdx],
                                                 hullMesh[layerIdx, vertexIdx - 1]
                                             );
+                                     
+                                     */
+                                    horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx - 1].X);
                                 }
                             }
                         }
+                        //float _texCoordXMulti = _hullTextureTilingSize / length;
+                        //float _texCoordYMulti = _hullTextureTilingSize / length;
 
                         var texCoords = new Vector2[hullMesh.GetLength(0),hullMesh.GetLength(1)];
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
@@ -580,8 +589,8 @@ namespace Forge.Core.Airship.Generation{
 
                                     texCoords[layerIdx, vertexIdx] = new Vector2
                                         (
-                                        _hullTextureTilingSize/distSum,
-                                        _hullTextureTilingSize/vertPos.Y
+                                        vertPos.X/(_hullTextureTilingSize),
+                                        Math.Abs(vertPos.Y/(_hullTextureTilingSize))
                                         );
                                     distSum += horizontalDistances[layerIdx, vertexIdx];
                                 }
@@ -592,8 +601,8 @@ namespace Forge.Core.Airship.Generation{
 
                                     texCoords[layerIdx, vertexIdx] = new Vector2
                                         (
-                                        _hullTextureTilingSize/distSum,
-                                        _hullTextureTilingSize/vertPos.Y
+                                        vertPos.X/(_hullTextureTilingSize),
+                                        Math.Abs(vertPos.Y/_hullTextureTilingSize)
                                         );
                                     distSum += horizontalDistances[layerIdx, vertexIdx];
                                 }
