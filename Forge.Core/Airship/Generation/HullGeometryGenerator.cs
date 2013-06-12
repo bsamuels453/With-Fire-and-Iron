@@ -59,21 +59,23 @@ namespace Forge.Core.Airship.Generation{
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
 
             //reflect everything around the X axis
-            foreach (var buffer in hullBuffResults.Item1){
+            foreach (var buffer in hullBuffResults){
                 buffer.ApplyTransform
-                    ((vert) =>{
+                    (vert =>{
                          vert.Position.X *= -1;
                          return vert;
-                     }
+                     },
+                        true
                     );
             }
 
             foreach (var buffer in deckFloorBuffers){
                 buffer.ApplyTransform
-                    ((vert) =>{
+                    (vert =>{
                          vert.Position.X *= -1;
                          return vert;
-                     }
+                     },
+                        true
                     );
             }
 
@@ -89,7 +91,7 @@ namespace Forge.Core.Airship.Generation{
                 }
             }
 
-            var hullSections = GenerateHullSections(hullBuffResults.Item2, hullBuffResults.Item1);
+            var hullSections = GenerateHullSections(hullBuffResults);
 
             var resultant = new HullGeometryInfo();
             resultant.CenterPoint = normalGenResults.Centroid*reflectionVector;
@@ -422,53 +424,77 @@ namespace Forge.Core.Airship.Generation{
                 var vertli = new List<VertexPositionNormalTexture>();
                 for (int i = 0; i < verts.Count; i += 4){
                     vertli.Clear();
-                    vertli.Add(new VertexPositionNormalTexture(verts[i], Vector3.Up, 
-                        new Vector2(
-                        verts[i].X / _deckTextureTilingSize,
-                        verts[i].Z/ _deckTextureTilingSize
-                        )));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 1], Vector3.Up, 
-                        new Vector2(
-                            verts[i + 1].X / _deckTextureTilingSize,
-                            verts[i + 1].Z / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 2], Vector3.Up, 
-                        new Vector2(
-                            verts[i+2].X/ _deckTextureTilingSize,
-                            verts[i + 2].Z/ _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 3], Vector3.Up, 
-                        new Vector2(
-                            verts[i + 3].X / _deckTextureTilingSize,
-                            verts[i + 3].Z / _deckTextureTilingSize
-                            )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i], Vector3.Up,
+                                new Vector2
+                                    (
+                                    verts[i].X/_deckTextureTilingSize,
+                                    verts[i].Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i + 1], Vector3.Up,
+                                new Vector2
+                                    (
+                                    verts[i + 1].X/_deckTextureTilingSize,
+                                    verts[i + 1].Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i + 2], Vector3.Up,
+                                new Vector2
+                                    (
+                                    verts[i + 2].X/_deckTextureTilingSize,
+                                    verts[i + 2].Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i + 3], Vector3.Up,
+                                new Vector2
+                                    (
+                                    verts[i + 3].X/_deckTextureTilingSize,
+                                    verts[i + 3].Z/_deckTextureTilingSize
+                                    )));
                     buff.AddObject(nullidentifier, (int[]) idxWinding.Clone(), vertli.ToArray());
                     //reflect across Z axis
                     vertli.Clear();
                     var reflectVector = new Vector3(1, 1, -1);
-                    var v1 = verts[i] * reflectVector;
-                    var v2 = verts[i+1] * reflectVector;
-                    var v3 = verts[i+2] * reflectVector;
-                    var v4 = verts[i+3] * reflectVector;
-                    vertli.Add(new VertexPositionNormalTexture(verts[i]*reflectVector, Vector3.Up, 
-                        new Vector2(
-                            v1.X/_deckTextureTilingSize,
-                            v1.Z / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 1]*reflectVector, Vector3.Up, 
-                        new Vector2(
-                            v2.X / _deckTextureTilingSize,
-                            v2.Z / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 2]*reflectVector, Vector3.Up, 
-                        new Vector2(
-                            v3.X / _deckTextureTilingSize,
-                            v3.Z / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(verts[i + 3]*reflectVector, Vector3.Up, new Vector2(
-                        v4.X / _deckTextureTilingSize,
-                        v4.Z / _deckTextureTilingSize
-                        )));
+                    var v1 = verts[i]*reflectVector;
+                    var v2 = verts[i + 1]*reflectVector;
+                    var v3 = verts[i + 2]*reflectVector;
+                    var v4 = verts[i + 3]*reflectVector;
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i]*reflectVector, Vector3.Up,
+                                new Vector2
+                                    (
+                                    v1.X/_deckTextureTilingSize,
+                                    v1.Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i + 1]*reflectVector, Vector3.Up,
+                                new Vector2
+                                    (
+                                    v2.X/_deckTextureTilingSize,
+                                    v2.Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i + 2]*reflectVector, Vector3.Up,
+                                new Vector2
+                                    (
+                                    v3.X/_deckTextureTilingSize,
+                                    v3.Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (verts[i + 3]*reflectVector, Vector3.Up, new Vector2
+                                (
+                                v4.X/_deckTextureTilingSize,
+                                v4.Z/_deckTextureTilingSize
+                                )));
                     buff.AddObject(nullidentifier, (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
 
@@ -478,26 +504,38 @@ namespace Forge.Core.Airship.Generation{
                     var xWidth = new Vector3(boundingBox.Max.X - boundingBox.Min.X, 0, 0);
                     var zWidth = new Vector3(0, 0, boundingBox.Max.Z - boundingBox.Min.Z);
                     vertli.Clear();
-                    vertli.Add(new VertexPositionNormalTexture(min, Vector3.Up, 
-                        new Vector2(
-                            min.X / _deckTextureTilingSize, 
-                            min.Z / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(min + xWidth, Vector3.Up, 
-                        new Vector2(
-                            (min.X + xWidth.X) / _deckTextureTilingSize, 
-                            (min.Z + xWidth.Z) / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(min + xWidth + zWidth, Vector3.Up, 
-                        new Vector2(
-                            (min.X + xWidth.X + zWidth.X) / _deckTextureTilingSize,
-                            (min.Z + xWidth.Z + zWidth.Z) / _deckTextureTilingSize
-                            )));
-                    vertli.Add(new VertexPositionNormalTexture(min + zWidth, Vector3.Up, 
-                        new Vector2(
-                            (min.X + zWidth.X) / _deckTextureTilingSize,
-                            (min.Z + zWidth.Z) / _deckTextureTilingSize
-                            )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (min, Vector3.Up,
+                                new Vector2
+                                    (
+                                    min.X/_deckTextureTilingSize,
+                                    min.Z/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (min + xWidth, Vector3.Up,
+                                new Vector2
+                                    (
+                                    (min.X + xWidth.X)/_deckTextureTilingSize,
+                                    (min.Z + xWidth.Z)/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (min + xWidth + zWidth, Vector3.Up,
+                                new Vector2
+                                    (
+                                    (min.X + xWidth.X + zWidth.X)/_deckTextureTilingSize,
+                                    (min.Z + xWidth.Z + zWidth.Z)/_deckTextureTilingSize
+                                    )));
+                    vertli.Add
+                        (new VertexPositionNormalTexture
+                            (min + zWidth, Vector3.Up,
+                                new Vector2
+                                    (
+                                    (min.X + zWidth.X)/_deckTextureTilingSize,
+                                    (min.Z + zWidth.Z)/_deckTextureTilingSize
+                                    )));
                     buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min*reflection), (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
@@ -505,23 +543,8 @@ namespace Forge.Core.Airship.Generation{
             return ret;
         }
 
-        static Tuple<ObjectBuffer<int>[], Dictionary<IEquatable<HullSectionIdentifier>, int>>
+        static ObjectBuffer<int>[]
             GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length){
-            //first thing we do is generate a dictionary that links HullSectionIdentifier and section uid
-            int estDictSize = (int) (numDecks*_primHeightPerDeck*(length/_bBoxWidth))*2;
-            var hullSectionLookup = new Dictionary<IEquatable<HullSectionIdentifier>, int>(estDictSize);
-            int id = 0;
-            for (float x = 0; x < length; x += _bBoxWidth){
-                for (int deck = 0; deck < numDecks; deck++){
-                    for (int panel = 0; panel < _primHeightPerDeck; panel++){
-                        hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Port, deck), id);
-                        id++;
-                        hullSectionLookup.Add(new HullSectionIdentifier(x, panel, Quadrant.Side.Starboard, deck), id);
-                        id++;
-                    }
-                }
-            }
-
             int vertsInSilhouette = deckSVerts[0][0].Length;
             var hullMeshBuffs = new ObjectBuffer<int>[numDecks];
             //now set up the display buffer for each deck's wall
@@ -530,7 +553,7 @@ namespace Forge.Core.Airship.Generation{
 
                 #region generateBuff
 
-                Func<int, int, List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>> generateBuff =
+                Func<int, int, Tuple<VertexPositionNormalTexture[], int[]>> generateBuff =
                     (start, end) =>{
                         var hullMesh =
                             new Vector3[
@@ -597,6 +620,8 @@ namespace Forge.Core.Airship.Generation{
                         //this happens because this function is called twice, and each time it's called the "front" vertex
                         //is at a different side of the array. In order for this mirroring to work, we have to iterate in
                         //the opposite direction for one of the buffers
+
+                        //we may find out this hack isnt even needed depending how the final mesh is to be parameterized
                         bool reverseVertexIteration = hullMesh[0, 0].X == 0;
 
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
@@ -670,11 +695,20 @@ namespace Forge.Core.Airship.Generation{
                                 ref hullVerticies
                             );
 
+                        var indicies = MeshHelper.CreateQuadIndiceArray(hullVerticies.Length/4);
+
                         if (i != deckSVerts.Length){
+                            /*
                             return
                                 HullSplitter.
                                     SplitLayerGeometry
                                     (0.5f, hullVerticies, i);
+                             */
+                            return new Tuple<VertexPositionNormalTexture[], int[]>
+                                (
+                                hullVerticies,
+                                indicies
+                                );
                         }
                         return null;
                     };
@@ -682,18 +716,22 @@ namespace Forge.Core.Airship.Generation{
 
                 #endregion
 
-                var triangles = (generateBuff(0, vertsInSilhouette/2));
-                triangles.AddRange(generateBuff(vertsInSilhouette/2, vertsInSilhouette));
+                var retTuple = (generateBuff(0, vertsInSilhouette/2));
+                var leftVerts = retTuple.Item1;
+                var leftInds = retTuple.Item2;
 
-                var buff = new ObjectBuffer<int>(triangles.Count, 1, 3, 3, "Shader_AirshipHull");
+                retTuple = generateBuff(vertsInSilhouette/2, vertsInSilhouette);
+                var rightVerts = retTuple.Item1;
+                var rightInds = retTuple.Item2;
 
-                foreach (var triangle in triangles){
-                    buff.AddObject(hullSectionLookup[triangle.Item3], triangle.Item2, triangle.Item1);
-                }
+                var buff = new ObjectBuffer<int>(2, leftInds.Length/3, leftVerts.Length, leftInds.Length, "Shader_AirshipHull");
+
+                buff.AddObject((int) Quadrant.Side.Port, leftInds, leftVerts);
+                buff.AddObject((int) Quadrant.Side.Starboard, rightInds, rightVerts);
 
                 hullMeshBuffs[i] = buff;
             }
-            return new Tuple<ObjectBuffer<int>[], Dictionary<IEquatable<HullSectionIdentifier>, int>>(hullMeshBuffs, hullSectionLookup);
+            return hullMeshBuffs;
         }
 
         static Vector3 GenerateCenterPoint(Vector3[,] totalMesh){
@@ -851,9 +889,13 @@ namespace Forge.Core.Airship.Generation{
             return ret;
         }
 
-        static HullSectionContainer GenerateHullSections(Dictionary<IEquatable<HullSectionIdentifier>, int> hullIdRef, ObjectBuffer<int>[] buffers){
-            var hullIdRefInv = hullIdRef.ToDictionary(pair => pair.Value, pair => pair.Key);
+        static HullSectionContainer GenerateHullSections(ObjectBuffer<int>[] buffers){
+            var ret = new List<HullSection>();
 
+            #region old section generation code that might be useful eventually
+
+            /*
+            var hullIdRefInv = hullIdRef.ToDictionary(pair => pair.Value, pair => pair.Key);
             //first obtain all the shard data via objectbuffer dump
             var estTotSize = buffers.Sum(b => b.MaxObjects);
             var totalShardData = new List<ObjectBuffer<int>.ObjectData>(estTotSize);
@@ -940,8 +982,11 @@ namespace Forge.Core.Airship.Generation{
                         )
                     );
             }
+             */
 
-            return new HullSectionContainer(hullSections, buffers);
+            #endregion
+
+            return new HullSectionContainer(ret, buffers);
         }
 
         #region Nested type: BoundingBoxResult
