@@ -14,7 +14,6 @@ using ProtoBuf;
 namespace Forge.Core.Airship.Data{
     public class HullSectionContainer : IEnumerable, IDisposable{
         public readonly ObjectBuffer<int>[] HullBuffersByDeck;
-        public readonly HullSection[][] HullSectionByDeck;
         public readonly int NumDecks;
         readonly HullSection[] _hullSections;
         bool _disposed;
@@ -22,12 +21,10 @@ namespace Forge.Core.Airship.Data{
         public HullSectionContainer(List<HullSection> hullSections, ObjectBuffer<int>[] hullBuffersByDeck){
             HullBuffersByDeck = hullBuffersByDeck;
             _hullSections = hullSections.ToArray();
-            HullSectionByDeck = GroupSectionsByDeck(_hullSections);
 
             NumDecks = HullBuffersByDeck.Length;
             TopExpIdx = 0;
             TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
-            Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
         }
 
         public int TopExpIdx { get; private set; }
@@ -54,6 +51,7 @@ namespace Forge.Core.Airship.Data{
 
         #endregion
 
+        /*
         static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
             var groupedByDeck = (from section in hullSections
                 group section by section.Deck).ToArray();
@@ -69,12 +67,11 @@ namespace Forge.Core.Airship.Data{
 
             return hullSectionByDeck;
         }
+         */
 
         public int SetTopVisibleDeck(int deck){
             if (deck < 0 || deck >= NumDecks)
                 return TopExpIdx;
-            //Debug.Assert(deck >= 0);
-            //Debug.Assert(deck < NumDecks);
 
             for (int i = NumDecks - 1; i >= deck; i--){
                 HullBuffersByDeck[i].CullMode = CullMode.None;
@@ -106,14 +103,8 @@ namespace Forge.Core.Airship.Data{
                 HullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
             }
 
-            foreach (var hullSection in _hullSections){
-                hullSection.SetDelegates(HullBuffersByDeck[hullSection.Deck]);
-            }
-
-            HullSectionByDeck = GroupSectionsByDeck(_hullSections);
             TopExpIdx = 0;
             TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
-            Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
         }
 
         public Serialized ExtractSerializationStruct(){
@@ -133,9 +124,9 @@ namespace Forge.Core.Airship.Data{
 
         [ProtoContract]
         public struct Serialized{
-            [ProtoMember(3)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+            [ProtoMember(1)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
             [ProtoMember(2)] public readonly HullSection[] HullSections;
-            [ProtoMember(1)] public readonly int NumDecks;
+            [ProtoMember(3)] public readonly int NumDecks;
 
             public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck){
                 NumDecks = numDecks;
