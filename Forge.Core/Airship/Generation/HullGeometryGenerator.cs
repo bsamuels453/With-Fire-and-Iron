@@ -26,6 +26,7 @@ namespace Forge.Core.Airship.Generation{
         const float _deckHeight = 2.13f;
         const float _bBoxWidth = 0.5f;
         const float _hullTextureTilingSize = 4f;
+        const float _deckTextureTilingSize = 4f;
 
         //note: less than 1 deck breaks prolly
         //note that this entire geometry generator runs on the standard curve assumptions
@@ -442,10 +443,26 @@ namespace Forge.Core.Airship.Generation{
                     var xWidth = new Vector3(boundingBox.Max.X - boundingBox.Min.X, 0, 0);
                     var zWidth = new Vector3(0, 0, boundingBox.Max.Z - boundingBox.Min.Z);
                     vertli.Clear();
-                    vertli.Add(new VertexPositionNormalTexture(min, Vector3.Up, new Vector2(0, 0)));
-                    vertli.Add(new VertexPositionNormalTexture(min + xWidth, Vector3.Up, new Vector2(1, 0)));
-                    vertli.Add(new VertexPositionNormalTexture(min + xWidth + zWidth, Vector3.Up, new Vector2(1, 1)));
-                    vertli.Add(new VertexPositionNormalTexture(min + zWidth, Vector3.Up, new Vector2(0, 1)));
+                    vertli.Add(new VertexPositionNormalTexture(min, Vector3.Up, 
+                        new Vector2(
+                            min.X / _deckTextureTilingSize, 
+                            min.Z / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(min + xWidth, Vector3.Up, 
+                        new Vector2(
+                            (min.X + xWidth.X) / _deckTextureTilingSize, 
+                            (min.Z + xWidth.Z) / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(min + xWidth + zWidth, Vector3.Up, 
+                        new Vector2(
+                            (min.X + xWidth.X + zWidth.X) / _deckTextureTilingSize,
+                            (min.Z + xWidth.Z + zWidth.Z) / _deckTextureTilingSize
+                            )));
+                    vertli.Add(new VertexPositionNormalTexture(min + zWidth, Vector3.Up, 
+                        new Vector2(
+                            (min.X + zWidth.X) / _deckTextureTilingSize,
+                            (min.Z + zWidth.Z) / _deckTextureTilingSize
+                            )));
                     buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min*reflection), (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
