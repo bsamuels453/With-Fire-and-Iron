@@ -4,9 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 using ProtoBuf;
 
 #endregion
@@ -16,15 +16,18 @@ namespace Forge.Core.Airship.Data{
         public readonly ObjectBuffer<int>[] HullBuffersByDeck;
         public readonly int NumDecks;
         readonly HullSection[] _hullSections;
+        readonly List<Vector2> _damagePoints; 
         bool _disposed;
 
-        public HullSectionContainer(List<HullSection> hullSections, ObjectBuffer<int>[] hullBuffersByDeck){
+        public HullSectionContainer(List<HullSection> hullSections, ObjectBuffer<int>[] hullBuffersByDeck, List<Vector2> damagePoints){
             HullBuffersByDeck = hullBuffersByDeck;
             _hullSections = hullSections.ToArray();
 
             NumDecks = HullBuffersByDeck.Length;
             TopExpIdx = 0;
             TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+
+            _damagePoints = damagePoints;
         }
 
         public int TopExpIdx { get; private set; }
