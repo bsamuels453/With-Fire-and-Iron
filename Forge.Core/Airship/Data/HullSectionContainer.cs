@@ -18,6 +18,7 @@ namespace Forge.Core.Airship.Data{
         const int _decalSizeMultiplier = 16;
         bool _disposed;
         HullSection[] _hullSections;
+        float _hullTextureUVMult;
         TextureBlitter _textureBlitter;
         float _textureToDecalTexel;
 
@@ -41,7 +42,6 @@ namespace Forge.Core.Airship.Data{
             int width = (int) (modelAttributes.Length*_decalSizeMultiplier);
             int height = (int) (modelAttributes.Depth*_decalSizeMultiplier);
             float texToDecal = modelAttributes.Length/hullTextureUVMult;
-
             Initialize
                 (
                     hullSections.ToArray(),
@@ -49,7 +49,8 @@ namespace Forge.Core.Airship.Data{
                     damagePoints,
                     width,
                     height,
-                    texToDecal
+                    texToDecal,
+                    hullTextureUVMult
                 );
         }
 
@@ -69,7 +70,8 @@ namespace Forge.Core.Airship.Data{
                     damagePts,
                     serializedStruct.DecalWidth,
                     serializedStruct.DecalHeight,
-                    serializedStruct.TextureToDecalTexel
+                    serializedStruct.TextureToDecalTexel,
+                    serializedStruct.HullTextureUVMult
                 );
         }
 
@@ -79,15 +81,17 @@ namespace Forge.Core.Airship.Data{
             List<Vector2> damagePoints,
             int decalWidth,
             int decalHeight,
-            float textureToDecal
+            float textureToDecal,
+            float hullTextureUVMult
             ){
             _hullSections = hullSections;
-            HullBuffersByDeck = hullBuffersByDeck;
-            TopExpIdx = 0;
-            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
-            NumDecks = HullBuffersByDeck.Length;
-
+            _hullTextureUVMult = hullTextureUVMult;
             _textureToDecalTexel = textureToDecal;
+            TopExpIdx = 0;
+            HullBuffersByDeck = hullBuffersByDeck;
+            NumDecks = HullBuffersByDeck.Length;
+            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+
             foreach (var buffer in hullBuffersByDeck){
                 buffer.ShaderParams["f_DecalScaleMult"].SetValue(_textureToDecalTexel);
             }
@@ -137,7 +141,17 @@ namespace Forge.Core.Airship.Data{
             }
         }
 
+        /// <summary>
+        /// Adds a damage decal to the airship's hull at the specified coordinates in model space.
+        /// </summary>
+        /// <param name="position">
+        /// The position of the decal, where the origin is located at the top rear extrema of the hull.
+        /// The X axis goes down the length of the airship from stern to bow.
+        /// The Y axis goes from the top deck down to the keel of the ship.
+        /// </param>
         public void AddDamageDecal(Vector2 position){
+            //need to convert position from model space to texel space
+
             _textureBlitter.BlitLocations.Add(position);
             UpdateDecalTexture(_textureBlitter.GetBlittedTexture());
         }
@@ -181,7 +195,8 @@ namespace Forge.Core.Airship.Data{
                 _textureBlitter.BlitLocations,
                 _textureBlitter.TargWidth,
                 _textureBlitter.TargHeight,
-                _textureToDecalTexel
+                _textureToDecalTexel,
+                _hullTextureUVMult
                 );
             return ret;
         }
@@ -193,6 +208,7 @@ namespace Forge.Core.Airship.Data{
             [ProtoMember(3)] public readonly int DecalWidth;
             [ProtoMember(4)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
             [ProtoMember(5)] public readonly HullSection[] HullSections;
+            [ProtoMember(8)] public readonly float HullTextureUVMult;
             [ProtoMember(6)] public readonly int NumDecks;
             [ProtoMember(7)] public readonly float TextureToDecalTexel;
 
@@ -203,8 +219,7 @@ namespace Forge.Core.Airship.Data{
                 List<Vector2> damageDecalPositions,
                 int decalWidth,
                 int decalHeight,
-                float textureToDecalTexel
-                ){
+                float textureToDecalTexel, float hullTextureUVMult){
                 NumDecks = numDecks;
                 HullSections = hullSections;
                 HullBuffersByDeck = hullBuffersByDeck;
@@ -212,6 +227,7 @@ namespace Forge.Core.Airship.Data{
                 DecalWidth = decalWidth;
                 DecalHeight = decalHeight;
                 TextureToDecalTexel = textureToDecalTexel;
+                HullTextureUVMult = hullTextureUVMult;
             }
         }
 
