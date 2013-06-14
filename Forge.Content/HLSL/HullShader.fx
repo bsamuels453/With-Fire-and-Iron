@@ -5,6 +5,7 @@ float4x4 mtx_WorldInverseTranspose;
 
 float f_AmbientIntensity = 1;
 float f_DiffuseIntensity;
+float f_DecalScaleMult;
 
 float3 f3_DiffuseLightDirection;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
@@ -12,6 +13,7 @@ float4 f4_AmbientColor;
 
 texture tex_Material;
 texture tex_Normalmap;
+texture tex_DecalWrap;
 
 sampler2D samp_Material = sampler_state {
     Texture = <tex_Material>;
@@ -23,6 +25,15 @@ sampler2D samp_Material = sampler_state {
 };
 sampler2D samp_Normalmap = sampler_state {
     Texture = <tex_Normalmap>;
+    MinFilter = Anisotropic;
+    MagFilter = Anisotropic;
+    AddressU = Wrap;
+    AddressV = Wrap;
+	MipFilter = Linear;
+};
+
+sampler2D samp_Decal = sampler_state {
+    Texture = <tex_DecalWrap>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -68,6 +79,18 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
 	float4 color = tex2D(samp_Material, input.TextureCoordinate);
 
+	float2 decalCoords;
+	decalCoords.x = input.TextureCoordinate.x/f_DecalScaleMult;
+	decalCoords.y = input.TextureCoordinate.y/f_DecalScaleMult;
+
+	float4 decal = tex2D(samp_Decal,  decalCoords.xy );
+	//decal.a = 1;
+	//color = saturate(color + decal);
+	//color = 1-((decal*decal.a) - color );
+	//color = 0.8*decal*decal.a + 0.2*color;
+	color = saturate(decal);
+	return color;
+/*
 	float3 normal = tex2D(samp_Normalmap, input.TextureCoordinate) + input.Normal;
 	normalize(normal);
 
@@ -80,8 +103,9 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	float4 ambientContribution = (color) *( f4_AmbientColor * f_AmbientIntensity);
 	float4 shadedColor = diffuseContribution + ambientContribution;
 
-	shadedColor.a = 1;
+	//shadedColor.a = 1;
 	return saturate(shadedColor);
+	*/
 }
 
 technique Standard
