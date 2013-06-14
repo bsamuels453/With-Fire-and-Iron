@@ -17,17 +17,17 @@ namespace Forge.Core.Util{
         readonly SpriteBatch _batch;
         readonly RenderTarget2D _finalTexture;
         readonly Texture2D _srcTexture;
-        readonly int _targHeight;
-        readonly int _targWidth;
+        public readonly int TargHeight;
+        public readonly int TargWidth;
 
         public TextureBlitter(int targetWidth, int targetHeight, string srcTexture){
-            _targWidth = targetWidth;
-            _targHeight = targetHeight;
+            TargWidth = targetWidth;
+            TargHeight = targetHeight;
             BlitLocations = new List<Vector2>();
 
             lock (Resource.Device){
                 _batch = new SpriteBatch(Resource.Device);
-                _finalTexture = new RenderTarget2D(Resource.Device, _targWidth, _targHeight, false, SurfaceFormat.Rgba64, DepthFormat.Depth24Stencil8);
+                _finalTexture = new RenderTarget2D(Resource.Device, TargWidth, TargHeight, false, SurfaceFormat.Rgba64, DepthFormat.Depth24Stencil8);
             }
             _srcTexture = Resource.LoadContent<Texture2D>(srcTexture);
         }
