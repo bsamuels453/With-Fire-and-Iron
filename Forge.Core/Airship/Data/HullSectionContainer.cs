@@ -21,6 +21,8 @@ namespace Forge.Core.Airship.Data{
         TextureBlitter _textureBlitter;
         float _textureToDecalTexel;
 
+        #region ctor
+
         /// <summary>
         /// Provides an interface to hull geometry and hull geometry modification methods.
         /// </summary>
@@ -51,33 +53,25 @@ namespace Forge.Core.Airship.Data{
                 );
         }
 
-        public ObjectBuffer<int>[] HullBuffersByDeck { get; private set; }
-        public int NumDecks { get; private set; }
-
-
-        public int TopExpIdx { get; private set; }
-        public ObjectBuffer<int> TopExposedHullLayer { get; private set; }
-
-        #region IDisposable Members
-
-        public void Dispose(){
-            Debug.Assert(!_disposed);
-            foreach (var buffer in HullBuffersByDeck){
-                buffer.Dispose();
+        public HullSectionContainer(Serialized serializedStruct){
+            int numDecks = serializedStruct.NumDecks;
+            var hullBuffersByDeck = new ObjectBuffer<int>[numDecks];
+            for (int i = 0; i < numDecks; i++){
+                hullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
             }
 
-            _disposed = true;
+            var damagePts = serializedStruct.DamageDecalPositions ?? new List<Vector2>();
+
+            Initialize
+                (
+                    serializedStruct.HullSections,
+                    hullBuffersByDeck,
+                    damagePts,
+                    serializedStruct.DecalWidth,
+                    serializedStruct.DecalHeight,
+                    serializedStruct.TextureToDecalTexel
+                );
         }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        IEnumerator IEnumerable.GetEnumerator(){
-            return GetEnumerator();
-        }
-
-        #endregion
 
         void Initialize(
             HullSection[] hullSections,
@@ -106,6 +100,35 @@ namespace Forge.Core.Airship.Data{
             UpdateDecalTexture(_textureBlitter.GetBlittedTexture());
         }
 
+        #endregion
+
+        public ObjectBuffer<int>[] HullBuffersByDeck { get; private set; }
+        public int NumDecks { get; private set; }
+
+        public int TopExpIdx { get; private set; }
+        public ObjectBuffer<int> TopExposedHullLayer { get; private set; }
+
+        #region IDisposable Members
+
+        public void Dispose(){
+            Debug.Assert(!_disposed);
+            foreach (var buffer in HullBuffersByDeck){
+                buffer.Dispose();
+            }
+
+            _disposed = true;
+        }
+
+        #endregion
+
+        #region IEnumerable Members
+
+        IEnumerator IEnumerable.GetEnumerator(){
+            return GetEnumerator();
+        }
+
+        #endregion
+
         void UpdateDecalTexture(Texture2D texture){
             lock (Resource.Device){
                 foreach (var buffer in HullBuffersByDeck){
@@ -113,24 +136,6 @@ namespace Forge.Core.Airship.Data{
                 }
             }
         }
-
-        /*
-        static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
-            var groupedByDeck = (from section in hullSections
-                group section by section.Deck).ToArray();
-
-            var hullSectionByDeck = new HullSection[groupedByDeck.Length][];
-            foreach (var grouping in groupedByDeck){
-                hullSectionByDeck[grouping.Key] = grouping.ToArray();
-            }
-
-            foreach (var layer in hullSectionByDeck){
-                Debug.Assert(layer != null);
-            }
-
-            return hullSectionByDeck;
-        }
-         */
 
         public void AddDamageDecal(Vector2 position){
             _textureBlitter.BlitLocations.Add(position);
@@ -161,26 +166,6 @@ namespace Forge.Core.Airship.Data{
         }
 
         #region serialization
-
-        public HullSectionContainer(Serialized serializedStruct){
-            int numDecks = serializedStruct.NumDecks;
-            var hullBuffersByDeck = new ObjectBuffer<int>[numDecks];
-            for (int i = 0; i < numDecks; i++){
-                hullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
-            }
-
-            var damagePts = serializedStruct.DamageDecalPositions ?? new List<Vector2>();
-
-            Initialize
-                (
-                    serializedStruct.HullSections,
-                    hullBuffersByDeck,
-                    damagePts,
-                    serializedStruct.DecalWidth,
-                    serializedStruct.DecalHeight,
-                    serializedStruct.TextureToDecalTexel
-                );
-        }
 
         public Serialized ExtractSerializationStruct(){
             var hullBuffData = new ObjectBuffer<int>.Serialized[NumDecks];
@@ -231,5 +216,23 @@ namespace Forge.Core.Airship.Data{
         }
 
         #endregion
+
+        /*
+        static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
+            var groupedByDeck = (from section in hullSections
+                group section by section.Deck).ToArray();
+
+            var hullSectionByDeck = new HullSection[groupedByDeck.Length][];
+            foreach (var grouping in groupedByDeck){
+                hullSectionByDeck[grouping.Key] = grouping.ToArray();
+            }
+
+            foreach (var layer in hullSectionByDeck){
+                Debug.Assert(layer != null);
+            }
+
+            return hullSectionByDeck;
+        }
+         */
     }
 }
