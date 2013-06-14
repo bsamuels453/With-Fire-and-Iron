@@ -96,7 +96,7 @@ namespace Forge.Framework.Draw{
 
         #endregion
 
-        protected void SetIndexBufferData(int[] data, bool updateSynchronously = false){
+        protected void SetIndexBufferData(int[] data, bool updateSynchronously = true){
             if (updateSynchronously){
                 _baseIndexBuffer.SetData(data);
             }
@@ -113,7 +113,7 @@ namespace Forge.Framework.Draw{
             }
         }
 
-        protected void SetVertexBufferData(T[] data, bool updateSynchronously = false){
+        protected void SetVertexBufferData(T[] data, bool updateSynchronously = true){
             if (updateSynchronously){
                 _baseVertexBuffer.SetData(data);
             }

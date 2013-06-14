@@ -49,7 +49,7 @@ namespace Forge.Framework.Draw{
             set { Rasterizer = new RasterizerState{CullMode = value}; }
         }
 
-        public void ApplyTransform(Func<T, T> transform, bool updateSynchronously = false){
+        public void ApplyTransform(Func<T, T> transform, bool updateSynchronously = true){
             var vertData = base.DumpVertexBuffer();
             for (int i = 0; i < vertData.Length; i++){
                 vertData[i] = transform.Invoke(vertData[i]);
@@ -57,11 +57,11 @@ namespace Forge.Framework.Draw{
             SetVertexBufferData(vertData, updateSynchronously);
         }
 
-        public new void SetIndexBufferData(int[] data, bool updateSynchronously = false){
+        public new void SetIndexBufferData(int[] data, bool updateSynchronously = true){
             base.SetIndexBufferData(data, updateSynchronously);
         }
 
-        public new void SetVertexBufferData(T[] data, bool updateSynchronously = false){
+        public new void SetVertexBufferData(T[] data, bool updateSynchronously = true){
             base.SetVertexBufferData(data, updateSynchronously);
         }
 
