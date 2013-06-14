@@ -582,9 +582,7 @@ namespace Forge.Core.Airship.Generation{
                                 z < end;
                                 z++){
                                 hullNormals[x, z - start] =
-                                    normalMesh[
-                                        i*_primHeightPerDeck +
-                                            x, z];
+                                    normalMesh[i*_primHeightPerDeck + x, z];
                             }
                         }
                         //convert the 2d list heightmap into a 2d array heightmap
@@ -615,37 +613,30 @@ namespace Forge.Core.Airship.Generation{
                         //hull texture's edge meets at the bottom of airship perfectly.
                         //If we were to loop through this in any other way, the polygons that make up the 
                         //bottom of the ship would meet halfway through the texture, depending on the airship depth.
-
+                        /*
                         var horizontalDistances = new float[hullMesh.GetLength(0),hullMesh.GetLength(1)];
 
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
                             for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1) - 1; vertexIdx++){
-                                /*
-                                horizontalDistances[layerIdx, vertexIdx] =
-                                    Vector3.Distance
-                                        (
-                                            hullMesh[layerIdx, vertexIdx],
-                                            hullMesh[layerIdx, vertexIdx + 1]
-                                        );
-                                 */
                                 horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx + 1].X);
                             }
                         }
+                         * */
                         //float _texCoordXMulti = _hullTextureTilingSize / length;
                         //float _texCoordYMulti = _hullTextureTilingSize / length;
 
                         var texCoords = new Vector2[hullMesh.GetLength(0),hullMesh.GetLength(1)];
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
-                            float distSum = 0;
+                            //float distSum = 0;
                             for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1); vertexIdx++){
                                 Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
 
                                 texCoords[layerIdx, vertexIdx] = new Vector2
                                     (
-                                    vertPos.X/(_hullTextureTilingSize),
+                                    (length - vertPos.X)/(_hullTextureTilingSize),
                                     Math.Abs(vertPos.Y/(_hullTextureTilingSize))
                                     );
-                                distSum += horizontalDistances[layerIdx, vertexIdx];
+                                //distSum += horizontalDistances[layerIdx, vertexIdx];
                             }
                         }
 
@@ -660,20 +651,12 @@ namespace Forge.Core.Airship.Generation{
 
                         var indicies = MeshHelper.CreateQuadIndiceArray(hullVerticies.Length/4);
 
-                        if (i != deckSVerts.Length){
-                            /*
-                            return
-                                HullSplitter.
-                                    SplitLayerGeometry
-                                    (0.5f, hullVerticies, i);
-                             */
-                            return new Tuple<VertexPositionNormalTexture[], int[]>
-                                (
-                                hullVerticies,
-                                indicies
-                                );
-                        }
-                        return null;
+
+                        return new Tuple<VertexPositionNormalTexture[], int[]>
+                            (
+                            hullVerticies,
+                            indicies
+                            );
                     };
                 // ReSharper restore AccessToModifiedClosure
 
@@ -977,7 +960,7 @@ namespace Forge.Core.Airship.Generation{
 
             #endregion
 
-            return new HullSectionContainer(ret, buffers, attributes, new List<Vector2>());
+            return new HullSectionContainer(ret, buffers, attributes, new List<Vector2>(), _hullTextureTilingSize);
         }
 
         #region Nested type: BoundingBoxResult
