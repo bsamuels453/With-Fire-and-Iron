@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Collections.Generic;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,12 +10,12 @@ using Vector2 = MonoGameUtility.Vector2;
 
 namespace Forge.Core.Util{
     /// <summary>
-    /// Two channel texture blitting class.
+    /// This class is used to blit textures onto a blank rgba64 transparent texture.
     /// </summary>
     internal class TextureBlitter{
-        public readonly Texture2D TargetTexture;
+        public readonly List<Vector2> BlitLocations;
         readonly SpriteBatch _batch;
-        readonly RenderTarget2D _renderTarget;
+        readonly RenderTarget2D _finalTexture;
         readonly Texture2D _srcTexture;
         readonly int _targHeight;
         readonly int _targWidth;
@@ -22,42 +23,40 @@ namespace Forge.Core.Util{
         public TextureBlitter(int targetWidth, int targetHeight, string srcTexture){
             _targWidth = targetWidth;
             _targHeight = targetHeight;
+            BlitLocations = new List<Vector2>();
 
             lock (Resource.Device){
                 _batch = new SpriteBatch(Resource.Device);
-                _renderTarget = new RenderTarget2D(Resource.Device, _targWidth, _targHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-                var tempTarg = new RenderTarget2D(Resource.Device, _targWidth, _targHeight, false, SurfaceFormat.Color, DepthFormat.Depth24Stencil8);
-
-                Resource.Device.SetRenderTarget(tempTarg);
-                Resource.Device.Clear(Color.Transparent);
-                TargetTexture = tempTarg;
-                Resource.Device.SetRenderTarget(null);
+                _finalTexture = new RenderTarget2D(Resource.Device, _targWidth, _targHeight, false, SurfaceFormat.Rgba64, DepthFormat.Depth24Stencil8);
             }
             _srcTexture = Resource.LoadContent<Texture2D>(srcTexture);
         }
 
-        public void Blit(Vector2 target){
+        public Texture2D GetBlittedTexture(){
             lock (Resource.Device){
-                Resource.Device.SetRenderTarget(_renderTarget);
+                Resource.Device.SetRenderTarget(_finalTexture);
+                Resource.Device.Clear(Color.Transparent);
                 _batch.Begin
                     (
-                        SpriteSortMode.BackToFront,
-                        BlendState.Opaque,
+                        SpriteSortMode.Immediate,
+                        BlendState.AlphaBlend,
                         SamplerState.PointWrap,
                         DepthStencilState.Default,
                         RasterizerState.CullNone
                     );
-
-                _batch.Draw(TargetTexture, new Vector2(0, 0), Color.White);
-                _batch.Draw(_srcTexture, target, Color.White);
+                foreach (var vector2 in BlitLocations){
+                    _batch.Draw(_srcTexture, vector2, Color.White);
+                }
 
                 _batch.End();
                 Resource.Device.SetRenderTarget(null);
                 /*
                 var streamWriter = new FileStream("finalDecal.png", FileMode.Create);
-                _renderTarget.SaveAsPng(streamWriter, _targWidth, _targHeight);
-                 */
+                _finalTexture.SaveAsPng(streamWriter, _targWidth, _targHeight);
+                streamWriter.Close();
+                */
             }
+            return _finalTexture;
         }
     }
 }
