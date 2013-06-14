@@ -161,14 +161,15 @@ namespace Forge.Core.Airship.Data{
 
         [ProtoContract]
         public struct Serialized{
-            [ProtoMember(1)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
-            [ProtoMember(2)] public readonly HullSection[] HullSections;
-            [ProtoMember(3)] public readonly int NumDecks;
-            [ProtoMember(4)] public readonly List<Vector2> DamageDecalPositions;
-            [ProtoMember(5)] public readonly int DamageDecalWidth;
-            [ProtoMember(6)] public readonly int DamageDecalHeight;
+            [ProtoMember(1)] public readonly int DamageDecalHeight;
+            [ProtoMember(2)] public readonly List<Vector2> DamageDecalPositions;
+            [ProtoMember(3)] public readonly int DamageDecalWidth;
+            [ProtoMember(4)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+            [ProtoMember(5)] public readonly HullSection[] HullSections;
+            [ProtoMember(6)] public readonly int NumDecks;
 
-            public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck, List<Vector2> damageDecalPositions, int damageDecalWidth, int damageDecalHeight){
+            public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck, List<Vector2> damageDecalPositions,
+                int damageDecalWidth, int damageDecalHeight){
                 NumDecks = numDecks;
                 HullSections = hullSections;
                 HullBuffersByDeck = hullBuffersByDeck;
