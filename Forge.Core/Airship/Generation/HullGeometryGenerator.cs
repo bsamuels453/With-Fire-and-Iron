@@ -91,7 +91,8 @@ namespace Forge.Core.Airship.Generation{
                 }
             }
 
-            var hullSections = GenerateHullSections(hullBuffResults);
+            var attributes = HullAttributeGenerator.Generate(genResults.NumDecks);
+            var hullSections = GenerateHullSections(hullBuffResults, attributes);
 
             var resultant = new HullGeometryInfo();
             resultant.CenterPoint = normalGenResults.Centroid*reflectionVector;
@@ -106,6 +107,7 @@ namespace Forge.Core.Airship.Generation{
             resultant.DeckHeight = _deckHeight;
             resultant.MaxBoundingBoxDims = new Vector2((int) (genResults.Length/_bBoxWidth), (int) (genResults.Berth/_bBoxWidth));
             resultant.HullSections = hullSections;
+            resultant.ModelAttributes = attributes;
 
 #if PROFILE_AIRSHIP_GENERATION
             double d = sw.ElapsedMilliseconds;
@@ -850,7 +852,7 @@ namespace Forge.Core.Airship.Generation{
             return ret;
         }
 
-        static HullSectionContainer GenerateHullSections(ObjectBuffer<int>[] buffers){
+        static HullSectionContainer GenerateHullSections(ObjectBuffer<int>[] buffers, ModelAttributes attributes){
             var ret = new List<HullSection>();
 
             foreach (var buffer in buffers){
@@ -975,7 +977,7 @@ namespace Forge.Core.Airship.Generation{
 
             #endregion
 
-            return new HullSectionContainer(ret, buffers);
+            return new HullSectionContainer(ret, buffers, attributes, new List<Vector2>());
         }
 
         #region Nested type: BoundingBoxResult
@@ -1031,6 +1033,7 @@ namespace Forge.Core.Airship.Generation{
         public DeckSectionContainer DeckSectionContainer;
         public HullSectionContainer HullSections;
         public Vector2 MaxBoundingBoxDims;
+        public ModelAttributes ModelAttributes;
         public int NumDecks;
         public float WallResolution;
     }
