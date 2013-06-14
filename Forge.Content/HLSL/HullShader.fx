@@ -84,13 +84,13 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	decalCoords.y = input.TextureCoordinate.y/f_DecalScaleMult;
 
 	float4 decal = tex2D(samp_Decal,  decalCoords.xy );
-	//decal.a = 1;
-	//color = saturate(color + decal);
-	//color = 1-((decal*decal.a) - color );
-	//color = 0.8*decal*decal.a + 0.2*color;
-	color = saturate(decal);
-	return color;
-/*
+
+	//eliminate source texture color in decal'd area
+	color = color * (1-decal.a);
+	//add decal color to source texture color
+	color = color + decal;
+	color = saturate(color);
+
 	float3 normal = tex2D(samp_Normalmap, input.TextureCoordinate) + input.Normal;
 	normalize(normal);
 
@@ -98,14 +98,12 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 
     float3 light = normalize(f3_DiffuseLightDirection);
 
-
 	float4 diffuseContribution = (color) *(diffuseQuantity);
 	float4 ambientContribution = (color) *( f4_AmbientColor * f_AmbientIntensity);
 	float4 shadedColor = diffuseContribution + ambientContribution;
 
-	//shadedColor.a = 1;
+	shadedColor.a = 1;
 	return saturate(shadedColor);
-	*/
 }
 
 technique Standard
