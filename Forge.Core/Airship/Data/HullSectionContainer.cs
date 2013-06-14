@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using ProtoBuf;
@@ -14,11 +15,11 @@ using ProtoBuf;
 
 namespace Forge.Core.Airship.Data{
     public class HullSectionContainer : IEnumerable, IDisposable{
-        public readonly ObjectBuffer<int>[] HullBuffersByDeck;
-        public readonly int NumDecks;
-        readonly HullSection[] _hullSections;
-        readonly TextureBlitter _textureBlitter;
+        const int _decalSizeMultiplier = 16;
         bool _disposed;
+        HullSection[] _hullSections;
+        TextureBlitter _textureBlitter;
+        float _textureToDecalTexel;
 
         /// <summary>
         /// Provides an interface to hull geometry and hull geometry modification methods.
@@ -27,28 +28,32 @@ namespace Forge.Core.Airship.Data{
         /// <param name="hullBuffersByDeck"></param>
         /// <param name="modelAttributes"> </param>
         /// <param name="damagePoints">Points at which the airship has been damaged. Measured in texel space of the decal.</param>
+        /// <param name="hullTextureUVMult">Multiplier used to scale the uvcoords of airship's hull</param>
         public HullSectionContainer(
             List<HullSection> hullSections,
             ObjectBuffer<int>[] hullBuffersByDeck,
             ModelAttributes modelAttributes,
-            List<Vector2> damagePoints
+            List<Vector2> damagePoints,
+            float hullTextureUVMult
             ){
-            _hullSections = hullSections.ToArray();
-            HullBuffersByDeck = hullBuffersByDeck;
-            TopExpIdx = 0;
-            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
-            NumDecks = HullBuffersByDeck.Length;
+            int width = (int) (modelAttributes.Length*_decalSizeMultiplier);
+            int height = (int) (modelAttributes.Depth*_decalSizeMultiplier);
+            float texToDecal = modelAttributes.Length/hullTextureUVMult;
 
-            int width = (int) (modelAttributes.Length*32*2);
-            int height = (int) (modelAttributes.Depth*32);
-            _textureBlitter = new TextureBlitter(width, height, "Materials/ImpactCross");
-
-            foreach (var point in damagePoints){
-                _textureBlitter.BlitLocations.Add(point);
-            }
-
-            UpdateDecalTexture(_textureBlitter.GetBlittedTexture());
+            Initialize
+                (
+                    hullSections.ToArray(),
+                    hullBuffersByDeck,
+                    damagePoints,
+                    width,
+                    height,
+                    texToDecal
+                );
         }
+
+        public ObjectBuffer<int>[] HullBuffersByDeck { get; private set; }
+        public int NumDecks { get; private set; }
+
 
         public int TopExpIdx { get; private set; }
         public ObjectBuffer<int> TopExposedHullLayer { get; private set; }
@@ -74,9 +79,38 @@ namespace Forge.Core.Airship.Data{
 
         #endregion
 
+        void Initialize(
+            HullSection[] hullSections,
+            ObjectBuffer<int>[] hullBuffersByDeck,
+            List<Vector2> damagePoints,
+            int decalWidth,
+            int decalHeight,
+            float textureToDecal
+            ){
+            _hullSections = hullSections;
+            HullBuffersByDeck = hullBuffersByDeck;
+            TopExpIdx = 0;
+            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+            NumDecks = HullBuffersByDeck.Length;
+
+            _textureToDecalTexel = textureToDecal;
+            foreach (var buffer in hullBuffersByDeck){
+                buffer.ShaderParams["f_DecalScaleMult"].SetValue(_textureToDecalTexel);
+            }
+
+            _textureBlitter = new TextureBlitter(decalWidth, decalHeight, "Materials/ImpactCross");
+
+            foreach (var point in damagePoints){
+                _textureBlitter.BlitLocations.Add(point);
+            }
+            UpdateDecalTexture(_textureBlitter.GetBlittedTexture());
+        }
+
         void UpdateDecalTexture(Texture2D texture){
-            foreach (var buffer in HullBuffersByDeck){
-                buffer.ShaderParams["tex_DecalWrap"].SetValue(texture);
+            lock (Resource.Device){
+                foreach (var buffer in HullBuffersByDeck){
+                    buffer.ShaderParams["tex_DecalWrap"].SetValue(texture);
+                }
             }
         }
 
@@ -129,16 +163,23 @@ namespace Forge.Core.Airship.Data{
         #region serialization
 
         public HullSectionContainer(Serialized serializedStruct){
-            NumDecks = serializedStruct.NumDecks;
-            _hullSections = serializedStruct.HullSections;
-
-            HullBuffersByDeck = new ObjectBuffer<int>[NumDecks];
-            for (int i = 0; i < NumDecks; i++){
-                HullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
+            int numDecks = serializedStruct.NumDecks;
+            var hullBuffersByDeck = new ObjectBuffer<int>[numDecks];
+            for (int i = 0; i < numDecks; i++){
+                hullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
             }
 
-            TopExpIdx = 0;
-            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+            var damagePts = serializedStruct.DamageDecalPositions ?? new List<Vector2>();
+
+            Initialize
+                (
+                    serializedStruct.HullSections,
+                    hullBuffersByDeck,
+                    damagePts,
+                    serializedStruct.DecalWidth,
+                    serializedStruct.DecalHeight,
+                    serializedStruct.TextureToDecalTexel
+                );
         }
 
         public Serialized ExtractSerializationStruct(){
@@ -154,28 +195,38 @@ namespace Forge.Core.Airship.Data{
                 hullBuffData,
                 _textureBlitter.BlitLocations,
                 _textureBlitter.TargWidth,
-                _textureBlitter.TargHeight
+                _textureBlitter.TargHeight,
+                _textureToDecalTexel
                 );
             return ret;
         }
 
         [ProtoContract]
         public struct Serialized{
-            [ProtoMember(1)] public readonly int DamageDecalHeight;
-            [ProtoMember(2)] public readonly List<Vector2> DamageDecalPositions;
-            [ProtoMember(3)] public readonly int DamageDecalWidth;
+            [ProtoMember(1)] public readonly List<Vector2> DamageDecalPositions;
+            [ProtoMember(2)] public readonly int DecalHeight;
+            [ProtoMember(3)] public readonly int DecalWidth;
             [ProtoMember(4)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
             [ProtoMember(5)] public readonly HullSection[] HullSections;
             [ProtoMember(6)] public readonly int NumDecks;
+            [ProtoMember(7)] public readonly float TextureToDecalTexel;
 
-            public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck, List<Vector2> damageDecalPositions,
-                int damageDecalWidth, int damageDecalHeight){
+            public Serialized(
+                int numDecks,
+                HullSection[] hullSections,
+                ObjectBuffer<int>.Serialized[] hullBuffersByDeck,
+                List<Vector2> damageDecalPositions,
+                int decalWidth,
+                int decalHeight,
+                float textureToDecalTexel
+                ){
                 NumDecks = numDecks;
                 HullSections = hullSections;
                 HullBuffersByDeck = hullBuffersByDeck;
                 DamageDecalPositions = damageDecalPositions;
-                DamageDecalWidth = damageDecalWidth;
-                DamageDecalHeight = damageDecalHeight;
+                DecalWidth = decalWidth;
+                DecalHeight = decalHeight;
+                TextureToDecalTexel = textureToDecalTexel;
             }
         }
 
