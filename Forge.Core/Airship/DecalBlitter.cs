@@ -68,7 +68,7 @@ namespace Forge.Core.Airship{
 
         public void Add(Vector2 position, Quadrant.Side side){
             //need to convert position from model space to decal texture space
-            position = (position/_airshipLength);
+            position = (position/_airshipLength) * _portDecalTexture.Width;
             _decals.Add(new Decal(position, side));
             TexturesOutOfDate = true;
         }
