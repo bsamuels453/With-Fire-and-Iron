@@ -136,7 +136,6 @@ namespace Forge.Core.Physics{
                         continue;
                     }
 
-
                     var projectileMtx_i = new IndexedMatrix();
 
                     projectile.Body.GetMotionState().GetWorldTransform(out projectileMtx_i);
@@ -150,6 +149,7 @@ namespace Forge.Core.Physics{
                         continue;
 
                     foreach (var boundingObj in shipDat.CollisionObjects){
+                        bool break2 = false;
                         //fast check to see if the projectile is in same area as the object
                         foreach (var point in boundingObj.Vertexes){
                             if (Vector3.Distance(projectilePos, point) < 1f){
@@ -185,10 +185,14 @@ namespace Forge.Core.Physics{
                                     //xxxx these params are not correct (point transform)
                                     shipDat.BlacklistedProjectiles.Add(projectile);
                                     shipDat.CollisionEventDispatcher.Invoke(boundingObj.Id, point, rawvel); //add id
+                                    break2 = true;
                                 }
 
                                 break;
                             }
+                        }
+                        if (break2){
+                            break;
                         }
                     }
                 }
@@ -270,9 +274,12 @@ namespace Forge.Core.Physics{
         ///   Returned on the creation of a projectile. This class is a handle used by external gamestates to manipulate and read data on the projectile it created.
         /// </summary>
         public class Projectile : IEquatable<Projectile>{
-            //why these delegates? remove them later
+            //god help us if we ever run out of these uids
+            static long _maxUid;
+
             public readonly RigidBody Body;
             public readonly Func<Vector3> GetPosition;
+            public readonly long Uid;
             readonly Action<Projectile> _terminate; //not sure when this is actually needed. might be better to do a timeout
             //public event Action<float, Vector3, Vector3> OnCollision; //theres no real reason for the projectile to care about OnCollision (yet)
 
@@ -280,13 +287,15 @@ namespace Forge.Core.Physics{
                 Body = body;
                 GetPosition = getPosition;
                 _terminate = terminate;
+                Uid = _maxUid;
+                _maxUid++;
             }
 
             #region IEquatable<Projectile> Members
 
             public bool Equals(Projectile other){
                 //kinda hacky
-                return _terminate == other._terminate;
+                return Uid == other.Uid;
             }
 
             #endregion
