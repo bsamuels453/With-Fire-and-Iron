@@ -100,23 +100,24 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
 	float4 color = tex2D(samp_Material, input.TextureCoordinate);
+	float4 decalColor = tex2D(samp_DecalMaterial, input.TextureCoordinate);
 
 	float2 decalCoords;
 	decalCoords.x = input.TextureCoordinate.x/f_DecalScaleMult;
 	decalCoords.y = input.TextureCoordinate.y/f_DecalScaleMult;
 
-	float4 decalColor;
+	float4 decalMask;
 	if(input.UntransformedNormal.z < 0){
-		decalColor = tex2D(samp_PortDecalMask,  decalCoords.xy );	
+		decalMask = tex2D(samp_PortDecalMask,  decalCoords.xy );	
 	}
 	else{
-		decalColor = tex2D(samp_StarboardDecalMask,  decalCoords.xy );
+		decalMask = tex2D(samp_StarboardDecalMask,  decalCoords.xy );
 	}
 
 	//eliminate source texture color in decal'd area
-	color = color * (1-decalColor.a);
+	color = color * (1-decalMask.a);
 	//add decal color to source texture color
-	color = color + decalColor;
+	color = color +  decalColor * decalMask.a;
 	color = saturate(color);
 
 	float3 normal = tex2D(samp_Normalmap, input.TextureCoordinate) + input.Normal;
