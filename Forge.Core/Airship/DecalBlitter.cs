@@ -1,10 +1,7 @@
-﻿#define OUTPUT_DECAL_MASKS
-
-#region
+﻿#region
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
@@ -68,7 +65,11 @@ namespace Forge.Core.Airship{
 
         public void Add(Vector2 position, Quadrant.Side side){
             //need to convert position from model space to decal texture space
-            position = (position/_airshipLength) * _portDecalTexture.Width;
+            position = (position/_airshipLength)*_portDecalTexture.Width;
+
+            //center the position
+            position -= new Vector2(_decalTexture.Width/2f, _decalTexture.Width/2f);
+
             _decals.Add(new Decal(position, side));
             TexturesOutOfDate = true;
         }
