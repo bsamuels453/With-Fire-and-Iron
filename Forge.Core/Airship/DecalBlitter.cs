@@ -43,7 +43,7 @@ namespace Forge.Core.Airship{
 
             _portDecalTexture = new RenderTarget2D(Resource.Device, width, width, false, SurfaceFormat.Alpha8, DepthFormat.None);
             _starboardDecalTexture = new RenderTarget2D(Resource.Device, width, width, false, SurfaceFormat.Alpha8, DepthFormat.None);
-            _decalTexture = Resource.LoadContent<Texture2D>("Materials/ImpactCross");
+            _decalTexture = Resource.LoadContent<Texture2D>("Materials/ImpactMask");
         }
 
         public bool TexturesOutOfDate { get; private set; }
