@@ -162,6 +162,7 @@
     <Compile Include="Airship\Data\AirshipStateData.cs" />
     <Compile Include="Airship\Data\Battlefield.cs" />
     <Compile Include="Airship\Data\DeckSectionContainer.cs" />
+    <Compile Include="Airship\DecalBlitter.cs" />
     <Compile Include="Airship\Export\AirshipPackager.cs" />
     <Compile Include="Airship\AirshipIndexer.cs" />
     <Compile Include="Airship\Generation\HullAttributeGenerator.cs" />
