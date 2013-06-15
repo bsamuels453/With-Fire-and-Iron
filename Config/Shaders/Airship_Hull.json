@@ -1,8 +1,10 @@
 {
 	"InternalAbbreviation": "Shader_AirshipHull",
-	"DiffuseLightDirection": "0,-1,1",
-	"DiffuseIntensity": "0.8",
-	"AmbientIntensity": "0.2",
-	"Texture": "Materials/BrownBox",
-	"Shader": "HLSL/StandardEffect"
+	"f3_DiffuseLightDirection": "0,-1,1",
+	"f_DiffuseIntensity": "0.8",
+	"f_AmbientIntensity": "0.2",
+	"tex_Material": "Materials/Planks",
+	"tex_Normalmap": "Materials/PlankNormals",
+	"tex_DecalMaterial": "Materials/gabe512",
+	"Shader": "HLSL/HullShader"
 }

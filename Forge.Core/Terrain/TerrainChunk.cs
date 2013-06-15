@@ -38,9 +38,9 @@ namespace Forge.Core.Terrain{
 
             _buffer.SetIndexBufferData((int[]) _indicies.Clone());
             _buffer.SetVertexBufferData(_verticies);
-            _buffer.ShaderParams["NormalMapTexture"].SetValue(_normals);
-            _buffer.ShaderParams["BinormalMapTexture"].SetValue(_binormals);
-            _buffer.ShaderParams["TangentMapTexture"].SetValue(_tangents);
+            _buffer.ShaderParams["tex_Normalmap"].SetValue(_normals);
+            _buffer.ShaderParams["tex_Binormalmap"].SetValue(_binormals);
+            _buffer.ShaderParams["tex_Tangentmap"].SetValue(_tangents);
 #if WIREFRAME_OVERLAY
     //we need to explode the indice list from triangle list to line list
             var wireframeInds = new int[_indicies.Length * 2];

@@ -245,42 +245,10 @@ namespace Forge.Core.Airship.Export{
                     topInfo
                 );
 
-            var modelAttribs = new ModelAttributes();
-            //in the future these attributes will be defined based off analyzing the hull
-            modelAttribs.Length = 50;
-            modelAttribs.MaxAscentRate = 25;
-            modelAttribs.MaxForwardVelocity = 40;
-            modelAttribs.MaxReverseVelocity = 20;
-            modelAttribs.MaxTurnSpeed = 0.87265f;
-            modelAttribs.Berth = 13.95f;
-            modelAttribs.NumDecks = hullData.NumDecks;
-            modelAttribs.Centroid = new Vector3(modelAttribs.Length/3, 0, 0);
-            modelAttribs.MaxAcceleration = 10;
-            modelAttribs.MaxAscentAcceleration = 7f;
-            modelAttribs.MaxTurnAcceleration = 0.22685f;
-
-            /*
-            var stateData = new AirshipStateData();
-            stateData.ActiveBuffs = new List<AirshipBuff>();
-            stateData.Angle = new Vector3(0, 0, 0);
-            stateData.Position = new Vector3(modelAttribs.Length / 3, 2000, 0);
-            stateData.AscentRate = 0;
-            stateData.TurnRate = 0;
-            stateData.Velocity = 0;
-            stateData.ControllerType = AirshipControllerType.AI;
-            stateData.CurrentManeuver = ManeuverTypeEnum.None;
-            stateData.ManeuverParameters = null;
-            Debug.WriteLine("Warning, statedata being loaded in code rather than from file");
-
-            throw new NotImplementedException();
-            var ret = new Airship(modelAttribs, hullData.DeckSectionContainer, hullData.HullSections, stateData, null);
-            return ret;
-             */
-
             var airship = new AirshipSerializationStruct();
             airship.DeckSections = hullData.DeckSectionContainer.ExtractSerializationStruct();
             airship.HullSections = hullData.HullSections.ExtractSerializationStruct();
-            airship.ModelAttributes = modelAttribs;
+            airship.ModelAttributes = hullData.ModelAttributes;
 
             var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".protocol", FileMode.Create);
             Serializer.Serialize(fs, airship);

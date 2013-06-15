@@ -13,7 +13,7 @@
         #endregion
 
         public static Side PointToSide(float z){
-            return z > 0 ? Side.Port : Side.Starboard;
+            return z < 0 ? Side.Port : Side.Starboard;
         }
     }
 }

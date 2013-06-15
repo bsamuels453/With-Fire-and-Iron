@@ -1,8 +1,8 @@
 {
 	"InternalAbbreviation": "Shader_DamageMeshGreen",
-	"DiffuseLightDirection": "0,-1,1",
-	"DiffuseIntensity": "0.8",
-	"AmbientIntensity": "0.2",
-	"Texture": "Materials/DamageMesh_Green",
-	"Shader": "HLSL/StandardEffect"
+	"f3_DiffuseLightDirection": "0,-1,1",
+	"f_DiffuseIntensity": "0.8",
+	"f_AmbientIntensity": "0.2",
+	"tex_Material": "Materials/DamageMesh_Green",
+	"Shader": "HLSL/HullShader"
 }

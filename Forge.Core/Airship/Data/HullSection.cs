@@ -1,91 +1,48 @@
 ﻿#region
 
-using System;
-using System.Diagnostics;
-using Forge.Framework.Draw;
 using MonoGameUtility;
 using ProtoBuf;
 
 #endregion
 
 namespace Forge.Core.Airship.Data{
+    /// <summary>
+    /// This class is used to provide metadata about hull geometry. One hullsection represents a plate
+    /// that makes up the hull of the airship. This is going to be used mostly for metadata and collision stuff.
+    /// </summary>
     [ProtoContract]
-    public class HullSection : IEquatable<HullSection>{
-        Action _hideSection;
-        Action _unhideSection;
+    public class HullSection{
+        /// <summary>
+        /// The 4 vertexes that make up this hull plate. These are referred to as aliased vertexes because
+        /// occasionally a hull plate will consist of more than one quad, and may have subquads or holes in it.
+        /// While the aliasedVertexes will always stay the same no matter what the contents of the hullSection is,
+        /// it's important to remember that they only represent where the plane on which the geometry lies.
+        /// </summary>
+        [ProtoMember(1)] public readonly Vector3[] AliasedVertexes;
 
-        public HullSection(int uid, Vector3[] aliasedVertexes, HullSectionIdentifier identifier, ObjectBuffer<int> hullBuffer){
-            Uid = uid;
-            AliasedVertexes = aliasedVertexes;
-            Deck = identifier.Deck;
-            Side = identifier.Side;
-            YPanel = identifier.YPanel;
-            _hideSection = () => hullBuffer.DisableObject(uid);
-            _unhideSection = () => hullBuffer.EnableObject(uid);
-        }
+        /// <summary>
+        /// This field represents the texture coordinates of this hull section on the damagemap texture.
+        /// </summary>
+        [ProtoMember(2)] public readonly Vector2[] DamagemapCoords;
 
-        public HullSection(int uid, Vector3[] aliasedVertexes, int deck, Quadrant.Side side, int yPanel, ObjectBuffer<int> hullBuffer){
-            Uid = uid;
+        /// <summary>
+        /// The side of the airship this panel is on.
+        /// </summary>
+        [ProtoMember(3)] public readonly Quadrant.Side Side;
+
+        public HullSection(Vector3[] aliasedVertexes, Vector2[] damagemapCoords, Quadrant.Side side){
             AliasedVertexes = aliasedVertexes;
-            Deck = deck;
             Side = side;
-            YPanel = yPanel;
-            _hideSection = () => hullBuffer.DisableObject(uid);
-            _unhideSection = () => hullBuffer.EnableObject(uid);
+            DamagemapCoords = damagemapCoords;
         }
 
         public HullSection(){
         }
 
-        [ProtoMember(1)]
-        public int Uid { get; private set; }
-
-        [ProtoMember(2)]
-        public Vector3[] AliasedVertexes { get; private set; }
-
-        [ProtoMember(3)]
-        public int Deck { get; private set; }
-
-        [ProtoMember(4)]
-        public int YPanel { get; private set; }
-
-        [ProtoMember(5)]
-        public Quadrant.Side Side { get; private set; }
-
-        #region IEquatable<HullSection> Members
-
-        public bool Equals(HullSection other){
-            if (ReferenceEquals(null, other)) return false;
-            if (ReferenceEquals(this, other)) return true;
-            return other.Uid == Uid;
-        }
-
-        #endregion
-
-        public void SetDelegates(ObjectBuffer<int> hullBuffer){
-            _hideSection = () => hullBuffer.DisableObject(Uid);
-            _unhideSection = () => hullBuffer.EnableObject(Uid);
-        }
-
-        public void Hide(){
-            _hideSection.Invoke();
-        }
-
-        public void UnHide(){
-            _unhideSection.Invoke();
-        }
-
-        public override bool Equals(object obj){
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != typeof (HullSection)) return false;
-            return Equals((HullSection) obj);
-        }
-
         public override int GetHashCode(){
-            unchecked{
-                return Uid;
-            }
+            //the top left of each hullsection is garaunteed to be different for each section
+            int hash = (int) ((DamagemapCoords[0].X*1000) + (DamagemapCoords[0].Y*1000000));
+            return hash;
         }
     }
 }

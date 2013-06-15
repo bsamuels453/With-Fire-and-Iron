@@ -7,28 +7,86 @@ using System.Diagnostics;
 using System.Linq;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 using ProtoBuf;
 
 #endregion
 
 namespace Forge.Core.Airship.Data{
     public class HullSectionContainer : IEnumerable, IDisposable{
-        public readonly ObjectBuffer<int>[] HullBuffersByDeck;
-        public readonly HullSection[][] HullSectionByDeck;
-        public readonly int NumDecks;
-        readonly HullSection[] _hullSections;
+        DecalBlitter _decalBlitter;
         bool _disposed;
+        HullSection[] _hullSections;
 
-        public HullSectionContainer(List<HullSection> hullSections, ObjectBuffer<int>[] hullBuffersByDeck){
-            HullBuffersByDeck = hullBuffersByDeck;
-            _hullSections = hullSections.ToArray();
-            HullSectionByDeck = GroupSectionsByDeck(_hullSections);
+        #region ctor
 
-            NumDecks = HullBuffersByDeck.Length;
-            TopExpIdx = 0;
-            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
-            Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
+        /// <summary>
+        /// Provides an interface to hull geometry and hull geometry modification methods.
+        /// </summary>
+        /// <param name="hullSections"></param>
+        /// <param name="hullBuffersByDeck"></param>
+        /// <param name="modelAttributes"> </param>
+        /// <param name="hullTextureUVMult">Multiplier used to scale the uvcoords of airship's hull</param>
+        public HullSectionContainer(
+            List<HullSection> hullSections,
+            ObjectBuffer<int>[] hullBuffersByDeck,
+            ModelAttributes modelAttributes,
+            float hullTextureUVMult
+            ){
+            Initialize
+                (
+                    hullSections.ToArray(),
+                    hullBuffersByDeck,
+                    modelAttributes.Length,
+                    modelAttributes.Depth,
+                    hullTextureUVMult
+                );
         }
+
+        public HullSectionContainer(Serialized serializedStruct){
+            int numDecks = serializedStruct.NumDecks;
+            var hullBuffersByDeck = new ObjectBuffer<int>[numDecks];
+            for (int i = 0; i < numDecks; i++){
+                hullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
+            }
+
+            _hullSections = serializedStruct.HullSections;
+            TopExpIdx = 0;
+            HullBuffersByDeck = hullBuffersByDeck;
+            NumDecks = HullBuffersByDeck.Length;
+            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+
+            var totShaderParams = from buffer in HullBuffersByDeck
+                select buffer.ShaderParams;
+
+            _decalBlitter = new DecalBlitter(serializedStruct.DecalBlitter);
+            _decalBlitter.SetShaderParamBatch(totShaderParams);
+        }
+
+        void Initialize(
+            HullSection[] hullSections,
+            ObjectBuffer<int>[] hullBuffersByDeck,
+            float airshipLength,
+            float airshipDepth,
+            float textureToDecal
+            ){
+            _hullSections = hullSections;
+            TopExpIdx = 0;
+            HullBuffersByDeck = hullBuffersByDeck;
+            NumDecks = HullBuffersByDeck.Length;
+            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
+
+            var totShaderParams = from buffer in HullBuffersByDeck
+                select buffer.ShaderParams;
+
+            _decalBlitter = new DecalBlitter(airshipLength, airshipDepth, textureToDecal);
+            _decalBlitter.SetShaderParamBatch(totShaderParams);
+        }
+
+        #endregion
+
+        public ObjectBuffer<int>[] HullBuffersByDeck { get; private set; }
+        public int NumDecks { get; private set; }
 
         public int TopExpIdx { get; private set; }
         public ObjectBuffer<int> TopExposedHullLayer { get; private set; }
@@ -54,27 +112,14 @@ namespace Forge.Core.Airship.Data{
 
         #endregion
 
-        static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
-            var groupedByDeck = (from section in hullSections
-                group section by section.Deck).ToArray();
-
-            var hullSectionByDeck = new HullSection[groupedByDeck.Length][];
-            foreach (var grouping in groupedByDeck){
-                hullSectionByDeck[grouping.Key] = grouping.ToArray();
-            }
-
-            foreach (var layer in hullSectionByDeck){
-                Debug.Assert(layer != null);
-            }
-
-            return hullSectionByDeck;
+        public void AddDamageDecal(Vector2 position, Quadrant.Side side){
+            _decalBlitter.Add(position, side);
+            _decalBlitter.RegenerateDecalTextures();
         }
 
         public int SetTopVisibleDeck(int deck){
             if (deck < 0 || deck >= NumDecks)
                 return TopExpIdx;
-            //Debug.Assert(deck >= 0);
-            //Debug.Assert(deck < NumDecks);
 
             for (int i = NumDecks - 1; i >= deck; i--){
                 HullBuffersByDeck[i].CullMode = CullMode.None;
@@ -97,25 +142,6 @@ namespace Forge.Core.Airship.Data{
 
         #region serialization
 
-        public HullSectionContainer(Serialized serializedStruct){
-            NumDecks = serializedStruct.NumDecks;
-            _hullSections = serializedStruct.HullSections;
-
-            HullBuffersByDeck = new ObjectBuffer<int>[NumDecks];
-            for (int i = 0; i < NumDecks; i++){
-                HullBuffersByDeck[i] = new ObjectBuffer<int>(serializedStruct.HullBuffersByDeck[i]);
-            }
-
-            foreach (var hullSection in _hullSections){
-                hullSection.SetDelegates(HullBuffersByDeck[hullSection.Deck]);
-            }
-
-            HullSectionByDeck = GroupSectionsByDeck(_hullSections);
-            TopExpIdx = 0;
-            TopExposedHullLayer = HullBuffersByDeck[TopExpIdx];
-            Debug.Assert(HullBuffersByDeck.Length == HullSectionByDeck.Length);
-        }
-
         public Serialized ExtractSerializationStruct(){
             var hullBuffData = new ObjectBuffer<int>.Serialized[NumDecks];
             for (int i = 0; i < NumDecks; i++){
@@ -124,26 +150,48 @@ namespace Forge.Core.Airship.Data{
 
             var ret = new Serialized
                 (
-                NumDecks,
+                _decalBlitter.ExtractSerializationStruct(),
+                hullBuffData,
                 _hullSections,
-                hullBuffData
+                NumDecks
                 );
             return ret;
         }
 
         [ProtoContract]
         public struct Serialized{
-            [ProtoMember(3)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
-            [ProtoMember(2)] public readonly HullSection[] HullSections;
-            [ProtoMember(1)] public readonly int NumDecks;
+            [ProtoMember(1)] public readonly DecalBlitter.Serialized DecalBlitter;
+            [ProtoMember(2)] public readonly ObjectBuffer<int>.Serialized[] HullBuffersByDeck;
+            [ProtoMember(3)] public readonly HullSection[] HullSections;
+            [ProtoMember(4)] public readonly int NumDecks;
 
-            public Serialized(int numDecks, HullSection[] hullSections, ObjectBuffer<int>.Serialized[] hullBuffersByDeck){
-                NumDecks = numDecks;
-                HullSections = hullSections;
+            public Serialized(DecalBlitter.Serialized decalBlitter, ObjectBuffer<int>.Serialized[] hullBuffersByDeck, HullSection[] hullSections, int numDecks)
+                : this(){
+                DecalBlitter = decalBlitter;
                 HullBuffersByDeck = hullBuffersByDeck;
+                HullSections = hullSections;
+                NumDecks = numDecks;
             }
         }
 
         #endregion
+
+        /*
+        static HullSection[][] GroupSectionsByDeck(HullSection[] hullSections){
+            var groupedByDeck = (from section in hullSections
+                group section by section.Deck).ToArray();
+
+            var hullSectionByDeck = new HullSection[groupedByDeck.Length][];
+            foreach (var grouping in groupedByDeck){
+                hullSectionByDeck[grouping.Key] = grouping.ToArray();
+            }
+
+            foreach (var layer in hullSectionByDeck){
+                Debug.Assert(layer != null);
+            }
+
+            return hullSectionByDeck;
+        }
+         */
     }
 }

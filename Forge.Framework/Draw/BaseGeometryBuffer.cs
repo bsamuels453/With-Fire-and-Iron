@@ -53,8 +53,8 @@ namespace Forge.Framework.Draw{
             }
             ShaderName = shader;
             Resource.LoadShader(shader, out Shader);
-            Shader.Parameters["Projection"].SetValue(Resource.ProjectionMatrix);
-            Shader.Parameters["World"].SetValue(Matrix.Identity);
+            Shader.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
+            Shader.Parameters["mtx_World"].SetValue(Matrix.Identity);
 
             RenderTarget.Buffers.Add(this);
         }
@@ -80,8 +80,8 @@ namespace Forge.Framework.Draw{
 
         public void Draw(Matrix viewMatrix){
             if (Enabled){
-                Shader.Parameters["View"].SetValue(viewMatrix);
-                Shader.Parameters["World"].SetValue(BaseWorldTransform);
+                Shader.Parameters["mtx_View"].SetValue(viewMatrix);
+                Shader.Parameters["mtx_World"].SetValue(BaseWorldTransform);
                 Resource.Device.RasterizerState = Rasterizer;
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){
@@ -96,24 +96,58 @@ namespace Forge.Framework.Draw{
 
         #endregion
 
-        protected void SetIndexBufferData(int[] data){
-            var update = new Task
-                (() =>{
-                     lock (Resource.Device){
-                         _baseIndexBuffer.SetData((int[]) data.Clone());
-                     }
-                 });
-            RenderTarget.AddAsynchronousBufferUpdate(update);
+        protected void SetIndexBufferData(int[] data, bool updateSynchronously = true){
+            if (updateSynchronously){
+                _baseIndexBuffer.SetData(data);
+            }
+            else{
+                var update = new Task
+                    (() =>{
+                         lock (Resource.Device){
+                             if (!_disposed){
+                                 _baseIndexBuffer.SetData((int[]) data.Clone());
+                             }
+                         }
+                     });
+                RenderTarget.AddAsynchronousBufferUpdate(update);
+            }
         }
 
-        protected void SetVertexBufferData(T[] data){
-            var update = new Task
-                (() =>{
-                     lock (Resource.Device){
-                         _baseVertexBuffer.SetData((T[]) data.Clone());
-                     }
-                 });
-            RenderTarget.AddAsynchronousBufferUpdate(update);
+        protected void SetVertexBufferData(T[] data, bool updateSynchronously = true){
+            if (updateSynchronously){
+                _baseVertexBuffer.SetData(data);
+            }
+            else{
+                var update = new Task
+                    (() =>{
+                         lock (Resource.Device){
+                             if (!_disposed){
+                                 _baseVertexBuffer.SetData((T[]) data.Clone());
+                             }
+                         }
+                     });
+                RenderTarget.AddAsynchronousBufferUpdate(update);
+            }
+        }
+
+        /// <summary>
+        /// Gets the data currently stored in the index buffer. WILL NOT ACCOUNT FOR ASYNCHRONOUS BUFFER UPDATES THAT ARE NOT COMPLETED.
+        /// </summary>
+        /// <returns></returns>
+        protected int[] DumpIndexBuffer(){
+            var data = new int[_numIndicies];
+            _baseIndexBuffer.GetData(data);
+            return data;
+        }
+
+        /// <summary>
+        /// Gets the data currently stored in the vertex buffer. WILL NOT ACCOUNT FOR ASYNCHRONOUS BUFFER UPDATES THAT ARE NOT COMPLETED.
+        /// </summary>
+        /// <returns></returns>
+        protected T[] DumpVertexBuffer(){
+            var data = new T[_numIndicies];
+            _baseVertexBuffer.GetData(data);
+            return data;
         }
 
         ~BaseGeometryBuffer(){
