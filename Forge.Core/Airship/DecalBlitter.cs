@@ -30,7 +30,7 @@ namespace Forge.Core.Airship{
         readonly RenderTarget2D _starboardDecalTexture;
         IEnumerable<EffectParameterCollection> _shaderParamBatch;
 
-        public DecalBlitter(float airshipLength, float airshipDepth, float hullTextureMultiplier, List<Decal> startingDecals=null ){
+        public DecalBlitter(float airshipLength, float airshipDepth, float hullTextureMultiplier, List<Decal> startingDecals = null){
             _batch = new SpriteBatch(Resource.Device);
             _decals = startingDecals ?? new List<Decal>();
             _airshipLength = airshipLength;
