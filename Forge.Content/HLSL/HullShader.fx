@@ -13,7 +13,9 @@ float4 f4_AmbientColor;
 
 texture tex_Material;
 texture tex_Normalmap;
-texture tex_DecalWrap;
+texture tex_PortDecalMask;
+texture tex_StarboardDecalMask;
+texture tex_DecalMaterial;
 
 sampler2D samp_Material = sampler_state {
     Texture = <tex_Material>;
@@ -32,8 +34,26 @@ sampler2D samp_Normalmap = sampler_state {
 	MipFilter = Linear;
 };
 
-sampler2D samp_Decal = sampler_state {
-    Texture = <tex_DecalWrap>;
+sampler2D samp_DecalMaterial = sampler_state {
+    Texture = <tex_DecalMaterial>;
+    MinFilter = Anisotropic;
+    MagFilter = Anisotropic;
+    AddressU = Wrap;
+    AddressV = Wrap;
+	MipFilter = Linear;
+};
+
+sampler2D samp_PortDecalMask = sampler_state {
+    Texture = <tex_PortDecalMask>;
+    MinFilter = Anisotropic;
+    MagFilter = Anisotropic;
+    AddressU = Wrap;
+    AddressV = Wrap;
+	MipFilter = Linear;
+};
+
+sampler2D samp_StarboardDecalMask = sampler_state {
+    Texture = <tex_StarboardDecalMask>;
     MinFilter = Anisotropic;
     MagFilter = Anisotropic;
     AddressU = Wrap;
@@ -56,6 +76,7 @@ struct VertexShaderOutput
     float4 Position : POSITION0;
     float3 Normal : TEXCOORD0;
     float2 TextureCoordinate : TEXCOORD1;
+	float3 UntransformedNormal : TEXCOORD2;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
@@ -68,6 +89,7 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 	output.Position = mul(viewPosition, mtx_Projection);
 	output.Normal = mul(input.Normal, WorldInverseTranspose);
 	output.TextureCoordinate = input.TextureCoordinate;
+	output.UntransformedNormal = input.Normal;
 
     return output;
 }
@@ -83,12 +105,18 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	decalCoords.x = input.TextureCoordinate.x/f_DecalScaleMult;
 	decalCoords.y = input.TextureCoordinate.y/f_DecalScaleMult;
 
-	float4 decal = tex2D(samp_Decal,  decalCoords.xy );
+	float4 decalColor;
+	if(input.UntransformedNormal.z < 0){
+		decalColor = tex2D(samp_PortDecalMask,  decalCoords.xy );	
+	}
+	else{
+		decalColor = tex2D(samp_StarboardDecalMask,  decalCoords.xy );
+	}
 
 	//eliminate source texture color in decal'd area
-	color = color * (1-decal.a);
+	color = color * (1-decalColor.a);
 	//add decal color to source texture color
-	color = color + decal;
+	color = color + decalColor;
 	color = saturate(color);
 
 	float3 normal = tex2D(samp_Normalmap, input.TextureCoordinate) + input.Normal;
