@@ -1,4 +1,6 @@
-﻿#region
+﻿#define ENABLE_DAMAGEMESH
+
+#region
 
 using System;
 using System.Collections.Generic;
@@ -66,6 +68,7 @@ namespace Forge.Core.Airship{
                         );
                     break;
             }
+
 
 #if ENABLE_DAMAGEMESH
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, _controller.Position, ModelAttributes.Length);
