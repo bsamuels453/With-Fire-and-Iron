@@ -53,7 +53,8 @@ namespace Forge.Core.Airship.Generation{
                     genResults.DeckSilhouetteVerts,
                     normalGenResults.NormalMesh,
                     genResults.NumDecks,
-                    genResults.Length
+                    genResults.Length,
+                    genResults.Depth
                 );
 
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
@@ -546,7 +547,7 @@ namespace Forge.Core.Airship.Generation{
         }
 
         static ObjectBuffer<int>[]
-            GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length){
+            GenerateHullBuffers(Vector3[][][] deckSVerts, Vector3[,] normalMesh, int numDecks, float length, float depth){
             int vertsInSilhouette = deckSVerts[0][0].Length;
             var hullMeshBuffs = new ObjectBuffer<int>[numDecks];
             //now set up the display buffer for each deck's wall
@@ -613,30 +614,27 @@ namespace Forge.Core.Airship.Generation{
                         //hull texture's edge meets at the bottom of airship perfectly.
                         //If we were to loop through this in any other way, the polygons that make up the 
                         //bottom of the ship would meet halfway through the texture, depending on the airship depth.
-                        /*
-                        var horizontalDistances = new float[hullMesh.GetLength(0),hullMesh.GetLength(1)];
-
-                        for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
-                            for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1) - 1; vertexIdx++){
-                                horizontalDistances[layerIdx, vertexIdx] = Math.Abs(hullMesh[layerIdx, vertexIdx].X - hullMesh[layerIdx, vertexIdx + 1].X);
-                            }
-                        }
-                         * */
-                        //float _texCoordXMulti = _hullTextureTilingSize / length;
-                        //float _texCoordYMulti = _hullTextureTilingSize / length;
+                        float starboardTexelOffset = depth/_hullTextureTilingSize;
+                        bool portSide = start != 0;
 
                         var texCoords = new Vector2[hullMesh.GetLength(0),hullMesh.GetLength(1)];
                         for (int layerIdx = hullMesh.GetLength(0) - 1; layerIdx >= 0; layerIdx--){
-                            //float distSum = 0;
                             for (int vertexIdx = 0; vertexIdx < hullMesh.GetLength(1); vertexIdx++){
                                 Vector3 vertPos = hullMesh[layerIdx, vertexIdx];
-
-                                texCoords[layerIdx, vertexIdx] = new Vector2
-                                    (
-                                    (length - vertPos.X)/(_hullTextureTilingSize),
-                                    Math.Abs(vertPos.Y/(_hullTextureTilingSize))
-                                    );
-                                //distSum += horizontalDistances[layerIdx, vertexIdx];
+                                if (!portSide){
+                                    texCoords[layerIdx, vertexIdx] = new Vector2
+                                        (
+                                        (length - vertPos.X)/(_hullTextureTilingSize),
+                                        Math.Abs(vertPos.Y/(_hullTextureTilingSize))
+                                        );
+                                }
+                                else{
+                                    texCoords[layerIdx, vertexIdx] = new Vector2
+                                        (
+                                        (length - vertPos.X)/(_hullTextureTilingSize),
+                                        Math.Abs(vertPos.Y/(_hullTextureTilingSize)) + starboardTexelOffset
+                                        );
+                                }
                             }
                         }
 
@@ -960,7 +958,7 @@ namespace Forge.Core.Airship.Generation{
 
             #endregion
 
-            return new HullSectionContainer(ret, buffers, attributes, new List<Vector2>(), _hullTextureTilingSize);
+            return new HullSectionContainer(ret, buffers, attributes, _hullTextureTilingSize);
         }
 
         #region Nested type: BoundingBoxResult
