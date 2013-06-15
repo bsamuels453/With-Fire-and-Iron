@@ -614,7 +614,7 @@ namespace Forge.Core.Airship.Generation{
                         //hull texture's edge meets at the bottom of airship perfectly.
                         //If we were to loop through this in any other way, the polygons that make up the 
                         //bottom of the ship would meet halfway through the texture, depending on the airship depth.
-                        float starboardTexelOffset = depth/_hullTextureTilingSize;
+                        float starboardTexelOffset = length/_hullTextureTilingSize;
                         bool portSide = start != 0;
 
                         var texCoords = new Vector2[hullMesh.GetLength(0),hullMesh.GetLength(1)];
@@ -632,7 +632,7 @@ namespace Forge.Core.Airship.Generation{
                                     texCoords[layerIdx, vertexIdx] = new Vector2
                                         (
                                         (length - vertPos.X)/(_hullTextureTilingSize),
-                                        Math.Abs(vertPos.Y/(_hullTextureTilingSize)) + starboardTexelOffset
+                                        Math.Abs(vertPos.Y/(_hullTextureTilingSize))
                                         );
                                 }
                             }
