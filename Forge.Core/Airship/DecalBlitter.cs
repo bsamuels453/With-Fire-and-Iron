@@ -26,6 +26,7 @@ namespace Forge.Core.Airship{
         readonly float _decalScaleMult;
         readonly Texture2D _decalTexture;
         readonly List<Decal> _decals;
+        readonly float _hullTextureMult;
         readonly RenderTarget2D _portDecalTexture;
         readonly RenderTarget2D _starboardDecalTexture;
         IEnumerable<EffectParameterCollection> _shaderParamBatch;
@@ -35,6 +36,7 @@ namespace Forge.Core.Airship{
             _decals = startingDecals ?? new List<Decal>();
             _airshipLength = airshipLength;
             _airshipDepth = airshipDepth;
+            _hullTextureMult = hullTextureMultiplier;
             TexturesOutOfDate = false;
             _decalScaleMult = airshipLength/hullTextureMultiplier;
 
@@ -42,8 +44,8 @@ namespace Forge.Core.Airship{
             int height = (int) (airshipDepth*_decalSizeMultiplier);
             Debug.Assert(width < 4096 && height < 4096);
 
-            _portDecalTexture = new RenderTarget2D(Resource.Device, width, height, false, SurfaceFormat.Alpha8, DepthFormat.None);
-            _starboardDecalTexture = new RenderTarget2D(Resource.Device, width, height, false, SurfaceFormat.Alpha8, DepthFormat.None);
+            _portDecalTexture = new RenderTarget2D(Resource.Device, width, width, false, SurfaceFormat.Alpha8, DepthFormat.None);
+            _starboardDecalTexture = new RenderTarget2D(Resource.Device, width, width, false, SurfaceFormat.Alpha8, DepthFormat.None);
             _decalTexture = Resource.LoadContent<Texture2D>("Materials/ImpactCross");
         }
 
@@ -59,8 +61,8 @@ namespace Forge.Core.Airship{
 
         void UpdateShaderTextures(){
             foreach (var shader in _shaderParamBatch){
-                shader["tex_PortDecal"].SetValue(_portDecalTexture);
-                shader["tex_StarboardDecal"].SetValue(_starboardDecalTexture);
+                shader["tex_PortDecalMask"].SetValue(_portDecalTexture);
+                shader["tex_StarboardDecalMask"].SetValue(_starboardDecalTexture);
             }
         }
 
@@ -102,7 +104,7 @@ namespace Forge.Core.Airship{
 
 #if OUTPUT_DECAL_MASKS
             var streamWriter = new FileStream("decalMask" + side + ".png", FileMode.Create);
-            target.SaveAsPng(streamWriter, target.Width, target.Height);
+            target.SaveAsPng(streamWriter, target.Width, target.Width);
             streamWriter.Close();
 #endif
         }
@@ -114,7 +116,7 @@ namespace Forge.Core.Airship{
                 (
                 serialized.AirshipLength,
                 serialized.AirshipDepth,
-                serialized.DecalScaleMult,
+                serialized.HullTextureMult,
                 serialized.Decals
                 ){
         }
@@ -124,7 +126,7 @@ namespace Forge.Core.Airship{
                 (
                 _airshipDepth,
                 _airshipLength,
-                _decalScaleMult,
+                _hullTextureMult,
                 _decals
                 );
         }
@@ -133,13 +135,13 @@ namespace Forge.Core.Airship{
         public struct Serialized{
             [ProtoMember(1)] public readonly float AirshipDepth;
             [ProtoMember(2)] public readonly float AirshipLength;
-            [ProtoMember(3)] public readonly float DecalScaleMult;
             [ProtoMember(4)] public readonly List<Decal> Decals;
+            [ProtoMember(3)] public readonly float HullTextureMult;
 
-            public Serialized(float airshipDepth, float airshipLength, float decalScaleMult, List<Decal> decals) : this(){
+            public Serialized(float airshipDepth, float airshipLength, float hullTextureMult, List<Decal> decals) : this(){
                 AirshipDepth = airshipDepth;
                 AirshipLength = airshipLength;
-                DecalScaleMult = decalScaleMult;
+                HullTextureMult = hullTextureMult;
                 Decals = decals;
             }
         }
