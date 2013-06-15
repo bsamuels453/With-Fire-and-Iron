@@ -171,7 +171,7 @@ namespace Forge.Framework.Draw{
             }
         }
 
-        public new void ApplyTransform(Func<VertexPositionNormalTexture, VertexPositionNormalTexture> transform, bool applySynchronously = false){
+        public new void ApplyTransform(Func<VertexPositionNormalTexture, VertexPositionNormalTexture> transform, bool applySynchronously = true){
             for (int i = 0; i < _verticies.Length; i++){
                 _verticies[i] = transform.Invoke(_verticies[i]);
             }
