@@ -84,7 +84,6 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             Common.GetAngleFromComponents(out destXZAngle, out distToTarget, diff.X, diff.Z);
 
             float turnDiff = GetAngularDistance(curAngle.Y, destXZAngle);
-
             CalculateNewScalar
                 (
                     curAngle.Y,
@@ -108,9 +107,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out curAscentRate
                 );
 
-
             Vector2 newPos;
-
             CalculateNewVector
                 (
                     new Vector2(curPosition.X, curPosition.Z),
@@ -123,6 +120,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
                     out newPos,
                     out curVelocity
                 );
+
             curPosition.X = newPos.X;
             curPosition.Z = newPos.Y;
 
@@ -207,11 +205,17 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             var breakoffDist = GetCoveredDistanceByAccel(Math.Abs(newVelocity), maxAcceleration);
 
             var posDiff = curVelocity + 0.5f*sign*maxAcceleration;
+            //slow down if necessary
             if (sign*diff <= breakoffDist){
                 posDiff = curVelocity + -sign*0.5f*maxAcceleration;
                 newVelocity = curVelocity + -sign*maxAcceleration;
 
                 newVelocity = clamp.Invoke(newVelocity);
+            }
+            //apply partial acceleration if necessary
+            if (newVelocity > Math.Abs(diff)){
+                newVelocity = 0;
+                posDiff = diff;
             }
 
             newPos = pos + posDiff;
@@ -254,20 +258,20 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             //if (theta > 1)
             theta = 1;
 
-            Vector2 change = new Vector2();
+
             var unitVec = Common.GetComponentFromAngle(angle, 1);
 
-
-            posDiff = 5;
-            newVelocity = 5;
-
-
-            change.X += unitVec.X*posDiff*theta;
-            change.Y += -unitVec.Y*posDiff*theta;
-
+            Vector2 change;
+            if (Math.Abs(posDiff) > diff.Length()){
+                change = diff;
+                newVel = 0;
+            }
+            else{
+                change = new Vector2(unitVec.X*posDiff*theta, -unitVec.Y*posDiff*theta);
+                newVel = newVelocity*theta;
+            }
 
             newPos = (pos + change);
-            newVel = newVelocity*theta;
         }
 
 
