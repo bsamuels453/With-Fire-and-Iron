@@ -4,6 +4,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Util;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -76,7 +77,11 @@ namespace Forge.Core.Terrain{
         }
 
         ~TerrainChunk(){
-            Debug.Assert(_disposed);
+            if (!_disposed){
+                DebugConsole.WriteLine("Chunk finalized before being disposed:" + Identifier.X + "," + Identifier.Z);
+                //Debug.Assert(_disposed);
+                Dispose();
+            }
         }
     }
 }
