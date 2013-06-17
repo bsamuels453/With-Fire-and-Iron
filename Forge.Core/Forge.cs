@@ -15,6 +15,8 @@ using Matrix = MonoGameUtility.Matrix;
 namespace Forge.Core{
     public class Forge : Game{
         readonly GraphicsDeviceManager _graphics;
+        Stopwatch _fpsStopwatch;
+        int _numFramesLastSecond;
 
         public Forge(){
             Content.RootDirectory = "Content";
@@ -27,12 +29,13 @@ namespace Forge.Core{
 
         protected override void Initialize(){
             DebugConsole.InitalizeConsole();
+            DebugStateShift.AddNewSet("RunningSlowly", false);
             DebugConsole.WriteLine("Initializing resources...");
             Resource.Initialize(Content, _graphics.GraphicsDevice);
             Resource.ScreenSize = new ScreenSize(1200, 800);
 
             IsFixedTimeStep = true;
-            var d = this.TargetElapsedTime;
+            var d = TargetElapsedTime;
 
             var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
             Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView
@@ -54,6 +57,8 @@ namespace Forge.Core{
 
             IsMouseVisible = true;
             DebugConsole.WriteLine("Game-state initialization completed.");
+            _fpsStopwatch = new Stopwatch();
+            _fpsStopwatch.Start();
             base.Initialize();
             DebugConsole.WriteLine("Game initialization completed.");
         }
@@ -75,14 +80,20 @@ namespace Forge.Core{
         protected override void Update(GameTime gameTime){
             GamestateManager.Update();
             base.Update(gameTime);
+            DebugStateShift.UpdateSet("RunningSlowly", gameTime.IsRunningSlowly, "Game is now running slowly: " + gameTime.IsRunningSlowly);
+        }
 
+        protected override void Draw(GameTime gameTime){
             RenderTarget.BeginDraw();
             GamestateManager.Draw();
             RenderTarget.EndDraw();
             base.Draw(gameTime);
-        }
-
-        protected override void Draw(GameTime gameTime){
+            _numFramesLastSecond++;
+            if (_fpsStopwatch.ElapsedMilliseconds > 1000){
+                DebugText.SetText("FPS", "FPS: " + _numFramesLastSecond);
+                _numFramesLastSecond = 0;
+                _fpsStopwatch.Restart();
+            }
         }
     }
 }

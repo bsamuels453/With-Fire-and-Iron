@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using Forge.Core.Camera;
 using Forge.Core.Input;
+using Forge.Framework.Draw;
 
 #endregion
 
@@ -20,6 +21,7 @@ namespace Forge.Core.GameState{
             _inputHandler = new InputHandler();
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
+            DebugText.CreateText("FPS", 0, 0);
         }
 
         public static ICamera CameraController { get; set; }
