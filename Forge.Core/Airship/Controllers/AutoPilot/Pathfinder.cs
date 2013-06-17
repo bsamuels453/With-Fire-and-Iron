@@ -133,6 +133,51 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
         }
 
         /// <summary>
+        /// Calculates the angle of the airship at the next tick.
+        /// </summary>
+        /// <param name="target">The target position the airship should be approaching.</param>
+        /// <param name="selfStateData"> </param>
+        /// <param name="timeDelta">The amount of delta time that should be taken into consideration for velocities, in milliseconds. </param>
+        /// <param name="attributes"> </param>
+        /// <returns></returns>
+        public static RetAttributes CalculateAirshipAngle(
+            float target,
+            ModelAttributes attributes,
+            AirshipStateData selfStateData,
+            float timeDelta){
+            float timeFrac = timeDelta/1000f;
+            float maxTurnRate = attributes.MaxTurnSpeed;
+            float maxTurnAcceleration = attributes.MaxTurnAcceleration*timeFrac;
+
+            var curAngle = selfStateData.Angle;
+            var curTurnVel = selfStateData.TurnRate;
+
+            Func<float, float> clampTurnRate = v =>{
+                                                   if (v > maxTurnRate){
+                                                       v = maxTurnRate;
+                                                   }
+                                                   if (v < -maxTurnRate){
+                                                       v = -maxTurnRate;
+                                                   }
+                                                   return v;
+                                               };
+
+            float turnDiff = GetAngularDistance(curAngle.Y, target);
+            CalculateNewScalar
+                (
+                    curAngle.Y,
+                    turnDiff,
+                    maxTurnAcceleration,
+                    curTurnVel,
+                    clampTurnRate,
+                    out curAngle.Y,
+                    out curTurnVel
+                );
+
+            return new RetAttributes(0, curTurnVel, 0);
+        }
+
+        /// <summary>
         /// Very lazy algorithm for figuring out whether a target should be approached in reverse, or if a turn
         /// should be executed and the approach made in forewards direction.
         /// </summary>
