@@ -10,6 +10,9 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship.Controllers.AutoPilot{
+    /// <summary>
+    /// Utility class used to calculate the airship's path, trajectory, angles, etc.
+    /// </summary>
     public static class Pathfinder{
         /// <summary>
         /// Calculates the path of the airship at the next tick.

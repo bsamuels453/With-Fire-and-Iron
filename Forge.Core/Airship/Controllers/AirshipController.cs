@@ -11,6 +11,10 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship.Controllers{
+    /// <summary>
+    /// An airship's controller is used to handle and modify its position, orientation, and rotation.
+    /// The controller contains the pos/orient/rot information which is referenced by the airship class.
+    /// </summary>
     public abstract class AirshipController{
         readonly AirshipIndexer _airships;
         readonly List<Hardpoint> _hardPoints;

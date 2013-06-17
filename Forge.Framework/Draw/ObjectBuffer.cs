@@ -11,6 +11,11 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Framework.Draw{
+    /// <summary>
+    /// Standard geometry buffer with the option of enabling and disabling defined "objects" of geometry.
+    /// Each geometry object must be of the same vertex, index, and primitive counts. They are identified by TIdentifier.
+    /// </summary>
+    /// <typeparam name="TIdentifier"></typeparam>
     public class ObjectBuffer<TIdentifier> : GeometryBuffer<VertexPositionNormalTexture>, IEnumerable where TIdentifier : IEquatable<TIdentifier>{
         public readonly int IndiciesPerObject;
         public readonly int MaxObjects;

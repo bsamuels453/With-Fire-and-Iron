@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework;
 #endregion
 
 namespace Forge.Framework.Draw{
+    /// <summary>
+    /// Debugging class used to display text on the screen at the highest display level avail.
+    /// </summary>
     public static class DebugText{
         static readonly Dictionary<string, TextBox> _text;
 

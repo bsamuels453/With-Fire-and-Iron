@@ -12,7 +12,7 @@ using MonoGameUtility;
 
 namespace Forge.Framework.Draw{
     /// <summary>
-    ///   this is nearly identical to ObjectBuffer with the exception that it's for handling non-dynamic content (models)
+    ///   this is nearly identical to ObjectBuffer with the exception that it's for handling non-geometric content (models)
     /// </summary>
     /// <typeparam name="T"> </typeparam>
     public class ObjectModelBuffer<T> : IDrawableBuffer where T : IEquatable<T>{

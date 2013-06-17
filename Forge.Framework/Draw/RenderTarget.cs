@@ -14,6 +14,9 @@ using Vector2 = MonoGameUtility.Vector2;
 #endregion
 
 namespace Forge.Framework.Draw{
+    /// <summary>
+    /// This class is used to organize multiple rendertargets, and is used to dispatch draw calls to all buffers and sprites.
+    /// </summary>
     public class RenderTarget : IDisposable{
         static readonly DepthStencilState _universalDepthStencil;
         static readonly SpriteBatch _cumulativeSpriteBatch;

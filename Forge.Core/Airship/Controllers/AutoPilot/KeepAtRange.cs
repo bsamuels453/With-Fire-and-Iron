@@ -6,6 +6,9 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship.Controllers.AutoPilot{
+    /// <summary>
+    /// Autopilot configuration used for keeping a target airship at a certain range.
+    /// </summary>
     public class KeepAtRange : AirshipAutoPilot{
         readonly AirshipIndexer _airships;
         readonly float _preferredRange;

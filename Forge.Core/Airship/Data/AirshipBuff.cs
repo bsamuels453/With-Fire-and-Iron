@@ -1,4 +1,7 @@
 ﻿namespace Forge.Core.Airship.Data{
+    /// <summary>
+    /// Defines a buff/debuff that can be applied to an airship.
+    /// </summary>
     public class AirshipBuff{
         #region BuffType enum
 
