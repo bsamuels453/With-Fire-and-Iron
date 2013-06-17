@@ -171,7 +171,7 @@
     <Compile Include="Airship\HullIntegrityMesh.cs" />
     <Compile Include="Airship\Data\HullSection.cs" />
     <Compile Include="Airship\Data\HullSectionContainer.cs" />
-    <Compile Include="Airship\Data\HullSectionIdentifier.cs" />
+    <Compile Include="Airship\Generation\HullSectionIdentifier.cs" />
     <Compile Include="Airship\Data\ModelAttributes.cs" />
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
