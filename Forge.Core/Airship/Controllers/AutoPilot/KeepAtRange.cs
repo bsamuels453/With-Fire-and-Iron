@@ -1,5 +1,6 @@
 ﻿#region
 
+using Forge.Framework;
 using MonoGameUtility;
 
 #endregion
@@ -16,6 +17,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             _airships = airships;
             _targetAirship = _airships[targetUid];
             _selfShip = selfShip;
+            DebugStateShift.AddNewSet("ShipReverse", true);
         }
 
         public override Pathfinder.RetAttributes CalculateNextPosition(double timeDelta){
@@ -53,6 +55,8 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             if (useReverse){
                 int f = 4;
             }
+
+            //DebugStateShift.UpdateSet("ShipReverse", useReverse, "Ship is in reverse: " + useReverse);
 
             var ret = Pathfinder.CalculateAirshipPath
                 (
