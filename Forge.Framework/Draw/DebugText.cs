@@ -16,7 +16,7 @@ namespace Forge.Framework.Draw{
         }
 
         public static void CreateText(string id, int x, int y){
-            _text.Add(id, new TextBox(x, y, DepthLevel.High, Color.Black));
+            _text.Add(id, new TextBox(x, y, DepthLevel.High, Color.OrangeRed));
         }
 
         public static void SetText(string id, string text){
