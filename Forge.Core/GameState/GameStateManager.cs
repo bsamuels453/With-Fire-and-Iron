@@ -22,7 +22,8 @@ namespace Forge.Core.GameState{
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
             DebugText.CreateText("FPS", 0, 0);
-            DebugText.CreateText("RunningSlowly", 0, 10);
+            DebugText.CreateText("RunningSlowly", 0, 11);
+            DebugText.CreateText("PrivateMem", 0, 22);
         }
 
         public static ICamera CameraController { get; set; }

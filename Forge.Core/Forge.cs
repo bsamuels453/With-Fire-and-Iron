@@ -15,6 +15,7 @@ using Matrix = MonoGameUtility.Matrix;
 namespace Forge.Core{
     public class Forge : Game{
         readonly GraphicsDeviceManager _graphics;
+        Process _currentProcess;
         Stopwatch _fpsStopwatch;
         int _numFramesLastSecond;
 
@@ -33,6 +34,7 @@ namespace Forge.Core{
             DebugConsole.WriteLine("Initializing resources...");
             Resource.Initialize(Content, _graphics.GraphicsDevice);
             Resource.ScreenSize = new ScreenSize(1200, 800);
+            _currentProcess = Process.GetCurrentProcess();
 
             IsFixedTimeStep = true;
             var d = TargetElapsedTime;
@@ -81,6 +83,7 @@ namespace Forge.Core{
             GamestateManager.Update();
             base.Update(gameTime);
             DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
+            DebugText.SetText("PrivateMem", "Private: " + _currentProcess.PrivateMemorySize64/1000000f + " MB");
         }
 
         protected override void Draw(GameTime gameTime){
