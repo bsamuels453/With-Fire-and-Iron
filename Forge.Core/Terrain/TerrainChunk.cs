@@ -6,6 +6,7 @@ using System.Linq;
 using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 
 #endregion
@@ -31,7 +32,9 @@ namespace Forge.Core.Terrain{
             _normals = normals;
             _binormals = binormals;
             _tangents = tangents;
-            _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Shader_Terrain");
+            lock (Resource.Device){
+                _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Shader_Terrain");
+            }
 #if WIREFRAME_OVERLAY
             _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count()*2, verticies.Count(), indicies.Count(), "Shader_Wireframe", PrimitiveType.LineList);
             _wbuff.ShaderParams["Alpha"].SetValue(0.25f);
@@ -79,8 +82,8 @@ namespace Forge.Core.Terrain{
         ~TerrainChunk(){
             if (!_disposed){
                 DebugConsole.WriteLine("Chunk finalized before being disposed:" + Identifier.X + "," + Identifier.Z);
-                //Debug.Assert(_disposed);
-                Dispose();
+                Debug.Assert(_disposed);
+                //Dispose();
             }
         }
     }
