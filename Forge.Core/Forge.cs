@@ -31,6 +31,9 @@ namespace Forge.Core{
             Resource.Initialize(Content, _graphics.GraphicsDevice);
             Resource.ScreenSize = new ScreenSize(1200, 800);
 
+            IsFixedTimeStep = true;
+            var d = this.TargetElapsedTime;
+
             var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
             Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView
                 (
