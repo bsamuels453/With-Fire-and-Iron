@@ -22,6 +22,7 @@ namespace Forge.Core.GameState{
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
             DebugText.CreateText("FPS", 0, 0);
+            DebugText.CreateText("RunningSlowly", 0, 10);
         }
 
         public static ICamera CameraController { get; set; }

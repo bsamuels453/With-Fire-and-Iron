@@ -80,7 +80,7 @@ namespace Forge.Core{
         protected override void Update(GameTime gameTime){
             GamestateManager.Update();
             base.Update(gameTime);
-            DebugStateShift.UpdateSet("RunningSlowly", gameTime.IsRunningSlowly, "Game is now running slowly: " + gameTime.IsRunningSlowly);
+            DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
         }
 
         protected override void Draw(GameTime gameTime){
