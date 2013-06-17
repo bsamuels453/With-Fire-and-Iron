@@ -305,12 +305,20 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             while (a1 < 0)
                 a1 += (float) Math.PI*2;
 
-            //calculate the diff between the target angle and the current angle
-            float d1 = a2 - a1;
-            float shifter = 2*(float) Math.PI - (a2 > a1 ? a2 : a1);
-            float shifted = a2 < a1 ? a2 : a1;
-            float d2 = shifter + shifted;
-            return Math.Abs(d1) < Math.Abs(d2) ? d1 : d2;
+            float d = a2 - a1;
+            if (Math.Abs(d) > Math.PI){
+                if (d > 0){
+                    float targ = (float) (Math.PI*2) - d;
+                    return -targ;
+                }
+                else{
+                    float targ = (float) (Math.PI*2) + d;
+                    return targ;
+                }
+            }
+            else{
+                return d;
+            }
         }
 
         #region Nested type: RetAttributes
