@@ -34,39 +34,48 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             target = new Vector3(target.Z, target.Y, target.X);
 
             var diff = curPosition - target;
-            diff.Normalize();
-            var targetPos = diff*_preferredRange + target;
-            targetPos.Y = target.Y;
+            if (diff.Length() > 0.1f + _preferredRange){
+                diff.Normalize();
+                var targetPos = diff*_preferredRange + target;
+                targetPos.Y = target.Y;
+                //figure out if we should go forwards or backwards
 
-            //figure out if we should go forwards or backwards
+                bool useReverse = Pathfinder.ShouldReverseBeUsed
+                    (
+                        curPosition,
+                        targetPos,
+                        stateData.Angle.Y,
+                        attributes.MaxTurnSpeed,
+                        attributes.MaxTurnAcceleration,
+                        attributes.MaxForwardVelocity,
+                        attributes.MaxReverseVelocity,
+                        attributes.MaxAcceleration
+                    );
 
-            bool useReverse = Pathfinder.ShouldReverseBeUsed
-                (
-                    curPosition,
-                    targetPos,
-                    stateData.Angle.Y,
-                    attributes.MaxTurnSpeed,
-                    attributes.MaxTurnAcceleration,
-                    attributes.MaxForwardVelocity,
-                    attributes.MaxReverseVelocity,
-                    attributes.MaxAcceleration
-                );
+                //DebugStateShift.UpdateSet("ShipReverse", useReverse, "Ship is in reverse: " + useReverse);
 
-            if (useReverse){
-                int f = 4;
+                var ret = Pathfinder.CalculateAirshipPath
+                    (
+                        targetPos,
+                        attributes,
+                        stateData,
+                        (float) timeDelta,
+                        useReverse
+                    );
+                return ret;
             }
-
-            //DebugStateShift.UpdateSet("ShipReverse", useReverse, "Ship is in reverse: " + useReverse);
-
-            var ret = Pathfinder.CalculateAirshipPath
-                (
-                    targetPos,
-                    attributes,
-                    stateData,
-                    (float) timeDelta,
-                    useReverse
-                );
-            return ret;
+            else{
+                //we're already at the preferred keep@range point, so align ourselves to the target airship's angle
+                //so can maintain keep@range easier
+                var ret = Pathfinder.CalculateAirshipAngle
+                    (
+                        _targetAirship.StateData.Angle.Y,
+                        attributes,
+                        stateData,
+                        (float) timeDelta
+                    );
+                return ret;
+            }
         }
     }
 }
