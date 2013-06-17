@@ -2,6 +2,7 @@
 
 #region
 
+using System;
 using System.Diagnostics;
 using Forge.Core.GameState;
 using Forge.Framework;
@@ -37,7 +38,8 @@ namespace Forge.Core{
             _currentProcess = Process.GetCurrentProcess();
 
             IsFixedTimeStep = true;
-            var d = TargetElapsedTime;
+            //for some reason beyond my comprehension, you have to use 64 denomator for 60fps
+            TargetElapsedTime = new TimeSpan((long) (TimeSpan.TicksPerSecond*(1/64d)));
 
             var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
             Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView
