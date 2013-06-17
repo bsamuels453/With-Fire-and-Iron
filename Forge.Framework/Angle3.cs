@@ -5,6 +5,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework{
+    //todo: depreciate this
     public struct Angle3{
         public float Pitch;
         public float Roll;
