@@ -13,6 +13,10 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Core.Airship.Data{
+    /// <summary>
+    /// Acts as a wrapper for the geometry of an airship's hull. Any kind of modifications
+    /// to the airship's hull have to go through this class.
+    /// </summary>
     public class HullSectionContainer : IEnumerable, IDisposable{
         DecalBlitter _decalBlitter;
         bool _disposed;

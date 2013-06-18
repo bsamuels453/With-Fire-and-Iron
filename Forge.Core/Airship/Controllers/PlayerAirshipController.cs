@@ -8,6 +8,9 @@ using Microsoft.Xna.Framework.Input;
 #endregion
 
 namespace Forge.Core.Airship.Controllers{
+    /// <summary>
+    /// Controller used for input-based control of the airship.
+    /// </summary>
     public class PlayerAirshipController : AirshipController{
         #region TurnState enum
 

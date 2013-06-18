@@ -9,6 +9,10 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Framework{
+    /// <summary>
+    /// This utility class is used to define several procotol buffer wrappers for complex objects
+    /// such as nested arrays and certain structures that can't have their attributes tagged.
+    /// </summary>
     public class ProtoBuffWrappers{
         #region Nested type: BoundingBoxContainer
 
@@ -21,24 +25,6 @@ namespace Forge.Framework{
                 foreach (var boundingBox in boundingBoxes){
                     BoundingBoxes.Add(boundingBox);
                 }
-            }
-        }
-
-        #endregion
-
-        #region Nested type: IntContainer
-
-        /// <summary>
-        ///   Contains references to all of the in-between structures used by the protocol buffer serializer/deserializer.
-        /// </summary>
-
-        #region containers
-        [ProtoContract]
-        public struct IntContainer{
-            [ProtoMember(1)] public int[] Ints;
-
-            public IntContainer(int[] ints){
-                Ints = ints;
             }
         }
 
@@ -100,8 +86,6 @@ namespace Forge.Framework{
                 return ret;
             }
         }
-
-        #endregion
 
         #endregion
     }

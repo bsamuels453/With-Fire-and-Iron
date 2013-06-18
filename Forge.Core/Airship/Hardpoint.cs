@@ -13,6 +13,11 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship{
+    /// <summary>
+    /// Used to represent an airship's hardpoints, aka the cannons. Essentially this
+    /// class takes all the fancy mumbo jumbo and side effects behind firing a cannon 
+    /// and wraps it behind a pretty class.
+    /// </summary>
     public class Hardpoint : IDisposable{
         readonly List<ProjectilePhysics.Projectile> _activeProjectiles;
         readonly Vector3 _aimDir;

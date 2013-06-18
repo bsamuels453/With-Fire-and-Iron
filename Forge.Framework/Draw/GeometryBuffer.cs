@@ -7,6 +7,10 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.Draw{
+    /// <summary>
+    /// Standard geometry buffer, accepts geometry formatted in formats such as VertexPositionNormalTexture.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public class GeometryBuffer<T> : BaseGeometryBuffer<T> where T : struct{
         Vector3 _position;
         Vector3 _rotation;

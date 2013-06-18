@@ -12,6 +12,9 @@ using ProtoBuf;
 #endregion
 
 namespace Forge.Core.Airship.Data{
+    /// <summary>
+    /// Acts as a wrapper for the geometry of an airship's deck.
+    /// </summary>
     public class DeckSectionContainer : IDisposable{
         public readonly ObjectBuffer<AirshipObjectIdentifier>[] DeckBufferByDeck;
         public readonly int NumDecks;

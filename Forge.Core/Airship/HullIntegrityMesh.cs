@@ -11,6 +11,10 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.Airship{
+    /// <summary>
+    /// This class is used to track and display damage done to an airship's hull through
+    /// texture decaling.
+    /// </summary>
     public class HullIntegrityMesh : IDisposable{
         readonly float _airshipLength;
         readonly ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;

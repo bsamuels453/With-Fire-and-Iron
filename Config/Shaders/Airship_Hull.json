@@ -5,6 +5,6 @@
 	"f_AmbientIntensity": "0.2",
 	"tex_Material": "Materials/Planks",
 	"tex_Normalmap": "Materials/PlankNormals",
-	"tex_DecalMaterial": "Materials/gabe512",
+	"tex_DecalMaterial": "Materials/CharredWood",
 	"Shader": "HLSL/HullShader"
 }
