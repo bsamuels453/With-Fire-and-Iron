@@ -44,12 +44,12 @@ namespace Forge.Core.GameState{
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
 
             _battlefield.ShipsOnField[1].SetAutoPilot
-                (new KeepAtRange
+                (new Orbit
                     (
                     _battlefield.ShipsOnField[1],
                     _battlefield.ShipsOnField,
                     0,
-                    50
+                    500
                     )
                 );
 
