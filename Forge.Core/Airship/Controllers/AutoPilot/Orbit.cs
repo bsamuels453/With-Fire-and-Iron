@@ -59,7 +59,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             var targetPos = _prevTargetVec*_preferredRange + target;
             targetPos.Y = target.Y;
 
-            DebugText.SetText("DistToTarget: ", "(" + (stateData.Position - _targetAirship.StateData.Position).Length() + ")");
+            DebugText.SetText("TargPos", "DistToTarget: (" + (stateData.Position - _targetAirship.StateData.Position).Length() + ")");
 
             var ret = Pathfinder.CalculateAirshipPath
                 (
