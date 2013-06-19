@@ -9,7 +9,6 @@
         float Width { get; set; }
         float Height { get; set; }
         float Alpha { get; set; }
-        float Depth { get; set; }
         bool HitTest(int x, int y);
     }
 }
