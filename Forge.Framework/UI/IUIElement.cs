@@ -1,4 +1,10 @@
-﻿namespace Forge.Framework.UI{
+﻿#region
+
+using Forge.Framework.Control;
+
+#endregion
+
+namespace Forge.Framework.UI{
     /// <summary>
     /// Used to define a UI element/collection.
     /// </summary>
@@ -9,6 +15,7 @@
         float Width { get; set; }
         float Height { get; set; }
         float Alpha { get; set; }
+        MouseController MouseController { get; }
         bool HitTest(int x, int y);
     }
 }
