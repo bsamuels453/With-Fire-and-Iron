@@ -18,6 +18,7 @@ namespace Forge.Framework.UI{
     /// together to create advanced UI objects such as dialogue boxes, menus, and tooltips.
     /// </summary>
     internal class UIElementCollection : IUIElement{
+        const float _hoverTime = 200;
         readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
         readonly Stopwatch _hoverTimer;
@@ -74,6 +75,7 @@ namespace Forge.Framework.UI{
         public bool IsTransparent { get; set; }
 
         public bool ContainsMouse { get; private set; }
+        public bool MouseHovering { get; private set; }
 
         #region IUIElement Members
 
@@ -152,7 +154,7 @@ namespace Forge.Framework.UI{
         public event Action<ForgeMouseState, float, UIElementCollection> OnRightClick;
         public event Action<ForgeMouseState, float, UIElementCollection> OnRightDown;
         public event Action<ForgeMouseState, float, UIElementCollection> OnRightRelease;
-        public event Action<ForgeMouseState, float, UIElementCollection> OnMouseHover;
+        public event Action<float, UIElementCollection> OnMouseHover;
         public event Action<ForgeMouseState, float, UIElementCollection> OnMouseEntry;
         public event Action<ForgeMouseState, float, UIElementCollection> OnMouseExit;
 
@@ -228,6 +230,8 @@ namespace Forge.Framework.UI{
             _mouseController.OnMouseMovement +=
                 (state, timeDelta) =>{
                     if (!state.BlockMPosition){
+                        //this event is only called when the mouse moves, so can safely turn off hover
+                        MouseHovering = false;
                         bool containsNewMouse = Contains(state.X, state.Y);
                         //entry distpatcher
                         if (containsNewMouse && !ContainsMouse){
@@ -320,6 +324,18 @@ namespace Forge.Framework.UI{
         public void Unbind(){
             Debug.Assert(_bindOrder[0] == this);
             _bindOrder.RemoveAt(0);
+        }
+
+        public void Update(float timeDelta){
+            if (ContainsMouse){
+                if (_hoverTimer.ElapsedMilliseconds >= _hoverTime){
+                    MouseHovering = true;
+                    _hoverTimer.Reset();
+                    if (OnMouseHover != null){
+                        OnMouseHover.Invoke(timeDelta, this);
+                    }
+                }
+            }
         }
 
         #region static
