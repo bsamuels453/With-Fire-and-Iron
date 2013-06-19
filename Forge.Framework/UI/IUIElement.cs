@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Collections.Generic;
 using Forge.Framework.Control;
 
 #endregion
@@ -17,5 +18,6 @@ namespace Forge.Framework.UI{
         float Alpha { get; set; }
         MouseController MouseController { get; }
         bool HitTest(int x, int y);
+        List<IUIElement> GetElementStackAtPoint(int x, int y);
     }
 }

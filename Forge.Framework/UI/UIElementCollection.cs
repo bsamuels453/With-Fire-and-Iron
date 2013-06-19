@@ -40,6 +40,8 @@ namespace Forge.Framework.UI{
             _mouseController = new MouseController(this);
             _alpha = 1;
             _hoverTimer = new Stopwatch();
+            Debug.Assert(_globalUIParent == null);
+            _globalUIParent = this;
             SetupEventPropagation();
             SetupEventPropagationToChildren();
         }
@@ -142,10 +144,50 @@ namespace Forge.Framework.UI{
             return false;
         }
 
+        public List<IUIElement> GetElementStackAtPoint(int x, int y){
+            if (Contains(x, y)){
+                var ret = new List<IUIElement>();
+                foreach (var element in _elements){
+                    ret.AddRange(element.GetElementStackAtPoint(x, y));
+                }
+                return ret;
+            }
+            return new List<IUIElement>();
+        }
+
+        #endregion
+
+        #region static
+
+        static readonly List<UIElementCollection> _bindOrder;
+
+        static UIElementCollection _globalUIParent;
+
+        static UIElementCollection(){
+            _bindOrder = new List<UIElementCollection>();
+        }
+
+        /// <summary>
+        /// Gets the element collection that's currently bound.
+        /// </summary>
+        public static UIElementCollection BoundCollection{
+            get{
+                if (_bindOrder.Count == 0){
+                    throw new Exception("There is no element collection currently bound");
+                }
+                return _bindOrder[0];
+            }
+        }
+
+        public static List<IUIElement> GetGlobalElementStack(int x, int y){
+            return _globalUIParent.GetElementStackAtPoint(x, y);
+        }
+
         #endregion
 
         public event Action<UIElementCollection> OnMouseFocusLost;
         public event Action<UIElementCollection> OnMouseFocusGained;
+        public event Action<float, UIElementCollection> OnMouseHover;
         public event Action<ForgeMouseState, float, UIElementCollection> OnMouseMovement;
         public event Action<ForgeMouseState, float, UIElementCollection> OnMouseScroll;
         public event Action<ForgeMouseState, float, UIElementCollection> OnLeftClick;
@@ -154,7 +196,6 @@ namespace Forge.Framework.UI{
         public event Action<ForgeMouseState, float, UIElementCollection> OnRightClick;
         public event Action<ForgeMouseState, float, UIElementCollection> OnRightDown;
         public event Action<ForgeMouseState, float, UIElementCollection> OnRightRelease;
-        public event Action<float, UIElementCollection> OnMouseHover;
         public event Action<ForgeMouseState, float, UIElementCollection> OnMouseEntry;
         public event Action<ForgeMouseState, float, UIElementCollection> OnMouseExit;
 
@@ -337,27 +378,5 @@ namespace Forge.Framework.UI{
                 }
             }
         }
-
-        #region static
-
-        static readonly List<UIElementCollection> _bindOrder;
-
-        static UIElementCollection(){
-            _bindOrder = new List<UIElementCollection>();
-        }
-
-        /// <summary>
-        /// Gets the element collection that's currently bound.
-        /// </summary>
-        public static UIElementCollection BoundCollection{
-            get{
-                if (_bindOrder.Count == 0){
-                    throw new Exception("There is no element collection currently bound");
-                }
-                return _bindOrder[0];
-            }
-        }
-
-        #endregion
     }
 }
