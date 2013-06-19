@@ -10,10 +10,10 @@ namespace Forge.Framework.UI{
     /// </summary>
     internal interface IUIElement{
         FrameStrata FrameStrata { get; }
-        float X { get; set; }
-        float Y { get; set; }
-        float Width { get; set; }
-        float Height { get; set; }
+        int X { get; set; }
+        int Y { get; set; }
+        int Width { get; }
+        int Height { get; }
         float Alpha { get; set; }
         MouseController MouseController { get; }
         bool HitTest(int x, int y);
