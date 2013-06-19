@@ -42,7 +42,7 @@ namespace Forge.Framework.Control{
         ///   Typically this is only called when the mouse's exclusivity status is removed, and all
         ///   registered controllers may recieve mouse input.
         /// </summary>
-        public event Action OnMouseFocusRegained;
+        public event Action OnMouseFocusGained;
 
         #endregion
 
@@ -73,8 +73,8 @@ namespace Forge.Framework.Control{
         }
 
         public void SafeInvokeOnFocusRegained(){
-            if (OnMouseFocusRegained != null){
-                OnMouseFocusRegained.Invoke();
+            if (OnMouseFocusGained != null){
+                OnMouseFocusGained.Invoke();
             }
         }
 
