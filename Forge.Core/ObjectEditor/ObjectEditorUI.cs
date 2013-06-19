@@ -5,8 +5,6 @@ using System.Diagnostics;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Forge.Framework.UI;
-using Forge.Framework.UI.Widgets;
 
 #endregion
 
@@ -15,14 +13,18 @@ namespace Forge.Core.ObjectEditor{
     ///   this class handles the display of the prototype airship and all of its components
     /// </summary>
     public class ObjectEditorUI : IInputUpdates, ILogicUpdates, IDisposable{
+        /*
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly HullDataManager _hullData;
 
         readonly Toolbar _toolBar;
+         */
         bool _disposed;
 
         public ObjectEditorUI(HullDataManager hullData, RenderTarget target){
+            throw new Exception();
+            /*
             _hullData = hullData;
 
             var buttonGen = new ButtonGenerator("ToolbarButton64.json");
@@ -42,13 +44,15 @@ namespace Forge.Core.ObjectEditor{
             _toolBar.BindButtonToTool(0, new WallMenuTool(hullData, target));
 
             _toolBar.BindButtonToTool(1, new LadderBuildTool(hullData));
+             */
         }
 
         #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
-            _toolBar.Dispose();
+            throw new Exception();
+            //_toolBar.Dispose();
             _disposed = true;
         }
 
@@ -57,7 +61,8 @@ namespace Forge.Core.ObjectEditor{
         #region IInputUpdates Members
 
         public void UpdateInput(ref InputState state){
-            _toolBar.UpdateInput(ref state);
+            throw new Exception();
+            //_toolBar.UpdateInput(ref state);
         }
 
         #endregion
@@ -65,17 +70,20 @@ namespace Forge.Core.ObjectEditor{
         #region ILogicUpdates Members
 
         public void UpdateLogic(double timeDelta){
-            _toolBar.UpdateLogic(timeDelta);
+            throw new Exception();
+            //_toolBar.UpdateLogic(timeDelta);
         }
 
         #endregion
 
         void AddVisibleLevel(int identifier){
-            _hullData.MoveUpOneDeck();
+            throw new Exception();
+            //_hullData.MoveUpOneDeck();
         }
 
         void RemoveVisibleLevel(int identifier){
-            _hullData.MoveDownOneDeck();
+            throw new Exception();
+            //_hullData.MoveDownOneDeck();
         }
 
         ~ObjectEditorUI(){

@@ -11,6 +11,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
+    /*
     public class WallBuildTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         readonly List<WallSegmentIdentifier> _tempWallIdentifiers;
@@ -180,4 +181,5 @@ namespace Forge.Core.ObjectEditor.Tools{
     }
 
     #endregion
+     */
 }

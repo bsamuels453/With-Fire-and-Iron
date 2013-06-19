@@ -2,8 +2,6 @@
 
 using System;
 using Forge.Framework;
-using Forge.Framework.UI;
-using Forge.Framework.UI.Components;
 using MonoGameUtility;
 
 #endregion
@@ -21,7 +19,7 @@ namespace Forge.Core.HullEditor{
         }
 
         #endregion
-
+        /*
         const int _handleMinDist = 20;
         readonly Button _centerButton;
         readonly Button _nextButton;
@@ -102,6 +100,7 @@ namespace Forge.Core.HullEditor{
             _nextLine.Dispose();
             _prevButton.Dispose();
             _prevLine.Dispose();*/
+        /*
             NextHandle = null;
             PrevHandle = null;
             SymmetricHandle = null;
@@ -615,5 +614,6 @@ namespace Forge.Core.HullEditor{
         }
 
         #endregion
+         */
     }
 }

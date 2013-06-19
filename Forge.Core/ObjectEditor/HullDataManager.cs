@@ -31,8 +31,8 @@ namespace Forge.Core.ObjectEditor{
         public readonly HullSectionContainer HullSectionContainer;
         public readonly int NumDecks;
         public readonly ObjectModelBuffer<AirshipObjectIdentifier>[] ObjectBuffers;
-        public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
-        public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
+        //public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
+        //public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
         public readonly float WallResolution;
         int _curDeck;
         bool _disposed;
@@ -52,7 +52,8 @@ namespace Forge.Core.ObjectEditor{
             for (int i = 0; i < ObjectBuffers.Count(); i++){
                 ObjectBuffers[i] = new ObjectModelBuffer<AirshipObjectIdentifier>(100, "Shader_TintedModel");
             }
-
+            throw new Exception();
+            /*
             WallBuffers = new ObjectBuffer<WallSegmentIdentifier>[NumDecks];
             for (int i = 0; i < WallBuffers.Count(); i++){
                 int potentialWalls = DeckSectionContainer.DeckVertexesByDeck[i].Count()*2;
@@ -63,11 +64,12 @@ namespace Forge.Core.ObjectEditor{
             for (int i = 0; i < WallIdentifiers.Length; i++){
                 WallIdentifiers[i] = new List<WallSegmentIdentifier>();
             }
+             */
             CurDeck = 0;
         }
 
-        public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
-        public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
+        //public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
+        //public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
         public ObjectModelBuffer<AirshipObjectIdentifier> CurObjBuffer { get; private set; }
 
         public int VisibleDecks { get; private set; }
@@ -82,9 +84,11 @@ namespace Forge.Core.ObjectEditor{
                 int oldDeck = _curDeck;
                 VisibleDecks += diff;
                 _curDeck = value;
-
+                throw new Exception();
+                /*
                 CurWallBuffer = WallBuffers[_curDeck];
                 CurWallIdentifiers = WallIdentifiers[_curDeck];
+                 */
                 CurObjBuffer = ObjectBuffers[_curDeck];
 
                 foreach (var buffer in ObjectBuffers){
@@ -105,9 +109,12 @@ namespace Forge.Core.ObjectEditor{
 
         public void Dispose(){
             Debug.Assert(!_disposed);
+            throw new Exception();
+            /*
             foreach (var buffer in WallBuffers){
                 buffer.Dispose();
             }
+             */
             foreach (var buffer in ObjectBuffers){
                 buffer.Dispose();
             }

@@ -3,11 +3,11 @@
 using System.Diagnostics;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Forge.Framework.UI.Widgets;
 
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
+    /*
     public class WallMenuTool : IToolbarTool{
         readonly Toolbar _toolbar;
         bool _disposed;
@@ -55,5 +55,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         ~WallMenuTool(){
             Debug.Assert(_disposed);
         }
+     
     }
+     */
 }

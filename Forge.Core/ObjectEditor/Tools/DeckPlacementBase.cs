@@ -8,7 +8,6 @@ using Forge.Core.GameState;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
-using Forge.Framework.UI.Widgets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -20,6 +19,7 @@ using Vector3 = MonoGameUtility.Vector3;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
+    /*
     public abstract class DeckPlacementBase : IToolbarTool{
         protected readonly float GridResolution;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
@@ -393,4 +393,5 @@ namespace Forge.Core.ObjectEditor.Tools{
             Debug.Assert(_disposed);
         }
     }
+     */
 }

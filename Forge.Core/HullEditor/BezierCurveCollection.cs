@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -72,14 +73,16 @@ namespace Forge.Core.HullEditor{
             }
 
             for (int i = 0; i < numControllers; i++){
-                _curveList.Add(new BezierCurve(_target, 0, 0, curveInitData[i]));
+                throw new Exception();
+                //_curveList.Add(new BezierCurve(_target, 0, 0, curveInitData[i]));
             }
             for (int i = 1; i < numControllers - 1; i++){
-                _curveList[i].SetPrevCurve(_curveList[i - 1]);
-                _curveList[i].SetNextCurve(_curveList[i + 1]);
+                //_curveList[i].SetPrevCurve(_curveList[i - 1]);
+                //_curveList[i].SetNextCurve(_curveList[i + 1]);
             }
 
             //set curve symmetry
+            /*
             switch (panelType){
                 case PanelAlias.Side:
                     _curveList[0].Handle.SymmetricHandle = _curveList[_curveList.Count - 1].Handle;
@@ -163,9 +166,12 @@ namespace Forge.Core.HullEditor{
 
                     break;
             }
+             */
         }
 
         public void Update(){
+            throw new Exception();
+            /*
             foreach (var curve in _curveList){
                 curve.Update();
             }
@@ -189,9 +195,11 @@ namespace Forge.Core.HullEditor{
                     MaxYCurve = curve;
                 }
             }
+             */
         }
 
         public List<BezierInfo> GetControllerInfo(float scaleX = 1, float scaleY = 1){
+            /*
             var li = new List<BezierInfo>(_curveList.Count/2 + 1);
             for (int i = 0; i < _curveList.Count; i++){
                 li.Add
@@ -207,6 +215,8 @@ namespace Forge.Core.HullEditor{
                     );
             }
             return li;
+             */
+            throw new Exception();
         }
 
         #region ienumerable members + accessors
@@ -238,6 +248,7 @@ namespace Forge.Core.HullEditor{
         /// <param name="regenerateMethodCache"> </param>
         /// <returns> </returns>
         public Vector2 GetParameterizedPoint(double t, bool regenerateMethodCache = false){
+            /*
             if (regenerateMethodCache){
                 _lenList = new double[_curveList.Count - 1];
                 _totalArcLen = 0;
@@ -246,6 +257,8 @@ namespace Forge.Core.HullEditor{
                     _totalArcLen += _lenList[i];
                 }
             }
+             */
+            throw new Exception();
 
             double pointArcLen = _totalArcLen*t;
             double tempLen = pointArcLen;
@@ -276,7 +289,7 @@ namespace Forge.Core.HullEditor{
 
         public Vector2 GetBezierValue(BezierCurve prevCurve, BezierCurve nextCurve, double t){
             Vector2 retVal;
-
+            /*
             Bezier.GetBezierValue
                 (
                     out retVal,
@@ -286,6 +299,9 @@ namespace Forge.Core.HullEditor{
                     nextCurve.CenterHandlePos,
                     (float) t
                 );
+             * 
+             */
+            throw new Exception();
 
             return retVal;
         }

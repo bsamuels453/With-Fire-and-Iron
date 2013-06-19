@@ -6,7 +6,6 @@ using System.Linq;
 using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Vector2 = MonoGameUtility.Vector2;
@@ -18,6 +17,7 @@ namespace Forge.Core.HullEditor{
     ///   this class is a fucking mess, here's to hoping it never has to be used again
     /// </summary>
     public class BezierCurve{
+        /*
         #region private fields
 
         const int _linesPerSide = 50;
@@ -271,7 +271,7 @@ namespace Forge.Core.HullEditor{
             _nextCurve.Dispose();
             _prevCurve.Dispose();*/
         }
-
+    /*
         #endregion
 
         public void Update(){
@@ -359,5 +359,7 @@ namespace Forge.Core.HullEditor{
             return list[lowestIndex];
         }
         */
+    /*
     }
+     * */
 }

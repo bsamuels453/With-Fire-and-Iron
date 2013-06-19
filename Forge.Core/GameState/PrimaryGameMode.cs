@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
@@ -7,7 +8,6 @@ using Forge.Core.Camera;
 using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 
 #endregion
@@ -16,22 +16,24 @@ namespace Forge.Core.GameState{
     public class PrimaryGameMode : IGameState{
         readonly Battlefield _battlefield;
         readonly BodyCenteredCamera _cameraController;
-
+        /*
         readonly Button _deckDownButton;
         readonly Button _deckUpButton;
         readonly Button[] _highlightMasks;
+         * */
 
         readonly RenderTarget _renderTarget;
 
         readonly TerrainUpdater _terrainUpdater;
 
-        readonly UIElementCollection _uiElementCollection;
+        //readonly UIElementCollection _uiElementCollection;
+        //Button _test;
 
-        Button _speedIndicator;
+        //Button _speedIndicator;
 
-        public PrimaryGameMode(){
-            _uiElementCollection = new UIElementCollection();
-            _uiElementCollection.Bind();
+        public PrimaryGameMode(){           
+            //_uiElementCollection = new UIElementCollection();
+            //_uiElementCollection.Bind();
             _renderTarget = new RenderTarget();
             _renderTarget.Bind();
 
@@ -43,6 +45,8 @@ namespace Forge.Core.GameState{
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
 
+            //_test = new Button(50, 50, 50, 50, DepthLevel.High, "Materials/TestNonsquare");
+            
             _battlefield.ShipsOnField[1].SetAutoPilot
                 (new Orbit
                     (
@@ -57,7 +61,7 @@ namespace Forge.Core.GameState{
             _cameraController = new BodyCenteredCamera(false);
             GamestateManager.CameraController = _cameraController;
             _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
-
+            /*
             var buttonGen = new ButtonGenerator();
             const int yPos = 100;
             buttonGen.X = 0;
@@ -98,13 +102,15 @@ namespace Forge.Core.GameState{
             _deckDownButton.OnLeftClickDispatcher += _battlefield.ShipsOnField[0].RemoveVisibleLayer;
 
             _uiElementCollection.Unbind();
+             */
         }
 
         #region IGameState Members
 
         public void Update(InputState state, double timeDelta){
-            _uiElementCollection.UpdateInput(ref state);
-            _uiElementCollection.UpdateLogic(timeDelta);
+
+            //_uiElementCollection.UpdateInput(ref state);
+            //_uiElementCollection.UpdateLogic(timeDelta);
 
             _battlefield.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
