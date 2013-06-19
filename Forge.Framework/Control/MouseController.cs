@@ -33,14 +33,16 @@ namespace Forge.Framework.Control{
         public event Action<ForgeMouseState> OnMouseScroll;
 
         /// <summary>
-        ///   Invoked when this controller and its events are deactivated by another controller obtaining mouse focus. Boolean parameter represents whether or not the focus was obtained with cachePreviousController=true.
+        ///   Invoked when this controller and its events are deactivated by another controller obtaining mouse focus.
         /// </summary>
-        public event Action<bool> OnFocusLost;
+        public event Action OnMouseFocusLost;
 
         /// <summary>
         ///   Invoked when this controller regains focus after being defocus'd by another controller.
+        ///   Typically this is only called when the mouse's exclusivity status is removed, and all
+        ///   registered controllers may recieve mouse input.
         /// </summary>
-        public event Action OnFocusRegained;
+        public event Action OnMouseFocusRegained;
 
         #endregion
 
@@ -64,15 +66,15 @@ namespace Forge.Framework.Control{
             }
         }
 
-        public void SafeInvokeOnFocusLost(bool isRestorationPossible){
-            if (OnFocusLost != null){
-                OnFocusLost.Invoke(isRestorationPossible);
+        public void SafeInvokeOnFocusLost(){
+            if (OnMouseFocusLost != null){
+                OnMouseFocusLost.Invoke();
             }
         }
 
         public void SafeInvokeOnFocusRegained(){
-            if (OnFocusRegained != null){
-                OnFocusRegained.Invoke();
+            if (OnMouseFocusRegained != null){
+                OnMouseFocusRegained.Invoke();
             }
         }
 
