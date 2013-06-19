@@ -9,7 +9,7 @@ namespace Forge.Framework.UI{
     /// <summary>
     /// This class handles frame strata calculation and recording.
     /// </summary>
-    public class FrameStrata{
+    public class FrameStrata : IComparable<FrameStrata>{
         #region FrameStratum enum
 
         public enum FrameStratum{
@@ -67,6 +67,20 @@ namespace Forge.Framework.UI{
             _frameNestingDepth = frameNestingDepth;
             FrameStrataValue = strataValue;
         }
+
+        #region IComparable<FrameStrata> Members
+
+        public int CompareTo(FrameStrata other){
+            if (other.FrameStrataValue == FrameStrataValue){
+                return 0;
+            }
+            if (other.FrameStrataValue > FrameStrataValue){
+                return -1;
+            }
+            return 1;
+        }
+
+        #endregion
 
         /// <summary>
         /// Calculates the floating point equivalent of this frame's strata.
