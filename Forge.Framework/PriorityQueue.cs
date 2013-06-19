@@ -13,7 +13,7 @@ namespace Forge.Framework{
     /// The enumerator will respect the priority as well.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    internal class PriorityQueue<T> : IEnumerable<T>{
+    public class PriorityQueue<T> : IEnumerable<T>{
         //used to store elements+priorities
         //used for the enumerator
         List<T> _elementObjs;
