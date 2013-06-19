@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Forge.Framework.Control;
 using Forge.Framework.Resources;
 using MonoGameUtility;
 
@@ -20,17 +21,22 @@ namespace Forge.Framework.UI{
     internal class UIElementCollection : IUIElement{
         readonly ElementPriorityQueue _elements;
         readonly FrameStrata _frameStrata;
+        readonly MouseController _mouseController;
+        readonly MouseManager _mouseManager;
         readonly UIElementCollection _parentCollection;
         Rectangle _boundingBox;
 
         /// <summary>
         /// parent constructor
         /// </summary>
-        public UIElementCollection(){
+        public UIElementCollection(MouseManager mouseManager){
             _frameStrata = new FrameStrata();
             _elements = new ElementPriorityQueue();
             _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _parentCollection = null;
+            _mouseManager = mouseManager;
+            _mouseController = new MouseController(this);
+            SetupEventPropagation();
         }
 
         /// <summary>
@@ -48,6 +54,9 @@ namespace Forge.Framework.UI{
             _elements = new ElementPriorityQueue();
             _boundingBox = boundingBox;
             _parentCollection = parent;
+            _mouseManager = _parentCollection._mouseManager;
+            _mouseController = new MouseController(this);
+            SetupEventPropagation();
         }
 
         /// <summary>
@@ -88,6 +97,11 @@ namespace Forge.Framework.UI{
             set { throw new NotImplementedException(); }
         }
 
+
+        public MouseController MouseController{
+            get { return _mouseController; }
+        }
+
         /// <summary>
         /// Calculates whether or not the point at the specified xy coordinates intercepts with
         /// any of the interface elements in this collection.
@@ -109,6 +123,43 @@ namespace Forge.Framework.UI{
         }
 
         #endregion
+
+        /// <summary>
+        /// Adds event subscriptions to _mouseController so that when this collection has an
+        /// event called, that event is also propagated to subcomponents.
+        /// </summary>
+        void SetupEventPropagation(){
+            _mouseController.OnMouseButton +=
+                state =>{
+                    foreach (var element in _elements){
+                        element.MouseController.SafeInvokeOnMouseButton(state);
+                    }
+                };
+            _mouseController.OnMouseFocusLost +=
+                () =>{
+                    foreach (var element in _elements){
+                        element.MouseController.SafeInvokeOnFocusLost();
+                    }
+                };
+            _mouseController.OnMouseFocusRegained +=
+                () =>{
+                    foreach (var element in _elements){
+                        element.MouseController.SafeInvokeOnFocusRegained();
+                    }
+                };
+            _mouseController.OnMouseMovement +=
+                state =>{
+                    foreach (var element in _elements){
+                        element.MouseController.SafeInvokeOnMouseMovement(state);
+                    }
+                };
+            _mouseController.OnMouseScroll +=
+                state =>{
+                    foreach (var element in _elements){
+                        element.MouseController.SafeInvokeOnMouseScroll(state);
+                    }
+                };
+        }
 
         /// <summary>
         /// Binds this collection so that any newly generated ui elements are automatically added
