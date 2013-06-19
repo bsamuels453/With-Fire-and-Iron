@@ -72,7 +72,7 @@ namespace Forge.Core.Terrain{
             };
 
             _cmdQueue.WriteToBuffer(genArr, _genConstants, false, null);
-            _generationPrgm = Resource.LoadCLScript("\\Scripts\\GenTerrain.cl");
+            _generationPrgm = Resource.LoadCLScript("\\Scripts\\Opencl\\GenTerrain.cl");
 
             _terrainGenKernel = _generationPrgm.CreateKernel("GenTerrain");
             _normalGenKernel = _generationPrgm.CreateKernel("GenNormals");
@@ -99,7 +99,7 @@ namespace Forge.Core.Terrain{
 
             #region setup quadtree kernel
 
-            _qTreePrgm = Resource.LoadCLScript("\\Scripts\\Quadtree.cl");
+            _qTreePrgm = Resource.LoadCLScript("\\Scripts\\Opencl\\Quadtree.cl");
 
             _qTreeKernel = _qTreePrgm.CreateKernel("QuadTree");
             _crossCullKernel = _qTreePrgm.CreateKernel("CrossCull");
@@ -129,7 +129,7 @@ namespace Forge.Core.Terrain{
 
             #region setup winding kernel
 
-            _winderPrgm = Resource.LoadCLScript("\\Scripts\\VertexWinder.cl");
+            _winderPrgm = Resource.LoadCLScript("\\Scripts\\Opencl\\VertexWinder.cl");
 
             _winderKernel = _winderPrgm.CreateKernel("VertexWinder");
             _indicies = new ComputeBuffer<int>(_context, ComputeMemoryFlags.None, (_chunkWidthInBlocks)*(_chunkWidthInBlocks)*8);
