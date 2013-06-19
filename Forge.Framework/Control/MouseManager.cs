@@ -49,14 +49,14 @@ namespace Forge.Framework.Control{
             var prevState = _curState;
             _curState = new ForgeMouseState(prevState, timeDelta);
             if (_curController != null){
+                if (_curState.MouseMoved){
+                    _curController.SafeInvokeOnMouseMovement(_curState, (float) timeDelta);
+                }
                 if (_curState.LeftButtonChange || _curState.RightButtonChange){
                     _curController.SafeInvokeOnMouseButton(_curState, (float) timeDelta);
                 }
                 if (_curState.MouseScrollChange != 0){
                     _curController.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
-                }
-                if (_curState.MouseMoved){
-                    _curController.SafeInvokeOnMouseMovement(_curState, (float) timeDelta);
                 }
             }
         }
