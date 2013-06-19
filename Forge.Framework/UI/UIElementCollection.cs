@@ -128,9 +128,9 @@ namespace Forge.Framework.UI{
         /// </summary>
         void SetupEventPropagation(){
             _mouseController.OnMouseButton +=
-                state =>{
+                (state, timeDelta) =>{
                     foreach (var element in _elements){
-                        element.MouseController.SafeInvokeOnMouseButton(state);
+                        element.MouseController.SafeInvokeOnMouseButton(state, timeDelta);
                     }
                 };
             _mouseController.OnMouseFocusLost +=
@@ -146,15 +146,15 @@ namespace Forge.Framework.UI{
                     }
                 };
             _mouseController.OnMouseMovement +=
-                state =>{
+                (state, timeDelta) => {
                     foreach (var element in _elements){
-                        element.MouseController.SafeInvokeOnMouseMovement(state);
+                        element.MouseController.SafeInvokeOnMouseMovement(state, timeDelta);
                     }
                 };
             _mouseController.OnMouseScroll +=
-                state =>{
+                (state, timeDelta) => {
                     foreach (var element in _elements){
-                        element.MouseController.SafeInvokeOnMouseScroll(state);
+                        element.MouseController.SafeInvokeOnMouseScroll(state, timeDelta);
                     }
                 };
         }
