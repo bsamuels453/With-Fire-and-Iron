@@ -145,7 +145,7 @@ namespace Forge.Framework.UI{
         }
 
         public List<IUIElement> GetElementStackAtPoint(int x, int y){
-            if (Contains(x, y)){
+            if (HitTest(x, y)){
                 var ret = new List<IUIElement>();
                 foreach (var element in _elements){
                     ret.AddRange(element.GetElementStackAtPoint(x, y));
@@ -271,6 +271,17 @@ namespace Forge.Framework.UI{
             _mouseController.OnMouseMovement +=
                 (state, timeDelta) =>{
                     if (!state.BlockMPosition){
+                        /*
+                        bool onTopOfStack = false;
+                        var stack = UIElementCollection.GetGlobalElementStack(state.X, state.Y);
+                        stack = stack.OrderBy(o => o.FrameStrata.FrameStrataValue).ToList();
+                        if (stack.Count > 0){
+                            if (stack[0] == this){
+                                onTopOfStack = true;
+                            }
+                        }
+                         */
+
                         //this event is only called when the mouse moves, so can safely turn off hover
                         MouseHovering = false;
                         bool containsNewMouse = Contains(state.X, state.Y);
