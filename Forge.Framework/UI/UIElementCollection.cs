@@ -22,6 +22,7 @@ namespace Forge.Framework.UI{
         readonly MouseController _mouseController;
         readonly MouseManager _mouseManager;
         readonly UIElementCollection _parentCollection;
+        float _alpha;
         Rectangle _boundingBox;
 
         /// <summary>
@@ -34,6 +35,7 @@ namespace Forge.Framework.UI{
             _parentCollection = null;
             _mouseManager = mouseManager;
             _mouseController = new MouseController(this);
+            _alpha = 1;
             SetupEventPropagation();
         }
 
@@ -54,6 +56,7 @@ namespace Forge.Framework.UI{
             _parentCollection = parent;
             _mouseManager = _parentCollection._mouseManager;
             _mouseController = new MouseController(this);
+            _alpha = 1;
             SetupEventPropagation();
         }
 
@@ -66,36 +69,51 @@ namespace Forge.Framework.UI{
 
         #region IUIElement Members
 
+        public int Width{
+            get { return _boundingBox.Width; }
+        }
+
+        public int Height{
+            get { return _boundingBox.Height; }
+        }
+
         public FrameStrata FrameStrata{
             get { return _frameStrata; }
         }
 
-        public float X{
+        public int X{
             get { return _boundingBox.X; }
-            set { throw new NotImplementedException(); }
+            set{
+                _boundingBox.X = value;
+                foreach (var element in _elements){
+                    element.X = X;
+                }
+            }
         }
 
-        public float Y{
+        public int Y{
             get { return _boundingBox.Y; }
-            set { throw new NotImplementedException(); }
-        }
-
-        public float Width{
-            get { return _boundingBox.Width; }
-            set { throw new NotImplementedException(); }
-        }
-
-        public float Height{
-            get { return _boundingBox.Height; }
-            set { throw new NotImplementedException(); }
+            set{
+                _boundingBox.Y = value;
+                foreach (var element in _elements){
+                    element.Y = Y;
+                }
+            }
         }
 
         public float Alpha{
-            get { throw new NotImplementedException(); }
-            set { throw new NotImplementedException(); }
+            get { return _alpha; }
+            set{
+                _alpha = value;
+                foreach (var element in _elements){
+                    element.Alpha = _alpha;
+                }
+            }
         }
 
-
+        /// <summary>
+        /// Provides an interface to access raw mouse input events.
+        /// </summary>
         public MouseController MouseController{
             get { return _mouseController; }
         }
@@ -146,13 +164,13 @@ namespace Forge.Framework.UI{
                     }
                 };
             _mouseController.OnMouseMovement +=
-                (state, timeDelta) => {
+                (state, timeDelta) =>{
                     foreach (var element in _elements){
                         element.MouseController.SafeInvokeOnMouseMovement(state, timeDelta);
                     }
                 };
             _mouseController.OnMouseScroll +=
-                (state, timeDelta) => {
+                (state, timeDelta) =>{
                     foreach (var element in _elements){
                         element.MouseController.SafeInvokeOnMouseScroll(state, timeDelta);
                     }
