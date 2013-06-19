@@ -129,6 +129,9 @@
   <ItemGroup>
     <Compile Include="Angle3.cs" />
     <Compile Include="Common.cs" />
+    <Compile Include="Control\ForgeMouseState.cs" />
+    <Compile Include="Control\MouseController.cs" />
+    <Compile Include="Control\MouseManager.cs" />
     <Compile Include="DebugConsole.cs" />
     <Compile Include="DebugStateShift.cs" />
     <Compile Include="Draw\BaseGeometryBuffer.cs" />
@@ -148,12 +151,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResourceNotDisposedException.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
+    <Compile Include="UI\FrameStrata.cs" />
+    <Compile Include="UI\IUIElement.cs" />
+    <Compile Include="UI\UIElementCollection.cs" />
     <Compile Include="UpdateInterfaces.cs" />
     <Compile Include="VectorParser.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="UI\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
