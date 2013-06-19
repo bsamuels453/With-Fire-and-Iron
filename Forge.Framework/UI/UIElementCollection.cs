@@ -1,10 +1,8 @@
 ﻿#region
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Forge.Framework.Control;
 using Forge.Framework.Resources;
 using MonoGameUtility;
@@ -19,7 +17,7 @@ namespace Forge.Framework.UI{
     /// together to create advanced UI objects such as dialogue boxes, menus, and tooltips.
     /// </summary>
     internal class UIElementCollection : IUIElement{
-        readonly ElementPriorityQueue _elements;
+        readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
         readonly MouseController _mouseController;
         readonly MouseManager _mouseManager;
@@ -31,7 +29,7 @@ namespace Forge.Framework.UI{
         /// </summary>
         public UIElementCollection(MouseManager mouseManager){
             _frameStrata = new FrameStrata();
-            _elements = new ElementPriorityQueue();
+            _elements = new PriorityQueue<IUIElement>();
             _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _parentCollection = null;
             _mouseManager = mouseManager;
@@ -51,7 +49,7 @@ namespace Forge.Framework.UI{
         /// <param name="alias">Debugging alias</param>
         public UIElementCollection(UIElementCollection parent, FrameStrata.FrameStratum depth, Rectangle boundingBox, string alias = "Unnamed"){
             _frameStrata = new FrameStrata(depth, parent.FrameStrata, alias);
-            _elements = new ElementPriorityQueue();
+            _elements = new PriorityQueue<IUIElement>();
             _boundingBox = boundingBox;
             _parentCollection = parent;
             _mouseManager = _parentCollection._mouseManager;
@@ -196,55 +194,6 @@ namespace Forge.Framework.UI{
                     throw new Exception("There is no element collection currently bound");
                 }
                 return _bindOrder[0];
-            }
-        }
-
-        #endregion
-
-        #region Nested type: ElementPriorityQueue
-
-        class ElementPriorityQueue : IEnumerable<IUIElement>{
-            List<IUIElement> _objList;
-
-            public ElementPriorityQueue(){
-                _objList = new List<IUIElement>();
-            }
-
-            public int Count{
-                get { return _objList.Count; }
-            }
-
-            public IUIElement this[int index]{
-                get { return _objList[index]; }
-            }
-
-            #region IEnumerable<IUIElement> Members
-
-            public IEnumerator<IUIElement> GetEnumerator(){
-                return _objList.GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator(){
-                return GetEnumerator();
-            }
-
-            #endregion
-
-            public void Add(float depth, IUIElement element){
-                _objList.Add(element);
-                _objList = _objList.OrderBy(o => o.FrameStrata).ToList();
-            }
-
-            public void Clear(){
-                _objList.Clear();
-            }
-
-            public void RemoveAt(int index){
-                _objList.RemoveAt(index);
-            }
-
-            public void Remove(IUIElement element){
-                _objList.Remove(element);
             }
         }
 
