@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Forge.Framework.Control;
 using Forge.Framework.Resources;
+using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
 #endregion
@@ -19,6 +20,7 @@ namespace Forge.Framework.UI{
     internal class UIElementCollection : IUIElement{
         readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
+        readonly Stopwatch _hoverTimer;
         readonly MouseController _mouseController;
         readonly MouseManager _mouseManager;
         readonly UIElementCollection _parentCollection;
@@ -36,7 +38,9 @@ namespace Forge.Framework.UI{
             _mouseManager = mouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
+            _hoverTimer = new Stopwatch();
             SetupEventPropagation();
+            SetupEventPropagationToChildren();
         }
 
         /// <summary>
@@ -57,7 +61,9 @@ namespace Forge.Framework.UI{
             _mouseManager = _parentCollection._mouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
+            _hoverTimer = new Stopwatch();
             SetupEventPropagation();
+            SetupEventPropagationToChildren();
         }
 
         /// <summary>
@@ -66,6 +72,8 @@ namespace Forge.Framework.UI{
         /// transparent to hittests.
         /// </summary>
         public bool IsTransparent { get; set; }
+
+        public bool ContainsMouse { get; private set; }
 
         #region IUIElement Members
 
@@ -127,24 +135,143 @@ namespace Forge.Framework.UI{
         /// <returns></returns>
         public bool HitTest(int x, int y){
             if (!IsTransparent){
-                if (_boundingBox.Contains(x, y)){
-                    foreach (var elem in _elements){
-                        if (elem.HitTest(x, y)){
-                            return true;
-                        }
-                    }
-                }
+                return Contains(x, y);
             }
             return false;
         }
 
         #endregion
 
+        public event Action<UIElementCollection> OnMouseFocusLost;
+        public event Action<UIElementCollection> OnMouseFocusGained;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnMouseMovement;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnMouseScroll;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnLeftClick;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnLeftDown;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnLeftRelease;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnRightClick;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnRightDown;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnRightRelease;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnMouseHover;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnMouseEntry;
+        public event Action<ForgeMouseState, float, UIElementCollection> OnMouseExit;
+
+        /// <summary>
+        /// Calculates whether or not the point at the specified xy coordinates falls within
+        /// the bounds of any of the elements inside this collection. This test ignores any
+        /// transparency settings.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public bool Contains(int x, int y){
+            if (_boundingBox.Contains(x, y)){
+                foreach (var elem in _elements){
+                    if (elem.HitTest(x, y)){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        void SetupEventPropagation(){
+            _mouseController.OnMouseButton +=
+                (state, timeDelta) =>{
+                    if (state.LeftButtonChange && !state.BlockLeftMButton){
+                        if (state.LeftButtonState == ButtonState.Pressed){
+                            if (OnLeftDown != null){
+                                OnLeftDown.Invoke(state, timeDelta, this);
+                            }
+                        }
+                        else{
+                            if (OnLeftRelease != null){
+                                OnLeftRelease.Invoke(state, timeDelta, this);
+                            }
+                        }
+                        if (state.LeftButtonClick){
+                            if (OnLeftClick != null){
+                                OnLeftClick.Invoke(state, timeDelta, this);
+                            }
+                        }
+                    }
+                    if (state.RightButtonChange && !state.BlockRightMButton){
+                        if (state.RightButtonState == ButtonState.Pressed){
+                            if (OnRightDown != null){
+                                OnRightDown.Invoke(state, timeDelta, this);
+                            }
+                        }
+                        else{
+                            if (OnRightRelease != null){
+                                OnRightRelease.Invoke(state, timeDelta, this);
+                            }
+                        }
+                        if (state.RightButtonClick){
+                            if (OnRightClick != null){
+                                OnRightClick.Invoke(state, timeDelta, this);
+                            }
+                        }
+                    }
+                };
+            _mouseController.OnMouseFocusLost +=
+                () =>{
+                    if (OnMouseFocusLost != null){
+                        OnMouseFocusLost.Invoke(this);
+                    }
+                };
+            _mouseController.OnMouseFocusGained +=
+                () =>{
+                    if (OnMouseFocusGained != null){
+                        OnMouseFocusGained.Invoke(this);
+                    }
+                };
+            _mouseController.OnMouseMovement +=
+                (state, timeDelta) =>{
+                    if (!state.BlockMPosition){
+                        bool containsNewMouse = Contains(state.X, state.Y);
+                        //entry distpatcher
+                        if (containsNewMouse && !ContainsMouse){
+                            if (OnMouseEntry != null){
+                                OnMouseEntry.Invoke(state, timeDelta, this);
+                            }
+                            _hoverTimer.Restart();
+                        }
+
+                        //exit dispatcher
+                        if (!containsNewMouse && ContainsMouse){
+                            if (OnMouseExit != null){
+                                OnMouseExit.Invoke(state, timeDelta, this);
+                            }
+                            _hoverTimer.Reset();
+                        }
+                        else{
+                            if (ContainsMouse){
+                                //movement disrupts any hover effect, and we're certain that the mouse isnt exiting
+                                _hoverTimer.Restart();
+                            }
+                        }
+
+                        ContainsMouse = containsNewMouse;
+                        if (OnMouseMovement != null){
+                            OnMouseMovement.Invoke(state, timeDelta, this);
+                        }
+                    }
+                };
+            _mouseController.OnMouseScroll +=
+                (state, timeDelta) =>{
+                    if (!state.BlockScrollWheel){
+                        if (OnMouseScroll != null){
+                            OnMouseScroll.Invoke(state, timeDelta, this);
+                        }
+                    }
+                };
+        }
+
         /// <summary>
         /// Adds event subscriptions to _mouseController so that when this collection has an
         /// event called, that event is also propagated to subcomponents.
         /// </summary>
-        void SetupEventPropagation(){
+        void SetupEventPropagationToChildren(){
             _mouseController.OnMouseButton +=
                 (state, timeDelta) =>{
                     foreach (var element in _elements){
@@ -157,7 +284,7 @@ namespace Forge.Framework.UI{
                         element.MouseController.SafeInvokeOnFocusLost();
                     }
                 };
-            _mouseController.OnMouseFocusRegained +=
+            _mouseController.OnMouseFocusGained +=
                 () =>{
                     foreach (var element in _elements){
                         element.MouseController.SafeInvokeOnFocusRegained();
