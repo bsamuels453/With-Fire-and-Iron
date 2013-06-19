@@ -68,7 +68,7 @@ namespace Forge.Core.HullEditor{
                     y: y,
                     width: width,
                     height: height,
-                    depth: UIElementCollection.BoundCollection.GetAbsoluteDepth(DepthLevel.Background),
+                    depth: UIElementCollection.BoundCollection.GetAbsoluteDepth(FrameStrata.Background),
                     textureName: "Materials/BlueBox",
                     spriteTexRepeatX: width/(Curves.PixelsPerMeter*1),
                     spriteTexRepeatY: height/(Curves.PixelsPerMeter*1),

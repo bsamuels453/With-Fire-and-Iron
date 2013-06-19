@@ -240,7 +240,7 @@ namespace Forge.Core.HullEditor{
             _lineTemplate.V1 = Vector2.Zero;
             _lineTemplate.V2 = Vector2.Zero;
             _lineTemplate.Color = Color.White;
-            _lineTemplate.Depth = DepthLevel.Low;
+            _lineTemplate.Depth = FrameStrata.Low;
             _lineTemplate.Target = target;
 
             Vector2 component1 = Common.GetComponentFromAngle(initData.Angle, initData.Length1);

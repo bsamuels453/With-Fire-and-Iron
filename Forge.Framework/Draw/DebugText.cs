@@ -20,7 +20,7 @@ namespace Forge.Framework.Draw{
 
         public static void CreateText(string id, int x, int y){
             throw new Exception();
-            //_text.Add(id, new TextBox(x, y, DepthLevel.High, Color.LimeGreen));
+            //_text.Add(id, new TextBox(x, y, FrameStrata.High, Color.LimeGreen));
         }
 
         public static void SetText(string id, string text){

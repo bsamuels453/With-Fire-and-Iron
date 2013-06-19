@@ -45,7 +45,7 @@ namespace Forge.Core.GameState{
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
 
-            //_test = new Button(50, 50, 50, 50, DepthLevel.High, "Materials/TestNonsquare");
+            //_test = new Button(50, 50, 50, 50, FrameStrata.High, "Materials/TestNonsquare");
             
             _battlefield.ShipsOnField[1].SetAutoPilot
                 (new Orbit
@@ -70,7 +70,7 @@ namespace Forge.Core.GameState{
             buttonGen.SpriteTexRepeatY = 1.509433962f;
             buttonGen.Height = 84;
             buttonGen.Width = 53;
-            buttonGen.Depth = DepthLevel.Medium;
+            buttonGen.Depth = FrameStrata.Medium;
             buttonGen.TextureName = "Icons/SpeedIndicator";
             _speedIndicator = buttonGen.GenerateButton();
 
@@ -78,7 +78,7 @@ namespace Forge.Core.GameState{
             buttonGen.TextureName = "Effects/SolidBlack";
             buttonGen.Height = height;
             buttonGen.Width = 53;
-            buttonGen.Depth = DepthLevel.High;
+            buttonGen.Depth = FrameStrata.High;
             buttonGen.SpriteTexRepeatX = 1;
             buttonGen.SpriteTexRepeatY = 1;
 
