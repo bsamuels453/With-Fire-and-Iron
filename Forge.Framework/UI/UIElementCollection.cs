@@ -44,6 +44,7 @@ namespace Forge.Framework.UI{
             _globalUIParent = this;
             SetupEventPropagation();
             SetupEventPropagationToChildren();
+            _mouseManager.AddGlobalController(_mouseController, 0);
         }
 
         /// <summary>
@@ -61,6 +62,7 @@ namespace Forge.Framework.UI{
             _elements = new PriorityQueue<IUIElement>();
             _boundingBox = boundingBox;
             _parentCollection = parent;
+            _parentCollection.AddElement(this);
             _mouseManager = _parentCollection._mouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
@@ -292,6 +294,7 @@ namespace Forge.Framework.UI{
                         //this event is only called when the mouse moves, so can safely turn off hover
                         MouseHovering = false;
                         bool containsNewMouse = ContainsPoint(state.X, state.Y);
+
                         //entry distpatcher
                         if (containsNewMouse && !ContainsMouse){
                             if (OnMouseEntry != null){
