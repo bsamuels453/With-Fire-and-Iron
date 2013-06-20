@@ -8,6 +8,7 @@ using Forge.Core.Camera;
 using Forge.Core.Terrain;
 using Forge.Framework;
 using Forge.Framework.Draw;
+using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 
 #endregion
@@ -26,14 +27,14 @@ namespace Forge.Core.GameState{
 
         readonly TerrainUpdater _terrainUpdater;
 
-        //readonly UIElementCollection _uiElementCollection;
+        readonly UIElementCollection _uiElementCollection;
         //Button _test;
 
         //Button _speedIndicator;
 
         public PrimaryGameMode(){           
-            //_uiElementCollection = new UIElementCollection();
-            //_uiElementCollection.Bind();
+            _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
+            _uiElementCollection.Bind();
             _renderTarget = new RenderTarget();
             _renderTarget.Bind();
 
@@ -103,18 +104,20 @@ namespace Forge.Core.GameState{
 
             _uiElementCollection.Unbind();
              */
+
+            _uiElementCollection.Unbind();
         }
 
         #region IGameState Members
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(double timeDelta){
 
             //_uiElementCollection.UpdateInput(ref state);
             //_uiElementCollection.UpdateLogic(timeDelta);
 
-            _battlefield.Update(ref state, timeDelta);
+            //_battlefield.Update(ref state, timeDelta);
             _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
-            _cameraController.Update(ref state, timeDelta);
+            //_cameraController.Update(ref state, timeDelta);
 
             int incremental = (int) ((_battlefield.ShipsOnField[0].StateData.Velocity/_battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity)*3);
             /*
@@ -124,7 +127,7 @@ namespace Forge.Core.GameState{
             }
             _highlightMasks[absSpeed].Alpha = 0;
              */
-            _terrainUpdater.Update(state, timeDelta);
+            _terrainUpdater.Update(timeDelta);
         }
 
         public void Draw(){

@@ -60,8 +60,9 @@ namespace Forge.Core.GameState{
             _renderTarget.Dispose();
         }
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(double timeDelta){
             throw new Exception();
+            /*
             _renderTarget.Bind();
             //_uiElementCollection.Bind();
 
@@ -75,9 +76,9 @@ namespace Forge.Core.GameState{
             if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.S)){
                 AirshipPackager.ExportAirshipDefinitionToFile("ExportedAirship", _backCurveInfo, _sideCurveInfo, _topCurveInfo);
             }
-
+            
             #endregion
-
+            */
             #region update logic
 
             //UIElementCollection.BoundCollection.UpdateLogic(timeDelta);

@@ -57,7 +57,7 @@ namespace Forge.Core.GameState{
             _toppanel.Dispose();
         }
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(double timeDelta){
             //force end early
             var sideInfo = _sidepanel.Curves.GetControllerInfo();
             var backInfo = _backpanel.Curves.GetControllerInfo();
