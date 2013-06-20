@@ -22,21 +22,35 @@ namespace Forge.Framework.Draw{
         bool _isDisposed;
         Texture2D _texture;
 
-        /// <summary>
-        ///   constructor for a normal sprite
-        /// </summary>
-        public Sprite2D(string textureName, int x, int y, int width, int height, FrameStrata targetStrata, bool transparent = false, float alpha = 1,
+        public Sprite2D(
+            string textureName,
+            int x,
+            int y,
+            int width,
+            int height,
+            FrameStrata targetStrata,
+            bool transparent = false,
+            float alpha = 1,
             float spriteRepeatX = 1,
-            float spriteRepeatY = 1){
+            float spriteRepeatY = 1
+            )
+            : this(textureName, new Rectangle(x, y, width, height), targetStrata, transparent, alpha, spriteRepeatX, spriteRepeatY){
+        }
+
+        public Sprite2D(
+            string textureName,
+            Rectangle boundingBox,
+            FrameStrata targetStrata,
+            bool transparent = false,
+            float alpha = 1,
+            float spriteRepeatX = 1,
+            float spriteRepeatY = 1
+            ){
             _texture = Resource.LoadContent<Texture2D>(textureName);
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
             _destRect = new Rectangle();
             _isDisposed = false;
-            _destRect = new Rectangle();
-            X = x;
-            Y = y;
-            Width = width;
-            Height = height;
+            _destRect = boundingBox;
             FrameStrata = targetStrata;
             Alpha = alpha;
             Enabled = true;
