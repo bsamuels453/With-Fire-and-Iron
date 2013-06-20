@@ -21,10 +21,12 @@ namespace Forge.Framework{
 
         public PriorityQueue(int defaultSize){
             _elements = new List<Element>(defaultSize);
+            _elementObjs = new List<T>(defaultSize);
         }
 
         public PriorityQueue(){
             _elements = new List<Element>();
+            _elementObjs = new List<T>();
         }
 
         public int Count{
