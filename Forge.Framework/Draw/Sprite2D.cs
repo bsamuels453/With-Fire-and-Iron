@@ -1,6 +1,10 @@
 ﻿#region
 
+using System;
+using System.Collections.Generic;
+using Forge.Framework.Control;
 using Forge.Framework.Resources;
+using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Rectangle = MonoGameUtility.Rectangle;
@@ -9,15 +13,11 @@ using Vector2 = MonoGameUtility.Vector2;
 #endregion
 
 namespace Forge.Framework.Draw{
-    internal class Sprite2D : IDrawableSprite{
+    internal class Sprite2D : IDrawableSprite, IUIElement{
         readonly FloatingRectangle _srcRect;
-        public float Alpha;
+
         public float Depth;
         public bool Enabled;
-        public int Height;
-        public int Width;
-        public int X;
-        public int Y;
 
         Rectangle _destRect;
         bool _isDisposed;
@@ -34,11 +34,13 @@ namespace Forge.Framework.Draw{
             _isDisposed = false;
             X = x;
             Y = y;
+            _destRect = new Rectangle();
             Width = width;
             Height = height;
             Depth = depth;
             Alpha = alpha;
             Enabled = true;
+            MouseController = new MouseController(this);
             RenderTarget.Sprites.Add(this);
         }
 
@@ -62,10 +64,6 @@ namespace Forge.Framework.Draw{
 
         public void Draw(){
             if (Enabled){
-                _destRect.X = X;
-                _destRect.Y = Y;
-                _destRect.Width = Width;
-                _destRect.Height = Height;
                 RenderTarget.CurSpriteBatch.Draw
                     (
                         _texture,
@@ -78,6 +76,51 @@ namespace Forge.Framework.Draw{
                         Depth
                     );
             }
+        }
+
+        #endregion
+
+        #region IUIElement Members
+
+        public FrameStrata FrameStrata{
+            get { throw new NotImplementedException(); }
+        }
+
+        public int X{
+            get { return _destRect.X; }
+            set { _destRect.X = value; }
+        }
+
+        public int Y{
+            get { return _destRect.Y; }
+            set { _destRect.Y = value; }
+        }
+
+        public int Width{
+            get { return _destRect.Width; }
+            set { _destRect.Width = value; }
+        }
+
+        public int Height{
+            get { return _destRect.Height; }
+            set { _destRect.Height = value; }
+        }
+
+        public float Alpha { get; set; }
+
+        public MouseController MouseController { get; private set; }
+
+        public bool HitTest(int x, int y){
+            return _destRect.Contains(x, y);
+        }
+
+        public List<IUIElement> GetElementStackAtPoint(int x, int y){
+            if (HitTest(x, y)){
+                var ret = new List<IUIElement>(1);
+                ret.Add(this);
+                return ret;
+            }
+            return new List<IUIElement>();
         }
 
         #endregion
