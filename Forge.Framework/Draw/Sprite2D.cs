@@ -14,6 +14,7 @@ using Vector2 = MonoGameUtility.Vector2;
 namespace Forge.Framework.Draw{
     internal class Sprite2D : IDrawableSprite, IUIElement{
         readonly FloatingRectangle _srcRect;
+        readonly bool _transparent;
 
         public bool Enabled;
 
@@ -24,21 +25,23 @@ namespace Forge.Framework.Draw{
         /// <summary>
         ///   constructor for a normal sprite
         /// </summary>
-        public Sprite2D(string textureName, int x, int y, int width, int height, FrameStrata targetStrata, float alpha = 1, float spriteRepeatX = 1,
+        public Sprite2D(string textureName, int x, int y, int width, int height, FrameStrata targetStrata, bool transparent = false, float alpha = 1,
+            float spriteRepeatX = 1,
             float spriteRepeatY = 1){
             _texture = Resource.LoadContent<Texture2D>(textureName);
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
             _destRect = new Rectangle();
             _isDisposed = false;
+            _destRect = new Rectangle();
             X = x;
             Y = y;
-            _destRect = new Rectangle();
             Width = width;
             Height = height;
             FrameStrata = targetStrata;
             Alpha = alpha;
             Enabled = true;
             MouseController = new MouseController(this);
+            _transparent = transparent;
             RenderTarget.Sprites.Add(this);
         }
 
@@ -107,7 +110,10 @@ namespace Forge.Framework.Draw{
         public MouseController MouseController { get; private set; }
 
         public bool HitTest(int x, int y){
-            return _destRect.Contains(x, y);
+            if (!_transparent){
+                return _destRect.Contains(x, y);
+            }
+            return false;
         }
 
         public List<IUIElement> GetElementStackAtPoint(int x, int y){
