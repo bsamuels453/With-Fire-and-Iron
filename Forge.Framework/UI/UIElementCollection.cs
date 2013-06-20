@@ -139,7 +139,7 @@ namespace Forge.Framework.UI{
         /// <returns></returns>
         public bool HitTest(int x, int y){
             if (!IsTransparent){
-                return Contains(x, y);
+                return ContainsPoint(x, y);
             }
             return false;
         }
@@ -207,7 +207,7 @@ namespace Forge.Framework.UI{
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public bool Contains(int x, int y){
+        public bool ContainsPoint(int x, int y){
             if (_boundingBox.Contains(x, y)){
                 foreach (var elem in _elements){
                     if (elem.HitTest(x, y)){
@@ -216,6 +216,10 @@ namespace Forge.Framework.UI{
                 }
             }
             return false;
+        }
+
+        public void AddElement(IUIElement element){
+            _elements.Add(element, element.FrameStrata.FrameStrataValue);
         }
 
         void SetupEventPropagation(){
@@ -284,7 +288,7 @@ namespace Forge.Framework.UI{
 
                         //this event is only called when the mouse moves, so can safely turn off hover
                         MouseHovering = false;
-                        bool containsNewMouse = Contains(state.X, state.Y);
+                        bool containsNewMouse = ContainsPoint(state.X, state.Y);
                         //entry distpatcher
                         if (containsNewMouse && !ContainsMouse){
                             if (OnMouseEntry != null){
