@@ -9,7 +9,7 @@ namespace Forge.Framework.UI{
     /// <summary>
     /// Used to define a UI element/collection.
     /// </summary>
-    internal interface IUIElement{
+    public interface IUIElement{
         FrameStrata FrameStrata { get; }
         int X { get; set; }
         int Y { get; set; }

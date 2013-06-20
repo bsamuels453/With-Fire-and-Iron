@@ -17,7 +17,7 @@ namespace Forge.Framework.UI{
     /// stuff like fading buttons, among other things. UIElementCollections can be further grouped
     /// together to create advanced UI objects such as dialogue boxes, menus, and tooltips.
     /// </summary>
-    internal class UIElementCollection : IUIElement{
+    public class UIElementCollection : IUIElement{
         const float _hoverTime = 200;
         readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
