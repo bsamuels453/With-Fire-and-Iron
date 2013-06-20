@@ -19,5 +19,6 @@ namespace Forge.Framework.UI{
         MouseController MouseController { get; }
         bool HitTest(int x, int y);
         List<IUIElement> GetElementStackAtPoint(int x, int y);
+        void InitializeEvents(UIElementCollection parent);
     }
 }

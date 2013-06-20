@@ -1,6 +1,5 @@
 ﻿#region
 
-using System;
 using System.Collections.Generic;
 using Forge.Framework.Control;
 using Forge.Framework.Resources;
@@ -16,7 +15,6 @@ namespace Forge.Framework.Draw{
     internal class Sprite2D : IDrawableSprite, IUIElement{
         readonly FloatingRectangle _srcRect;
 
-        public float Depth;
         public bool Enabled;
 
         Rectangle _destRect;
@@ -26,7 +24,7 @@ namespace Forge.Framework.Draw{
         /// <summary>
         ///   constructor for a normal sprite
         /// </summary>
-        public Sprite2D(string textureName, int x, int y, int width, int height, float depth = 0.5f, float alpha = 1, float spriteRepeatX = 1,
+        public Sprite2D(string textureName, int x, int y, int width, int height, FrameStrata targetStrata, float alpha = 1, float spriteRepeatX = 1,
             float spriteRepeatY = 1){
             _texture = Resource.LoadContent<Texture2D>(textureName);
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
@@ -37,7 +35,7 @@ namespace Forge.Framework.Draw{
             _destRect = new Rectangle();
             Width = width;
             Height = height;
-            Depth = depth;
+            FrameStrata = targetStrata;
             Alpha = alpha;
             Enabled = true;
             MouseController = new MouseController(this);
@@ -73,7 +71,7 @@ namespace Forge.Framework.Draw{
                         0,
                         Vector2.Zero,
                         SpriteEffects.None,
-                        Depth
+                        FrameStrata.FrameStrataValue
                     );
             }
         }
@@ -82,9 +80,7 @@ namespace Forge.Framework.Draw{
 
         #region IUIElement Members
 
-        public FrameStrata FrameStrata{
-            get { throw new NotImplementedException(); }
-        }
+        public FrameStrata FrameStrata { get; private set; }
 
         public int X{
             get { return _destRect.X; }
@@ -121,6 +117,9 @@ namespace Forge.Framework.Draw{
                 return ret;
             }
             return new List<IUIElement>();
+        }
+
+        public void InitializeEvents(UIElementCollection parent){
         }
 
         #endregion

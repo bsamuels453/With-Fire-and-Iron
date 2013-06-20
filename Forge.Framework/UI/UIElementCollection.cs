@@ -155,6 +155,9 @@ namespace Forge.Framework.UI{
             return new List<IUIElement>();
         }
 
+        public void InitializeEvents(UIElementCollection parent){
+        }
+
         #endregion
 
         #region static
