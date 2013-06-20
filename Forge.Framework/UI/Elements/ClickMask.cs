@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Forge.Framework.Control;
+using MonoGameUtility;
 
 namespace Forge.Framework.UI.Elements {
     class ClickMask : IUIElement {
+
+        public ClickMask(Rectangle boundingBox){
+            throw new NotImplementedException();
+        }
+
         public FrameStrata FrameStrata{
             get { throw new NotImplementedException(); }
         }

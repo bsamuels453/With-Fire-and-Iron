@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Forge.Framework.Control;
+using MonoGameUtility;
 
 namespace Forge.Framework.UI.Elements {
     class MouseoverMask : IUIElement{
+        public MouseoverMask(Rectangle boundingBox){
+            throw new NotImplementedException();
+        }
+
         public FrameStrata FrameStrata{
             get { throw new NotImplementedException(); }
         }
