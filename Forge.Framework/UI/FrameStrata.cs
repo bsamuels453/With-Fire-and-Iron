@@ -10,9 +10,9 @@ namespace Forge.Framework.UI{
     /// This class handles frame strata calculation and recording.
     /// </summary>
     public class FrameStrata : IComparable<FrameStrata>{
-        #region FrameStratum enum
+        #region Level enum
 
-        public enum FrameStratum{
+        public enum Level{
             Background,
             BackgroundDetail,
             Border,
@@ -43,7 +43,7 @@ namespace Forge.Framework.UI{
         /// This constructor is intended to be used for parent frames.
         /// </summary>
         public FrameStrata()
-            : this(new List<FrameStackData>(), FrameStratum.Background, 0, 1, "Global Parent"){
+            : this(new List<FrameStackData>(), Level.Background, 0, 1, "Global Parent"){
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Forge.Framework.UI{
         /// <param name="strata">The target strata for this frame.</param>
         /// <param name="parent">The parent frame for the framestrata being constructed.</param>
         /// <param name="alias">An internal alias used in debugging stratum stacks.</param>
-        public FrameStrata(FrameStratum strata, FrameStrata parent, string alias = "Unnamed")
+        public FrameStrata(Level strata, FrameStrata parent, string alias = "Unnamed")
             : this(
                 parent._frameStack,
                 strata,
@@ -61,7 +61,7 @@ namespace Forge.Framework.UI{
                 alias){
         }
 
-        FrameStrata(List<FrameStackData> parentFrameStack, FrameStratum strata, int frameNestingDepth, float strataValue, string frameAlias){
+        FrameStrata(List<FrameStackData> parentFrameStack, Level strata, int frameNestingDepth, float strataValue, string frameAlias){
             _frameStack = parentFrameStack;
             _frameStack.Add(new FrameStackData(strata, frameAlias));
             _frameNestingDepth = frameNestingDepth;
@@ -85,7 +85,7 @@ namespace Forge.Framework.UI{
         /// <summary>
         /// Calculates the floating point equivalent of this frame's strata.
         /// </summary>
-        static float CalculateStrata(int parentNestingDepth, FrameStratum childStrata, float parentStrataValue){
+        static float CalculateStrata(int parentNestingDepth, Level childStrata, float parentStrataValue){
             float magnitude = (float) Math.Pow(10, (parentNestingDepth + 1));
             float d = ((float) childStrata)/magnitude;
             return parentStrataValue - d;
@@ -96,10 +96,10 @@ namespace Forge.Framework.UI{
         struct FrameStackData{
             // ReSharper disable MemberCanBePrivate.Local
             public readonly string FrameAlias;
-            public readonly FrameStratum FrameStrata;
+            public readonly Level FrameStrata;
             // ReSharper restore MemberCanBePrivate.Local
 
-            public FrameStackData(FrameStratum frameStrata, string frameAlias) : this(){
+            public FrameStackData(Level frameStrata, string frameAlias) : this(){
                 FrameStrata = frameStrata;
                 FrameAlias = frameAlias;
             }

@@ -56,7 +56,7 @@ namespace Forge.Framework.UI{
         /// IUIElements may not exceede the limits of the boundingbox of its collection.
         /// </param>
         /// <param name="alias">Debugging alias</param>
-        public UIElementCollection(UIElementCollection parent, FrameStrata.FrameStratum depth, Rectangle boundingBox, string alias = "Unnamed"){
+        public UIElementCollection(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias = "Unnamed"){
             _frameStrata = new FrameStrata(depth, parent.FrameStrata, alias);
             _elements = new PriorityQueue<IUIElement>();
             _boundingBox = boundingBox;
