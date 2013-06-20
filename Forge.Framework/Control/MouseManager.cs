@@ -11,6 +11,8 @@ namespace Forge.Framework.Control{
     /// then only that controller will receive updates until that focus is released.
     /// </summary>
     public class MouseManager{
+        readonly PriorityQueue<MouseController> _globalControllers;
+
         /// <summary>
         ///   The current exclusive controller that the MouseManager class is dispatching events to.
         /// </summary>
@@ -23,6 +25,11 @@ namespace Forge.Framework.Control{
 
         public MouseManager(){
             _curState = new ForgeMouseState();
+            _globalControllers = new PriorityQueue<MouseController>();
+        }
+
+        public void AddGlobalController(MouseController controller, float priority){
+            _globalControllers.Add(controller, priority);
         }
 
         /// <summary>
@@ -57,6 +64,19 @@ namespace Forge.Framework.Control{
                 }
                 if (_curState.MouseScrollChange != 0){
                     _curController.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
+                }
+            }
+            else{
+                foreach (var controller in _globalControllers){
+                    if (_curState.MouseMoved){
+                        controller.SafeInvokeOnMouseMovement(_curState, (float) timeDelta);
+                    }
+                    if (_curState.LeftButtonChange || _curState.RightButtonChange){
+                        controller.SafeInvokeOnMouseButton(_curState, (float) timeDelta);
+                    }
+                    if (_curState.MouseScrollChange != 0){
+                        controller.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
+                    }
                 }
             }
         }
