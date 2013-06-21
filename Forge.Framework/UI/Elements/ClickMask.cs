@@ -91,7 +91,9 @@ namespace Forge.Framework.UI.Elements{
         }
 
         void OnMouseLeftDown(ForgeMouseState state, float timeDelta, UIElementCollection caller){
-            Alpha = _fadedInAlpha;
+            if (caller.ContainsMouse){
+                Alpha = _fadedInAlpha;
+            }
         }
 
         void OnMouseLeftUp(ForgeMouseState state, float timeDelta, UIElementCollection caller){
