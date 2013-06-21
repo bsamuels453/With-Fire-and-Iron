@@ -1,7 +1,9 @@
 ﻿#region
 
 using System;
+using Forge.Core.GameState;
 using Forge.Framework;
+using Forge.Framework.Control;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
@@ -16,6 +18,7 @@ namespace Forge.Core.Camera{
         const float _camAngularSpeed = 0.005f; //0.01f
         const float _camScrollSpeedDivisor = 100f;
         readonly bool _allowCamTargChange;
+        readonly MouseController _mouseController;
         public Vector3 CameraPosition;
         public Vector3 CameraTarget;
         Rectangle _boundingBox;
@@ -39,16 +42,33 @@ namespace Forge.Core.Camera{
             else{
                 _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             }
+
+            _mouseController = new MouseController(this);
+            _mouseController.OnMouseMovement += OnMouseMovement;
+            _mouseController.OnMouseScroll += OnMouseMovement;
+
+            GamestateManager.MouseManager.AddGlobalController(_mouseController, 100);
         }
 
         #region ICamera Members
 
         public void Update(ref InputState state, double timeDelta){
+        }
+
+        public Matrix ViewMatrix{
+            get { return Matrix.CreateLookAt(CameraPosition, CameraTarget, Vector3.Up); }
+        }
+
+        #endregion
+
+        void OnMouseMovement(ForgeMouseState state, float timeDelta){
+            var mousePos = state.MousePos;
+
             if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
                 if (state.RightButtonState == ButtonState.Pressed){
-                    if (!state.KeyboardState.IsKeyDown(Keys.LeftControl) || !_allowCamTargChange){
-                        int dx = state.MousePos.X - state.PrevState.MousePos.X;
-                        int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
+                    if ( /*!state.KeyboardState.IsKeyDown(Keys.LeftControl) || */!_allowCamTargChange){
+                        int dx = mousePos.X - state.PrevState.MousePos.X;
+                        int dy = mousePos.Y - state.PrevState.MousePos.Y;
 
                         if (state.RightButtonState == ButtonState.Pressed){
                             _cameraPhi -= dy*_camAngularSpeed;
@@ -65,13 +85,12 @@ namespace Forge.Core.Camera{
                             CameraPosition.Z = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Sin(_cameraTheta)) + CameraTarget.Z;
                             CameraPosition.Y = (float) (_cameraDistance*Math.Cos(_cameraPhi)) + CameraTarget.Y;
                         }
-
-                        state.AllowMouseMovementInterpretation = false;
+                        state.BlockMPosition = true;
                     }
                     else{
                         if (_allowCamTargChange){
-                            int dx = state.MousePos.X - state.PrevState.MousePos.X;
-                            int dy = state.MousePos.Y - state.PrevState.MousePos.Y;
+                            int dx = mousePos.X - state.PrevState.MousePos.X;
+                            int dy = mousePos.Y - state.PrevState.MousePos.Y;
 
                             _cameraPhi -= dy*0.005f;
                             _cameraTheta += dx*0.005f;
@@ -92,25 +111,21 @@ namespace Forge.Core.Camera{
             }
 
 
-            if (state.AllowMouseScrollInterpretation){
-                if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
-                    _cameraDistance += -state.MouseScrollChange/_camScrollSpeedDivisor;
-                    if (_cameraDistance < 5){
-                        _cameraDistance = 5;
-                    }
+            if (!state.BlockScrollWheel){
+                if (_boundingBox.Contains(mousePos.X, mousePos.Y)){
+                    if (state.MouseScrollChange != 0){
+                        _cameraDistance += -state.MouseScrollChange/_camScrollSpeedDivisor;
+                        if (_cameraDistance < 5){
+                            _cameraDistance = 5;
+                        }
 
-                    CameraPosition.X = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Cos(_cameraTheta)) + CameraTarget.X;
-                    CameraPosition.Z = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Sin(_cameraTheta)) + CameraTarget.Z;
-                    CameraPosition.Y = (float) (_cameraDistance*Math.Cos(_cameraPhi)) + CameraTarget.Y;
+                        CameraPosition.X = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Cos(_cameraTheta)) + CameraTarget.X;
+                        CameraPosition.Z = (float) (_cameraDistance*Math.Sin(_cameraPhi)*Math.Sin(_cameraTheta)) + CameraTarget.Z;
+                        CameraPosition.Y = (float) (_cameraDistance*Math.Cos(_cameraPhi)) + CameraTarget.Y;
+                    }
                 }
             }
         }
-
-        public Matrix ViewMatrix{
-            get { return Matrix.CreateLookAt(CameraPosition, CameraTarget, Vector3.Up); }
-        }
-
-        #endregion
 
         public void SetCameraTarget(Vector3 target){
             CameraTarget = target;
