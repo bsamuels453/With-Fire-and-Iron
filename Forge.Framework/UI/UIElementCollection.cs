@@ -229,7 +229,14 @@ namespace Forge.Framework.UI{
             _elements.Add(element, element.FrameStrata.FrameStrataValue);
         }
 
+        /// <summary>
+        /// Sets up the conditions for this collection's personal events to fire.
+        /// </summary>
         void SetupEventPropagation(){
+            //even though we do a lot of checking the BlockWhateverButton state when getting ready
+            //to dispatch events, it's critical that any delegates these events call check for 
+            //themselves whether or not an input device/method is blocked. This code has no way of
+            //preventing event invocation if an earlier invoked event set an input device to blocked.
             _mouseController.OnMouseButton +=
                 (state, timeDelta) =>{
                     if (!state.BlockLeftMButton){
