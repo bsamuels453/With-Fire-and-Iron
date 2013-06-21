@@ -153,6 +153,7 @@
     <Compile Include="ResourceNotDisposedException.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="UI\Elements\ClickMask.cs" />
+    <Compile Include="UI\Elements\DraggableSurface.cs" />
     <Compile Include="UI\Elements\MouseoverMask.cs" />
     <Compile Include="UI\Elements\StandardButton.cs">
       <SubType>Code</SubType>
