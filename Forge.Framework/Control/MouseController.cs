@@ -46,7 +46,7 @@ namespace Forge.Framework.Control{
 
         #endregion
 
-        #region invokations
+        #region invocations
 
         public void SafeInvokeOnMouseMovement(ForgeMouseState state, float timeDelta){
             if (OnMouseMovement != null){
