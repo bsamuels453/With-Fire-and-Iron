@@ -54,6 +54,8 @@ namespace Forge.Framework.Control{
 
         #region ctors
 
+        readonly int _scrollWheelValue;
+
         static ForgeMouseState(){
             _rightclickTimer = new Stopwatch();
             _leftclickTimer = new Stopwatch();
@@ -70,6 +72,7 @@ namespace Forge.Framework.Control{
             _leftButtonState = Mouse.GetState().LeftButton;
             _rightButtonState = Mouse.GetState().RightButton;
             _mouseScrollChange = 0;
+            _scrollWheelValue = 0;
             _mousePos = new Point(Mouse.GetState().X, Mouse.GetState().Y);
             _mouseMoved = false;
             if (fillPrevState){
@@ -89,10 +92,17 @@ namespace Forge.Framework.Control{
             BlockMPosition = false;
 
             PrevState = prevState;
+            PrevState.BlockLeftMButton = false;
+            PrevState.BlockMPosition = false;
+            PrevState.BlockRightMButton = false;
+            PrevState.BlockScrollWheel = false;
             var curState = Mouse.GetState();
 
             _mousePos = new Point(curState.X, curState.Y);
-            _mouseScrollChange = curState.ScrollWheelValue - PrevState._mouseScrollChange;
+
+            _mouseScrollChange = curState.ScrollWheelValue - PrevState._scrollWheelValue;
+            _scrollWheelValue = curState.ScrollWheelValue;
+
             _leftButtonState = curState.LeftButton;
             _rightButtonState = curState.RightButton;
             if (PrevState._mousePos.X != curState.X || PrevState._mousePos.Y != curState.Y){
