@@ -11,9 +11,9 @@ namespace Forge.Framework.UI.Elements{
         bool _dragging;
         Point _mouseOffset;
 
-        public DraggableSurface(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox) :
+        public DraggableSurface(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string texture) :
             base(parent, depth, boundingBox, "DraggableSurface"){
-            var tex = new Sprite2D("Materials/Brown", boundingBox, this.FrameStrata);
+            var tex = new Sprite2D(texture, boundingBox, this.FrameStrata);
             this.AddElement(tex);
 
             this.OnLeftDown += OnLeftMouseDown;
@@ -23,14 +23,18 @@ namespace Forge.Framework.UI.Elements{
         }
 
         void OnLeftMouseDown(ForgeMouseState state, float timeDelta, UIElementCollection caller){
-            if (ContainsMouse){
-                StartDrag(state);
+            if (!state.BlockLeftMButton){
+                if (ContainsMouse){
+                    StartDrag(state);
+                }
             }
         }
 
         void OnLeftMouseUp(ForgeMouseState state, float timeDelta, UIElementCollection caller){
-            if (_dragging){
-                EndDrag();
+            if (!state.BlockLeftMButton){
+                if (_dragging){
+                    EndDrag();
+                }
             }
         }
 
@@ -45,6 +49,7 @@ namespace Forge.Framework.UI.Elements{
             this.MouseManager.ObtainExclusiveFocus(this.MouseController);
             _mouseOffset.X = this.X - state.X;
             _mouseOffset.Y = this.Y - state.Y;
+            state.BlockLeftMButton = true;
         }
 
         void EndDrag(){
