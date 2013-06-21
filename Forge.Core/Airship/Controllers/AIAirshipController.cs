@@ -2,7 +2,6 @@
 
 using System.Collections.Generic;
 using Forge.Core.Airship.Data;
-using Forge.Framework;
 
 #endregion
 
@@ -15,7 +14,7 @@ namespace Forge.Core.Airship.Controllers{
             base(modelData, stateData, airships, hardPoints){
         }
 
-        protected override void UpdateController(ref InputState state, double timeDelta){
+        protected override void UpdateController(double timeDelta){
         }
     }
 }

@@ -2,8 +2,6 @@
 
 using System.Collections.Generic;
 using Forge.Core.Airship.Data;
-using Forge.Framework;
-using Microsoft.Xna.Framework.Input;
 
 #endregion
 
@@ -38,7 +36,8 @@ namespace Forge.Core.Airship.Controllers{
             }
         }
 
-        protected override void UpdateController(ref InputState state, double timeDelta){
+        protected override void UpdateController(double timeDelta){
+            /*
             var keyState = state.KeyboardState;
             var prevKeyState = state.PrevState.KeyboardState;
 
@@ -98,6 +97,7 @@ namespace Forge.Core.Airship.Controllers{
                 base.Velocity = engineDutyCycle*base.MaxVelocity;
                 base.AscentRate = altitudeDutyCycle*base.MaxAscentRate;
             }
+             */
         }
     }
 }

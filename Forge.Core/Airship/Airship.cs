@@ -120,13 +120,13 @@ namespace Forge.Core.Airship{
             _controller.SetAutoPilot(autoPilot);
         }
 
-        public void Update(ref InputState state, double timeDelta){
+        public void Update(double timeDelta){
             //DebugText.SetText("x:", "x:" + _controller.StateData.Position.X);
             //DebugText.SetText("y:", "y:" + _controller.StateData.Position.Y);
             //DebugText.SetText("z:", "z:" + _controller.StateData.Position.Z);
 
 
-            _controller.Update(ref state, timeDelta);
+            _controller.Update(timeDelta);
             SetAirshipWMatrix(_controller.WorldTransform);
 
             foreach (var hardPoint in _hardPoints){
