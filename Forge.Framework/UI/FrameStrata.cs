@@ -87,7 +87,8 @@ namespace Forge.Framework.UI{
         /// </summary>
         static float CalculateStrata(int parentNestingDepth, Level childStrata, float parentStrataValue){
             float magnitude = (float) Math.Pow(10, (parentNestingDepth + 1));
-            float d = ((float) childStrata)/magnitude;
+            //Calculated strata levels have + 1 added so that they're always at a higher level than their parent.
+            float d = ((float) childStrata + 1)/magnitude;
             return parentStrataValue - d;
         }
 
