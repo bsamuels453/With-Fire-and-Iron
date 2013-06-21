@@ -42,9 +42,11 @@ namespace Forge.Framework.Control{
         }
 
         /// <summary>
-        ///   Releases focus of the mouse so that the current controller will no longer recieve exclusive event updates. 
+        ///   Releases focus of the mouse so that the current controller will no longer recieve exclusive event updates.
+        ///   To ensure the correct mousecontroller is losing focus, the controller to be released must be provided.
         /// </summary>
-        public void ReleaseExclusiveFocus(){
+        public void ReleaseExclusiveFocus(MouseController controller){
+            Debug.Assert(controller == _curController);
             _curController = null;
         }
 
