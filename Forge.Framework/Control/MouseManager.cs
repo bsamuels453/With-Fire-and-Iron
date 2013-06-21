@@ -62,22 +62,32 @@ namespace Forge.Framework.Control{
                     _curController.SafeInvokeOnMouseMovement(_curState, (float) timeDelta);
                 }
                 if (_curState.LeftButtonChange || _curState.RightButtonChange){
-                    _curController.SafeInvokeOnMouseButton(_curState, (float) timeDelta);
+                    if (_curController != null){
+                        _curController.SafeInvokeOnMouseButton(_curState, (float) timeDelta);
+                    }
                 }
                 if (_curState.MouseScrollChange != 0){
-                    _curController.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
+                    if (_curController != null){
+                        _curController.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
+                    }
                 }
             }
             else{
                 foreach (var controller in _globalControllers){
-                    if (_curState.MouseMoved){
-                        controller.SafeInvokeOnMouseMovement(_curState, (float) timeDelta);
+                    if (!_curState.BlockMPosition){
+                        if (_curState.MouseMoved){
+                            controller.SafeInvokeOnMouseMovement(_curState, (float) timeDelta);
+                        }
                     }
-                    if (_curState.LeftButtonChange || _curState.RightButtonChange){
-                        controller.SafeInvokeOnMouseButton(_curState, (float) timeDelta);
+                    if (!_curState.BlockLeftMButton && !_curState.BlockRightMButton){
+                        if (_curState.LeftButtonChange || _curState.RightButtonChange){
+                            controller.SafeInvokeOnMouseButton(_curState, (float) timeDelta);
+                        }
                     }
-                    if (_curState.MouseScrollChange != 0){
-                        controller.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
+                    if (!_curState.BlockScrollWheel){
+                        if (_curState.MouseScrollChange != 0){
+                            controller.SafeInvokeOnMouseScroll(_curState, (float) timeDelta);
+                        }
                     }
                 }
             }
