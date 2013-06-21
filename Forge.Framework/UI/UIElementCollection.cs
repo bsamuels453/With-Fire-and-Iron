@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Forge.Framework.Control;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
@@ -149,6 +150,7 @@ namespace Forge.Framework.UI{
         public List<IUIElement> GetElementStackAtPoint(int x, int y){
             if (HitTest(x, y)){
                 var ret = new List<IUIElement>();
+                ret.Add(this);
                 foreach (var element in _elements){
                     ret.AddRange(element.GetElementStackAtPoint(x, y));
                 }
@@ -230,37 +232,45 @@ namespace Forge.Framework.UI{
         void SetupEventPropagation(){
             _mouseController.OnMouseButton +=
                 (state, timeDelta) =>{
-                    if (state.LeftButtonChange && !state.BlockLeftMButton){
-                        if (state.LeftButtonState == ButtonState.Pressed){
-                            if (OnLeftDown != null){
-                                OnLeftDown.Invoke(state, timeDelta, this);
+                    if (!state.BlockLeftMButton){
+                        if (state.LeftButtonChange){
+                            if (state.LeftButtonState == ButtonState.Pressed){
+                                if (OnLeftDown != null){
+                                    OnLeftDown.Invoke(state, timeDelta, this);
+                                }
                             }
-                        }
-                        else{
-                            if (OnLeftRelease != null){
-                                OnLeftRelease.Invoke(state, timeDelta, this);
+                            else{
+                                if (OnLeftRelease != null){
+                                    OnLeftRelease.Invoke(state, timeDelta, this);
+                                }
                             }
-                        }
-                        if (state.LeftButtonClick){
-                            if (OnLeftClick != null){
-                                OnLeftClick.Invoke(state, timeDelta, this);
+                            if (!state.BlockLeftMButton){
+                                if (state.LeftButtonClick){
+                                    if (OnLeftClick != null){
+                                        OnLeftClick.Invoke(state, timeDelta, this);
+                                    }
+                                }
                             }
                         }
                     }
-                    if (state.RightButtonChange && !state.BlockRightMButton){
-                        if (state.RightButtonState == ButtonState.Released){
-                            if (OnRightRelease != null){
-                                OnRightRelease.Invoke(state, timeDelta, this);
+                    if (!state.BlockRightMButton){
+                        if (state.RightButtonChange && !state.BlockRightMButton){
+                            if (state.RightButtonState == ButtonState.Released){
+                                if (OnRightRelease != null){
+                                    OnRightRelease.Invoke(state, timeDelta, this);
+                                }
                             }
-                        }
-                        else{
-                            if (OnRightDown != null){
-                                OnRightDown.Invoke(state, timeDelta, this);
+                            else{
+                                if (OnRightDown != null){
+                                    OnRightDown.Invoke(state, timeDelta, this);
+                                }
                             }
-                        }
-                        if (state.RightButtonClick){
-                            if (OnRightClick != null){
-                                OnRightClick.Invoke(state, timeDelta, this);
+                            if (!state.BlockRightMButton){
+                                if (state.RightButtonClick){
+                                    if (OnRightClick != null){
+                                        OnRightClick.Invoke(state, timeDelta, this);
+                                    }
+                                }
                             }
                         }
                     }
@@ -280,20 +290,24 @@ namespace Forge.Framework.UI{
             _mouseController.OnMouseMovement +=
                 (state, timeDelta) =>{
                     if (!state.BlockMPosition){
-                        /*
                         bool onTopOfStack = false;
-                        var stack = UIElementCollection.GetGlobalElementStack(state.X, state.Y);
+                        var stack = GetGlobalElementStack(state.X, state.Y);
                         stack = stack.OrderBy(o => o.FrameStrata.FrameStrataValue).ToList();
                         if (stack.Count > 0){
                             if (stack[0] == this){
                                 onTopOfStack = true;
                             }
                         }
-                         */
 
                         //this event is only called when the mouse moves, so can safely turn off hover
                         MouseHovering = false;
                         bool containsNewMouse = ContainsPoint(state.X, state.Y);
+
+                        //this means there's another object overlapping this one that prevents the mouse
+                        //from interacting with it
+                        if (!onTopOfStack && containsNewMouse){
+                            containsNewMouse = false;
+                        }
 
                         //entry distpatcher
                         if (containsNewMouse && !ContainsMouse){
