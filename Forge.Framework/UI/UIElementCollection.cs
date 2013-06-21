@@ -19,11 +19,11 @@ namespace Forge.Framework.UI{
     /// </summary>
     public class UIElementCollection : IUIElement{
         const float _hoverTime = 200;
+        protected readonly MouseManager MouseManager;
         readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
         readonly Stopwatch _hoverTimer;
         readonly MouseController _mouseController;
-        readonly MouseManager _mouseManager;
         readonly UIElementCollection _parentCollection;
         float _alpha;
         Rectangle _boundingBox;
@@ -36,7 +36,7 @@ namespace Forge.Framework.UI{
             _elements = new PriorityQueue<IUIElement>();
             _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _parentCollection = null;
-            _mouseManager = mouseManager;
+            MouseManager = mouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
             _hoverTimer = new Stopwatch();
@@ -44,7 +44,7 @@ namespace Forge.Framework.UI{
             _globalUIParent = this;
             SetupEventPropagation();
             SetupEventPropagationToChildren();
-            _mouseManager.AddGlobalController(_mouseController, 0);
+            MouseManager.AddGlobalController(_mouseController, 0);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Forge.Framework.UI{
             _boundingBox = boundingBox;
             _parentCollection = parent;
             _parentCollection.AddElement(this);
-            _mouseManager = _parentCollection._mouseManager;
+            MouseManager = _parentCollection.MouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
             _hoverTimer = new Stopwatch();
@@ -248,14 +248,14 @@ namespace Forge.Framework.UI{
                         }
                     }
                     if (state.RightButtonChange && !state.BlockRightMButton){
-                        if (state.RightButtonState == ButtonState.Pressed){
-                            if (OnRightDown != null){
-                                OnRightDown.Invoke(state, timeDelta, this);
+                        if (state.RightButtonState == ButtonState.Released){
+                            if (OnRightRelease != null){
+                                OnRightRelease.Invoke(state, timeDelta, this);
                             }
                         }
                         else{
-                            if (OnRightRelease != null){
-                                OnRightRelease.Invoke(state, timeDelta, this);
+                            if (OnRightDown != null){
+                                OnRightDown.Invoke(state, timeDelta, this);
                             }
                         }
                         if (state.RightButtonClick){
