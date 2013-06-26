@@ -1,0 +1,126 @@
+This is a listing of all the keys that are detectable by the Forge engine.
+All of these key definitions are caps sensitive.
+In order to denote a keybinding requires a modifier key, format the binding such as 'Modifier+Key'.
+To specify a bind's combination to be control S, the binding would be 'LeftControl+S'
+Any key can be used as a modifier.
+
+Alphanumeric:
+A
+B
+C
+..
+Z
+
+Number keys (the ones above qwerty):
+D1 //1 key
+D2
+D3
+..
+D9
+D0 //0 key
+
+Numpad keys:
+NumPad0
+NumPad1
+NumPad2
+..
+NumPad9
+Multiply
+Add
+Separator
+Subtract
+Decimal
+Divide
+NumLock
+
+Function Keys:
+F1
+F2
+F3
+..
+F24
+
+Modifier/misc standard keys:
+LeftShift
+RightShift
+LeftControl
+RightControl
+LeftWindows
+RightWindows
+LeftAlt
+RightAlt
+CapsLock
+Tab
+Escape
+Back   //backspace
+Space
+Enter
+Select
+
+Oem keys, who the hell named these?: DOUBLE CHECK THESE LATER
+OemSemicolon  //universal ; key
+OemPlus       //universal + key
+OemComma      //universal , key
+OemMinus      //universal - key
+OemPeriod     //universal . key
+OemQuestion   //universal ? key
+OemTilde      //universal ` key
+OemOpenBrackets   //universal [ key
+OemPipe           //universal | key
+OemCloseBrackets  //universal ] key
+OemQuotes         //universal ' key
+Oem8              //i dont know
+OemBackslash      //universal \ key
+
+Satellite keys:
+Print  //not tested
+PrintScreen
+Insert
+Delete
+Help
+Home
+End
+PageUp
+PageDown
+Pause
+
+Keys you probably dont have, theyre only here for completionist:
+Apps
+BrowserBack
+BrowserForward
+BrowserRefresh
+BrowserSearch
+BrowserFavorites
+BrowserHome
+MediaNextTrack
+MediaPreviousTrack
+MediaStop
+MediaPlayPause
+LaunchMail
+SelectMedia
+LaunchApplication1
+LaunchApplication2
+ProcessKey
+Attn
+Crsel
+Exsel
+EraseEof
+Play
+Zoom
+Pa1
+OemClear
+ChatPadGreen
+ChatPadOrange
+ImeConvert
+ImeNoConvert
+OemAuto
+OemCopy
+OemEnlW
+
+Keys you probably dont want to bind but theres compatibility anyways:
+Kana
+Kanji
+VolumeMute
+VolumeDown
+VolumeUp
+Sleep
