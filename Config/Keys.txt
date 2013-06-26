@@ -4,6 +4,9 @@ In order to denote a keybinding requires a modifier key, format the binding such
 To specify a bind's combination to be control S, the binding would be 'LeftControl+S'
 Any key can be used as a modifier.
 
+When auxillary mouse buttons are added  in the future, they will be considered 'keys' rather than
+mouse buttons.
+
 Alphanumeric:
 A
 B
@@ -57,6 +60,10 @@ Space
 Enter
 Select
 
+Auxillary mouse buttons: (DONT USE THIS UNTIL I REMOVE THIS NOTE TO NOT USE THEM)
+MouseAux1
+MouseAux2
+
 Oem keys, who the hell named these?: DOUBLE CHECK THESE LATER
 OemSemicolon  //universal ; key
 OemPlus       //universal + key
@@ -73,7 +80,7 @@ Oem8              //i dont know
 OemBackslash      //universal \ key
 
 Satellite keys:
-Print  //not tested
+Print
 PrintScreen
 Insert
 Delete
