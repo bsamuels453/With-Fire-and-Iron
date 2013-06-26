@@ -11,7 +11,7 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Forge.Framework.Control{
-    internal class BindingCollection{
+    internal class KeyboardController{
         #region Delegates
 
         public delegate void OnKeyPress(object caller, int bindAlias, KeyState keyState);
@@ -20,7 +20,7 @@ namespace Forge.Framework.Control{
 
         readonly List<BindDefinition> _bindDefinitions;
 
-        public BindingCollection(){
+        public KeyboardController(){
             _bindDefinitions = new List<BindDefinition>(50);
         }
 
@@ -67,6 +67,9 @@ namespace Forge.Framework.Control{
             }
         }
 
+        public void SaveToFile(string fileName){
+            throw new NotImplementedException();
+        }
 
         public void CreateNewBind(Keys associatedKey, object bindAlias, OnKeyPress callback, Keys modifierKey = Keys.None){
             var doubles = from b in _bindDefinitions
