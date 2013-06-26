@@ -14,7 +14,7 @@ namespace Forge.Framework.Control{
     internal class KeyboardController{
         #region Delegates
 
-        public delegate void OnKeyPress(object caller, int bindAlias, KeyState keyState);
+        public delegate void OnKeyPress(object caller, int bindAlias, ForgeKeyState keyState);
 
         #endregion
 
@@ -106,6 +106,9 @@ namespace Forge.Framework.Control{
 
         #region Nested type: BindDefinition
 
+        /// <summary>
+        /// This class defines a binding. Since it's only used by the keyboard controller, it's nested.
+        /// </summary>
         class BindDefinition{
             /// <summary>
             /// The key that this bind is associated with. This bind fires when this key changes.
