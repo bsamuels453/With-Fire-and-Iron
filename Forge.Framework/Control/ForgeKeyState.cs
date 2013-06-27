@@ -29,7 +29,7 @@ namespace Forge.Framework.Control{
         /// </summary>
         /// <param name="condition"></param>
         /// <returns></returns>
-        public bool SatisfiesBindCondition(BindCondition condition){
+        public bool SatisfiesCondition(BindCondition condition){
             switch (condition){
                 case BindCondition.KeyChangeUp:
                     if (State == KeyState.Up && StateChanged)
