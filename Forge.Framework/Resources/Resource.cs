@@ -55,6 +55,10 @@ namespace Forge.Framework.Resources{
             foreach (string directory in directories){
                 string[] files = Directory.GetFiles(directory);
                 foreach (string file in files){
+                    //we only handly .json files here
+                    if (!file.Contains(".json")){
+                        continue;
+                    }
                     var sr = new StreamReader(file);
                     var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
                     sr.Close();
