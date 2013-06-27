@@ -11,6 +11,7 @@ namespace Forge.Framework.Control{
     /// Handles the dispatching of keyboard state information to KeyboardControllers.
     /// </summary>
     public class KeyboardManager{
+        const int _numKeys = 255;
         readonly Stack<KeyboardController> _cachedBindings;
         readonly ForgeKeyState[] _keyState;
         readonly Keys[] _keys;
@@ -19,7 +20,7 @@ namespace Forge.Framework.Control{
         public KeyboardManager(){
             _cachedBindings = new Stack<KeyboardController>();
             _keys = (Keys[]) Enum.GetValues(typeof (Keys));
-            _keyState = new ForgeKeyState[_keys.Length];
+            _keyState = new ForgeKeyState[_numKeys];
         }
 
         /// <summary>
