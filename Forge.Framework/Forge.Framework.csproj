@@ -129,7 +129,11 @@
   <ItemGroup>
     <Compile Include="Angle3.cs" />
     <Compile Include="Common.cs" />
+    <Compile Include="Control\BindCondition.cs" />
+    <Compile Include="Control\KeyboardController.cs" />
+    <Compile Include="Control\ForgeKeyState.cs" />
     <Compile Include="Control\ForgeMouseState.cs" />
+    <Compile Include="Control\KeyboardManager.cs" />
     <Compile Include="Control\MouseController.cs" />
     <Compile Include="Control\MouseManager.cs" />
     <Compile Include="DebugConsole.cs" />
