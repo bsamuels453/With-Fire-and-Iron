@@ -112,15 +112,17 @@ namespace Forge.Framework.Control{
         /// a settings file.
         /// </summary>
         /// <param name="bindAlias">The enum-based alias for this binding.</param>
+        /// <param name="fireCondition"> </param>
         /// <param name="callback"></param>
-        public void AddBindCallback(object bindAlias, OnKeyPress callback){
+        public void AddBindCallback(object bindAlias, BindCondition fireCondition, OnKeyPress callback){
             var bind = (
                 from b in _bindDefinitions
-                where b.BindAlias == bindAlias
+                where b.BindAlias.Equals(bindAlias)
                 select b
                 ).Single();
             Debug.Assert(bind.Callback == null);
             bind.Callback = callback;
+            bind.FireCondition = fireCondition;
         }
 
         /// <summary>
@@ -169,22 +171,22 @@ namespace Forge.Framework.Control{
             public readonly Keys TriggerKey;
 
             /// <summary>
-            /// The condition which the TriggerKey must be under in order for the bind to fire.
-            /// </summary>
-            readonly BindCondition _fireCondition;
-
-            /// <summary>
             /// delegate representing the method to call when the key associated with this
             /// binding is pressed or released
             /// </summary>
             public OnKeyPress Callback;
+
+            /// <summary>
+            /// The condition which the TriggerKey must be under in order for the bind to fire.
+            /// </summary>
+            public BindCondition FireCondition;
 
             public BindDefinition(object bindAlias, Keys triggerKey, OnKeyPress callback, Keys modifierKey, BindCondition fireCondition){
                 BindAlias = bindAlias;
                 TriggerKey = triggerKey;
                 Callback = callback;
                 ModifierKey = modifierKey;
-                _fireCondition = fireCondition;
+                FireCondition = fireCondition;
             }
 
             public BindDefinition(object bindAlias, Keys triggerKey, Keys modifierKey){
@@ -208,7 +210,7 @@ namespace Forge.Framework.Control{
                     if (modifierState.State == KeyState.Up)
                         return;
                 }
-                if (triggerState.SatisfiesCondition(_fireCondition)){
+                if (triggerState.SatisfiesCondition(FireCondition)){
                     if (Callback != null){
                         Callback(this, (int) BindAlias, triggerState);
                     }
