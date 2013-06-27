@@ -14,10 +14,13 @@ namespace Forge.Framework.UI.Elements{
         float _alpha;
         Rectangle _boundingBox;
 
-        public ClickMask(Rectangle boundingBox, FrameStrata parentStrata){
-            FrameStrata = new FrameStrata(FrameStrata.Level.High, parentStrata, "ClickMask");
+        public ClickMask(Rectangle boundingBox, UIElementCollection parent){
+            FrameStrata = new FrameStrata(FrameStrata.Level.High, parent.FrameStrata, "ClickMask");
             _boundingBox = boundingBox;
             MouseController = new MouseController(this);
+            parent.OnMouseExit += OnMouseExit;
+            parent.OnLeftDown += OnMouseLeftDown;
+            parent.OnLeftRelease += OnMouseLeftUp;
 
             _sprite = new Sprite2D
                 (
@@ -76,12 +79,6 @@ namespace Forge.Framework.UI.Elements{
 
         public List<IUIElement> GetElementStackAtPoint(int x, int y){
             return new List<IUIElement>();
-        }
-
-        public void InitializeEvents(UIElementCollection parent){
-            parent.OnMouseExit += OnMouseExit;
-            parent.OnLeftDown += OnMouseLeftDown;
-            parent.OnLeftRelease += OnMouseLeftUp;
         }
 
         #endregion

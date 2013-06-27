@@ -16,14 +16,12 @@ namespace Forge.Framework.UI.Elements{
             bool enableMouseoverMask
             ) : base(parent, depth, boundingBox, "StandardButton"){
             if (enableClickMask){
-                var mask = new ClickMask(boundingBox, this.FrameStrata);
+                var mask = new ClickMask(boundingBox, this);
                 AddElement(mask);
-                mask.InitializeEvents(this);
             }
             if (enableMouseoverMask){
-                var mask = new MouseoverMask(boundingBox, this.FrameStrata);
+                var mask = new MouseoverMask(boundingBox, this);
                 AddElement(mask);
-                mask.InitializeEvents(this);
             }
             var texture = new Sprite2D(buttonTex, boundingBox, FrameStrata);
             this.AddElement(texture);
