@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework.Input;
 #endregion
 
 namespace Forge.Framework.Control{
-    internal struct ForgeKeyState{
+    public struct ForgeKeyState{
         /// <summary>
         /// The current state of the key.
         /// </summary>
@@ -31,22 +31,22 @@ namespace Forge.Framework.Control{
         /// <returns></returns>
         public bool SatisfiesCondition(BindCondition condition){
             switch (condition){
-                case BindCondition.KeyChangeUp:
+                case BindCondition.OnKeyUp:
                     if (State == KeyState.Up && StateChanged)
                         return true;
                     return false;
 
-                case BindCondition.KeyChangeDown:
+                case BindCondition.OnKeyDown:
                     if (State == KeyState.Down && StateChanged)
                         return true;
                     return false;
 
-                case BindCondition.KeyUp:
+                case BindCondition.KeyHeldUp:
                     if (State == KeyState.Up)
                         return true;
                     return false;
 
-                case BindCondition.KeyDown:
+                case BindCondition.KeyHeldDown:
                     if (State == KeyState.Down)
                         return true;
                     return false;

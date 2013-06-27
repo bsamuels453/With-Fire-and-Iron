@@ -11,21 +11,21 @@
         /// <summary>
         /// Fire event for every tick that the key is held down.
         /// </summary>
-        KeyDown,
+        KeyHeldDown,
 
         /// <summary>
         /// Fire the event for every tick that the key is released.
         /// </summary>
-        KeyUp,
+        KeyHeldUp,
 
         /// <summary>
         /// Fire the event once when the state changes from up to down.
         /// </summary>
-        KeyChangeDown,
+        OnKeyDown,
 
         /// <summary>
         /// Fire the event once when the state changes from down to up.
         /// </summary>
-        KeyChangeUp
+        OnKeyUp
     }
 }
