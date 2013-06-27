@@ -10,7 +10,7 @@ namespace Forge.Framework.Control{
     /// <summary>
     /// Handles the dispatching of keyboard state information to KeyboardControllers.
     /// </summary>
-    internal class KeyboardManager{
+    public class KeyboardManager{
         readonly Stack<KeyboardController> _cachedBindings;
         readonly ForgeKeyState[] _keyState;
         readonly Keys[] _keys;

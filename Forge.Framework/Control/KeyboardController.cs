@@ -15,7 +15,7 @@ namespace Forge.Framework.Control{
     /// This class is used to organize groups of keybindings. Binding groups can be loaded
     /// from a file using LoadFromFile, or specified manually using CreateNewBind.
     /// </summary>
-    internal class KeyboardController{
+    public class KeyboardController{
         #region Delegates
 
         public delegate void OnKeyPress(object caller, int bindAlias, ForgeKeyState keyState);
@@ -131,6 +131,14 @@ namespace Forge.Framework.Control{
             foreach (var bind in _bindDefinitions){
                 bind.InvokeBind(keyState);
             }
+        }
+
+        /// <summary>
+        /// Absorbs another keyboard controller's bindings.
+        /// </summary>
+        /// <param name="other"></param>
+        public void AbsorbController(KeyboardController other){
+            _bindDefinitions.AddRange(other._bindDefinitions);
         }
 
         #region Nested type: BindDefinition
