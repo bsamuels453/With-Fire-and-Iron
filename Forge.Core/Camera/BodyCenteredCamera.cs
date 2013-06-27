@@ -62,6 +62,9 @@ namespace Forge.Core.Camera{
         #endregion
 
         void OnMouseMovement(ForgeMouseState state, float timeDelta){
+            if (state.BlockMPosition){
+                return;
+            }
             var mousePos = state.MousePos;
 
             if (_boundingBox.Contains(state.MousePos.X, state.MousePos.Y)){
