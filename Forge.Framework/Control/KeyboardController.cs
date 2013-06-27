@@ -71,9 +71,9 @@ namespace Forge.Framework.Control{
             throw new NotImplementedException();
         }
 
-        public void CreateNewBind(Keys associatedKey, object bindAlias, OnKeyPress callback, Keys modifierKey = Keys.None){
+        public void CreateNewBind(Keys associatedKey, object bindAlias, OnKeyPress callback, BindCondition condition, Keys modifierKey = Keys.None){
             var doubles = from b in _bindDefinitions
-                where b.BindAlias == bindAlias || (b.AssociatedKey == associatedKey && b.ModifierKey == modifierKey)
+                where b.BindAlias == bindAlias || (b.TriggerKey == associatedKey && b.ModifierKey == modifierKey)
                 select b;
             Debug.Assert(!doubles.Any());
             _bindDefinitions.Add
@@ -83,7 +83,8 @@ namespace Forge.Framework.Control{
                         bindAlias,
                         associatedKey,
                         callback,
-                        modifierKey
+                        modifierKey,
+                        condition
                         )
                 );
         }
@@ -104,17 +105,22 @@ namespace Forge.Framework.Control{
             bind.Callback = callback;
         }
 
+        /// <summary>
+        /// Invokes any bindings that satisfy their firing conditions.
+        /// </summary>
+        /// <param name="keyState"></param>
+        public void InvokeKeyboardBinds(ForgeKeyState[] keyState){
+            foreach (var bind in _bindDefinitions){
+                bind.InvokeBind(keyState);
+            }
+        }
+
         #region Nested type: BindDefinition
 
         /// <summary>
         /// This class defines a binding. Since it's only used by the keyboard controller, it's nested.
         /// </summary>
         class BindDefinition{
-            /// <summary>
-            /// The key that this bind is associated with. This bind fires when this key changes.
-            /// </summary>
-            public readonly Keys AssociatedKey;
-
             /// <summary>
             /// An object representing the name of the function associated with this bind.
             /// This is typically an enum that's used to identify binds so that a game component
@@ -132,22 +138,55 @@ namespace Forge.Framework.Control{
             public readonly Keys ModifierKey;
 
             /// <summary>
+            /// The key that this bind is associated with. This bind fires when this key changes.
+            /// </summary>
+            public readonly Keys TriggerKey;
+
+            /// <summary>
+            /// The condition which the TriggerKey must be under in order for the bind to fire.
+            /// </summary>
+            readonly BindCondition _fireCondition;
+
+            /// <summary>
             /// delegate representing the method to call when the key associated with this
             /// binding is pressed or released
             /// </summary>
             public OnKeyPress Callback;
 
-            public BindDefinition(object bindAlias, Keys associatedKey, OnKeyPress callback, Keys modifierKey){
+            public BindDefinition(object bindAlias, Keys triggerKey, OnKeyPress callback, Keys modifierKey, BindCondition fireCondition){
                 BindAlias = bindAlias;
-                AssociatedKey = associatedKey;
+                TriggerKey = triggerKey;
                 Callback = callback;
+                ModifierKey = modifierKey;
+                _fireCondition = fireCondition;
+            }
+
+            public BindDefinition(object bindAlias, Keys triggerKey, Keys modifierKey){
+                BindAlias = bindAlias;
+                TriggerKey = triggerKey;
                 ModifierKey = modifierKey;
             }
 
-            public BindDefinition(object bindAlias, Keys associatedKey, Keys modifierKey){
-                BindAlias = bindAlias;
-                AssociatedKey = associatedKey;
-                ModifierKey = modifierKey;
+            /// <summary>
+            /// Tests whether or not this bind can be fired based off the current keyboard state, and fires
+            /// the bind if the conditions are sufficient. For the conditions to be sufficient, the ModifierKey
+            /// must be pressed if it was specified, and the TriggerKey must be in the condition specified by
+            /// FireCondition.
+            /// </summary>
+            /// <param name="keyState"></param>
+            public void InvokeBind(ForgeKeyState[] keyState){
+                var modifierState = keyState[(int) ModifierKey];
+                var triggerState = keyState[(int) TriggerKey];
+
+                if (ModifierKey != Keys.None){
+                    if (modifierState.State == KeyState.Up)
+                        return;
+                }
+                if (triggerState.SatisfiesCondition(_fireCondition)){
+                    if (Callback != null){
+                        Callback(this, (int) BindAlias, triggerState);
+                    }
+                }
             }
         }
 
