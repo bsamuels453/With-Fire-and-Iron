@@ -79,7 +79,18 @@ namespace Forge.Framework.UI{
         /// </summary>
         public bool IsTransparent { get; set; }
 
+        /// <summary>
+        /// Whether or not this collection contains the mouse within any of its child sprites.
+        /// This is updated when the OnMouseMovement event is invoked. This ignores any transparency
+        /// settings.
+        /// </summary>
         public bool ContainsMouse { get; private set; }
+
+        /// <summary>
+        /// Whether or not the mouse is currently hovering over any of the elements in this collection.
+        /// In order for the mouse to be hovering, it has to be within the bounds of a child sprite and
+        /// must not have moved for _hovertime (200ms). This ignores any transparency settings.
+        /// </summary>
         public bool MouseHovering { get; private set; }
 
         #region IUIElement Members
@@ -157,9 +168,6 @@ namespace Forge.Framework.UI{
                 return ret;
             }
             return new List<IUIElement>();
-        }
-
-        public void InitializeEvents(UIElementCollection parent){
         }
 
         #endregion
