@@ -26,6 +26,11 @@
         /// <summary>
         /// Fire the event once when the state changes from down to up.
         /// </summary>
-        OnKeyUp
+        OnKeyUp,
+
+        /// <summary>
+        /// Fire every time the keyboard is updated, regardless of key state or whether the state has changed.
+        /// </summary>
+        Tick
     }
 }
