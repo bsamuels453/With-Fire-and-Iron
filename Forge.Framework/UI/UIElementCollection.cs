@@ -72,6 +72,10 @@ namespace Forge.Framework.UI{
             SetupEventPropagationToChildren();
         }
 
+        protected Rectangle BoundingBox{
+            get { return _boundingBox; }
+        }
+
         /// <summary>
         /// Defines whether or not this collection should be considered transparent by the hit detection functions.
         /// This doesn't actually define whether this collection is visually transparent, just  whether or not it's
@@ -151,7 +155,7 @@ namespace Forge.Framework.UI{
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <returns></returns>
-        public bool HitTest(int x, int y){
+        public virtual bool HitTest(int x, int y){
             if (!IsTransparent){
                 return ContainsPoint(x, y);
             }
