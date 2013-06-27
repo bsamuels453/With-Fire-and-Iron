@@ -11,6 +11,10 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Forge.Framework.Control{
+    /// <summary>
+    /// This class is used to organize groups of keybindings. Binding groups can be loaded
+    /// from a file using LoadFromFile, or specified manually using CreateNewBind.
+    /// </summary>
     internal class KeyboardController{
         #region Delegates
 
@@ -24,6 +28,12 @@ namespace Forge.Framework.Control{
             _bindDefinitions = new List<BindDefinition>(50);
         }
 
+        /// <summary>
+        /// Loads a set of keybindings from a json file. After these bindings are loaded, the binds'
+        /// callbacks must be set using the AddBindCallback method, or else they won't fire.
+        /// </summary>
+        /// <typeparam name="T">The type of the BindIdentifier enum used for this binding group.</typeparam>
+        /// <param name="fileName"></param>
         public void LoadFromFile<T>(string fileName){
             var strmrdr = new StreamReader(fileName);
             var contents = strmrdr.ReadToEnd();
@@ -71,9 +81,17 @@ namespace Forge.Framework.Control{
             throw new NotImplementedException();
         }
 
-        public void CreateNewBind(Keys associatedKey, object bindAlias, OnKeyPress callback, BindCondition condition, Keys modifierKey = Keys.None){
+        /// <summary>
+        /// Creates a new bind.
+        /// </summary>
+        /// <param name="triggerKey"></param>
+        /// <param name="bindAlias">The enum-based alias for this binding</param>
+        /// <param name="callback"></param>
+        /// <param name="condition">The condition the triggerKey must be under in order for the bind to fire.</param>
+        /// <param name="modifierKey"></param>
+        public void CreateNewBind(Keys triggerKey, object bindAlias, OnKeyPress callback, BindCondition condition, Keys modifierKey = Keys.None){
             var doubles = from b in _bindDefinitions
-                where b.BindAlias == bindAlias || (b.TriggerKey == associatedKey && b.ModifierKey == modifierKey)
+                where b.BindAlias == bindAlias || (b.TriggerKey == triggerKey && b.ModifierKey == modifierKey)
                 select b;
             Debug.Assert(!doubles.Any());
             _bindDefinitions.Add
@@ -81,7 +99,7 @@ namespace Forge.Framework.Control{
                     new BindDefinition
                         (
                         bindAlias,
-                        associatedKey,
+                        triggerKey,
                         callback,
                         modifierKey,
                         condition
@@ -93,7 +111,7 @@ namespace Forge.Framework.Control{
         /// Adds the callback to a BindDefinition that was created from loading the bindings from
         /// a settings file.
         /// </summary>
-        /// <param name="bindAlias"></param>
+        /// <param name="bindAlias">The enum-based alias for this binding.</param>
         /// <param name="callback"></param>
         public void AddBindCallback(object bindAlias, OnKeyPress callback){
             var bind = (
