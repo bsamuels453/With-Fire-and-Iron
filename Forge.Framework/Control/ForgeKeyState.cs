@@ -22,6 +22,10 @@ namespace Forge.Framework.Control{
                 StateChanged = true;
                 State = state;
             }
+            else{
+                StateChanged = false;
+                State = state;
+            }
         }
 
         /// <summary>
@@ -53,6 +57,9 @@ namespace Forge.Framework.Control{
 
                 case BindCondition.KeyChange:
                     return StateChanged;
+
+                case BindCondition.Tick:
+                    return true;
 
                 default:
                     throw new Exception();
