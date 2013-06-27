@@ -11,6 +11,7 @@ namespace Forge.Core.GameState{
 
     public static class GamestateManager{
         public static readonly MouseManager MouseManager;
+        public static readonly KeyboardManager KeyboardManager;
 
         static IGameState _activeState;
         static readonly Stopwatch _stopwatch;
@@ -18,6 +19,7 @@ namespace Forge.Core.GameState{
         static GamestateManager(){
             _activeState = null;
             MouseManager = new MouseManager();
+            KeyboardManager = new KeyboardManager();
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
             //DebugText.CreateText("FPS", 0, 0);
@@ -43,6 +45,7 @@ namespace Forge.Core.GameState{
             const double timeDelta = 16.666666667f;
 
             MouseManager.UpdateMouse(timeDelta);
+            KeyboardManager.UpdateKeyboard();
 
             _activeState.Update(timeDelta);
         }
