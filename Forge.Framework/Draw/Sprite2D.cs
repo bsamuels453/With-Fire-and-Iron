@@ -28,13 +28,47 @@ namespace Forge.Framework.Draw{
             int y,
             int width,
             int height,
+            FrameStrata parentStrata,
+            FrameStrata.Level targetStrata,
+            bool transparent = false,
+            float alpha = 1,
+            float spriteRepeatX = 1,
+            float spriteRepeatY = 1,
+            float rotation = 0
+            )
+            : this(
+                textureName,
+                new Rectangle(x, y, width, height),
+                new FrameStrata(targetStrata, parentStrata, "sprite2d"),
+                transparent,
+                alpha,
+                spriteRepeatX,
+                spriteRepeatY,
+                rotation){
+        }
+
+        public Sprite2D(
+            string textureName,
+            int x,
+            int y,
+            int width,
+            int height,
             FrameStrata targetStrata,
             bool transparent = false,
             float alpha = 1,
             float spriteRepeatX = 1,
-            float spriteRepeatY = 1
+            float spriteRepeatY = 1,
+            float rotation = 0
             )
-            : this(textureName, new Rectangle(x, y, width, height), targetStrata, transparent, alpha, spriteRepeatX, spriteRepeatY){
+            : this(
+                textureName,
+                new Rectangle(x, y, width, height),
+                targetStrata,
+                transparent,
+                alpha,
+                spriteRepeatX,
+                spriteRepeatY,
+                rotation){
         }
 
         public Sprite2D(
@@ -44,7 +78,8 @@ namespace Forge.Framework.Draw{
             bool transparent = false,
             float alpha = 1,
             float spriteRepeatX = 1,
-            float spriteRepeatY = 1
+            float spriteRepeatY = 1,
+            float rotation = 0
             ){
             _texture = Resource.LoadContent<Texture2D>(textureName);
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
@@ -56,25 +91,27 @@ namespace Forge.Framework.Draw{
             Enabled = true;
             MouseController = new MouseController(this);
             _transparent = transparent;
+            Rotation = rotation;
             RenderTarget.Sprites.Add(this);
         }
-
-        #region IDrawableSprite Members
 
         public Texture2D Texture{
             set { _texture = value; }
             get { return _texture; }
         }
 
+        /// <summary>
+        /// rotation angle in radians
+        /// </summary>
+        public float Rotation { get; set; }
+
+        #region IDrawableSprite Members
+
         public void Dispose(){
             if (!_isDisposed){
                 _isDisposed = true;
                 RenderTarget.Sprites.Remove(this);
             }
-        }
-
-        public void SetTextureFromString(string textureName){
-            _texture = Resource.LoadContent<Texture2D>(textureName);
         }
 
         public void Draw(){
@@ -85,7 +122,7 @@ namespace Forge.Framework.Draw{
                         _destRect,
                         (Rectangle?) _srcRect,
                         Color.White*Alpha,
-                        0,
+                        Rotation,
                         Vector2.Zero,
                         SpriteEffects.None,
                         FrameStrata.FrameStrataValue
@@ -111,12 +148,10 @@ namespace Forge.Framework.Draw{
 
         public int Width{
             get { return _destRect.Width; }
-            set { _destRect.Width = value; }
         }
 
         public int Height{
             get { return _destRect.Height; }
-            set { _destRect.Height = value; }
         }
 
         public float Alpha { get; set; }
@@ -139,10 +174,14 @@ namespace Forge.Framework.Draw{
             return new List<IUIElement>();
         }
 
-        public void InitializeEvents(UIElementCollection parent){
+        #endregion
+
+        public void SetTextureFromString(string textureName){
+            _texture = Resource.LoadContent<Texture2D>(textureName);
         }
 
-        #endregion
+        public void InitializeEvents(UIElementCollection parent){
+        }
 
         ~Sprite2D(){
             if (!_isDisposed){
