@@ -10,7 +10,7 @@ using MonoGameUtility;
 namespace Forge.Framework.UI.Elements{
     internal class ClickMask : IUIElement{
         const float _fadedInAlpha = 0.2f;
-        readonly Sprite2D _sprite;
+        readonly Sprite2D _mask;
         float _alpha;
         Rectangle _boundingBox;
 
@@ -22,7 +22,7 @@ namespace Forge.Framework.UI.Elements{
             parent.OnLeftDown += OnMouseLeftDown;
             parent.OnLeftRelease += OnMouseLeftUp;
 
-            _sprite = new Sprite2D
+            _mask = new Sprite2D
                 (
                 "Materials/SolidBlack",
                 boundingBox.X,
@@ -43,7 +43,7 @@ namespace Forge.Framework.UI.Elements{
             get { return _boundingBox.X; }
             set{
                 _boundingBox.X = value;
-                _sprite.X = value;
+                _mask.X = value;
             }
         }
 
@@ -51,7 +51,7 @@ namespace Forge.Framework.UI.Elements{
             get { return _boundingBox.Y; }
             set{
                 _boundingBox.Y = value;
-                _sprite.Y = value;
+                _mask.Y = value;
             }
         }
 
@@ -67,7 +67,7 @@ namespace Forge.Framework.UI.Elements{
             get { return _alpha; }
             set{
                 _alpha = value;
-                _sprite.Alpha = value;
+                _mask.Alpha = value;
             }
         }
 
