@@ -431,6 +431,10 @@ namespace Forge.Framework.UI{
                     }
                 }
             }
+            UpdateChild(timeDelta);
+        }
+
+        protected virtual void UpdateChild(float timeDelta){
         }
     }
 }
