@@ -61,39 +61,68 @@ namespace Forge.Framework.UI.Elements{
                 1
                 );
 
-            #region create sprites
+            int boxHeight = _textFontSize + _cornerSize*2;
 
+
+            var bg = new Sprite2D
+                (
+                GenerateBgSprite(boxWidth, boxHeight),
+                position.X,
+                position.Y,
+                boxWidth,
+                boxHeight,
+                this.FrameStrata,
+                FrameStrata.Level.Background
+                );
+
+            AddElement(bg);
+            AddElement(_textBox);
+
+            this.OnLeftDown += OnMouseClick;
+        }
+
+        int XAnchor{
+            get { return this.X + 0; }
+        }
+
+        public string Text { get; private set; }
+
+        /// <summary>
+        /// Generates the background of the inputbox.
+        /// </summary>
+        /// <param name="boxWidth"></param>
+        /// <param name="boxHeight"></param>
+        /// <returns></returns>
+        Texture2D GenerateBgSprite(int boxWidth, int boxHeight){
             //reflect border material
             var borderTexture = Resource.LoadContent<Texture2D>(_borderMaterial);
             RenderTarget2D reflectedBorder = new RenderTarget2D(Resource.Device, borderTexture.Height, borderTexture.Width);
-                {
-                    var sb = new SpriteBatch(Resource.Device);
-                    Resource.Device.SetRenderTarget(reflectedBorder);
-                    Resource.Device.Clear(Color.Transparent);
-                    sb.Begin(SpriteSortMode.Texture, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
+            {
+                var sb = new SpriteBatch(Resource.Device);
+                Resource.Device.SetRenderTarget(reflectedBorder);
+                Resource.Device.Clear(Color.Transparent);
+                sb.Begin(SpriteSortMode.Texture, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default, RasterizerState.CullNone);
 
-                    sb.Draw
-                        (
-                            borderTexture,
-                            new Vector2(borderTexture.Width/4f, borderTexture.Height/2f),
-                            new Rectangle(0, 0, borderTexture.Width, borderTexture.Height),
-                            Color.White,
-                            MathHelper.PiOver2,
-                            new Vector2(borderTexture.Width/4f, borderTexture.Height/2f),
-                            1,
-                            SpriteEffects.None,
-                            0
-                        );
-                    sb.End();
-                    Resource.Device.SetRenderTarget(null);
-                }
+                sb.Draw
+                    (
+                        borderTexture,
+                        new Vector2(borderTexture.Width/4f, borderTexture.Height/2f),
+                        new Rectangle(0, 0, borderTexture.Width, borderTexture.Height),
+                        Color.White,
+                        MathHelper.PiOver2,
+                        new Vector2(borderTexture.Width/4f, borderTexture.Height/2f),
+                        1,
+                        SpriteEffects.None,
+                        0
+                    );
+                sb.End();
+                Resource.Device.SetRenderTarget(null);
+            }
 
             //now construct background sprite
-            int boxHeight = _textFontSize + _cornerSize*2;
-
             var bgBatch = new SpriteBatch(Resource.Device);
-            var bgText = new RenderTarget2D(Resource.Device, boxWidth, boxHeight);
-            Resource.Device.SetRenderTarget(bgText);
+            var bgTexture = new RenderTarget2D(Resource.Device, boxWidth, boxHeight);
+            Resource.Device.SetRenderTarget(bgTexture);
             Resource.Device.Clear(Color.Transparent);
             bgBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
 
@@ -250,31 +279,8 @@ namespace Forge.Framework.UI.Elements{
 
             bgBatch.End();
             Resource.Device.SetRenderTarget(null);
-
-            #endregion
-
-            var sprt = new Sprite2D
-                (
-                bgText,
-                position.X,
-                position.Y,
-                boxWidth,
-                boxHeight,
-                this.FrameStrata,
-                FrameStrata.Level.Low
-                );
-
-
-            AddElement(_textBox);
-            this.OnLeftDown += OnMouseClick;
+            return bgTexture;
         }
-
-
-        int XAnchor{
-            get { return this.X + 0; }
-        }
-
-        public string Text { get; private set; }
 
         void OnMouseClick(ForgeMouseState state, float timeDelta, UIElementCollection caller){
             if (caller.ContainsMouse){
