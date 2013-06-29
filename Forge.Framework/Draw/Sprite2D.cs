@@ -37,7 +37,7 @@ namespace Forge.Framework.Draw{
             float rotation = 0
             )
             : this(
-                textureName,
+                Resource.LoadContent<Texture2D>(textureName),
                 new Rectangle(x, y, width, height),
                 new FrameStrata(targetStrata, parentStrata, "sprite2d"),
                 transparent,
@@ -61,7 +61,7 @@ namespace Forge.Framework.Draw{
             float rotation = 0
             )
             : this(
-                textureName,
+                Resource.LoadContent<Texture2D>(textureName),
                 new Rectangle(x, y, width, height),
                 targetStrata,
                 transparent,
@@ -80,8 +80,30 @@ namespace Forge.Framework.Draw{
             float spriteRepeatX = 1,
             float spriteRepeatY = 1,
             float rotation = 0
+            )
+            : this(
+                Resource.LoadContent<Texture2D>(textureName),
+                boundingBox,
+                targetStrata,
+                transparent,
+                alpha,
+                spriteRepeatX,
+                spriteRepeatY,
+                rotation){
+        }
+
+
+        public Sprite2D(
+            Texture2D texture,
+            Rectangle boundingBox,
+            FrameStrata targetStrata,
+            bool transparent = false,
+            float alpha = 1,
+            float spriteRepeatX = 1,
+            float spriteRepeatY = 1,
+            float rotation = 0
             ){
-            _texture = Resource.LoadContent<Texture2D>(textureName);
+            _texture = texture;
             _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
             _destRect = new Rectangle();
             _isDisposed = false;
@@ -92,6 +114,7 @@ namespace Forge.Framework.Draw{
             MouseController = new MouseController(this);
             _transparent = transparent;
             Rotation = rotation;
+            SpriteEffect = SpriteEffects.None;
             RenderTarget.Sprites.Add(this);
         }
 
@@ -99,6 +122,8 @@ namespace Forge.Framework.Draw{
             set { _texture = value; }
             get { return _texture; }
         }
+
+        public SpriteEffects SpriteEffect { get; set; }
 
         /// <summary>
         /// rotation angle in radians
@@ -124,7 +149,7 @@ namespace Forge.Framework.Draw{
                         Color.White*Alpha,
                         Rotation,
                         Vector2.Zero,
-                        SpriteEffects.None,
+                        SpriteEffect,
                         FrameStrata.FrameStrataValue
                     );
             }
