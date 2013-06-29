@@ -75,6 +75,7 @@ namespace Forge.Framework.UI.Elements{
             _wrapWidth = wrapWidth;
             _builder = new StringBuilder();
             _fontColor = fontColor;
+            Alpha = 1;
             RenderTarget.Sprites.Add(this);
         }
 
