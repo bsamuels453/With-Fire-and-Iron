@@ -22,6 +22,8 @@ namespace Forge.Framework.Draw{
         bool _isDisposed;
         Texture2D _texture;
 
+        #region ctors
+
         public Sprite2D(
             string textureName,
             int x,
@@ -38,6 +40,31 @@ namespace Forge.Framework.Draw{
             )
             : this(
                 Resource.LoadContent<Texture2D>(textureName),
+                new Rectangle(x, y, width, height),
+                new FrameStrata(targetStrata, parentStrata, "sprite2d"),
+                transparent,
+                alpha,
+                spriteRepeatX,
+                spriteRepeatY,
+                rotation){
+        }
+
+        public Sprite2D(
+            Texture2D texture,
+            int x,
+            int y,
+            int width,
+            int height,
+            FrameStrata parentStrata,
+            FrameStrata.Level targetStrata,
+            bool transparent = false,
+            float alpha = 1,
+            float spriteRepeatX = 1,
+            float spriteRepeatY = 1,
+            float rotation = 0
+            )
+            : this(
+                texture,
                 new Rectangle(x, y, width, height),
                 new FrameStrata(targetStrata, parentStrata, "sprite2d"),
                 transparent,
@@ -117,6 +144,8 @@ namespace Forge.Framework.Draw{
             SpriteEffect = SpriteEffects.None;
             RenderTarget.Sprites.Add(this);
         }
+
+        #endregion
 
         public Texture2D Texture{
             set { _texture = value; }
