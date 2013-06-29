@@ -228,6 +228,9 @@ namespace Forge.Framework.Draw{
             return new List<IUIElement>();
         }
 
+        public void Update(float timeDelta){
+        }
+
         #endregion
 
         public void SetTextureFromString(string textureName){

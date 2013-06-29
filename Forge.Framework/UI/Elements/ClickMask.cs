@@ -81,6 +81,9 @@ namespace Forge.Framework.UI.Elements{
             return new List<IUIElement>();
         }
 
+        public void Update(float timeDelta){
+        }
+
         #endregion
 
         void OnMouseExit(ForgeMouseState state, float timeDelta, UIElementCollection caller){

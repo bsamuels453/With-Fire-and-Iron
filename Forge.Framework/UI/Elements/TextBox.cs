@@ -142,6 +142,9 @@ namespace Forge.Framework.UI.Elements{
             return new List<IUIElement>();
         }
 
+        public void Update(float timeDelta){
+        }
+
         #endregion
 
         public void SetText(string text){
