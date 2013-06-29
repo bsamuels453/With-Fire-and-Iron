@@ -21,6 +21,7 @@ namespace Forge.Framework.UI{
     public class UIElementCollection : IUIElement{
         const float _hoverTime = 200;
         protected readonly MouseManager MouseManager;
+        readonly string _alias;
         readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
         readonly Stopwatch _hoverTimer;
@@ -68,6 +69,7 @@ namespace Forge.Framework.UI{
             _mouseController = new MouseController(this);
             _alpha = 1;
             _hoverTimer = new Stopwatch();
+            _alias = alias;
             SetupEventPropagation();
             SetupEventPropagationToChildren();
         }
@@ -312,6 +314,12 @@ namespace Forge.Framework.UI{
                         bool onTopOfStack = false;
                         var stack = GetGlobalElementStack(state.X, state.Y);
                         stack = stack.OrderBy(o => o.FrameStrata.FrameStrataValue).ToList();
+                        stack = (
+                            from element in stack
+                            where !_elements.Contains(element)
+                            select element
+                            ).ToList();
+
                         if (stack.Count > 0){
                             if (stack[0] == this){
                                 onTopOfStack = true;
