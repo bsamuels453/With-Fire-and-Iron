@@ -131,7 +131,7 @@ namespace Forge.Framework.Draw{
             float rotation = 0
             ){
             _texture = texture;
-            _srcRect = new FloatingRectangle(0f, 0f, _texture.Height*spriteRepeatX, _texture.Width*spriteRepeatY);
+            _srcRect = new FloatingRectangle(0f, 0f, _texture.Width*spriteRepeatX, _texture.Height*spriteRepeatY);
             _destRect = new Rectangle();
             _isDisposed = false;
             _destRect = boundingBox;
