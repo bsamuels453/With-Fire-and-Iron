@@ -142,6 +142,7 @@ namespace Forge.Framework.Draw{
             _transparent = transparent;
             Rotation = rotation;
             SpriteEffect = SpriteEffects.None;
+            ShadeColor = Color.White;
             RenderTarget.Sprites.Add(this);
         }
 
@@ -159,6 +160,11 @@ namespace Forge.Framework.Draw{
         /// </summary>
         public float Rotation { get; set; }
 
+        /// <summary>
+        /// Color to shade the cursor with. White by default. Don't screw with the alpha, keep it @ 1.
+        /// </summary>
+        public Color ShadeColor { get; set; }
+
         #region IDrawableSprite Members
 
         public void Dispose(){
@@ -175,7 +181,7 @@ namespace Forge.Framework.Draw{
                         _texture,
                         _destRect,
                         (Rectangle?) _srcRect,
-                        Color.White*Alpha,
+                        ShadeColor*Alpha,
                         Rotation,
                         Vector2.Zero,
                         SpriteEffect,
