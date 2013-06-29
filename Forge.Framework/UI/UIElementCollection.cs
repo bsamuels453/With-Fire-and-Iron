@@ -440,6 +440,9 @@ namespace Forge.Framework.UI{
                 }
             }
             UpdateChild(timeDelta);
+            foreach (var element in _elements){
+                element.Update(timeDelta);
+            }
         }
 
         protected virtual void UpdateChild(float timeDelta){
