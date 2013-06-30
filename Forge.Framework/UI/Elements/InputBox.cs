@@ -16,6 +16,9 @@ using Rectangle = MonoGameUtility.Rectangle;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
+    /// <summary>
+    /// A single-line text input box.
+    /// </summary>
     public class InputBox : UIElementCollection{
         const int _borderThickness = 2;
         const int _cornerSize = 2;
@@ -25,9 +28,9 @@ namespace Forge.Framework.UI.Elements{
         const string _cursorMaterial = "Materials/WhitePixel";
         const string _textboxFont = "Fonts/Monospace10";
         const int _backgroundInset = 1;
-        const int _horizontalTextPadding = 0;
-        const int _verticalTextPadding = 0;
-        const int _textFontSize = 40;
+        const int _horizontalTextPadding = 2;
+        const int _verticalTextPadding = 2;
+        const int _textFontSize = 10;
 
         readonly Stopwatch _blinkTimer;
         readonly KeyboardController _controller;
@@ -49,10 +52,10 @@ namespace Forge.Framework.UI.Elements{
             FrameStrata.Level depth,
             Point position,
             int boxWidth,
-            string defaultText = "hello"
+            string defaultText = "DefaultText"
             )
             : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, _textFontSize + 2*_borderThickness + _horizontalTextPadding*2), "InputBox"){
-            const int boxHeight = _textFontSize + _cornerSize*2 + _horizontalTextPadding*2;
+            const int boxHeight = _textFontSize + _cornerSize*2 + _verticalTextPadding*2;
 
             var bg = new Sprite2D
                 (
@@ -80,7 +83,7 @@ namespace Forge.Framework.UI.Elements{
 
             _textBox = new TextBox
                 (
-                new Point(position.X + _borderThickness + _horizontalTextPadding, position.Y + _borderThickness + _verticalTextPadding),
+                new Point(position.X + _horizontalTextPadding, position.Y + _verticalTextPadding),
                 this,
                 FrameStrata.Level.Medium,
                 _textColor,
@@ -122,10 +125,6 @@ namespace Forge.Framework.UI.Elements{
             #endregion
 
             this.OnLeftDown += OnMouseClick;
-        }
-
-        int XAnchor{
-            get { return this.X + 0; }
         }
 
         public string Text { get; private set; }
@@ -176,8 +175,8 @@ namespace Forge.Framework.UI.Elements{
                         (
                         _backgroundInset,
                         _backgroundInset,
-                        boxWidth - _backgroundInset,
-                        boxHeight - _backgroundInset
+                        boxWidth - _backgroundInset*2,
+                        boxHeight - _backgroundInset*2
                         ),
                     Color.White
                 );
@@ -205,7 +204,7 @@ namespace Forge.Framework.UI.Elements{
                         0,
                         _cornerSize,
                         _borderThickness,
-                        _textFontSize
+                        _textFontSize + _verticalTextPadding*2
                         ),
                     Color.White
                 );
@@ -219,7 +218,7 @@ namespace Forge.Framework.UI.Elements{
                         boxWidth - _borderThickness,
                         _cornerSize,
                         _borderThickness,
-                        _textFontSize
+                        _textFontSize + _verticalTextPadding*2
                         ),
                     null,
                     Color.White,
@@ -236,7 +235,7 @@ namespace Forge.Framework.UI.Elements{
                     new Rectangle
                         (
                         _cornerSize,
-                        _borderThickness + _textFontSize,
+                        _borderThickness + _textFontSize + _verticalTextPadding*2,
                         boxWidth - _cornerSize*2,
                         _borderThickness
                         ),
@@ -289,7 +288,7 @@ namespace Forge.Framework.UI.Elements{
                     new Rectangle
                         (
                         0,
-                        _textFontSize + _borderThickness*2 - _cornerSize,
+                        _textFontSize + _borderThickness*2 - _cornerSize + _verticalTextPadding*2,
                         _cornerSize,
                         _cornerSize
                         ),
@@ -308,7 +307,7 @@ namespace Forge.Framework.UI.Elements{
                     new Rectangle
                         (
                         boxWidth - _cornerSize,
-                        (_textFontSize + _borderThickness*2 - _cornerSize),
+                        (_textFontSize + _borderThickness*2 + _verticalTextPadding*2 - _cornerSize),
                         _cornerSize,
                         _cornerSize
                         ),
@@ -334,7 +333,7 @@ namespace Forge.Framework.UI.Elements{
                 _boxFocused = true;
                 _cursor.Enabled = true;
                 _blinkTimer.Start();
-                int diff = state.X - XAnchor;
+                int diff = state.X - _textBox.X;
 
                 var wordDists = new Dictionary<int, float>();
                 string str = "";
@@ -349,7 +348,7 @@ namespace Forge.Framework.UI.Elements{
                 var ordered = wordDists.OrderBy(w => Math.Abs(diff - w.Value));
 
                 _cursorPosition = ordered.First().Key;
-                _cursor.X = XAnchor + (int) ordered.First().Value;
+                _cursor.X = _textBox.X + (int) ordered.First().Value;
             }
             else{
                 if (_boxFocused){
@@ -458,7 +457,6 @@ namespace Forge.Framework.UI.Elements{
             }
         }
 
-
         protected override void UpdateChild(float timeDelta){
             if (_boxFocused){
                 if (_blinkTimer.ElapsedMilliseconds > 400){
@@ -470,7 +468,7 @@ namespace Forge.Framework.UI.Elements{
 
         float GetCursorPos(string str, int pos){
             string sub = new string(str.Take(pos).ToArray());
-            return XAnchor + _textBox.Font.MeasureString(sub).X;
+            return _textBox.X + _textBox.Font.MeasureString(sub).X;
         }
 
         public event Action<string> OnTextEntryFinalize;
