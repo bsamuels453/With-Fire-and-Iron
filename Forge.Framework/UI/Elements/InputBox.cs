@@ -9,6 +9,7 @@ using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using Point = MonoGameUtility.Point;
 using Rectangle = MonoGameUtility.Rectangle;
 
@@ -29,11 +30,12 @@ namespace Forge.Framework.UI.Elements{
         const int _textFontSize = 40;
 
         readonly Stopwatch _blinkTimer;
+        readonly KeyboardController _controller;
         readonly Sprite2D _cursor;
-        readonly Color _cursorColor = Color.White;
+        readonly Color _cursorColor = Color.LimeGreen;
 
         readonly TextBox _textBox;
-        readonly Color _textColor = Color.Black;
+        readonly Color _textColor = Color.White;
         bool _boxFocused;
         int _cursorPosition;
 
@@ -50,7 +52,7 @@ namespace Forge.Framework.UI.Elements{
             string defaultText = "hello"
             )
             : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, _textFontSize + 2*_borderThickness + _horizontalTextPadding*2), "InputBox"){
-            int boxHeight = _textFontSize + _cornerSize*2 + _horizontalTextPadding*2;
+            const int boxHeight = _textFontSize + _cornerSize*2 + _horizontalTextPadding*2;
 
             var bg = new Sprite2D
                 (
@@ -81,7 +83,7 @@ namespace Forge.Framework.UI.Elements{
                 new Point(position.X + _borderThickness + _horizontalTextPadding, position.Y + _borderThickness + _verticalTextPadding),
                 this,
                 FrameStrata.Level.Medium,
-                Color.White,
+                _textColor,
                 _textboxFont,
                 boxWidth - _borderThickness*2,
                 1
@@ -96,6 +98,28 @@ namespace Forge.Framework.UI.Elements{
 
             _blinkTimer = new Stopwatch();
             _cursorPosition = 0;
+
+            #region setup keyboard controller
+
+            _controller = new KeyboardController();
+
+            for (int i = 37; i <= 39; i++){
+                _controller.CreateNewBind((Keys) i, (Keys) i, OnArrowKeyPress, BindCondition.OnKeyDown);
+            }
+            for (int i = 48; i <= 57; i++){
+                _controller.CreateNewBind((Keys) i, (Keys) i, OnAlphaNumericPress, BindCondition.OnKeyDown);
+            }
+            for (int i = 65; i <= 90; i++){
+                _controller.CreateNewBind((Keys) i, (Keys) i, OnAlphaNumericPress, BindCondition.OnKeyDown);
+            }
+            for (int i = 106; i <= 111; i++){
+                _controller.CreateNewBind((Keys) i, (Keys) i, OnAlphaNumericPress, BindCondition.OnKeyDown);
+            }
+
+            _controller.CreateNewBind(Keys.Back, Keys.Back, OnBackspacePress, BindCondition.OnKeyDown);
+            _controller.CreateNewBind(Keys.Enter, Keys.Enter, OnEnterPress, BindCondition.OnKeyDown);
+
+            #endregion
 
             this.OnLeftDown += OnMouseClick;
         }
@@ -301,8 +325,12 @@ namespace Forge.Framework.UI.Elements{
             return bgTexture;
         }
 
+        /// <summary>
+        /// Called on global mouse click.
+        /// </summary>
         void OnMouseClick(ForgeMouseState state, float timeDelta, UIElementCollection caller){
-            if (caller.ContainsMouse){
+            if (caller.ContainsMouse && !state.BlockLeftMButton){
+                KeyboardManager.SetActiveController(_controller);
                 _boxFocused = true;
                 _cursor.Enabled = true;
                 _blinkTimer.Start();
@@ -325,92 +353,111 @@ namespace Forge.Framework.UI.Elements{
             }
             else{
                 if (_boxFocused){
-                    DeactivateTextbox();
+                    DefocusTextbox();
                 }
             }
         }
 
-        void DeactivateTextbox(){
+        /// <summary>
+        /// Defocuses the input box by disabling cursor sprite, turning off blink timer, releasing keyboard controller,
+        /// and invoking OnTextEntryFinalize event. 
+        /// </summary>
+        void DefocusTextbox(){
             _cursor.Enabled = false;
             _boxFocused = false;
             _blinkTimer.Reset();
+            KeyboardManager.ReleaseActiveController(_controller);
+            if (OnTextEntryFinalize != null){
+                OnTextEntryFinalize(Text);
+            }
         }
 
-        /*
-        void OnKeyPress(object caller, int bindAlias, ForgeKeyState keyState){
-            #region character addition
+        /// <summary>
+        /// Converts a key from the xna Keys enum to its cooresponding unicode character.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="shiftModifier"> </param>
+        /// <returns></returns>
+        char ConvertKeyToChar(Keys key, bool shiftModifier){
+            //48-57 inclusive is numkeys 0-9
+            //65-90 inclusive is alphabet in order
+            //96-105 is numpad 0-9
+            //106 mult
+            //107 add
+            //108 separator
+            //109 subtract
+            //110 declimal
+            //111 divide
+            int keyCode = (int) key;
 
-            char c;
-            if (!ParseAlphabet(state.KeyboardState, state.PrevState.KeyboardState, out c)){
-                ParseNumeric(state.KeyboardState, state.PrevState.KeyboardState, out c);
+            char c = Convert.ToChar(keyCode);
+            if (!shiftModifier){
+                c = char.ToLower(c);
             }
-            if (c != '`'){
-                string tempStr = Text.Insert(_cursorPosition, Char.ToString(c));
+            return c;
+        }
 
-                if (_textBox.Font.MeasureString(tempStr).X < _width){
-                    Text = tempStr;
-                    _textBox.SetText(Text);
-                    _cursorPosition++;
-                    float diff = _textBox.Font.MeasureString(Char.ToString(c)).X;
-                    _cursor.X += diff;
-                }
-            }
-
-            #endregion
-
-            #region key navigation
-
+        /// <summary>
+        /// Called when inputbox's keyboard controller is active and an arrow key is pressed.
+        /// </summary>
+        void OnArrowKeyPress(object caller, int bindAlias, ForgeKeyState keyState){
             if (_cursorPosition > 0){
-                if (state.KeyboardState.IsKeyDown(Keys.Left) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Left)){
+                if ((Keys) bindAlias == Keys.Left){
                     float diff = _textBox.Font.MeasureString(Char.ToString(Text[_cursorPosition - 1])).X;
                     _cursorPosition--;
-                    _cursor.X -= diff;
+                    _cursor.X -= (int) diff;
                 }
             }
             if (_cursorPosition < Text.Length){
-                if (state.KeyboardState.IsKeyDown(Keys.Right) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Right)){
+                if ((Keys) bindAlias == Keys.Right){
                     float diff = _textBox.Font.MeasureString(Char.ToString(Text[_cursorPosition])).X;
                     _cursorPosition++;
-                    _cursor.X += diff;
+                    _cursor.X += (int) diff;
                 }
             }
-
-            #endregion
-
-            #region backspace
-
-            if (_cursorPosition > 0){
-                if (state.KeyboardState.IsKeyDown(Keys.Back) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Back)){
-                    try{
-                        Text = Text.Substring(0, _cursorPosition - 1) + Text.Substring(_cursorPosition, Text.Length - _cursorPosition);
-                    }
-                    catch{
-                        Text = Text.Substring(0, _cursorPosition - 1);
-                    }
-                    _cursorPosition--;
-                    _cursor.X = (int) GetCursorPos(Text, _cursorPosition);
-                    _textBox.SetText(Text);
-                }
-            }
-
-            #endregion
-
-            #region entry-finalization
-
-            if (state.KeyboardState.IsKeyDown(Keys.Enter) && !state.PrevState.KeyboardState.IsKeyDown(Keys.Enter)){
-                _cursor.Enabled = false;
-                _boxFocused = false;
-                _left.Alpha = 0.70f;
-                _right.Alpha = 0.70f;
-                _center.Alpha = 0.70f;
-                if (OnTextEntryFinalize != null){
-                    OnTextEntryFinalize(Text);
-                }
-            }
-
-            #endregion
         }
-         */
+
+        /// <summary>
+        /// Called when inputbox's keyboard controller is active and the backspace key is pressed.
+        /// </summary>
+        void OnBackspacePress(object caller, int bindAlias, ForgeKeyState keyState){
+            if (_cursorPosition > 0){
+                try{
+                    Text = Text.Substring(0, _cursorPosition - 1) + Text.Substring(_cursorPosition, Text.Length - _cursorPosition);
+                }
+                catch{
+                    Text = Text.Substring(0, _cursorPosition - 1);
+                }
+                _cursorPosition--;
+                _cursor.X = (int) GetCursorPos(Text, _cursorPosition);
+                _textBox.SetText(Text);
+            }
+        }
+
+        /// <summary>
+        /// Called when inputbox's keyboard controller is active and the enter key is pressed.
+        /// </summary>
+        void OnEnterPress(object caller, int bindAlias, ForgeKeyState keyState){
+            DefocusTextbox();
+        }
+
+        /// <summary>
+        /// Called when inputbox's keyboard controller is active and an alphanumeric key is pressed.
+        /// </summary>
+        void OnAlphaNumericPress(object caller, int bindAlias, ForgeKeyState keyState){
+            bool shiftDown = Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift);
+            char c = ConvertKeyToChar((Keys) bindAlias, shiftDown);
+            string tempStr = Text.Insert(_cursorPosition, Char.ToString(c));
+
+            if (_textBox.Font.MeasureString(tempStr).X < _textBox.Width){
+                Text = tempStr;
+                _textBox.SetText(Text);
+                _cursorPosition++;
+                float diff = _textBox.Font.MeasureString(Char.ToString(c)).X;
+                _cursor.X += (int) diff;
+            }
+        }
+
 
         protected override void UpdateChild(float timeDelta){
             if (_boxFocused){
@@ -419,12 +466,6 @@ namespace Forge.Framework.UI.Elements{
                     _blinkTimer.Restart();
                 }
             }
-        }
-
-        void OnClick(){
-            //_left.Alpha = 1;
-            //_right.Alpha = 1;
-            //_center.Alpha = 1;
         }
 
         float GetCursorPos(string str, int pos){
