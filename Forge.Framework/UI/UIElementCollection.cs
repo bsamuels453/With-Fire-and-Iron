@@ -74,8 +74,20 @@ namespace Forge.Framework.UI{
             SetupEventPropagationToChildren();
         }
 
+        /// <summary>
+        /// Try not to write to this. Only do so under special circumstances such as delayed definition of
+        /// collection's bounding box later in inheritee ctor.
+        /// </summary>
         protected Rectangle BoundingBox{
             get { return _boundingBox; }
+            set{
+                var newbbox = value;
+                foreach (var element in _elements){
+                    var childBbox = new Rectangle(element.X, element.Y, element.Width, element.Height);
+                    Debug.Assert(newbbox.Contains(childBbox));
+                }
+                _boundingBox = newbbox;
+            }
         }
 
         /// <summary>
@@ -174,6 +186,22 @@ namespace Forge.Framework.UI{
                 return ret;
             }
             return new List<IUIElement>();
+        }
+
+        public void Update(float timeDelta){
+            if (ContainsMouse){
+                if (_hoverTimer.ElapsedMilliseconds >= _hoverTime){
+                    MouseHovering = true;
+                    _hoverTimer.Reset();
+                    if (OnMouseHover != null){
+                        OnMouseHover.Invoke(timeDelta, this);
+                    }
+                }
+            }
+            UpdateChild(timeDelta);
+            foreach (var element in _elements){
+                element.Update(timeDelta);
+            }
         }
 
         #endregion
@@ -427,22 +455,6 @@ namespace Forge.Framework.UI{
         public void Unbind(){
             Debug.Assert(_bindOrder[0] == this);
             _bindOrder.RemoveAt(0);
-        }
-
-        public void Update(float timeDelta){
-            if (ContainsMouse){
-                if (_hoverTimer.ElapsedMilliseconds >= _hoverTime){
-                    MouseHovering = true;
-                    _hoverTimer.Reset();
-                    if (OnMouseHover != null){
-                        OnMouseHover.Invoke(timeDelta, this);
-                    }
-                }
-            }
-            UpdateChild(timeDelta);
-            foreach (var element in _elements){
-                element.Update(timeDelta);
-            }
         }
 
         protected virtual void UpdateChild(float timeDelta){
