@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Forge.Framework.Control;
 using Forge.Framework.Draw;
@@ -10,6 +11,7 @@ using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json.Linq;
 using Point = MonoGameUtility.Point;
 using Rectangle = MonoGameUtility.Rectangle;
 
@@ -20,25 +22,24 @@ namespace Forge.Framework.UI.Elements{
     /// A single-line text input box.
     /// </summary>
     public class InputBox : UIElementCollection{
-        const int _borderThickness = 2;
-        const int _cornerSize = 2;
-        const string _borderMaterial = "Materials/TextBoxBorder";
-        const string _bgMaterial = "Materials/TextBoxBG";
-        const string _cornerMaterial = "Materials/TextBoxCorner";
         const string _cursorMaterial = "Materials/WhitePixel";
-        const string _textboxFont = "Fonts/Monospace10";
-        const int _backgroundInset = 1;
-        const int _horizontalTextPadding = 2;
-        const int _verticalTextPadding = 2;
-        const int _textFontSize = 10;
-
+        readonly int _backgroundInset = 1;
+        readonly string _bgMaterial = "Materials/TextBoxBG";
         readonly Stopwatch _blinkTimer;
+        readonly string _borderMaterial = "Materials/TextBoxBorder";
+        readonly int _borderThickness = 2;
         readonly KeyboardController _controller;
+        readonly string _cornerMaterial = "Materials/TextBoxCorner";
+        readonly int _cornerSize = 2;
         readonly Sprite2D _cursor;
         readonly Color _cursorColor = Color.LimeGreen;
-
+        readonly int _horizontalTextPadding = 2;
         readonly TextBox _textBox;
         readonly Color _textColor = Color.White;
+        readonly int _textFontSize = 10;
+        readonly string _textboxFont = "Fonts/Monospace10";
+        readonly int _verticalTextPadding = 2;
+
         bool _boxFocused;
         int _cursorPosition;
 
@@ -47,15 +48,42 @@ namespace Forge.Framework.UI.Elements{
         /// <param name="position">The position of the top left corner of the input box.</param>
         /// <param name="boxWidth">The full width of the text box, corner to corner.</param>
         /// <param name="defaultText"></param>
+        /// <param name="template">The template to use to define padding/textures/fonts.</param>
         public InputBox(
             UIElementCollection parent,
             FrameStrata.Level depth,
             Point position,
             int boxWidth,
-            string defaultText = "DefaultText"
+            string defaultText = "DefaultText",
+            string template = "UiTemplates/InputBox.json"
             )
-            : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, _textFontSize + 2*_borderThickness + _horizontalTextPadding*2), "InputBox"){
-            const int boxHeight = _textFontSize + _cornerSize*2 + _verticalTextPadding*2;
+            : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, 0), "InputBox"){
+            #region load template
+
+            var strmrdr = new StreamReader(template);
+            var contents = strmrdr.ReadToEnd();
+            strmrdr.Close();
+
+            var jobj = JObject.Parse(contents);
+
+            _borderMaterial = jobj["BorderMaterial"].ToObject<string>();
+            _bgMaterial = jobj["BackgroundMaterial"].ToObject<string>();
+            _cornerMaterial = jobj["CornerMaterial"].ToObject<string>();
+            //_cursorColor = (Color)jobj["CursorColor"].ToObject<string>();
+            //_textColor = jobj["FontColor"].ToObject<Color>();
+            _textboxFont = jobj["Font"].ToObject<string>();
+            _backgroundInset = jobj["BackgroundInset"].ToObject<int>();
+            _horizontalTextPadding = jobj["HorizontalTextPadding"].ToObject<int>();
+            _verticalTextPadding = jobj["VerticalTextPadding"].ToObject<int>();
+            _textFontSize = jobj["FontSize"].ToObject<int>();
+            _borderThickness = jobj["BorderThickness"].ToObject<int>();
+            _cornerSize = jobj["CornerSize"].ToObject<int>();
+
+            #endregion
+
+            #region set up sprites/spritedata
+
+            int boxHeight = _textFontSize + _cornerSize*2 + _verticalTextPadding*2;
 
             var bg = new Sprite2D
                 (
@@ -102,6 +130,8 @@ namespace Forge.Framework.UI.Elements{
             _blinkTimer = new Stopwatch();
             _cursorPosition = 0;
 
+            #endregion
+
             #region setup keyboard controller
 
             _controller = new KeyboardController();
@@ -128,6 +158,10 @@ namespace Forge.Framework.UI.Elements{
         }
 
         public string Text { get; private set; }
+
+        void LoadFromTemplate(string templateDir){
+            int g = 5;
+        }
 
         /// <summary>
         /// Generates the background of the inputbox. optimize: cache the sprites generated by this method in a static dict
