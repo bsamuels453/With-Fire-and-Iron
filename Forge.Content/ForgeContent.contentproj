@@ -308,23 +308,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Materials\TextBoxLeft.png">
-      <Name>TextBoxLeft</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Materials\TextBoxMid.png">
-      <Name>TextBoxMid</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-    <Compile Include="Materials\TextBoxRight.png">
-      <Name>TextBoxRight</Name>
-      <Importer>TextureImporter</Importer>
-      <Processor>TextureProcessor</Processor>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Materials\DarkTextboxMid.png">
       <Name>DarkTextboxMid</Name>
       <Importer>TextureImporter</Importer>
@@ -420,6 +403,30 @@
   <ItemGroup>
     <Compile Include="Materials\TestNonsquare.png">
       <Name>TestNonsquare</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Materials\TextBoxBG.png">
+      <Name>TextBoxBG</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Materials\TextBoxBorder.png">
+      <Name>TextBoxBorder</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+    <Compile Include="Materials\TextBoxCorner.png">
+      <Name>TextBoxCorner</Name>
+      <Importer>TextureImporter</Importer>
+      <Processor>TextureProcessor</Processor>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Materials\WhitePixel.png">
+      <Name>WhitePixel</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
     </Compile>
