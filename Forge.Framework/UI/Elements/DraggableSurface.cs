@@ -6,8 +6,12 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
+    /// <summary>
+    /// Inherit from this class in order to enable dragging for a UIElementCollection object.
+    /// </summary>
     public class DraggableSurface : UIElementCollection{
         bool _dragging;
+        bool _enableDrag;
         Point _mouseOffset;
 
         public DraggableSurface(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias) :
@@ -16,11 +20,20 @@ namespace Forge.Framework.UI.Elements{
             this.OnLeftRelease += OnLeftMouseUp;
             this.OnMouseFocusLost += OnFocusLost;
             this.OnMouseMovement += OnMouseMove;
+            _enableDrag = true;
+        }
+
+        protected bool EnableDrag{
+            get { return _enableDrag; }
+            set{
+                _enableDrag = value;
+                _dragging = false;
+            }
         }
 
         void OnLeftMouseDown(ForgeMouseState state, float timeDelta, UIElementCollection caller){
             if (!state.BlockLeftMButton){
-                if (ContainsMouse){
+                if (ContainsMouse && _enableDrag){
                     StartDrag(state);
                 }
             }
