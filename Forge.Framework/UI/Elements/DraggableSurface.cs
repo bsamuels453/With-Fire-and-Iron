@@ -1,7 +1,6 @@
 ﻿#region
 
 using Forge.Framework.Control;
-using Forge.Framework.Draw;
 using MonoGameUtility;
 
 #endregion
@@ -11,11 +10,8 @@ namespace Forge.Framework.UI.Elements{
         bool _dragging;
         Point _mouseOffset;
 
-        public DraggableSurface(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string texture) :
-            base(parent, depth, boundingBox, "DraggableSurface"){
-            var tex = new Sprite2D(texture, boundingBox, this.FrameStrata);
-            this.AddElement(tex);
-
+        public DraggableSurface(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias) :
+            base(parent, depth, boundingBox, alias + "_Draggable"){
             this.OnLeftDown += OnLeftMouseDown;
             this.OnLeftRelease += OnLeftMouseUp;
             this.OnMouseFocusLost += OnFocusLost;
