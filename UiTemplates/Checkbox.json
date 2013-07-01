@@ -1,0 +1,6 @@
+{
+	"Width": 50,
+	"CheckInsetPadding": 1,
+	"CheckMaterial": "Icons/CheckboxMark",
+	"BackgroundMaterial": "Icons/CheckboxBG"
+}
