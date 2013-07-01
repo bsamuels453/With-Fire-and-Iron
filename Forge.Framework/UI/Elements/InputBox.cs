@@ -21,7 +21,7 @@ namespace Forge.Framework.UI.Elements{
     /// <summary>
     /// A single-line text input box.
     /// </summary>
-    public class InputBox : UIElementCollection{
+    public class Inputbox : UIElementCollection{
         const string _cursorMaterial = "Materials/WhitePixel";
         readonly int _backgroundInset = 1;
         readonly string _bgMaterial = "Materials/TextBoxBG";
@@ -49,15 +49,15 @@ namespace Forge.Framework.UI.Elements{
         /// <param name="boxWidth">The full width of the text box, corner to corner.</param>
         /// <param name="defaultText"></param>
         /// <param name="template">The template to use to define padding/textures/fonts.</param>
-        public InputBox(
+        public Inputbox(
             UIElementCollection parent,
             FrameStrata.Level depth,
             Point position,
             int boxWidth,
             string defaultText = "DefaultText",
-            string template = "UiTemplates/InputBox.json"
+            string template = "UiTemplates/Inputbox.json"
             )
-            : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, 0), "InputBox"){
+            : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, 0), "Inputbox"){
             #region load template
 
             var strmrdr = new StreamReader(template);
