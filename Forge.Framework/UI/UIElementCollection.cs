@@ -100,7 +100,8 @@ namespace Forge.Framework.UI{
         /// <summary>
         /// Whether or not this collection contains the mouse within any of its child sprites.
         /// This is updated when the OnMouseMovement event is invoked. This ignores any transparency
-        /// settings.
+        /// settings. This will be false when there is another element covering this one, despite
+        /// whether or not the mouse is within the element.
         /// </summary>
         public bool ContainsMouse { get; private set; }
 
