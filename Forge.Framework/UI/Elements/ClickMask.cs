@@ -15,7 +15,7 @@ namespace Forge.Framework.UI.Elements{
         Rectangle _boundingBox;
 
         public ClickMask(Rectangle boundingBox, UIElementCollection parent){
-            FrameStrata = new FrameStrata(FrameStrata.Level.High, parent.FrameStrata, "ClickMask");
+            FrameStrata = new FrameStrata(FrameStrata.Level.Highlight, parent.FrameStrata, "ClickMask");
             _boundingBox = boundingBox;
             MouseController = new MouseController(this);
             parent.OnMouseExit += OnMouseExit;

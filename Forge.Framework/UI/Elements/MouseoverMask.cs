@@ -16,7 +16,7 @@ namespace Forge.Framework.UI.Elements{
         Rectangle _boundingBox;
 
         public MouseoverMask(Rectangle boundingBox, UIElementCollection parent){
-            FrameStrata = new FrameStrata(FrameStrata.Level.High, parent.FrameStrata, "MouseoverMaskLayer");
+            FrameStrata = new FrameStrata(FrameStrata.Level.Highlight, parent.FrameStrata, "MouseoverMaskLayer");
             _boundingBox = boundingBox;
             MouseController = new MouseController(this);
             parent.OnMouseEntry += OnMouseEntry;
