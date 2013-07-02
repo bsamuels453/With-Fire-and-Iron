@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -110,6 +111,20 @@ namespace Forge.Framework.Resources{
                 obj = VectorParser.Parse<T>(configValue);
             }
             return obj;
+        }
+
+        /// <summary>
+        /// Loads a JSON object from a json settings file at the location specified with fileAddress, relative to bin dir.
+        /// </summary>
+        /// <param name="fileAddress"></param>
+        /// <returns></returns>
+        public static JObject LoadJObject(string fileAddress){
+            var strmrdr = new StreamReader(fileAddress);
+            var contents = strmrdr.ReadToEnd();
+            strmrdr.Close();
+
+            var jobj = JObject.Parse(contents);
+            return jobj;
         }
 
         /// <summary>
