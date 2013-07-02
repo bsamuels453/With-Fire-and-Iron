@@ -143,12 +143,24 @@ namespace Forge.Framework.Resources{
 
         /// <summary>
         /// Reformats input json data to match with a format that's readable by json.net.
-        /// In the future this method will filter out comments.
+        /// For now, method filters out comments.
         /// </summary>
-        /// <param name="input"></param>
+        /// <param name="str"></param>
         /// <returns></returns>
-        static string FormatJsonString(string input){
-            return input;
+        static string FormatJsonString(string str){
+            int openComment;
+            while ((openComment = str.IndexOf("///", StringComparison.InvariantCulture)) != -1){
+                int terminator = str.IndexOf('\r', openComment);
+                if (terminator != -1){
+                    str = str.Substring(0, openComment) + str.Substring(terminator);
+                }
+                else{
+                    str = str.Substring(0, openComment);
+                }
+                int g = 4;
+            }
+
+            return str;
         }
 
         /// <summary>
