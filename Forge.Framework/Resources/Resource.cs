@@ -122,9 +122,33 @@ namespace Forge.Framework.Resources{
             var strmrdr = new StreamReader(fileAddress);
             var contents = strmrdr.ReadToEnd();
             strmrdr.Close();
+            contents = FormatJsonString(contents);
 
             var jobj = JObject.Parse(contents);
             return jobj;
+        }
+
+        /// <summary>
+        /// Loads a JSON object from a json settings file from the stream provided. Does not close reader after reading.
+        /// </summary>
+        /// <param name="reader"> </param>
+        /// <returns></returns>
+        public static JObject LoadJObject(StreamReader reader){
+            var contents = reader.ReadToEnd();
+            contents = FormatJsonString(contents);
+
+            var jobj = JObject.Parse(contents);
+            return jobj;
+        }
+
+        /// <summary>
+        /// Reformats input json data to match with a format that's readable by json.net.
+        /// In the future this method will filter out comments.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        static string FormatJsonString(string input){
+            return input;
         }
 
         /// <summary>
