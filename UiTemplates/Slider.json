@@ -1,9 +1,33 @@
 {
-	"SliderHandleMaterial": "",
-	"TrackMaterial": "",
-	"TrackEndpointMaterial": "",
-	"TrackWidth": 0,
-	"HorizontalTrackPadding": 0,
+	"HandleMaterial": "Materials/SliderMaterial",
+	"TrackMaterial": "Materials/SliderTrack",
+	"TrackEndpointMaterial": "Materials/SliderEnd",
+	
+	///total width of the track, does not include the endpoints.
+	"TrackWidth": 100,
+	
+	///height of the track
+	"TrackHeight": 16,
+	
+	///the width of each endpoint sprite.
+	"EndpointWidth": 8,
+	
+	///the dimensions of the handle sprite
+	"HandleWidth": 6,
+	"HandleHeight": 16,
+	
+	///how many pixels of free space between either end of the track sprite and
+	///the end of the slider's defined area.
+	"HorizontalTrackPadding": 10,
+	
+	///how many pixels of free space between the top/bottom of the slider track's
+	///sprite and the top/bottom of the slider's defined area.
 	"VerticalTrackPadding": 0,
-	"SliderTrackPadding": 0
+	
+	///how many pixels early of the track's end that the slider is stopped at.
+	"SliderTrackPadding": 0,
+	
+	///how many pixels to offset the handle by in the y direction. use this
+	///to center the slider on the track.
+	"HandleVerticalOffset" : 0
 }
