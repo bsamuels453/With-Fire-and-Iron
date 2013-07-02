@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Cloo;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -90,9 +89,8 @@ namespace Forge.Framework.Resources{
             //now we check to make sure none of the scripts have changed since the last time they were compiled.
             var scriptFiles = GetAllFilesInDirectory(_openclScriptDir);
 
-            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
-            var jobj = JObject.Parse(sr.ReadToEnd());
-            sr.Close();
+            var jobj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Hashes.json");
+
             var oldMD5 = jobj["OpenclScripts"].ToObject<string>();
             var currentMD5 = GenerateCumulativeMD5(scriptFiles);
 
@@ -120,9 +118,7 @@ namespace Forge.Framework.Resources{
         /// </summary>
         /// <param name="md5"> </param>
         public static void SaveMD5(string md5){
-            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
-            var jobj = JObject.Parse(sr.ReadToEnd());
-            sr.Close();
+            var jobj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Hashes.json");
 
             jobj["OpenclScripts"] = md5;
             var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));

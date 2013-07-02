@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using Forge.Framework.Control;
 using Forge.Framework.Draw;
@@ -11,7 +10,6 @@ using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Newtonsoft.Json.Linq;
 using Point = MonoGameUtility.Point;
 using Rectangle = MonoGameUtility.Rectangle;
 
@@ -60,11 +58,7 @@ namespace Forge.Framework.UI.Elements{
             : base(parent, depth, new Rectangle(position.X, position.Y, boxWidth, 0), "Inputbox"){
             #region load template
 
-            var strmrdr = new StreamReader(template);
-            var contents = strmrdr.ReadToEnd();
-            strmrdr.Close();
-
-            var jobj = JObject.Parse(contents);
+            var jobj = Resource.LoadJObject(template);
 
             _borderMaterial = jobj["BorderMaterial"].ToObject<string>();
             _bgMaterial = jobj["BackgroundMaterial"].ToObject<string>();

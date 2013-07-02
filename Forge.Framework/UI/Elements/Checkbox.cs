@@ -1,11 +1,10 @@
 ﻿#region
 
 using System;
-using System.IO;
 using Forge.Framework.Control;
 using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using MonoGameUtility;
-using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -21,11 +20,7 @@ namespace Forge.Framework.UI.Elements{
             base(parent, depth, new Rectangle(), "Checkbox"){
             #region load template
 
-            var strmrdr = new StreamReader(template);
-            var contents = strmrdr.ReadToEnd();
-            strmrdr.Close();
-
-            var jobj = JObject.Parse(contents);
+            var jobj = Resource.LoadJObject(template);
 
             _width = jobj["Width"].ToObject<int>();
             _checkInsetPadding = jobj["CheckInsetPadding"].ToObject<int>();

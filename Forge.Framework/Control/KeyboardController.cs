@@ -3,10 +3,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
-using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -35,10 +34,7 @@ namespace Forge.Framework.Control{
         /// <typeparam name="T">The type of the BindIdentifier enum used for this binding group.</typeparam>
         /// <param name="fileName"></param>
         public void LoadFromFile<T>(string fileName){
-            var strmrdr = new StreamReader(fileName);
-            var contents = strmrdr.ReadToEnd();
-            strmrdr.Close();
-            var jObj = JObject.Parse(contents);
+            var jObj = Resource.LoadJObject(fileName);
 
             var allBindings = (T[]) Enum.GetValues(typeof (T));
 
