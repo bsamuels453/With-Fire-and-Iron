@@ -9,12 +9,12 @@ namespace Forge.Framework.UI.Elements{
     /// <summary>
     /// Inherit from this class in order to enable dragging for a UIElementCollection object.
     /// </summary>
-    public class DraggableSurface : UIElementCollection{
+    public class DraggableCollection : UIElementCollection{
         bool _dragging;
         bool _enableDrag;
         Point _mouseOffset;
 
-        public DraggableSurface(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias) :
+        public DraggableCollection(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias) :
             base(parent, depth, boundingBox, alias + "_Draggable"){
             this.OnLeftDown += OnLeftMouseDown;
             this.OnLeftRelease += OnLeftMouseUp;
