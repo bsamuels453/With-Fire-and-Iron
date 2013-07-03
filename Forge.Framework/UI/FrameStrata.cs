@@ -62,7 +62,11 @@ namespace Forge.Framework.UI{
         }
 
         FrameStrata(List<FrameStackData> parentFrameStack, Level strata, int frameNestingDepth, float strataValue, string frameAlias){
-            _frameStack = parentFrameStack;
+            //lazy clone
+            _frameStack = new List<FrameStackData>(parentFrameStack.Count);
+            foreach (var data in parentFrameStack){
+                _frameStack.Add(data);
+            }
             _frameStack.Add(new FrameStackData(strata, frameAlias));
             _frameNestingDepth = frameNestingDepth;
             FrameStrataValue = strataValue;
