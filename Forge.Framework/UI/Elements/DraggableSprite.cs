@@ -14,8 +14,7 @@ namespace Forge.Framework.UI.Elements{
                 (
                 texture,
                 boundingBox,
-                this.FrameStrata,
-                FrameStrata.Level.Medium
+                this.FrameStrata
                 );
             this.AddElement(sprite);
         }
