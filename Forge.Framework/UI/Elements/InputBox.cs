@@ -144,6 +144,7 @@ namespace Forge.Framework.UI.Elements{
                 _controller.CreateNewBind((Keys) i, (Keys) i, OnAlphaNumericPress, BindCondition.OnKeyDown);
             }
 
+            _controller.CreateNewBind(Keys.Space, Keys.Space, OnAlphaNumericPress, BindCondition.OnKeyDown);
             _controller.CreateNewBind(Keys.Back, Keys.Back, OnBackspacePress, BindCondition.OnKeyDown);
             _controller.CreateNewBind(Keys.Enter, Keys.Enter, OnEnterPress, BindCondition.OnKeyDown);
 
@@ -473,7 +474,8 @@ namespace Forge.Framework.UI.Elements{
             char c = ConvertKeyToChar((Keys) bindAlias, shiftDown);
             string tempStr = Text.Insert(_cursorPosition, Char.ToString(c));
 
-            if (_textBox.Font.MeasureString(tempStr).X < _textBox.Width){
+            float strLen = _textBox.Font.MeasureString(tempStr).X;
+            if (strLen < _textBox.Width){
                 Text = tempStr;
                 _textBox.SetText(Text);
                 _cursorPosition++;
