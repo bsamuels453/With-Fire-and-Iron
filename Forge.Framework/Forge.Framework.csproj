@@ -163,6 +163,7 @@
     <Compile Include="UI\Elements\DropdownMenu.cs" />
     <Compile Include="UI\Elements\InputBox.cs" />
     <Compile Include="UI\Elements\MouseoverMask.cs" />
+    <Compile Include="UI\Elements\Panel.cs" />
     <Compile Include="UI\Elements\Slider.cs" />
     <Compile Include="UI\Elements\StandardButton.cs">
       <SubType>Code</SubType>
