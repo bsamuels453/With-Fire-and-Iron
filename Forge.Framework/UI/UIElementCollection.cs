@@ -178,7 +178,7 @@ namespace Forge.Framework.UI{
         }
 
         public List<IUIElement> GetElementStackAtPoint(int x, int y){
-            if (HitTest(x, y)){
+            if (CollectionContains(x, y)){
                 var ret = new List<IUIElement>();
                 ret.Add(this);
                 foreach (var element in _elements){
@@ -234,6 +234,17 @@ namespace Forge.Framework.UI{
         }
 
         #endregion
+
+        /// <summary>
+        /// Does a hit test based off of collection bounding boxes, rather than contained sprites.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public bool CollectionContains(int x, int y){
+            Debug.Assert(_boundingBox.Width != 0 && _boundingBox.Height != 0);
+            return _boundingBox.Contains(x, y);
+        }
 
         public event Action<UIElementCollection> OnMouseFocusLost;
         public event Action<UIElementCollection> OnMouseFocusGained;
@@ -340,6 +351,12 @@ namespace Forge.Framework.UI{
             _mouseController.OnMouseMovement +=
                 (state, timeDelta) =>{
                     if (!state.BlockMPosition){
+                        bool contdainsNewMouse = ContainsPoint(state.X, state.Y);
+                        if (contdainsNewMouse){
+                            int g = 5;
+                        }
+
+
                         bool onTopOfStack = false;
                         var stack = GetGlobalElementStack(state.X, state.Y);
                         stack = stack.OrderBy(o => o.FrameStrata.FrameStrataValue).ToList();
@@ -349,7 +366,7 @@ namespace Forge.Framework.UI{
                             select element
                             ).ToList();
 
-                        if (stack.Count > 0){
+                        if (stack.Count > 1){
                             if (stack[0] == this){
                                 onTopOfStack = true;
                             }
@@ -358,6 +375,9 @@ namespace Forge.Framework.UI{
                         //this event is only called when the mouse moves, so can safely turn off hover
                         MouseHovering = false;
                         bool containsNewMouse = ContainsPoint(state.X, state.Y);
+                        if (containsNewMouse){
+                            int g = 5;
+                        }
 
                         //this means there's another object overlapping this one that prevents the mouse
                         //from interacting with it
