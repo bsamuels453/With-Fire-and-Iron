@@ -10,6 +10,7 @@ using Rectangle = MonoGameUtility.Rectangle;
 
 namespace Forge.Framework.UI.Elements{
     public class Panel : DraggableCollection{
+        readonly Sprite2D _background;
         readonly int _backgroundInset = 1;
         readonly string _bgMaterial = "Materials/TextBoxBG";
         readonly string _borderMaterial = "Materials/TextBoxBorder";
@@ -18,8 +19,8 @@ namespace Forge.Framework.UI.Elements{
         readonly int _cornerSize = 2;
 
 
-        public Panel(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string template = "UiTemplates/Panel.json")
-            : base(parent, depth, boundingBox, "Panel"){
+        public Panel(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias, string template = "UiTemplates/Panel.json")
+            : base(parent, depth, boundingBox, alias + "_Panel"){
             #region load template
 
             var jobj = Resource.LoadJObject(template);
@@ -35,7 +36,7 @@ namespace Forge.Framework.UI.Elements{
 
             #region set up sprites/spritedata
 
-            var bg = new Sprite2D
+            _background = new Sprite2D
                 (
                 GenerateBgSprite(boundingBox.Width, boundingBox.Height),
                 boundingBox.X,
@@ -46,7 +47,7 @@ namespace Forge.Framework.UI.Elements{
                 FrameStrata.Level.Background
                 );
 
-            AddElement(bg);
+            AddElement(_background);
 
             #endregion
         }
@@ -244,6 +245,13 @@ namespace Forge.Framework.UI.Elements{
             bgBatch.End();
             Resource.Device.SetRenderTarget(null);
             return bgTexture;
+        }
+
+        protected void SetBackgroundDims(Rectangle dims){
+            _background.X = dims.X;
+            _background.Y = dims.Y;
+            _background.Width = dims.Width;
+            _background.Height = dims.Height;
         }
     }
 }
