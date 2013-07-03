@@ -24,16 +24,19 @@ namespace Forge.Framework.UI.Elements{
         readonly string _trackEndpointMaterial;
         readonly int _trackHeight;
         readonly string _trackMaterial;
-        readonly int _trackStart;
         readonly int _trackWidth;
 
         #endregion
 
+        readonly DraggableSprite _handle;
+        readonly int _maxTrackPixel;
         readonly float _maxVal;
+        readonly int _minTrackPixel;
         readonly float _minVal;
-        readonly Sprite2D _sliderSprite;
         readonly int[] _stepOffsetsPixel;
         readonly float[] _stepOffsetsValue;
+
+        readonly float _stepValueLength;
 
         /// <summary>
         /// multiplying by this value convers from value scale to pixel scale
@@ -41,6 +44,8 @@ namespace Forge.Framework.UI.Elements{
         readonly float _valueMultiplier;
 
         readonly int _verticalTrackPadding;
+        readonly int _yPosition;
+
 
         float _handleValue;
 
@@ -84,9 +89,12 @@ namespace Forge.Framework.UI.Elements{
             _valueMultiplier = sliderRange/valueRange;
             _minVal = minVal;
             _maxVal = maxVal;
-            _trackStart = position.X + _horizontalTrackPadding + _sliderTrackPadding;
+            _stepValueLength = step;
+            _minTrackPixel = position.X + _horizontalTrackPadding + _sliderTrackPadding;
+            _maxTrackPixel = _minTrackPixel + _trackWidth - _sliderTrackPadding*2;
+            _yPosition = position.Y - _handleVerticalOff + _verticalTrackPadding;
 
-            _stepOffsetsPixel = new int[(int) ((maxVal - minVal)/step)];
+            _stepOffsetsPixel = new int[(int) ((maxVal - minVal)/step) + 1];
             _stepOffsetsValue = new float[_stepOffsetsPixel.Length];
             for (int i = 0; i < _stepOffsetsPixel.Length; i++){
                 _stepOffsetsPixel[i] = (int) (_valueMultiplier*step*i);
@@ -97,6 +105,14 @@ namespace Forge.Framework.UI.Elements{
             #endregion
 
             float defaultHandleValue = (_minVal + _maxVal)/2f;
+
+            this.BoundingBox = new Rectangle
+                (
+                position.X,
+                position.Y,
+                _trackWidth + _horizontalTrackPadding*2,
+                _trackHeight + _verticalTrackPadding*2
+                );
 
             #region sprites
 
@@ -151,22 +167,32 @@ namespace Forge.Framework.UI.Elements{
                 FrameStrata.Level.Background
                 );
 
-            _sliderSprite = new Sprite2D
+            _handle = new DraggableSprite
                 (
-                handleTex,
-                _trackStart + ConvertToPixelOffset(defaultHandleValue) - _handleWidth/2,
-                position.Y - _handleVerticalOff + _verticalTrackPadding,
-                _handleWidth,
-                _handleHeight,
-                this.FrameStrata,
-                FrameStrata.Level.Medium
+                this,
+                FrameStrata.Level.Medium,
+                new Rectangle
+                    (
+                    GetHandlePosUsingVal(defaultHandleValue),
+                    _yPosition,
+                    _handleWidth,
+                    _handleHeight
+                    ),
+                handleTex
                 );
 
+
             this.AddElement(bgSprite);
-            this.AddElement(_sliderSprite);
+            this.AddElement(_handle);
 
             #endregion
 
+            _handle.ConstrainDrag =
+                (collection, newpoint, oldpoint) =>{
+                    newpoint.Y = _yPosition;
+                    newpoint.X = GetHandlePosUsingPix(newpoint.X);
+                    return newpoint;
+                };
             HandleValue = defaultHandleValue;
         }
 
@@ -174,10 +200,46 @@ namespace Forge.Framework.UI.Elements{
             get { return _handleValue; }
             set{
                 Debug.Assert(value <= _maxVal && value >= _minVal);
-                int offset = ConvertToPixelOffset(value);
-                _sliderSprite.X = offset + _trackStart;
+                int offset = GetHandlePosUsingVal(value);
+                _handle.X = offset;
                 _handleValue = value;
             }
+        }
+
+        int GetHandlePosUsingPix(int pixel){
+            //convert pixel to value
+            pixel -= _minTrackPixel;
+            float value = pixel*(1/_valueMultiplier);
+            value += _minVal;
+            return GetHandlePosUsingVal(value);
+        }
+
+        int GetHandlePosUsingVal(float value){
+            //clamp to step
+            if (value > _maxVal){
+                value = _maxVal;
+            }
+            if (value < _minVal){
+                value = _minVal;
+            }
+
+            int clampedValueIdx = -1;
+            for (int i = 0; i < _stepOffsetsValue.Length - 1; i++){
+                if (value >= _stepOffsetsValue[i] && value <= _stepOffsetsValue[i + 1]){
+                    float d1 = Math.Abs(value - _stepOffsetsValue[i]);
+                    float d2 = Math.Abs(value - _stepOffsetsValue[i + 1]);
+                    clampedValueIdx = d1 < d2 ? i : i + 1;
+                    break;
+                }
+            }
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            Debug.Assert(clampedValueIdx != -1);
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+            int pixPos = _stepOffsetsPixel[clampedValueIdx];
+            pixPos -= _handleWidth/2; //center handle on value
+
+            pixPos += _minTrackPixel;
+            return pixPos;
         }
 
         float ConvertToValue(int stepIndex){
