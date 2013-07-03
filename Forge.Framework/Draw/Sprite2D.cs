@@ -41,7 +41,7 @@ namespace Forge.Framework.Draw{
             : this(
                 Resource.LoadContent<Texture2D>(textureName),
                 new Rectangle(x, y, width, height),
-                new FrameStrata(targetStrata, parentStrata, "sprite2d"),
+                new FrameStrata(targetStrata, parentStrata, "Sprite"),
                 transparent,
                 alpha,
                 spriteRepeatX,
@@ -66,7 +66,7 @@ namespace Forge.Framework.Draw{
             : this(
                 texture,
                 new Rectangle(x, y, width, height),
-                new FrameStrata(targetStrata, parentStrata, "sprite2d"),
+                new FrameStrata(targetStrata, parentStrata, "Sprite"),
                 transparent,
                 alpha,
                 spriteRepeatX,
@@ -250,6 +250,7 @@ namespace Forge.Framework.Draw{
 
         ~Sprite2D(){
             if (!_isDisposed){
+                throw new ResourceNotDisposedException();
                 _isDisposed = true;
             }
         }
