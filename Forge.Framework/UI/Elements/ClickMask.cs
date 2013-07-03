@@ -84,6 +84,10 @@ namespace Forge.Framework.UI.Elements{
         public void Update(float timeDelta){
         }
 
+        public void Dispose(){
+            _mask.Dispose();
+        }
+
         #endregion
 
         void OnMouseExit(ForgeMouseState state, float timeDelta, UIElementCollection caller){

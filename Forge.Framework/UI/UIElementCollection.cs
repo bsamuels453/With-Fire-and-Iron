@@ -19,7 +19,7 @@ namespace Forge.Framework.UI{
     /// stuff like fading buttons, among other things. UIElementCollections can be further grouped
     /// together to create advanced UI objects such as dialogue boxes, menus, and tooltips.
     /// </summary>
-    public class UIElementCollection : IUIElement, IDisposable{
+    public class UIElementCollection : IUIElement{
         const float _hoverTime = 200;
         protected readonly MouseManager MouseManager;
         readonly string _alias;
@@ -123,27 +123,22 @@ namespace Forge.Framework.UI{
         /// </summary>
         public bool MouseHovering { get; private set; }
 
-        #region IDisposable Members
+        #region IUIElement Members
 
         public void Dispose(){
             if (!_disposed){
                 foreach (var element in _elements){
-                    var collection = element as UIElementCollection;
-                    if (collection != null){
-                        collection.Dispose();
-                    }
+                    element.Dispose();
                 }
-                _parentCollection.RemoveElement(this);
+                if (_parentCollection != null){
+                    _parentCollection.RemoveElement(this);
+                }
                 _disposed = true;
             }
             else{
                 throw new Exception();
             }
         }
-
-        #endregion
-
-        #region IUIElement Members
 
         public int Width{
             get { return _boundingBox.Width; }

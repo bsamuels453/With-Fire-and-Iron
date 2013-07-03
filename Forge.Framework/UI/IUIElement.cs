@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using Forge.Framework.Control;
 
@@ -9,7 +10,7 @@ namespace Forge.Framework.UI{
     /// <summary>
     /// Used to define a UI element/collection.
     /// </summary>
-    public interface IUIElement{
+    public interface IUIElement : IDisposable{
         FrameStrata FrameStrata { get; }
         int X { get; set; }
         int Y { get; set; }
