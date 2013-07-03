@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using Forge.Framework.Control;
 using MonoGameUtility;
 
@@ -10,6 +11,7 @@ namespace Forge.Framework.UI.Elements{
     /// Inherit from this class in order to enable dragging for a UIElementCollection object.
     /// </summary>
     public class DraggableCollection : UIElementCollection{
+        public Func<DraggableCollection, Point, Point> ConstrainDrag;
         bool _dragging;
         bool _enableDrag;
         Point _mouseOffset;
@@ -59,23 +61,33 @@ namespace Forge.Framework.UI.Elements{
             _mouseOffset.X = this.X - state.X;
             _mouseOffset.Y = this.Y - state.Y;
             state.BlockLeftMButton = true;
+            if (OnDragStart != null){
+                OnDragStart.Invoke(this);
+            }
         }
 
         void EndDrag(){
             _dragging = false;
             this.MouseManager.ReleaseExclusiveFocus(this.MouseController);
+            if (OnDragEnd != null){
+                OnDragEnd.Invoke(this);
+            }
         }
 
         void OnMouseMove(ForgeMouseState state, float timeDelta, UIElementCollection caller){
             if (_dragging){
-                var x = state.X + _mouseOffset.X;
-                var y = state.Y + _mouseOffset.Y;
+                var newPos = new Point(state.X + _mouseOffset.X, state.Y + _mouseOffset.Y);
 
-                //implement mouse clamping here
+                if (ConstrainDrag != null){
+                    newPos = ConstrainDrag(this, newPos);
+                }
 
-                this.X = x;
-                this.Y = y;
+                this.X = newPos.X;
+                this.Y = newPos.Y;
             }
         }
+
+        public event Action<DraggableCollection> OnDragStart;
+        public event Action<DraggableCollection> OnDragEnd;
     }
 }
