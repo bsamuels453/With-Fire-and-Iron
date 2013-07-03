@@ -69,16 +69,26 @@ namespace Forge.Framework.UI.Elements{
             _backgroundInset = jobj["BackgroundInset"].ToObject<int>();
             _horizontalTextPadding = jobj["HorizontalTextPadding"].ToObject<int>();
             _verticalTextPadding = jobj["VerticalTextPadding"].ToObject<int>();
-            _textFontSize = jobj["FontSize"].ToObject<int>();
             _borderThickness = jobj["BorderThickness"].ToObject<int>();
             _cornerSize = jobj["CornerSize"].ToObject<int>();
 
             #endregion
 
+            #region set up sprites/spritedata
+
+            _textBox = new TextBox
+                (
+                new Point(position.X + _horizontalTextPadding, position.Y + _verticalTextPadding),
+                this,
+                FrameStrata.Level.Medium,
+                _textColor,
+                _textboxFont,
+                boxWidth - _borderThickness*2,
+                1
+                );
+            _textFontSize = (int) _textBox.FontHeight;
             int boxHeight = _textFontSize + _cornerSize*2 + _verticalTextPadding*2;
             this.BoundingBox = new Rectangle(position.X, position.Y, boxWidth, boxHeight);
-
-            #region set up sprites/spritedata
 
             var bg = new Sprite2D
                 (
@@ -104,16 +114,6 @@ namespace Forge.Framework.UI.Elements{
             _cursor.ShadeColor = _cursorColor;
             _cursor.Enabled = false;
 
-            _textBox = new TextBox
-                (
-                new Point(position.X + _horizontalTextPadding, position.Y + _verticalTextPadding),
-                this,
-                FrameStrata.Level.Medium,
-                _textColor,
-                _textboxFont,
-                boxWidth - _borderThickness*2,
-                1
-                );
 
             _textBox.SetText(defaultText);
             Text = defaultText;
