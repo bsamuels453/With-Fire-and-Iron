@@ -16,7 +16,7 @@ namespace Forge.Framework.UI.Elements{
     /// <summary>
     /// Defines a textbox that can contain various kinds of text.
     /// </summary>
-    internal class TextBox : IUIElement, IDrawableSprite{
+    public class TextBox : IUIElement, IDrawableSprite{
         public readonly SpriteFont Font;
         readonly StringBuilder _builder;
         readonly Color _fontColor;
@@ -98,16 +98,16 @@ namespace Forge.Framework.UI.Elements{
             }
         }
 
+        #endregion
+
+        #region IUIElement Members
+
         public void Dispose(){
             if (!_disposed){
                 _disposed = true;
                 RenderTarget.Sprites.Remove(this);
             }
         }
-
-        #endregion
-
-        #region IUIElement Members
 
         public FrameStrata FrameStrata { get; private set; }
 
@@ -171,7 +171,7 @@ namespace Forge.Framework.UI.Elements{
             while (end <= splitText.Length){
                 string phrase = genPhrase(start, end);
 
-                if (Font.MeasureString(phrase).X > _wrapWidth){
+                if (Font.MeasureString(phrase).X > _wrapWidth && _wrapWidth != -1){
                     phrase = genPhrase(start, end - 1);
                     lines.Add(phrase);
                     start = end - 1;
@@ -187,7 +187,7 @@ namespace Forge.Framework.UI.Elements{
             int lineNum = 0;
             foreach (var line in lines){
                 lineNum++;
-                if (lineNum > _maxLines)
+                if (lineNum > _maxLines && _maxLines != -1)
                     break;
                 _builder.AppendLine(line);
             }
