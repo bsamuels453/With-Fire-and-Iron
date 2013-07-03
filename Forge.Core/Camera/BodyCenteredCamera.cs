@@ -2,7 +2,6 @@
 
 using System;
 using Forge.Core.GameState;
-using Forge.Framework;
 using Forge.Framework.Control;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
@@ -51,9 +50,6 @@ namespace Forge.Core.Camera{
         }
 
         #region ICamera Members
-
-        public void Update(ref InputState state, double timeDelta){
-        }
 
         public Matrix ViewMatrix{
             get { return Matrix.CreateLookAt(CameraPosition, CameraTarget, Vector3.Up); }

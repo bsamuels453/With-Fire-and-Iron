@@ -13,6 +13,7 @@ namespace Forge.Core.Camera{
         public Vector3 Position;
 
         public SubmarineCamera(Vector3 position, Angle3 lookAng){
+            throw new Exception();
             Position = position;
             LookAng = lookAng;
         }
@@ -21,9 +22,6 @@ namespace Forge.Core.Camera{
 
         public Matrix ViewMatrix{
             get { return RenderHelper.CalculateViewMatrix(Position, LookAng); }
-        }
-
-        public void Update(ref InputState state, double timeDelta){
         }
 
         #endregion

@@ -84,7 +84,7 @@ namespace Forge.Core.HullEditor{
         }
 
         public void Update(ref InputState state){
-            _camera.Update(ref state, 0); //xx
+            //_camera.Update(ref state, 0); //xx
             _topCurves.GetParameterizedPoint(0, true);
 
             var topPts = new Vector2[_meshVertexWidth];
