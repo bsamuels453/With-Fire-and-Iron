@@ -311,7 +311,7 @@ namespace Forge.Framework.Resources{
             Y = y;
         }
 
-        public void GetScreenValue(float percentX, float percentY, ref int x, ref int y){
+        public void GetScreenValue(float percentX, float percentY, out int x, out int y){
             x = (int) (X*percentX);
             y = (int) (Y*percentY);
         }
