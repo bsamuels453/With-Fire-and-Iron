@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Framework.Control;
+using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
@@ -29,6 +30,7 @@ namespace Forge.Framework.UI{
         readonly UIElementCollection _parentCollection;
         float _alpha;
         Rectangle _boundingBox;
+        Sprite2D _boundingTexture;
 
         /// <summary>
         /// parent constructor
@@ -87,6 +89,14 @@ namespace Forge.Framework.UI{
                     Debug.Assert(newbbox.Contains(childBbox));
                 }
                 _boundingBox = newbbox;
+#if DEBUG
+                if (_boundingTexture != null){
+                    _boundingTexture.X = _boundingBox.X;
+                    _boundingTexture.Y = _boundingBox.Y;
+                    _boundingTexture.Width = _boundingBox.Width;
+                    _boundingTexture.Height = _boundingBox.Height;
+                }
+#endif
             }
         }
 
@@ -234,6 +244,34 @@ namespace Forge.Framework.UI{
         }
 
         #endregion
+
+        /// <summary>
+        /// adds a background texture to the collection so that its boundingbox is visible.
+        /// only use this for debugging.
+        /// </summary>
+        public void EnableBoundingTexture(bool propagateToChildCollections = false){
+            _boundingTexture = new Sprite2D
+                (
+                "Materials/SolidBlack",
+                _boundingBox.X,
+                _boundingBox.Y,
+                _boundingBox.Width,
+                _boundingBox.Height,
+                this.FrameStrata,
+                FrameStrata.Level.Background,
+                true
+                );
+            _boundingTexture.Alpha = 0.2f;
+            this.AddElement(_boundingTexture);
+            if (propagateToChildCollections){
+                foreach (var element in _elements){
+                    var collection = element as UIElementCollection;
+                    if (collection != null){
+                        collection.EnableBoundingTexture(true);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Does a hit test based off of collection bounding boxes, rather than contained sprites.
