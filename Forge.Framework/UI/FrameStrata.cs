@@ -18,7 +18,8 @@ namespace Forge.Framework.UI{
             Low,
             Medium,
             High,
-            Highlight
+            Highlight,
+            DebugHigh
         }
 
         #endregion

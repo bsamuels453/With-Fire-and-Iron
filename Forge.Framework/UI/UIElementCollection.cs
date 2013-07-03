@@ -258,7 +258,7 @@ namespace Forge.Framework.UI{
                 _boundingBox.Width,
                 _boundingBox.Height,
                 this.FrameStrata,
-                FrameStrata.Level.DebugLow,
+                FrameStrata.Level.DebugHigh,
                 true
                 );
             _boundingTexture.Alpha = 0.2f;
