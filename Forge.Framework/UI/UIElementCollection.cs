@@ -155,9 +155,10 @@ namespace Forge.Framework.UI{
         public int X{
             get { return _boundingBox.X; }
             set{
+                int diff = value - _boundingBox.X;
                 _boundingBox.X = value;
                 foreach (var element in _elements){
-                    element.X = X;
+                    element.X += diff;
                 }
             }
         }
@@ -165,9 +166,10 @@ namespace Forge.Framework.UI{
         public int Y{
             get { return _boundingBox.Y; }
             set{
+                int diff = value - _boundingBox.Y;
                 _boundingBox.Y = value;
                 foreach (var element in _elements){
-                    element.Y = Y;
+                    element.Y += diff;
                 }
             }
         }
