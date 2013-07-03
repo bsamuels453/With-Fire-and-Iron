@@ -351,12 +351,6 @@ namespace Forge.Framework.UI{
             _mouseController.OnMouseMovement +=
                 (state, timeDelta) =>{
                     if (!state.BlockMPosition){
-                        bool contdainsNewMouse = ContainsPoint(state.X, state.Y);
-                        if (contdainsNewMouse){
-                            int g = 5;
-                        }
-
-
                         bool onTopOfStack = false;
                         var stack = GetGlobalElementStack(state.X, state.Y);
                         stack = stack.OrderBy(o => o.FrameStrata.FrameStrataValue).ToList();
@@ -366,7 +360,7 @@ namespace Forge.Framework.UI{
                             select element
                             ).ToList();
 
-                        if (stack.Count > 1){
+                        if (stack.Count > 0){
                             if (stack[0] == this){
                                 onTopOfStack = true;
                             }
@@ -375,9 +369,6 @@ namespace Forge.Framework.UI{
                         //this event is only called when the mouse moves, so can safely turn off hover
                         MouseHovering = false;
                         bool containsNewMouse = ContainsPoint(state.X, state.Y);
-                        if (containsNewMouse){
-                            int g = 5;
-                        }
 
                         //this means there's another object overlapping this one that prevents the mouse
                         //from interacting with it
