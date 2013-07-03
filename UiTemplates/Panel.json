@@ -1,0 +1,8 @@
+{
+	"BackgroundInset": 1,
+	"BorderThickness": 2,
+	"CornerSize": 2,
+	"BorderMaterial": "Materials/TextBoxBorder",
+	"BackgroundMaterial": "Materials/TextBoxBG",
+	"CornerMaterial": "Materials/TextBoxCorner",
+}
