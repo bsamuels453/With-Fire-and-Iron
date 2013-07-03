@@ -25,6 +25,7 @@ namespace Forge.Framework.UI.Elements{
         readonly int _trackHeight;
         readonly string _trackMaterial;
         readonly int _trackWidth;
+        readonly int _verticalTrackPadding;
 
         #endregion
 
@@ -43,9 +44,7 @@ namespace Forge.Framework.UI.Elements{
         /// </summary>
         readonly float _valueMultiplier;
 
-        readonly int _verticalTrackPadding;
         readonly int _yPosition;
-
 
         float _handleValue;
 
@@ -99,7 +98,7 @@ namespace Forge.Framework.UI.Elements{
             for (int i = 0; i < _stepOffsetsPixel.Length; i++){
                 _stepOffsetsPixel[i] = (int) (_valueMultiplier*step*i);
 
-                _stepOffsetsValue[i] = ConvertToValue(_stepOffsetsPixel[i]);
+                _stepOffsetsValue[i] = _stepOffsetsPixel[i]*(1/_valueMultiplier) + _minVal;
             }
 
             #endregion
@@ -173,7 +172,7 @@ namespace Forge.Framework.UI.Elements{
                 FrameStrata.Level.Medium,
                 new Rectangle
                     (
-                    GetHandlePosUsingVal(defaultHandleValue),
+                    0,
                     _yPosition,
                     _handleWidth,
                     _handleHeight
@@ -190,7 +189,7 @@ namespace Forge.Framework.UI.Elements{
             _handle.ConstrainDrag =
                 (collection, newpoint, oldpoint) =>{
                     newpoint.Y = _yPosition;
-                    newpoint.X = GetHandlePosUsingPix(newpoint.X);
+                    newpoint.X = SetHandlePosUsingPix(newpoint.X);
                     return newpoint;
                 };
             HandleValue = defaultHandleValue;
@@ -200,21 +199,19 @@ namespace Forge.Framework.UI.Elements{
             get { return _handleValue; }
             set{
                 Debug.Assert(value <= _maxVal && value >= _minVal);
-                int offset = GetHandlePosUsingVal(value);
-                _handle.X = offset;
-                _handleValue = value;
+                SetHandlePosUsingValue(value);
             }
         }
 
-        int GetHandlePosUsingPix(int pixel){
+        int SetHandlePosUsingPix(int pixel){
             //convert pixel to value
             pixel -= _minTrackPixel;
             float value = pixel*(1/_valueMultiplier);
             value += _minVal;
-            return GetHandlePosUsingVal(value);
+            return SetHandlePosUsingValue(value);
         }
 
-        int GetHandlePosUsingVal(float value){
+        int SetHandlePosUsingValue(float value){
             //clamp to step
             if (value > _maxVal){
                 value = _maxVal;
@@ -239,16 +236,20 @@ namespace Forge.Framework.UI.Elements{
             pixPos -= _handleWidth/2; //center handle on value
 
             pixPos += _minTrackPixel;
+
+            _handleValue = value;
+            _handle.X = pixPos;
+
+            if (OnSliderValueChange != null){
+                OnSliderValueChange.Invoke(value);
+            }
+
             return pixPos;
         }
 
-        float ConvertToValue(int stepIndex){
-            return stepIndex*(1/_valueMultiplier) + _minVal;
-        }
-
-        int ConvertToPixelOffset(float value){
-            int ret = (int) ((value - _minVal)*_valueMultiplier);
-            return ret;
-        }
+        /// <summary>
+        /// args: (float newValue)
+        /// </summary>
+        public event Action<float> OnSliderValueChange;
     }
 }
