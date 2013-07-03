@@ -67,7 +67,7 @@ namespace Forge.Framework.UI{
             _elements = new PriorityQueue<IUIElement>();
             _boundingBox = boundingBox;
             _parentCollection = parent;
-            _parentCollection.AddElement(this);
+            _parentCollection.AddCollection(this);
             MouseManager = _parentCollection.MouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
@@ -306,7 +306,15 @@ namespace Forge.Framework.UI{
         }
 
         public void AddElement(IUIElement element){
+            var collection = element as UIElementCollection;
+            //element collections add themselves to their parents using a private method.
+            Debug.Assert(collection == null, "Element collections add themselves to their parent collection. Do not add them manually.");
+
             _elements.Add(element, element.FrameStrata.FrameStrataValue);
+        }
+
+        void AddCollection(UIElementCollection collection){
+            _elements.Add(collection, collection.FrameStrata.FrameStrataValue);
         }
 
         public void RemoveElement(IUIElement element){
