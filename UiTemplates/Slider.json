@@ -6,28 +6,37 @@
 	///total width of the track, does not include the endpoints.
 	"TrackWidth": 100,
 	
-	///height of the track
-	"TrackHeight": 16,
+	///Note: regarding TrackHeight, the sprites that make up the slider
+	///(endpoints+track) are blit to a texture, then scaled to match the
+	///TrackHeight. The height of this intermediate tex is the height of 
+	///the track texture, and the width is 2*endpointTex.width + TrackWidth
 	
-	///the width of each endpoint sprite.
-	"EndpointWidth": 8,
+	///height of the track
+	"TrackHeight": 8,
+	
+	///Note: if HandleHeight+HandleVerticalOffset > VerticalTrackPadding*2+TrackHeight,
+	///you are in extremely deep shit. Make certain this doesn't happen or the
+	///UIElementCollection class will throw a shitfit and you will never hear the end
+	///of it.
 	
 	///the dimensions of the handle sprite
-	"HandleWidth": 6,
+	"HandleWidth": 4,
 	"HandleHeight": 16,
+	
 	
 	///how many pixels of free space between either end of the track sprite and
 	///the end of the slider's defined area.
-	"HorizontalTrackPadding": 10,
+	"HorizontalTrackPadding": 100,
 	
 	///how many pixels of free space between the top/bottom of the slider track's
 	///sprite and the top/bottom of the slider's defined area.
-	"VerticalTrackPadding": 0,
+	"VerticalTrackPadding": 100,
 	
 	///how many pixels early of the track's end that the slider is stopped at.
 	"SliderTrackPadding": 0,
 	
 	///how many pixels to offset the handle by in the y direction. use this
-	///to center the slider on the track.
-	"HandleVerticalOffset" : 0
+	///to center the slider on the track. For the handle sprite to be perfectly
+	///centered, make this value equal to (HandleHeight-TrackHeight)/2
+	"HandleVerticalOffset" : 4
 }
