@@ -312,6 +312,8 @@ namespace Forge.Framework.UI{
             //element collections add themselves to their parents using a private method.
             Debug.Assert(collection == null, "Element collections add themselves to their parent collection. Do not add them manually.");
 
+            Debug.Assert(_boundingBox.Contains(new Rectangle(element.X, element.Y, element.Width, element.Height)));
+
             _elements.Add(element, element.FrameStrata.FrameStrataValue);
         }
 
