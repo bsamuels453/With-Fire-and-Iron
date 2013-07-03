@@ -13,9 +13,8 @@ namespace Forge.Framework.UI{
         #region Level enum
 
         public enum Level{
+            DebugLow,
             Background,
-            BackgroundDetail,
-            Border,
             Low,
             Medium,
             High,
