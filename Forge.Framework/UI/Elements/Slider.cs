@@ -183,7 +183,6 @@ namespace Forge.Framework.UI.Elements{
 
 
             this.AddElement(bgSprite);
-            this.AddElement(_handle);
 
             #endregion
 
