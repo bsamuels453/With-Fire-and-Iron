@@ -1,12 +1,10 @@
 ﻿#region
 
-using System;
 using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
 using Forge.Core.Camera;
 using Forge.Core.Terrain;
-using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
@@ -17,22 +15,12 @@ namespace Forge.Core.GameState{
     public class PrimaryGameMode : IGameState{
         readonly Battlefield _battlefield;
         readonly BodyCenteredCamera _cameraController;
-        /*
-        readonly Button _deckDownButton;
-        readonly Button _deckUpButton;
-        readonly Button[] _highlightMasks;
-         * */
-
         readonly RenderTarget _renderTarget;
-
         readonly TerrainUpdater _terrainUpdater;
-
         readonly UIElementCollection _uiElementCollection;
-        //Button _test;
 
-        //Button _speedIndicator;
 
-        public PrimaryGameMode(){           
+        public PrimaryGameMode(){
             _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
             _uiElementCollection.Bind();
             _renderTarget = new RenderTarget();
@@ -46,8 +34,7 @@ namespace Forge.Core.GameState{
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
 
-            //_test = new Button(50, 50, 50, 50, FrameStrata.High, "Materials/TestNonsquare");
-            
+
             _battlefield.ShipsOnField[1].SetAutoPilot
                 (new Orbit
                     (
@@ -111,22 +98,11 @@ namespace Forge.Core.GameState{
         #region IGameState Members
 
         public void Update(double timeDelta){
+            _uiElementCollection.Update((float) timeDelta);
 
-            //_uiElementCollection.UpdateInput(ref state);
-            //_uiElementCollection.UpdateLogic(timeDelta);
-
-            //_battlefield.Update(ref state, timeDelta);
+            _battlefield.Update(timeDelta);
             _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
-            //_cameraController.Update(ref state, timeDelta);
 
-            int incremental = (int) ((_battlefield.ShipsOnField[0].StateData.Velocity/_battlefield.ShipsOnField[0].ModelAttributes.MaxForwardVelocity)*3);
-            /*
-            int absSpeed = 6 - (incremental + 3);
-            foreach (var button in _highlightMasks){
-                button.Alpha = 0.65f;
-            }
-            _highlightMasks[absSpeed].Alpha = 0;
-             */
             _terrainUpdater.Update(timeDelta);
         }
 
