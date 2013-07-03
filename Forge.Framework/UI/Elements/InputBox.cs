@@ -104,7 +104,7 @@ namespace Forge.Framework.UI.Elements{
             _cursor = new Sprite2D
                 (
                 _cursorMaterial,
-                0,
+                position.X,
                 position.Y + _borderThickness + _verticalTextPadding,
                 1,
                 _textFontSize,
