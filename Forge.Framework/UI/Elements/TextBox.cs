@@ -18,9 +18,9 @@ namespace Forge.Framework.UI.Elements{
     /// </summary>
     public class TextBox : IUIElement, IDrawableSprite{
         public readonly SpriteFont Font;
+        public readonly float FontHeight;
         readonly StringBuilder _builder;
         readonly Color _fontColor;
-        readonly int _fontSize;
         readonly int _maxLines;
         readonly int _wrapWidth;
         public bool Enabled;
@@ -77,6 +77,8 @@ namespace Forge.Framework.UI.Elements{
             _fontColor = fontColor;
             Alpha = 1;
             RenderTarget.Sprites.Add(this);
+
+            FontHeight = Font.MeasureString(".").Y*0.65f; //apparently theres ridic font padding
         }
 
         #region IDrawableSprite Members
