@@ -52,8 +52,8 @@ namespace Forge.Framework.UI.Elements{
             UIElementCollection parent,
             FrameStrata.Level depth,
             Point position,
-            float maxVal,
             float minVal,
+            float maxVal,
             float step,
             string template = "UiTemplates/Slider.json") :
                 base(parent, depth, new Rectangle(), "Slider"){
@@ -76,6 +76,7 @@ namespace Forge.Framework.UI.Elements{
             #endregion
 
             Debug.Assert(Math.Abs((maxVal - minVal)%step - 0) < 0.00001f);
+            Debug.Assert(minVal < maxVal);
 
             var handleTex = Resource.LoadContent<Texture2D>(_handleMaterial);
             var trackTex = Resource.LoadContent<Texture2D>(_trackMaterial);
@@ -98,7 +99,7 @@ namespace Forge.Framework.UI.Elements{
             for (int i = 0; i < _stepOffsetsPixel.Length; i++){
                 _stepOffsetsPixel[i] = (int) (_valueMultiplier*step*i);
 
-                _stepOffsetsValue[i] = _stepOffsetsPixel[i]*(1/_valueMultiplier) + _minVal;
+                _stepOffsetsValue[i] = step*i + _minVal;
             }
 
             #endregion
