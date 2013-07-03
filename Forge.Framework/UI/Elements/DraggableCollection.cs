@@ -11,7 +11,12 @@ namespace Forge.Framework.UI.Elements{
     /// Inherit from this class in order to enable dragging for a UIElementCollection object.
     /// </summary>
     public class DraggableCollection : UIElementCollection{
-        public Func<DraggableCollection, Point, Point> ConstrainDrag;
+        /// <summary>
+        /// caller collection, new point, old point.
+        /// return clampped point.
+        /// </summary>
+        public Func<DraggableCollection, Point, Point, Point> ConstrainDrag;
+
         bool _dragging;
         bool _enableDrag;
         Point _mouseOffset;
@@ -79,7 +84,7 @@ namespace Forge.Framework.UI.Elements{
                 var newPos = new Point(state.X + _mouseOffset.X, state.Y + _mouseOffset.Y);
 
                 if (ConstrainDrag != null){
-                    newPos = ConstrainDrag(this, newPos);
+                    newPos = ConstrainDrag(this, newPos, new Point(state.X, state.Y));
                 }
 
                 this.X = newPos.X;
