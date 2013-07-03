@@ -19,7 +19,7 @@ namespace Forge.Framework.UI{
     /// stuff like fading buttons, among other things. UIElementCollections can be further grouped
     /// together to create advanced UI objects such as dialogue boxes, menus, and tooltips.
     /// </summary>
-    public class UIElementCollection : IUIElement{
+    public class UIElementCollection : IUIElement, IDisposable{
         const float _hoverTime = 200;
         protected readonly MouseManager MouseManager;
         readonly string _alias;
@@ -31,6 +31,7 @@ namespace Forge.Framework.UI{
         float _alpha;
         Rectangle _boundingBox;
         Sprite2D _boundingTexture;
+        bool _disposed;
 
         /// <summary>
         /// parent constructor
@@ -121,6 +122,26 @@ namespace Forge.Framework.UI{
         /// must not have moved for _hovertime (200ms). This ignores any transparency settings.
         /// </summary>
         public bool MouseHovering { get; private set; }
+
+        #region IDisposable Members
+
+        public void Dispose(){
+            if (!_disposed){
+                foreach (var element in _elements){
+                    var collection = element as UIElementCollection;
+                    if (collection != null){
+                        collection.Dispose();
+                    }
+                }
+                _parentCollection.RemoveElement(this);
+                _disposed = true;
+            }
+            else{
+                throw new Exception();
+            }
+        }
+
+        #endregion
 
         #region IUIElement Members
 
@@ -217,34 +238,6 @@ namespace Forge.Framework.UI{
 
         #endregion
 
-        #region static
-
-        static readonly List<UIElementCollection> _bindOrder;
-
-        static UIElementCollection _globalUIParent;
-
-        static UIElementCollection(){
-            _bindOrder = new List<UIElementCollection>();
-        }
-
-        /// <summary>
-        /// Gets the element collection that's currently bound.
-        /// </summary>
-        public static UIElementCollection BoundCollection{
-            get{
-                if (_bindOrder.Count == 0){
-                    throw new Exception("There is no element collection currently bound");
-                }
-                return _bindOrder[0];
-            }
-        }
-
-        public static List<IUIElement> GetGlobalElementStack(int x, int y){
-            return _globalUIParent.GetElementStackAtPoint(x, y);
-        }
-
-        #endregion
-
         /// <summary>
         /// adds a background texture to the collection so that its boundingbox is visible.
         /// only use this for debugging.
@@ -319,6 +312,10 @@ namespace Forge.Framework.UI{
 
         public void AddElement(IUIElement element){
             _elements.Add(element, element.FrameStrata.FrameStrataValue);
+        }
+
+        public void RemoveElement(IUIElement element){
+            _elements.Remove(element);
         }
 
         /// <summary>
@@ -509,5 +506,33 @@ namespace Forge.Framework.UI{
 
         protected virtual void UpdateChild(float timeDelta){
         }
+
+        #region static
+
+        static readonly List<UIElementCollection> _bindOrder;
+
+        static UIElementCollection _globalUIParent;
+
+        static UIElementCollection(){
+            _bindOrder = new List<UIElementCollection>();
+        }
+
+        /// <summary>
+        /// Gets the element collection that's currently bound.
+        /// </summary>
+        public static UIElementCollection BoundCollection{
+            get{
+                if (_bindOrder.Count == 0){
+                    throw new Exception("There is no element collection currently bound");
+                }
+                return _bindOrder[0];
+            }
+        }
+
+        public static List<IUIElement> GetGlobalElementStack(int x, int y){
+            return _globalUIParent.GetElementStackAtPoint(x, y);
+        }
+
+        #endregion
     }
 }
