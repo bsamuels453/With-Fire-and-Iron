@@ -208,10 +208,12 @@ namespace Forge.Framework.Draw{
 
         public int Width{
             get { return _destRect.Width; }
+            set { _destRect.Width = value; }
         }
 
         public int Height{
             get { return _destRect.Height; }
+            set { _destRect.Height = value; }
         }
 
         public float Alpha { get; set; }
