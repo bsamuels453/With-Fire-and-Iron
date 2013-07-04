@@ -311,38 +311,15 @@ namespace Forge.Framework.UI.Elements{
 
                 Debug.Assert(Area.Contains(new Rectangle(xFinal, yFinal, widthFinal, heightFinal)));
 
-                int xPadding;
-                int yPadding;
-
-                if (x == 0){
-                    xPadding = _padding;
-                }
-                else{
-                    xPadding = _padding/2;
-                }
-                if (y == 0){
-                    yPadding = _padding;
-                }
-                else{
-                    yPadding = _padding/2;
-                }
+                int xPadding = _padding;
+                int yPadding = _padding;
 
                 xFinal += xPadding;
                 yFinal += yPadding;
 
-                if (width == 1){
-                    widthFinal -= xPadding*2;
-                }
-                else{
-                    widthFinal -= xPadding*2 - _padding/2;
-                }
+                widthFinal -= xPadding*2;
+                heightFinal -= yPadding*2;
 
-                if (height == 1){
-                    heightFinal -= yPadding*2;
-                }
-                else{
-                    heightFinal -= yPadding*2 - _padding/2;
-                }
                 return new PanelCell(xFinal, yFinal, widthFinal, heightFinal, _padding);
             }
         }
