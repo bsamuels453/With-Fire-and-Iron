@@ -1,6 +1,6 @@
 ﻿#define ENABLE_DEBUG_CONSOLE
 
-#define START_CONSOLE
+//#define START_CONSOLE
 
 #region
 
