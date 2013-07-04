@@ -76,7 +76,7 @@ namespace Forge.Framework.UI.Elements{
             _builder = new StringBuilder();
             _fontColor = fontColor;
             Alpha = 1;
-            RenderTarget.Sprites.Add(this);
+            RenderTarget.AddSprite(this);
 
             FontHeight = Font.MeasureString(".").Y*0.65f; //apparently theres ridic font padding
         }
@@ -107,7 +107,7 @@ namespace Forge.Framework.UI.Elements{
         public void Dispose(){
             if (!_disposed){
                 _disposed = true;
-                RenderTarget.Sprites.Remove(this);
+                RenderTarget.RemoveSprite(this);
             }
         }
 

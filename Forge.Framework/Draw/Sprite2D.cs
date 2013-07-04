@@ -143,7 +143,7 @@ namespace Forge.Framework.Draw{
             Rotation = rotation;
             SpriteEffect = SpriteEffects.None;
             ShadeColor = Color.White;
-            RenderTarget.Sprites.Add(this);
+            RenderTarget.AddSprite(this);
         }
 
         #endregion
@@ -170,7 +170,7 @@ namespace Forge.Framework.Draw{
         public void Dispose(){
             if (!_isDisposed){
                 _isDisposed = true;
-                RenderTarget.Sprites.Remove(this);
+                RenderTarget.RemoveSprite(this);
             }
         }
 

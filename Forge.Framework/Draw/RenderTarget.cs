@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Forge.Framework.Resources;
 using Forge.Framework.UI.Elements;
@@ -31,6 +30,7 @@ namespace Forge.Framework.Draw{
         readonly List<IDrawableSprite> _sprites;
 
         readonly RenderTarget2D _targetCanvas;
+        readonly List<TextBox> _textSprites;
         public float Depth;
         public Vector2 Offset;
         bool _disposed;
@@ -64,6 +64,7 @@ namespace Forge.Framework.Draw{
             BoundingBox = new Rectangle(x, y, width, height);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
+            _textSprites = new List<TextBox>();
             _renderTargets.Add(this);
         }
 
@@ -88,15 +89,12 @@ namespace Forge.Framework.Draw{
             BoundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
+            _textSprites = new List<TextBox>();
             _renderTargets.Add(this);
         }
 
         public static List<IDrawableBuffer> Buffers{
             get { return CurTarg._buffers; }
-        }
-
-        public static List<IDrawableSprite> Sprites{
-            get { return CurTarg._sprites; }
         }
 
         public static SpriteBatch CurSpriteBatch{
@@ -114,6 +112,24 @@ namespace Forge.Framework.Draw{
         }
 
         #endregion
+
+        public static void AddSprite(IDrawableSprite sprite){
+            if (sprite is TextBox){
+                CurTarg._textSprites.Add((TextBox) sprite);
+            }
+            else{
+                CurTarg._sprites.Add(sprite);
+            }
+        }
+
+        public static void RemoveSprite(IDrawableSprite sprite){
+            if (sprite is TextBox){
+                CurTarg._textSprites.Remove((TextBox) sprite);
+            }
+            else{
+                CurTarg._sprites.Remove(sprite);
+            }
+        }
 
         public static void AddAsynchronousBufferUpdate(Task update){
             lock (_bufferUpdateTasks){
@@ -175,16 +191,9 @@ namespace Forge.Framework.Draw{
                         DepthStencilState.Default,
                         RasterizerState.CullNone
                     );
-
-                var sprites = (from s in _sprites
-                    where s is Sprite2D
-                    select s);
-
-
-                foreach (var sprite in sprites){
+                foreach (var sprite in _sprites){
                     sprite.Draw();
                 }
-
                 SpriteBatch.End();
 
                 SpriteBatch.Begin
@@ -195,12 +204,7 @@ namespace Forge.Framework.Draw{
                         DepthStencilState.Default,
                         RasterizerState.CullNone
                     );
-
-                sprites = (from s in _sprites
-                    where s is TextBox
-                    select s);
-
-                foreach (var sprite in sprites){
+                foreach (var sprite in _textSprites){
                     sprite.Draw();
                 }
                 SpriteBatch.End();
