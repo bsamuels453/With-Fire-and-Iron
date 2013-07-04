@@ -1,6 +1,6 @@
 ﻿#define ENABLE_DEBUG_CONSOLE
 
-//#define START_CONSOLE
+#define START_CONSOLE
 
 #region
 
@@ -27,7 +27,7 @@ namespace Forge.Framework{
 
 #if ENABLE_DEBUG_CONSOLE
 #if START_CONSOLE
-            _consoleProc = Process.Start("DebugConsole.exe")
+            _consoleProc = Process.Start("DebugConsole.exe");
 #endif
 
             var ip = IPAddress.Parse("127.0.0.1");
