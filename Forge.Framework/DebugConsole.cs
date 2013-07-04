@@ -1,5 +1,7 @@
 ﻿#define ENABLE_DEBUG_CONSOLE
 
+//#define START_CONSOLE
+
 #region
 
 using System;
@@ -15,6 +17,7 @@ namespace Forge.Framework{
     public static class DebugConsole{
         const int _port = 10964;
         static IOWrapper _wrapper;
+        static Process _consoleProc;
 
         public static void InitalizeConsole(){
             _wrapper = new IOWrapper();
@@ -23,6 +26,10 @@ namespace Forge.Framework{
             _wrapper.FileWriter.AutoFlush = true;
 
 #if ENABLE_DEBUG_CONSOLE
+#if START_CONSOLE
+            _consoleProc = Process.Start("DebugConsole.exe")
+#endif
+
             var ip = IPAddress.Parse("127.0.0.1");
             _wrapper.Endpoint = new IPEndPoint(ip, _port);
             _wrapper.Client = new UdpClient();
@@ -53,6 +60,9 @@ namespace Forge.Framework{
 
         public static void DisposeStatic(){
             _wrapper.Dispose();
+#if START_CONSOLE
+            _consoleProc.Kill();
+#endif
         }
 
         #region Nested type: IOWrapper
