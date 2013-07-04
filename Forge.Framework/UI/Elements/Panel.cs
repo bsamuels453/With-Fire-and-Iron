@@ -284,7 +284,8 @@ namespace Forge.Framework.UI.Elements{
         /// </summary>
         /// <returns></returns>
         public PanelCell GeneratePanelCell(){
-            return new PanelCell(0, 0, this.Width, this.Height, _padding);
+            var temp = new PanelCell(0, 0, this.Width, this.Height, _padding);
+            return temp.CreateChild(0, 0, 1, 1);
         }
 
         #region Nested type: PanelCell
@@ -294,29 +295,54 @@ namespace Forge.Framework.UI.Elements{
             readonly int _padding;
 
             public PanelCell(int x, int y, int width, int height, int padding){
-                x += padding;
-                y += padding;
-                width -= 2*padding;
-                height -= 2*padding;
                 Area = new Rectangle(x, y, width, height);
                 _padding = padding;
             }
 
             public PanelCell CreateChild(float x, float y, float width, float height){
-                int xFinal = (int) (Area.X + x*Area.Width);
-                int yFinal = (int) (Area.Y + y*Area.Height);
+                float scaledX = x*Area.Width;
+                float scaledY = y*Area.Height;
+
+                int xFinal = (int) (Area.X + scaledX);
+                int yFinal = (int) (Area.Y + scaledY);
 
                 int widthFinal = (int) (Area.Width*width);
                 int heightFinal = (int) (Area.Height*height);
-                if (widthFinal > Area.Width - x*Area.Width){
-                    widthFinal = (int) (Area.Width - x*Area.Width);
-                }
-                if (heightFinal > Area.Height - y*Area.Height){
-                    heightFinal = (int) (Area.Height - y*Area.Height);
-                }
 
                 Debug.Assert(Area.Contains(new Rectangle(xFinal, yFinal, widthFinal, heightFinal)));
 
+                int xPadding;
+                int yPadding;
+
+                if (x == 0){
+                    xPadding = _padding;
+                }
+                else{
+                    xPadding = _padding/2;
+                }
+                if (y == 0){
+                    yPadding = _padding;
+                }
+                else{
+                    yPadding = _padding/2;
+                }
+
+                xFinal += xPadding;
+                yFinal += yPadding;
+
+                if (width == 1){
+                    widthFinal -= xPadding*2;
+                }
+                else{
+                    widthFinal -= xPadding*2 - _padding/2;
+                }
+
+                if (height == 1){
+                    heightFinal -= yPadding*2;
+                }
+                else{
+                    heightFinal -= yPadding*2 - _padding/2;
+                }
                 return new PanelCell(xFinal, yFinal, widthFinal, heightFinal, _padding);
             }
         }
