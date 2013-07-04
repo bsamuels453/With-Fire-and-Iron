@@ -91,6 +91,9 @@ namespace Forge.Core.Airship.Controllers{
                     }
                 };
 
+            KeyboardController.OnKeyPress fire =
+                (o, i, arg3) => Fire();
+
             #endregion
 
             binds.AddBindCallback(AirshipBinds.IncreaseForwardSpeed, BindCondition.OnKeyDown, increaseSpeed);
@@ -99,6 +102,7 @@ namespace Forge.Core.Airship.Controllers{
             binds.AddBindCallback(AirshipBinds.TurnStarboard, BindCondition.KeyHeldDown, turnStarboard);
             binds.AddBindCallback(AirshipBinds.DecreaseAltitude, BindCondition.KeyHeldDown, decreaseAltitude);
             binds.AddBindCallback(AirshipBinds.IncreaseAltitude, BindCondition.KeyHeldDown, increaseAltitude);
+            binds.AddBindCallback(AirshipBinds.Fire, BindCondition.OnKeyDown, fire);
 
             return binds;
         }
@@ -138,7 +142,8 @@ namespace Forge.Core.Airship.Controllers{
             TurnPort,
             TurnStarboard,
             IncreaseAltitude,
-            DecreaseAltitude
+            DecreaseAltitude,
+            Fire
         }
 
         #endregion
