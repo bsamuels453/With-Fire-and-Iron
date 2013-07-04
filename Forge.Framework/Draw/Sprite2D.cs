@@ -12,7 +12,7 @@ using Vector2 = MonoGameUtility.Vector2;
 #endregion
 
 namespace Forge.Framework.Draw{
-    internal class Sprite2D : IDrawableSprite, IUIElement{
+    public class Sprite2D : IDrawableSprite, IUIElement{
         readonly FloatingRectangle _srcRect;
         readonly bool _transparent;
 
