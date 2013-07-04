@@ -2,7 +2,8 @@
 	"BackgroundInset": 1,
 	"BorderThickness": 2,
 	"CornerSize": 2,
-	"Padding": 5,
+	///try to keep padding at multiples of 2.
+	"Padding": 4,
 	"BorderMaterial": "Materials/TextBoxBorder",
 	"BackgroundMaterial": "Materials/TextBoxBG",
 	"CornerMaterial": "Materials/TextBoxCorner",
