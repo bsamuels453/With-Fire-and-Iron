@@ -34,6 +34,10 @@ namespace Forge.Core.GameState{
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
             _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
 
+            var controller = _battlefield.ShipsOnField[0].Controller;
+            var binds = ((PlayerAirshipController) controller).GenerateKeyboardBindings();
+            KeyboardManager.SetActiveController(binds);
+
 
             _battlefield.ShipsOnField[1].SetAutoPilot
                 (new Orbit
