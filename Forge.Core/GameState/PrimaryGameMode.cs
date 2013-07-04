@@ -114,6 +114,7 @@ namespace Forge.Core.GameState{
             _terrainUpdater.Dispose();
             _renderTarget.Dispose();
             _battlefield.Dispose();
+            _uiElementCollection.Dispose();
         }
 
         #endregion
