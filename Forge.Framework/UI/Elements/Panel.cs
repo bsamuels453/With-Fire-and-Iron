@@ -1,5 +1,6 @@
 ﻿#region
 
+using System.Diagnostics;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
@@ -17,6 +18,7 @@ namespace Forge.Framework.UI.Elements{
         readonly int _borderThickness = 2;
         readonly string _cornerMaterial = "Materials/TextBoxCorner";
         readonly int _cornerSize = 2;
+        readonly int _padding;
 
 
         public Panel(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias, string template = "UiTemplates/Panel.json")
@@ -31,6 +33,7 @@ namespace Forge.Framework.UI.Elements{
             _backgroundInset = jobj["BackgroundInset"].ToObject<int>();
             _borderThickness = jobj["BorderThickness"].ToObject<int>();
             _cornerSize = jobj["CornerSize"].ToObject<int>();
+            _padding = jobj["Padding"].ToObject<int>();
 
             #endregion
 
@@ -50,6 +53,28 @@ namespace Forge.Framework.UI.Elements{
             AddElement(_background);
 
             #endregion
+        }
+
+        /// <summary>
+        /// Add a new panel element. Important to use this rather than the classic AddElement
+        /// to take advantage of the padding/proportional positioning.
+        /// The element passed to this function may be initialized with any valid position,
+        /// however that position will be overriden by the method when it uses the additional
+        /// parameters to calculate the final position of the element.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="destCell"> </param>
+        public void AddPanelElement(UIElementCollection element, PanelCell destCell){
+            //we assume that when element was initialized, panel was passed as the parent.
+            //that way we dont need to this.AddElement()
+            element.X = destCell.Area.X + this.X;
+            element.Y = destCell.Area.Y + this.X;
+        }
+
+        public void AddPanelElement(IUIElement element, PanelCell destCell){
+            element.X = destCell.Area.X + this.X;
+            element.Y = destCell.Area.Y + this.X;
+            this.AddElement(element);
         }
 
         /// <summary>
@@ -253,5 +278,49 @@ namespace Forge.Framework.UI.Elements{
             _background.Width = dims.Width;
             _background.Height = dims.Height;
         }
+
+        /// <summary>
+        /// Generates a cell that can be used to position panel elements.
+        /// </summary>
+        /// <returns></returns>
+        public PanelCell GeneratePanelCell(){
+            return new PanelCell(0, 0, this.Width, this.Height, _padding);
+        }
+
+        #region Nested type: PanelCell
+
+        public class PanelCell{
+            public readonly Rectangle Area;
+            readonly int _padding;
+
+            public PanelCell(int x, int y, int width, int height, int padding){
+                x += padding;
+                y += padding;
+                width -= 2*padding;
+                height -= 2*padding;
+                Area = new Rectangle(x, y, width, height);
+                _padding = padding;
+            }
+
+            public PanelCell CreateChild(float x, float y, float width, float height){
+                int xFinal = (int) (Area.X + x*Area.Width);
+                int yFinal = (int) (Area.Y + y*Area.Height);
+
+                int widthFinal = (int) (Area.Width*width);
+                int heightFinal = (int) (Area.Height*height);
+                if (widthFinal > Area.Width - x*Area.Width){
+                    widthFinal = (int) (Area.Width - x*Area.Width);
+                }
+                if (heightFinal > Area.Height - y*Area.Height){
+                    heightFinal = (int) (Area.Height - y*Area.Height);
+                }
+
+                Debug.Assert(Area.Contains(new Rectangle(xFinal, yFinal, widthFinal, heightFinal)));
+
+                return new PanelCell(xFinal, yFinal, widthFinal, heightFinal, _padding);
+            }
+        }
+
+        #endregion
     }
 }
