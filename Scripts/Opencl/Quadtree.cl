@@ -6,16 +6,16 @@ typedef enum{
 
 bool IsVertexRelevant(short3 *verts);
 char AreCornersEqual(
-    __global char *activeVerts,
+    global char *activeVerts,
     int width,
     int centerX,
     int centerZ,
     int radius,
     char desiredVal,
-	__global int* dummy
+	global int* dummy
 );
 char AreSidesEqual(
-    __global char *activeNodes,
+    global char *activeNodes,
     int chunkWidth,
     int centerX,
     int centerZ,
@@ -65,12 +65,12 @@ typedef enum{
 //  6/ / / /
 //  7/ / / /
     
-__kernel void QuadTree(
+kernel void QuadTree(
 	int depth,
     int chunkBlockWidth,
-    __global short3 *normals,
-    __global char *activeNodes,
-	__global int* dummy
+    global short3 *normals,
+    global char *activeNodes,
+	global int* dummy
 	){    
 		WORKERTYPE type;
 		if( get_global_id(1) < get_global_size(1)/2){
@@ -140,12 +140,12 @@ __kernel void QuadTree(
 
     }
 
-__kernel void CrossCull(
+kernel void CrossCull(
     int depth,
 	int chunkBlockWidth,
-    __global short3* normals,
-    __global char* activeNodes,
-	__global int* dummy
+    global short3* normals,
+    global char* activeNodes,
+	global int* dummy
 	){
 		int x_id = get_global_id(0);
 		int z_id = get_global_id(1);
@@ -216,13 +216,13 @@ __kernel void CrossCull(
     }
 
 char AreCornersEqual(
-    __global char *activeNodes,
+    global char *activeNodes,
     int chunkVertWidth,
     int centerX,
     int centerZ,
     int radius,
     char desiredVal,
-	__global int* dummy
+	global int* dummy
 	){ 
         char ret=1;
         //xx these gotos are probably going to cause issues with
@@ -242,7 +242,7 @@ char AreCornersEqual(
     }
 
 char AreSidesEqual(
-    __global char *activeNodes,
+    global char *activeNodes,
     int chunkWidth,
     int centerX,
     int centerZ,

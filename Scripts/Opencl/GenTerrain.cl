@@ -14,14 +14,14 @@ inline float GenRidge( float height, float offset );
 inline float GenNoise(int x, int z);
 inline float CosInterp(float a, float b, float x);
 inline float InterpNoise(float x, float z);
-inline float GetHeight(int x, int z, __constant float *parameters, int chunkOfstX, int chunkOfstZ);
+inline float GetHeight(int x, int z, constant float *parameters, int chunkOfstX, int chunkOfstZ);
 
-__kernel void GenTerrain(
-	__constant float *parameters,
+kernel void GenTerrain(
+	constant float *parameters,
 	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in chunks
 	int chunkOffsetZ,
-	__global float3 *geometry,
-	__global float2 *uvCoords){  
+	global float3 *geometry,
+	global float2 *uvCoords){  
 	////////////////////
 	//GENERATE TERRAIN//
 	////////////////////
@@ -49,8 +49,8 @@ __kernel void GenTerrain(
 }
 
 //todo: even though the normal buffers are uchar/ushort, the kernel treats them like signed variant so there's a lot of accuracy lost. fix it.
-__kernel void GenNormals(
-	__constant float *parameters,
+kernel void GenNormals(
+	constant float *parameters,
 	int chunkOffsetX, //chunk offsets are the this chunk's offset from center measured in blocks
 	int chunkOffsetZ,
 	__global float3 *geometry,
@@ -226,7 +226,7 @@ inline float InterpNoise(float x, float z){
     return CosInterp(i1, i2, fracZ);
 }
 
-inline float GetHeight(int x, int z, __constant float *parameters, int chunkOfstX, int chunkOfstZ){
+inline float GetHeight(int x, int z, constant float *parameters, int chunkOfstX, int chunkOfstZ){
 	float lacunarity = parameters[Lacunarity];
 	float gain = parameters[Gain];
 	float offset = parameters[Offset];
