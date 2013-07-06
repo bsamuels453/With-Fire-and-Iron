@@ -286,7 +286,7 @@ namespace Forge.Framework.UI.Elements{
         /// <returns></returns>
         public PanelCell GeneratePanelCell(){
             var temp = new PanelCell(0, 0, this.Width, this.Height, _padding);
-            return temp.CreateChild(PanelCell.Corner.TopLeft, 0, 0, 1, 1, true);
+            return temp.CreateChild(0, 0, 1, 1, PanelCell.Border.Top | PanelCell.Border.Left | PanelCell.Border.Right | PanelCell.Border.Bottom);
         }
 
         #region Nested type: PanelCell
@@ -294,22 +294,13 @@ namespace Forge.Framework.UI.Elements{
         public class PanelCell{
             #region Border enum
 
+            [Flags]
             public enum Border{
-                Top,
-                Bottom,
-                Left,
-                Right
-            }
-
-            #endregion
-
-            #region Corner enum
-
-            public enum Corner{
-                TopLeft,
-                TopRight,
-                BottomLeft,
-                BottomRight
+                None = 0x0,
+                Top = 0x1,
+                Bottom = 0x2,
+                Left = 0x4,
+                Right = 0x8
             }
 
             #endregion
@@ -322,80 +313,60 @@ namespace Forge.Framework.UI.Elements{
                 _padding = padding;
             }
 
-            public PanelCell CreateNeighborToChild(PanelCell neighbor, Border side, float width, float height){
-                throw new NotImplementedException();
-                int widthFinal = (int) (Area.Width*width);
-                int heightFinal = (int) (Area.Height*height);
-
-                int xFinal = 0, yFinal = 0;
-                switch (side){
-                    case Border.Right:
-                        xFinal = neighbor.Area.X + neighbor.Area.Width + _padding;
-                        yFinal = neighbor.Area.Y;
-                        widthFinal -= _padding + _padding/2;
-                        heightFinal -= _padding*2;
-                        break;
-                    case Border.Bottom:
-                        xFinal = neighbor.Area.X;
-                        yFinal = neighbor.Area.Y + neighbor.Area.Height + _padding;
-                        widthFinal -= _padding*2;
-                        heightFinal -= _padding + _padding/2;
-                        break;
-                    case Border.Top:
-                        throw new NotImplementedException();
-                        break;
-                    case Border.Left:
-                        throw new NotImplementedException();
-                        break;
-                }
-
-                return new PanelCell(xFinal, yFinal, widthFinal, heightFinal, _padding);
-            }
-
             /// <summary>
             /// creates a child cell centered in upper left hand corner of parent cell.
             /// </summary>
             /// <param name="yOffset"> </param>
             /// <param name="width"></param>
             /// <param name="height"></param>
-            /// <param name="useEntireArea"> modifies padding to assume the child is taking up the entire area of the parent</param>
-            /// <param name="corner"> </param>
             /// <param name="xOffset"> </param>
+            /// <param name="doublePad">The borders that are to be double padded.</param>
             /// <returns></returns>
-            public PanelCell CreateChild(float xOffset, float yOffset, float width, float height, Corner corner = Corner.TopLeft, bool useEntireArea = false){
-                int xFinal = 0, yFinal = 0;
-
-                switch (corner){
-                    case Corner.TopLeft:
-                        xFinal = (int) (Area.X + xOffset*Area.Width);
-                        yFinal = (int) (Area.Y + yOffset*Area.Height);
-                        break;
-                    default:
-                        throw new NotImplementedException();
-                        break;
-                }
+            public PanelCell CreateChild(float xOffset, float yOffset, float width, float height, Border doublePad = Border.None){
+                int xFinal = (int) (Area.X + xOffset*Area.Width);
+                int yFinal = (int) (Area.Y + yOffset*Area.Height);
 
                 int widthFinal = (int) (Area.Width*width);
                 int heightFinal = (int) (Area.Height*height);
 
                 Debug.Assert(Area.Contains(new Rectangle(xFinal, yFinal, widthFinal, heightFinal)));
 
-                int padding;
-                if (useEntireArea){
-                    xFinal += _padding;
+                int xPadding;
+                int yPadding;
+
+                if ((doublePad & Border.Top) == Border.Top){
                     yFinal += _padding;
-                    padding = _padding*2;
+                    yPadding = _padding;
                 }
                 else{
-                    xFinal += _padding;
-                    yFinal += _padding;
-                    padding = _padding + _padding/2;
+                    yFinal += _padding/2;
+                    yPadding = _padding/2;
                 }
 
-                widthFinal -= padding;
-                heightFinal -= padding;
+                if ((doublePad & Border.Left) == Border.Left){
+                    xFinal += _padding;
+                    xPadding = _padding;
+                }
+                else{
+                    xFinal += _padding/2;
+                    xPadding = _padding/2;
+                }
+                if ((doublePad & Border.Right) == Border.Right){
+                    xPadding += _padding;
+                }
+                else{
+                    xPadding += _padding/2;
+                }
 
+                if ((doublePad & Border.Bottom) == Border.Bottom){
+                    yPadding += _padding;
+                }
+                else{
+                    yPadding += _padding/2;
+                }
 
+                widthFinal -= xPadding;
+                heightFinal -= yPadding;
                 return new PanelCell(xFinal, yFinal, widthFinal, heightFinal, _padding);
             }
         }
