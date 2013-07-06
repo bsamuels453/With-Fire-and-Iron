@@ -91,5 +91,16 @@ namespace MonoGameUtility {
         }
 
         #endregion
+
+
+        #region overloads
+
+        public static Point operator +(Point value1, Point value2) {
+            value1.X += value2.X;
+            value1.Y += value2.Y;
+            return value1;
+        }
+
+        #endregion
     }
 }
