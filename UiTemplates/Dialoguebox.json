@@ -1,0 +1,7 @@
+{
+	"TitleFont": "Fonts/Monospace18",
+	"ContentFont": "Fonts/Monospace10",
+	"Width": 480,
+	"Height": 300,
+	"Title-ContentSeparationDist": 15
+}
