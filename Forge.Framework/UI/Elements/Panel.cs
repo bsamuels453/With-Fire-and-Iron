@@ -74,7 +74,7 @@ namespace Forge.Framework.UI.Elements{
 
         public void AddPanelElement(IUIElement element, PanelCell destCell){
             element.X = destCell.Area.X + this.X;
-            element.Y = destCell.Area.Y + this.X;
+            element.Y = destCell.Area.Y + this.Y;
             this.AddElement(element);
         }
 
