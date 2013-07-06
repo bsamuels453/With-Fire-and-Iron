@@ -12,6 +12,8 @@ There's a lot of components in this project, so here's a quick overview of what'
 
 -Airship firing/cannonball collision mechanics.
 
+-User interface defined by external template files
+
 
 For now, this code is licenced under the Mozilla Public Licence.
 http://www.mozilla.org/MPL/2.0/
