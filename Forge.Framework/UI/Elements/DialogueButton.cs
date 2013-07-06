@@ -10,13 +10,13 @@ using Rectangle = MonoGameUtility.Rectangle;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
-    public class DialogueButton : UIElementCollection{
+    public class DialogueButton : Panel{
         public DialogueButton(
             UIElementCollection parent,
             FrameStrata.Level depth,
             Point position,
             string text
-            ) : base(parent, depth, new Rectangle(), "DialogueButton"){
+            ) : base(parent, depth, new Rectangle(), "DialogueButton", "UiTemplates/Panel.json"){
             var jobj = Resource.LoadJObject("UiTemplates/DialogueButton.json");
             string bgMaterial = jobj["Material"].ToObject<string>();
             string textFont = jobj["TextFont"].ToObject<string>();
