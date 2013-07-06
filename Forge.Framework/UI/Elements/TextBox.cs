@@ -271,5 +271,10 @@ namespace Forge.Framework.UI.Elements{
             }
             return Font.MeasureString(line).X;
         }
+
+        public static Vector2 MeasureString(string fontAddr, string text){
+            var font = Resource.LoadContent<SpriteFont>(fontAddr);
+            return font.MeasureString(text);
+        }
     }
 }
