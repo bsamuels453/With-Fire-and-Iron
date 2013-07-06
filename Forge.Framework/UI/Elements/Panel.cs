@@ -19,7 +19,7 @@ namespace Forge.Framework.UI.Elements{
         readonly int _borderThickness = 2;
         readonly string _cornerMaterial = "Materials/TextBoxCorner";
         readonly int _cornerSize = 2;
-        readonly int _padding;
+        protected readonly int Padding;
 
 
         public Panel(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias, string template = "UiTemplates/Panel.json")
@@ -34,7 +34,7 @@ namespace Forge.Framework.UI.Elements{
             _backgroundInset = jobj["BackgroundInset"].ToObject<int>();
             _borderThickness = jobj["BorderThickness"].ToObject<int>();
             _cornerSize = jobj["CornerSize"].ToObject<int>();
-            _padding = jobj["Padding"].ToObject<int>();
+            Padding = jobj["Padding"].ToObject<int>();
 
             #endregion
 
@@ -285,7 +285,7 @@ namespace Forge.Framework.UI.Elements{
         /// </summary>
         /// <returns></returns>
         public PanelCell GeneratePanelCell(){
-            var temp = new PanelCell(0, 0, this.Width, this.Height, _padding);
+            var temp = new PanelCell(0, 0, this.Width, this.Height, Padding);
             return temp.CreateChild(0, 0, 1, 1, PanelCell.Border.Top | PanelCell.Border.Left | PanelCell.Border.Right | PanelCell.Border.Bottom);
         }
 
@@ -367,6 +367,8 @@ namespace Forge.Framework.UI.Elements{
 
                 widthFinal -= xPadding;
                 heightFinal -= yPadding;
+
+                Debug.Assert(Area.Contains(new Rectangle(xFinal, yFinal, widthFinal, heightFinal)));
                 return new PanelCell(xFinal, yFinal, widthFinal, heightFinal, _padding);
             }
         }
