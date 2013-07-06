@@ -1,7 +1,6 @@
 ﻿#region
 
 using System.Diagnostics;
-using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Point = MonoGameUtility.Point;
@@ -16,9 +15,14 @@ namespace Forge.Framework.UI.Elements{
             FrameStrata.Level depth,
             Point position,
             string text
-            ) : base(parent, depth, new Rectangle(), "DialogueButton", "UiTemplates/Panel.json"){
+            ) : base(
+                parent,
+                depth,
+                new Rectangle(),
+                "DialogueButton",
+                Resource.LoadJObject("UiTemplates/DialogueButton.json")["BackgroundDefinition"].ToObject<string>()){
+            //my god that base ctor should be illegal
             var jobj = Resource.LoadJObject("UiTemplates/DialogueButton.json");
-            string bgMaterial = jobj["Material"].ToObject<string>();
             string textFont = jobj["TextFont"].ToObject<string>();
             int horizontalTextPadding = jobj["HorizontalTextPadding"].ToObject<int>();
             int height = jobj["Height"].ToObject<int>();
@@ -39,14 +43,13 @@ namespace Forge.Framework.UI.Elements{
 
             var clickMask = new ClickMask(BoundingBox, this);
             var mouseoverMask = new MouseoverMask(BoundingBox, this);
-            var texture = new Sprite2D(bgMaterial, BoundingBox, this.FrameStrata, FrameStrata.Level.Background);
 
             var textObject = new TextBox
                 (
                 position + new Point(horizontalTextPadding, textVOffset),
                 this,
                 FrameStrata.Level.High,
-                Color.Black,
+                Color.White,
                 textFont,
                 (int) dims.X,
                 1,
@@ -57,8 +60,9 @@ namespace Forge.Framework.UI.Elements{
 
             AddElement(clickMask);
             AddElement(mouseoverMask);
-            AddElement(texture);
             AddElement(textObject);
+            base.GenerateBackgroundSprite();
+            base.Draggable = false;
         }
     }
 }
