@@ -18,7 +18,7 @@ namespace Forge.Framework.UI.Elements{
         public Func<DraggableCollection, Point, Point, Point> ConstrainDrag;
 
         bool _dragging;
-        bool _enableDrag;
+        bool _draggable;
         Point _mouseOffset;
 
         public DraggableCollection(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias) :
@@ -27,20 +27,20 @@ namespace Forge.Framework.UI.Elements{
             this.OnLeftRelease += OnLeftMouseUp;
             this.OnMouseFocusLost += OnFocusLost;
             this.OnMouseMovement += OnMouseMove;
-            _enableDrag = true;
+            _draggable = true;
         }
 
-        protected bool EnableDrag{
-            get { return _enableDrag; }
+        protected bool Draggable{
+            get { return _draggable; }
             set{
-                _enableDrag = value;
+                _draggable = value;
                 _dragging = false;
             }
         }
 
         void OnLeftMouseDown(ForgeMouseState state, float timeDelta, UIElementCollection caller){
             if (!state.BlockLeftMButton){
-                if (ContainsMouse && _enableDrag){
+                if (ContainsMouse && _draggable){
                     StartDrag(state);
                 }
             }
