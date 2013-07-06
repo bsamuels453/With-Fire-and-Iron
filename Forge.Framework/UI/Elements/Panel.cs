@@ -11,15 +11,20 @@ using Rectangle = MonoGameUtility.Rectangle;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
+    /// <summary>
+    /// Panel class used to house advanced user interface objects that require special positioning.
+    /// This class can generate a background texture using GenerateBackgroundSprite, which is
+    /// defined by either Panel.json or whatever template you may have passed.
+    /// </summary>
     public class Panel : DraggableCollection{
-        readonly Sprite2D _background;
+        protected readonly int Padding;
         readonly int _backgroundInset = 1;
         readonly string _bgMaterial = "Materials/TextBoxBG";
         readonly string _borderMaterial = "Materials/TextBoxBorder";
         readonly int _borderThickness = 2;
         readonly string _cornerMaterial = "Materials/TextBoxCorner";
         readonly int _cornerSize = 2;
-        protected readonly int Padding;
+        Sprite2D _background;
 
 
         public Panel(UIElementCollection parent, FrameStrata.Level depth, Rectangle boundingBox, string alias, string template = "UiTemplates/Panel.json")
@@ -35,23 +40,6 @@ namespace Forge.Framework.UI.Elements{
             _borderThickness = jobj["BorderThickness"].ToObject<int>();
             _cornerSize = jobj["CornerSize"].ToObject<int>();
             Padding = jobj["Padding"].ToObject<int>();
-
-            #endregion
-
-            #region set up sprites/spritedata
-
-            _background = new Sprite2D
-                (
-                GenerateBgSprite(boundingBox.Width, boundingBox.Height),
-                boundingBox.X,
-                boundingBox.Y,
-                boundingBox.Width,
-                boundingBox.Height,
-                this.FrameStrata,
-                FrameStrata.Level.Background
-                );
-
-            AddElement(_background);
 
             #endregion
         }
@@ -76,6 +64,23 @@ namespace Forge.Framework.UI.Elements{
             element.X = destCell.Area.X + this.X;
             element.Y = destCell.Area.Y + this.Y;
             this.AddElement(element);
+        }
+
+        protected void GenerateBackgroundSprite(){
+            if (_background != null){
+                this.RemoveElement(_background);
+            }
+            _background = new Sprite2D
+                (
+                GenerateBgSprite(this.Width, this.Height),
+                this.X,
+                this.Y,
+                this.Width,
+                this.Height,
+                this.FrameStrata,
+                FrameStrata.Level.Background
+                );
+            this.AddElement(_background);
         }
 
         /// <summary>
