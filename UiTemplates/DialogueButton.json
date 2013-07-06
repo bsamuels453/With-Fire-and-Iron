@@ -1,0 +1,12 @@
+{
+	"Material": "Materials/WhiteBox",
+	"TextFont": "Fonts/Monospace14",
+	///dialogue box width is determined by the width of the text it contains
+	///plus HorizontalTextPadding * 2
+	"HorizontalTextPadding": 15,
+	
+	///this is used to center the text on the button horizontally because
+	///font.measurestring is wildly inaccurate for measuring font height
+	"TextVerticalOffset": 4,
+	"Height": 30,
+}
