@@ -142,6 +142,7 @@
     <Compile Include="Draw\DebugText.cs" />
     <Compile Include="Draw\GeometryBuffer.cs" />
     <Compile Include="Draw\IDrawableSprite.cs" />
+    <Compile Include="Draw\MaskingSprite.cs" />
     <Compile Include="Draw\ObjectBuffer.cs" />
     <Compile Include="Draw\ObjectModelBuffer.cs" />
     <Compile Include="Draw\RenderTarget.cs" />
@@ -158,6 +159,7 @@
     <Compile Include="Resources\ResourceLoader.cs" />
     <Compile Include="UI\Elements\Checkbox.cs" />
     <Compile Include="UI\Elements\ClickMask.cs" />
+    <Compile Include="UI\Elements\DialogueBox.cs" />
     <Compile Include="UI\Elements\DraggableSprite.cs" />
     <Compile Include="UI\Elements\DraggableCollection.cs" />
     <Compile Include="UI\Elements\DropdownMenu.cs" />
@@ -165,7 +167,7 @@
     <Compile Include="UI\Elements\MouseoverMask.cs" />
     <Compile Include="UI\Elements\Panel.cs" />
     <Compile Include="UI\Elements\Slider.cs" />
-    <Compile Include="UI\Elements\StandardButton.cs">
+    <Compile Include="UI\Elements\DialogueButton.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="UI\Elements\TextBox.cs" />
