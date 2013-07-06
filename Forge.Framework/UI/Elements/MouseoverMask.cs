@@ -11,7 +11,7 @@ using MonoGameUtility;
 namespace Forge.Framework.UI.Elements{
     internal class MouseoverMask : IUIElement{
         const float _fadedInAlpha = 0.1f;
-        readonly Sprite2D _mask;
+        readonly MaskingSprite _mask;
         float _alpha;
         Rectangle _boundingBox;
 
@@ -24,14 +24,10 @@ namespace Forge.Framework.UI.Elements{
             parent.OnLeftDown += OnMouseLeftDown;
             parent.OnLeftRelease += OnMouseLeftUp;
 
-            _mask = new Sprite2D
+            _mask = new MaskingSprite
                 (
                 "Materials/SolidYellow",
-                boundingBox.X,
-                boundingBox.Y,
-                boundingBox.Width,
-                boundingBox.Height,
-                FrameStrata
+                boundingBox
                 );
 
             Alpha = 0;

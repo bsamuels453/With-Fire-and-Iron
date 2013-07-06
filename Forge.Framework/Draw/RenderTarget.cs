@@ -30,7 +30,7 @@ namespace Forge.Framework.Draw{
         readonly List<IDrawableSprite> _sprites;
 
         readonly RenderTarget2D _targetCanvas;
-        readonly List<TextBox> _textSprites;
+        readonly List<IDrawableSprite> _textSprites;
         public float Depth;
         public Vector2 Offset;
         bool _disposed;
@@ -64,7 +64,7 @@ namespace Forge.Framework.Draw{
             BoundingBox = new Rectangle(x, y, width, height);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
-            _textSprites = new List<TextBox>();
+            _textSprites = new List<IDrawableSprite>();
             _renderTargets.Add(this);
         }
 
@@ -89,7 +89,7 @@ namespace Forge.Framework.Draw{
             BoundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
-            _textSprites = new List<TextBox>();
+            _textSprites = new List<IDrawableSprite>();
             _renderTargets.Add(this);
         }
 
@@ -114,8 +114,8 @@ namespace Forge.Framework.Draw{
         #endregion
 
         public static void AddSprite(IDrawableSprite sprite){
-            if (sprite is TextBox){
-                CurTarg._textSprites.Add((TextBox) sprite);
+            if (sprite is TextBox || sprite is MaskingSprite){
+                CurTarg._textSprites.Add(sprite);
             }
             else{
                 CurTarg._sprites.Add(sprite);
@@ -123,8 +123,8 @@ namespace Forge.Framework.Draw{
         }
 
         public static void RemoveSprite(IDrawableSprite sprite){
-            if (sprite is TextBox){
-                CurTarg._textSprites.Remove((TextBox) sprite);
+            if (sprite is TextBox || sprite is MaskingSprite){
+                CurTarg._textSprites.Remove(sprite);
             }
             else{
                 CurTarg._sprites.Remove(sprite);
