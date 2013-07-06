@@ -119,6 +119,28 @@ namespace Forge.Framework.Draw{
                 rotation){
         }
 
+        public Sprite2D(
+            string textureName,
+            Rectangle boundingBox,
+            FrameStrata parentStrata,
+            FrameStrata.Level level,
+            bool transparent = false,
+            float alpha = 1,
+            float spriteRepeatX = 1,
+            float spriteRepeatY = 1,
+            float rotation = 0
+            )
+            : this(
+                Resource.LoadContent<Texture2D>(textureName),
+                boundingBox,
+                new FrameStrata(level, parentStrata, "Sprite"),
+                transparent,
+                alpha,
+                spriteRepeatX,
+                spriteRepeatY,
+                rotation){
+        }
+
 
         public Sprite2D(
             Texture2D texture,
