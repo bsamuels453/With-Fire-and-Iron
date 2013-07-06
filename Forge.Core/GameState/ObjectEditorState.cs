@@ -1,5 +1,6 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using Forge.Core.Airship.Export;
 using Forge.Core.Airship.Generation;
@@ -9,7 +10,6 @@ using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
-using Forge.Framework.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -26,13 +26,14 @@ namespace Forge.Core.GameState{
         readonly BezierInfo[] _sideCurveInfo;
         readonly BezierInfo[] _topCurveInfo;
 
-        readonly UIElementCollection _uiElementCollection;
+        //readonly UIElementCollection _uiElementCollection;
 
         public ObjectEditorState(List<BezierInfo> backCurveInfo, List<BezierInfo> sideCurveInfo, List<BezierInfo> topCurveInfo){
             _renderTarget = new RenderTarget(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _renderTarget.Bind();
-            _uiElementCollection = new UIElementCollection();
-            _uiElementCollection.Bind();
+            throw new Exception();
+            //_uiElementCollection = new UIElementCollection();
+            //_uiElementCollection.Bind();
             _cameraController = new BodyCenteredCamera();
             GamestateManager.CameraController = _cameraController;
 
@@ -43,7 +44,7 @@ namespace Forge.Core.GameState{
             _hullData = new HullDataManager(geometryInfo);
             _doodadUI = new ObjectEditorUI(_hullData, _renderTarget);
 
-            _uiElementCollection.Unbind();
+            //_uiElementCollection.Unbind();
 
             _cameraController.SetCameraTarget(_hullData.CenterPoint);
             _renderTarget.Unbind();
@@ -59,13 +60,15 @@ namespace Forge.Core.GameState{
             _renderTarget.Dispose();
         }
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(double timeDelta){
+            throw new Exception();
+            /*
             _renderTarget.Bind();
-            _uiElementCollection.Bind();
+            //_uiElementCollection.Bind();
 
             #region update input
 
-            _uiElementCollection.UpdateInput(ref state);
+            //_uiElementCollection.UpdateInput(ref state);
             _doodadUI.UpdateInput(ref state);
             _cameraController.Update(ref state, timeDelta);
 
@@ -73,17 +76,17 @@ namespace Forge.Core.GameState{
             if (state.KeyboardState.IsKeyDown(Keys.LeftControl) && state.KeyboardState.IsKeyDown(Keys.S)){
                 AirshipPackager.ExportAirshipDefinitionToFile("ExportedAirship", _backCurveInfo, _sideCurveInfo, _topCurveInfo);
             }
-
+            
             #endregion
-
+            */
             #region update logic
 
-            UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
+            //UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
             _doodadUI.UpdateLogic(timeDelta);
 
             #endregion
 
-            _uiElementCollection.Unbind();
+            //_uiElementCollection.Unbind();
             _renderTarget.Unbind();
         }
 

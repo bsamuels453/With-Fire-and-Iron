@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -55,6 +56,10 @@ namespace Forge.Framework.Resources{
             foreach (string directory in directories){
                 string[] files = Directory.GetFiles(directory);
                 foreach (string file in files){
+                    //we only handly .json files here
+                    if (!file.Contains(".json")){
+                        continue;
+                    }
                     var sr = new StreamReader(file);
                     var newConfigVals = JsonConvert.DeserializeObject<Dictionary<string, string>>(sr.ReadToEnd());
                     sr.Close();
@@ -106,6 +111,56 @@ namespace Forge.Framework.Resources{
                 obj = VectorParser.Parse<T>(configValue);
             }
             return obj;
+        }
+
+        /// <summary>
+        /// Loads a JSON object from a json settings file at the location specified with fileAddress, relative to bin dir.
+        /// </summary>
+        /// <param name="fileAddress"></param>
+        /// <returns></returns>
+        public static JObject LoadJObject(string fileAddress){
+            var strmrdr = new StreamReader(fileAddress);
+            var contents = strmrdr.ReadToEnd();
+            strmrdr.Close();
+            contents = FormatJsonString(contents);
+
+            var jobj = JObject.Parse(contents);
+            return jobj;
+        }
+
+        /// <summary>
+        /// Loads a JSON object from a json settings file from the stream provided. Does not close reader after reading.
+        /// </summary>
+        /// <param name="reader"> </param>
+        /// <returns></returns>
+        public static JObject LoadJObject(StreamReader reader){
+            var contents = reader.ReadToEnd();
+            contents = FormatJsonString(contents);
+
+            var jobj = JObject.Parse(contents);
+            return jobj;
+        }
+
+        /// <summary>
+        /// Reformats input json data to match with a format that's readable by json.net.
+        /// For now, method filters out comments.
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        static string FormatJsonString(string str){
+            int openComment;
+            while ((openComment = str.IndexOf("///", StringComparison.InvariantCulture)) != -1){
+                int terminator = str.IndexOf('\r', openComment);
+                if (terminator != -1){
+                    str = str.Substring(0, openComment) + str.Substring(terminator);
+                }
+                else{
+                    str = str.Substring(0, openComment);
+                }
+                int g = 4;
+            }
+
+            return str;
         }
 
         /// <summary>
@@ -256,7 +311,7 @@ namespace Forge.Framework.Resources{
             Y = y;
         }
 
-        public void GetScreenValue(float percentX, float percentY, ref int x, ref int y){
+        public void GetScreenValue(float percentX, float percentY, out int x, out int y){
             x = (int) (X*percentX);
             y = (int) (Y*percentY);
         }

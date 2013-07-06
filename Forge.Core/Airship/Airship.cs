@@ -19,7 +19,7 @@ namespace Forge.Core.Airship{
         public readonly int FactionId;
         public readonly int Uid;
         readonly Battlefield _battlefield;
-        readonly AirshipController _controller;
+        public readonly AirshipController Controller;
         readonly List<Hardpoint> _hardPoints;
 #if ENABLE_DAMAGEMESH
         readonly HullIntegrityMesh _hullIntegrityMesh;
@@ -49,7 +49,7 @@ namespace Forge.Core.Airship{
 
             switch (stateData.ControllerType){
                 case AirshipControllerType.AI:
-                    _controller = new AIAirshipController
+                    Controller = new AIAirshipController
                         (
                         ModelAttributes,
                         stateData,
@@ -59,7 +59,7 @@ namespace Forge.Core.Airship{
                     break;
 
                 case AirshipControllerType.Player:
-                    _controller = new PlayerAirshipController
+                    Controller = new PlayerAirshipController
                         (
                         ModelAttributes,
                         stateData,
@@ -71,7 +71,7 @@ namespace Forge.Core.Airship{
 
 
 #if ENABLE_DAMAGEMESH
-            _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, _controller.Position, ModelAttributes.Length);
+            _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, Controller.Position, ModelAttributes.Length);
 #endif
 
             //DebugText.CreateText("x:", 0, 0);
@@ -84,13 +84,13 @@ namespace Forge.Core.Airship{
         }
 
         public AirshipStateData StateData{
-            get { return _controller.StateData; }
+            get { return Controller.StateData; }
         }
 
         public ModelAttributes ModelAttributes { get; private set; }
 
         public ModelAttributes BuffedModelAttributes{
-            get { return _controller.GetBuffedAttributes(); }
+            get { return Controller.GetBuffedAttributes(); }
         }
 
         //public Vector3 Centroid { get; private set; }
@@ -117,17 +117,17 @@ namespace Forge.Core.Airship{
         #endregion
 
         public void SetAutoPilot(AirshipAutoPilot autoPilot){
-            _controller.SetAutoPilot(autoPilot);
+            Controller.SetAutoPilot(autoPilot);
         }
 
-        public void Update(ref InputState state, double timeDelta){
+        public void Update(double timeDelta){
             //DebugText.SetText("x:", "x:" + _controller.StateData.Position.X);
             //DebugText.SetText("y:", "y:" + _controller.StateData.Position.Y);
             //DebugText.SetText("z:", "z:" + _controller.StateData.Position.Z);
 
 
-            _controller.Update(ref state, timeDelta);
-            SetAirshipWMatrix(_controller.WorldTransform);
+            Controller.Update(timeDelta);
+            SetAirshipWMatrix(Controller.WorldTransform);
 
             foreach (var hardPoint in _hardPoints){
                 hardPoint.Update(timeDelta);

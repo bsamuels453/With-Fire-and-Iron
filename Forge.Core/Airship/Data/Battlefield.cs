@@ -3,7 +3,6 @@
 using System;
 using System.Diagnostics;
 using Forge.Core.Physics;
-using Forge.Framework;
 
 #endregion
 
@@ -36,9 +35,9 @@ namespace Forge.Core.Airship.Data{
 
         #endregion
 
-        public void Update(ref InputState state, double timeDelta){
+        public void Update(double timeDelta){
             foreach (Airship airship in ShipsOnField){
-                airship.Update(ref state, timeDelta);
+                airship.Update(timeDelta);
             }
             ProjectileEngine.Update(timeDelta);
         }

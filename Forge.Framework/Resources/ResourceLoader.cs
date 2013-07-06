@@ -60,7 +60,9 @@ namespace Forge.Framework.Resources{
                     string fileName = splitByFolder.Last();
                     string fullLocation = file;
 
-                    int baseFolderIdx = splitByFolder.IndexOf(rawDir);
+
+                    var splitRawDir = rawDir.Split('\\');//make sure the split doesnt search for multiple nested files
+                    int baseFolderIdx = splitByFolder.IndexOf(splitRawDir[0]);
 
                     var relativeDirArr = splitByFolder.GetRange(baseFolderIdx, splitByFolder.Count - baseFolderIdx);
                     string relativeLocation = "";

@@ -1,0 +1,11 @@
+{
+	"Font": "Fonts/Monospace10",
+	"BackgroundInset": 1,
+	"HorizontalTextPadding": 2,
+	"VerticalTextPadding": 2,
+	"BorderThickness": 2,
+	"CornerSize": 2,
+	"BorderMaterial": "Materials/TextBoxBorder",
+	"BackgroundMaterial": "Materials/TextBoxBG",
+	"CornerMaterial": "Materials/TextBoxCorner",
+}

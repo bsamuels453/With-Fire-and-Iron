@@ -7,7 +7,7 @@ using Forge.Framework;
 
 namespace Forge.Core.GameState{
     public interface IGameState : IDisposable{
-        void Update(InputState state, double timeDelta);
+        void Update(double timeDelta);
         void Draw();
     }
 }

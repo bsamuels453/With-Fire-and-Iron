@@ -2,8 +2,7 @@
 
 using System.Collections.Generic;
 using Forge.Core.Airship.Data;
-using Forge.Framework;
-using Microsoft.Xna.Framework.Input;
+using Forge.Framework.Control;
 
 #endregion
 
@@ -22,7 +21,8 @@ namespace Forge.Core.Airship.Controllers{
 
         #endregion
 
-        public TurnState CurTurnState;
+        int _altitudeSpeed;
+        TurnState _curTurnState;
         int _engineSpeed;
 
         public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints, AirshipIndexer airships) :
@@ -38,51 +38,81 @@ namespace Forge.Core.Airship.Controllers{
             }
         }
 
-        protected override void UpdateController(ref InputState state, double timeDelta){
-            var keyState = state.KeyboardState;
-            var prevKeyState = state.PrevState.KeyboardState;
+        public KeyboardController GenerateKeyboardBindings(){
+            var binds = new KeyboardController();
+            binds.LoadFromFile<AirshipBinds>("Config/AirshipBindings.config");
 
-            if (state.PrevState.KeyboardState.IsKeyDown(Keys.Space) && state.KeyboardState.IsKeyUp(Keys.Space)){
-                Fire();
-            }
+            #region lambda defs
 
-            if (keyState.IsKeyUp(Keys.W) && prevKeyState.IsKeyDown(Keys.W)){
-                EngineSpeed++;
-            }
-            if (keyState.IsKeyUp(Keys.S) && prevKeyState.IsKeyDown(Keys.S)){
-                if (EngineSpeed > 0){
-                    EngineSpeed = 0;
-                }
-                else{
-                    EngineSpeed--;
-                }
-            }
+            KeyboardController.OnKeyPress increaseSpeed =
+                (o, i, arg3) => { EngineSpeed++; };
 
-            int altitudeSpeed = 0;
-            if (keyState.IsKeyDown(Keys.LeftShift)){
-                altitudeSpeed = 1;
-            }
-            if (keyState.IsKeyDown(Keys.LeftControl)){
-                altitudeSpeed = -1;
-            }
-            bool isTurning = false;
-            if (keyState.IsKeyDown(Keys.A)){
-                CurTurnState = TurnState.TurningLeft;
-                isTurning = true;
-            }
-            if (keyState.IsKeyDown(Keys.D)){
-                CurTurnState = TurnState.TurningRight;
-                isTurning = true;
-            }
-            if (!isTurning){
-                CurTurnState = TurnState.Stable;
-            }
+            KeyboardController.OnKeyPress decreaseSpeed =
+                (o, i, arg3) => { EngineSpeed = 0; };
 
+            KeyboardController.OnKeyPress turnPort =
+                (o, i, arg3) =>{
+                    //if both turn buttons held down, go straight
+                    if (_curTurnState == TurnState.TurningRight){
+                        _curTurnState = TurnState.Stable;
+                    }
+                    else{
+                        _curTurnState = TurnState.TurningLeft;
+                    }
+                };
+
+            KeyboardController.OnKeyPress turnStarboard =
+                (o, i, arg3) =>{
+                    if (_curTurnState == TurnState.TurningLeft){
+                        _curTurnState = TurnState.Stable;
+                    }
+                    else{
+                        _curTurnState = TurnState.TurningRight;
+                    }
+                };
+
+            KeyboardController.OnKeyPress decreaseAltitude =
+                (o, i, arg3) =>{
+                    if (_altitudeSpeed > 0){
+                        _altitudeSpeed = 0;
+                    }
+                    else{
+                        _altitudeSpeed = -1;
+                    }
+                };
+
+            KeyboardController.OnKeyPress increaseAltitude =
+                (o, i, arg3) =>{
+                    if (_altitudeSpeed < 0){
+                        _altitudeSpeed = 0;
+                    }
+                    else{
+                        _altitudeSpeed = 1;
+                    }
+                };
+
+            KeyboardController.OnKeyPress fire =
+                (o, i, arg3) => Fire();
+
+            #endregion
+
+            binds.AddBindCallback(AirshipBinds.IncreaseForwardSpeed, BindCondition.OnKeyDown, increaseSpeed);
+            binds.AddBindCallback(AirshipBinds.DecreaseForwardSpeed, BindCondition.OnKeyDown, decreaseSpeed);
+            binds.AddBindCallback(AirshipBinds.TurnPort, BindCondition.KeyHeldDown, turnPort);
+            binds.AddBindCallback(AirshipBinds.TurnStarboard, BindCondition.KeyHeldDown, turnStarboard);
+            binds.AddBindCallback(AirshipBinds.DecreaseAltitude, BindCondition.KeyHeldDown, decreaseAltitude);
+            binds.AddBindCallback(AirshipBinds.IncreaseAltitude, BindCondition.KeyHeldDown, increaseAltitude);
+            binds.AddBindCallback(AirshipBinds.Fire, BindCondition.OnKeyDown, fire);
+
+            return binds;
+        }
+
+        protected override void UpdateController(double timeDelta){
             float engineDutyCycle = (float) _engineSpeed/3;
-            float altitudeDutyCycle = altitudeSpeed;
+            float altitudeDutyCycle = _altitudeSpeed;
 
             int turnValue = 0;
-            switch (CurTurnState){
+            switch (_curTurnState){
                 case TurnState.Stable:
                     turnValue = 0;
                     break;
@@ -93,11 +123,29 @@ namespace Forge.Core.Airship.Controllers{
                     turnValue = -1;
                     break;
             }
+            //reset
+            _curTurnState = TurnState.Stable;
+            _altitudeSpeed = 0;
+
             if (!AutoPilotActive){
                 base.TurnVelocity = turnValue*base.MaxTurnRate;
                 base.Velocity = engineDutyCycle*base.MaxVelocity;
                 base.AscentRate = altitudeDutyCycle*base.MaxAscentRate;
             }
         }
+
+        #region Nested type: AirshipBinds
+
+        enum AirshipBinds{
+            IncreaseForwardSpeed,
+            DecreaseForwardSpeed,
+            TurnPort,
+            TurnStarboard,
+            IncreaseAltitude,
+            DecreaseAltitude,
+            Fire
+        }
+
+        #endregion
     }
 }

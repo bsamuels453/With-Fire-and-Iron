@@ -84,7 +84,7 @@ namespace Forge.Core.HullEditor{
         }
 
         public void Update(ref InputState state){
-            _camera.Update(ref state, 0); //xx
+            //_camera.Update(ref state, 0); //xx
             _topCurves.GetParameterizedPoint(0, true);
 
             var topPts = new Vector2[_meshVertexWidth];
@@ -105,26 +105,31 @@ namespace Forge.Core.HullEditor{
 
             _sideCurves.GetParameterizedPoint(0, true); //this refreshes public fields
             //orient controllers correctly for the bezierintersect
+            /*
             var li = _sideCurves.Select
                 (bezierCurve => new BezierInfo
                     (
                     _sideCurves.ToMeters(bezierCurve.CenterHandlePos),
                     _sideCurves.ToMeters(bezierCurve.PrevHandlePos),
                     _sideCurves.ToMeters(bezierCurve.NextHandlePos))).ToList();
+             */
+            throw new Exception();
 
 
-            var sideIntersectGenerator = new BezierDependentGenerator(li);
+            //var sideIntersectGenerator = new BezierDependentGenerator(li);
 
             var sideIntersectionCache = new float[_meshVertexWidth];
 
             for (int x = 0; x < _meshVertexWidth; x++){
-                sideIntersectionCache[x] = sideIntersectGenerator.GetValueFromIndependent(topPts[x].X).Y;
+                //sideIntersectionCache[x] = sideIntersectGenerator.GetValueFromIndependent(topPts[x].X).Y;
             }
 
             var maxY = (float) _backCurves.ToMetersY(_backCurves.MaxY);
+            /*
             var backCurvesMaxWidth =
                 (float) (_backCurves.ToMetersX(_backCurves[_backCurves.Count - 1].CenterHandlePos.X) - _backCurves.ToMetersX(_backCurves[0].CenterHandlePos.X));
 
+             
             for (int x = 0; x < _meshVertexWidth; x++){
                 float scaleX = Math.Abs((reflectionPoint - topPts[x].Y)*2)/backCurvesMaxWidth;
                 float scaleY = sideIntersectionCache[x]/maxY;
@@ -152,6 +157,8 @@ namespace Forge.Core.HullEditor{
             p += _mesh[_meshVertexWidth - 1, _meshVertexWidth - 1];
             p /= 4;
             _camera.SetCameraTarget(p);
+             */
+            throw new Exception();
         }
 
         //public void Dispose(){

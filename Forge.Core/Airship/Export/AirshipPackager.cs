@@ -8,6 +8,7 @@ using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
 using Forge.Core.Util;
 using Forge.Framework;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 using Newtonsoft.Json;
@@ -45,6 +46,7 @@ namespace Forge.Core.Airship.Export{
             DebugConsole.WriteLine("Loading airship as defined by: " + stateName + ".json");
             var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + stateName + ".json");
             var stateData = DeserializeStateFromReader(stateReader);
+            stateReader.Close();
 
             var airship = LoadAirshipModel(stateData.Model);
 
@@ -198,8 +200,8 @@ namespace Forge.Core.Airship.Export{
             var sw = new Stopwatch();
             sw.Start();
             Debug.Assert(reader != null);
-            var file = reader.ReadToEnd();
-            var jObj = JObject.Parse(file);
+
+            var jObj = Resource.LoadJObject(reader);
 
             if (!jObj["Version"].ToObject<string>().Equals(_stateDataSerializerVersion)){
                 throw new Exception("bad file version");
@@ -230,9 +232,8 @@ namespace Forge.Core.Airship.Export{
         public static void ConvertDefToProtocolFile(string fileName){
             var sw = new Stopwatch();
             sw.Start();
-            var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".def");
-            var jObj = JObject.Parse(sr.ReadToEnd());
-            sr.Close();
+
+            var jObj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".def");
 
             var backInfo = jObj["FrontBezierSurf"].ToObject<List<BezierInfo>>();
             var sideInfo = jObj["SideBezierSurf"].ToObject<List<BezierInfo>>();
@@ -314,10 +315,7 @@ namespace Forge.Core.Airship.Export{
             int _nextUid;
 
             public AirshipUidGenerator(){
-                var sr = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\Ids.json");
-                string ids = sr.ReadToEnd();
-                sr.Close();
-                _jObject = JObject.Parse(ids);
+                _jObject = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Ids.json");
                 _nextUid = _jObject["MaxId"].ToObject<int>();
             }
 

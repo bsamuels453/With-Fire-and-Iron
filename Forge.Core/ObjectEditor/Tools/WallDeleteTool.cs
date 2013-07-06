@@ -10,6 +10,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
+    /*
     public class WallDeleteTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         List<WallSegmentIdentifier> _prevIdentifiers;
@@ -135,4 +136,5 @@ namespace Forge.Core.ObjectEditor.Tools{
             _tempWallBuffer.Dispose();
         }
     }
+     */
 }

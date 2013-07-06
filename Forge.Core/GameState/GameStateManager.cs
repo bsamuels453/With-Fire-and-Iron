@@ -2,8 +2,7 @@
 
 using System.Diagnostics;
 using Forge.Core.Camera;
-using Forge.Core.Input;
-using Forge.Framework.Draw;
+using Forge.Framework.Control;
 
 #endregion
 
@@ -11,23 +10,22 @@ namespace Forge.Core.GameState{
     public delegate void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera);
 
     public static class GamestateManager{
-        static readonly InputHandler _inputHandler;
+        public static readonly MouseManager MouseManager;
 
         static IGameState _activeState;
         static readonly Stopwatch _stopwatch;
 
         static GamestateManager(){
             _activeState = null;
-            _inputHandler = new InputHandler();
+            MouseManager = new MouseManager();
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
-            DebugText.CreateText("FPS", 0, 0);
-            DebugText.CreateText("RunningSlowly", 0, 11);
-            DebugText.CreateText("PrivateMem", 0, 24);
+            //DebugText.CreateText("FPS", 0, 0);
+            //DebugText.CreateText("RunningSlowly", 0, 11);
+            //DebugText.CreateText("PrivateMem", 0, 24);
         }
 
         public static ICamera CameraController { get; set; }
-
 
         public static void ClearState(){
             _activeState.Dispose();
@@ -40,11 +38,14 @@ namespace Forge.Core.GameState{
 
         public static void Update(){
             _stopwatch.Stop();
-            double d = _stopwatch.ElapsedMilliseconds;
             _stopwatch.Restart();
-            _inputHandler.Update();
 
-            _activeState.Update(_inputHandler.CurrentInputState, 16.6666667f);
+            const double timeDelta = 16.666666667f;
+
+            MouseManager.UpdateMouse(timeDelta);
+            KeyboardManager.UpdateKeyboard();
+
+            _activeState.Update(timeDelta);
         }
 
         public static void Draw(){

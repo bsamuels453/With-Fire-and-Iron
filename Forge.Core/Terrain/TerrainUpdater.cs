@@ -94,7 +94,7 @@ namespace Forge.Core.Terrain{
 
         #endregion
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(double timeDelta){
             lock (_generationTasks){
                 _generationTasks = (from task in _generationTasks
                     where task.Status != TaskStatus.RanToCompletion

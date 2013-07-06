@@ -27,7 +27,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             _targetAirship = _airships[targetUid];
             _selfShip = selfShip;
             _targetLeadMultiplier = 1;
-            DebugText.CreateText("TargPos", 0, 40);
+            //DebugText.CreateText("TargPos", 0, 40);
         }
 
         public override Pathfinder.RetAttributes CalculateNextPosition(double timeDelta){
@@ -59,7 +59,7 @@ namespace Forge.Core.Airship.Controllers.AutoPilot{
             var targetPos = _prevTargetVec*_preferredRange + target;
             targetPos.Y = target.Y;
 
-            DebugText.SetText("TargPos", "DistToTarget: (" + (stateData.Position - _targetAirship.StateData.Position).Length() + ")");
+            //DebugText.SetText("TargPos", "DistToTarget: (" + (stateData.Position - _targetAirship.StateData.Position).Length() + ")");
 
             var ret = Pathfinder.CalculateAirshipPath
                 (

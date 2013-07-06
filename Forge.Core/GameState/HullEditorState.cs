@@ -1,12 +1,12 @@
 ﻿#region
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using Forge.Core.HullEditor;
 using Forge.Framework;
 using Forge.Framework.Resources;
-using Forge.Framework.UI;
 using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
@@ -15,15 +15,16 @@ using MonoGameUtility;
 namespace Forge.Core.GameState{
     public class HullEditorState : IGameState{
         readonly BackEditorPanel _backpanel;
-        readonly UIElementCollection _elementCollection;
+        //readonly UIElementCollection _elementCollection;
 
         readonly PreviewRenderer _previewRenderer;
         readonly SideEditorPanel _sidepanel;
         readonly TopEditorPanel _toppanel;
 
         public HullEditorState(){
-            _elementCollection = new UIElementCollection();
-            _elementCollection.Bind();
+            throw new Exception();
+            //_elementCollection = new UIElementCollection();
+            //_elementCollection.Bind();
 
             _sidepanel = new SideEditorPanel(0, 0, Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
             _toppanel = new TopEditorPanel
@@ -44,7 +45,7 @@ namespace Forge.Core.GameState{
 
             _previewRenderer = new PreviewRenderer(_sidepanel.Curves, _toppanel.Curves, _backpanel.Curves);
 
-            _elementCollection.Unbind();
+            //_elementCollection.Unbind();
         }
 
         #region IGameState Members
@@ -56,7 +57,7 @@ namespace Forge.Core.GameState{
             _toppanel.Dispose();
         }
 
-        public void Update(InputState state, double timeDelta){
+        public void Update(double timeDelta){
             //force end early
             var sideInfo = _sidepanel.Curves.GetControllerInfo();
             var backInfo = _backpanel.Curves.GetControllerInfo();
@@ -65,7 +66,8 @@ namespace Forge.Core.GameState{
             GamestateManager.ClearState();
             GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
             return;
-
+            throw new Exception();
+            /*
             _elementCollection.Bind();
             _sidepanel.Update();
             _toppanel.Update();
@@ -75,6 +77,7 @@ namespace Forge.Core.GameState{
             UIElementCollection.BoundCollection.UpdateLogic(timeDelta);
             _elementCollection.Unbind();
             HandleEditorKeyboardInput(ref state);
+             */
         }
 
         public void Draw(){
@@ -102,8 +105,10 @@ namespace Forge.Core.GameState{
         }
 
         public void SaveCurves(string directory){
+            throw new Exception();
             //dear mother of god why does this have to be hardcoded
             //top set
+            /*
             var bowPointTop = _toppanel.Curves.ToMeters(_toppanel.Curves[1].CenterHandlePos);
             float bowNLengthTop = _toppanel.Curves[1].NextHandleLength/_toppanel.Curves.PixelsPerMeter;
             float bowAngleTop = -MathHelper.Pi/2;
@@ -211,6 +216,7 @@ namespace Forge.Core.GameState{
             SaveCurve(directory + "back.xml", backData);
             SaveCurve(directory + "top.xml", topData);
             SaveCurve(directory + "side.xml", sideData);
+             */
         }
 
         void SaveCurve(string filename, List<CurveData> curveData){

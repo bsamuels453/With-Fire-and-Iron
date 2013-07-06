@@ -261,8 +261,8 @@ namespace Forge.Core.Airship.Controllers{
             return ret;
         }
 
-        public void Update(ref InputState state, double timeDelta){
-            UpdateController(ref state, timeDelta);
+        public void Update(double timeDelta){
+            UpdateController(timeDelta);
 
             if (AutoPilotActive){
                 var ret = _autoPilot.CalculateNextPosition(timeDelta);
@@ -287,6 +287,6 @@ namespace Forge.Core.Airship.Controllers{
             WorldTransform = Common.GetWorldTranslation(Position, Angle + new Vector3(0, -(float) Math.PI/2, 0), _airshipModelData.Length);
         }
 
-        protected abstract void UpdateController(ref InputState state, double timeDelta);
+        protected abstract void UpdateController(double timeDelta);
     }
 }

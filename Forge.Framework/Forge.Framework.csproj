@@ -129,18 +129,26 @@
   <ItemGroup>
     <Compile Include="Angle3.cs" />
     <Compile Include="Common.cs" />
+    <Compile Include="Control\BindCondition.cs" />
+    <Compile Include="Control\KeyboardController.cs" />
+    <Compile Include="Control\ForgeKeyState.cs" />
+    <Compile Include="Control\ForgeMouseState.cs" />
+    <Compile Include="Control\KeyboardManager.cs" />
+    <Compile Include="Control\MouseController.cs" />
+    <Compile Include="Control\MouseManager.cs" />
     <Compile Include="DebugConsole.cs" />
     <Compile Include="DebugStateShift.cs" />
     <Compile Include="Draw\BaseGeometryBuffer.cs" />
     <Compile Include="Draw\DebugText.cs" />
     <Compile Include="Draw\GeometryBuffer.cs" />
     <Compile Include="Draw\IDrawableSprite.cs" />
-    <Compile Include="Draw\Line2D.cs" />
+    <Compile Include="Draw\MaskingSprite.cs" />
     <Compile Include="Draw\ObjectBuffer.cs" />
     <Compile Include="Draw\ObjectModelBuffer.cs" />
     <Compile Include="Draw\RenderTarget.cs" />
     <Compile Include="Draw\Sprite2D.cs" />
     <Compile Include="FloatingRectangle.cs" />
+    <Compile Include="PriorityQueue.cs" />
     <Compile Include="ProtoBuffWrappers.cs" />
     <Compile Include="Resources\HLSLShaderLoader.cs" />
     <Compile Include="Resources\OpenCLScriptLoader.cs" />
@@ -149,30 +157,33 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResourceNotDisposedException.cs" />
     <Compile Include="Resources\ResourceLoader.cs" />
-    <Compile Include="UI\Button.cs" />
-    <Compile Include="UI\ButtonGenerator.cs" />
-    <Compile Include="UI\Components\DraggableComponent.cs" />
-    <Compile Include="UI\Components\FadeComponent.cs" />
-    <Compile Include="UI\Components\HighlightComponent.cs" />
-    <Compile Include="UI\Components\PanelComponent.cs" />
-    <Compile Include="UI\DepthLevel.cs" />
-    <Compile Include="UI\IUIComponent.cs" />
+    <Compile Include="UI\Elements\Checkbox.cs" />
+    <Compile Include="UI\Elements\ClickMask.cs" />
+    <Compile Include="UI\Elements\DialogueBox.cs" />
+    <Compile Include="UI\Elements\DraggableSprite.cs" />
+    <Compile Include="UI\Elements\DraggableCollection.cs" />
+    <Compile Include="UI\Elements\DropdownMenu.cs" />
+    <Compile Include="UI\Elements\InputBox.cs" />
+    <Compile Include="UI\Elements\MouseoverMask.cs" />
+    <Compile Include="UI\Elements\Panel.cs" />
+    <Compile Include="UI\Elements\Slider.cs" />
+    <Compile Include="UI\Elements\DialogueButton.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\Elements\TextBox.cs" />
+    <Compile Include="UI\FrameStrata.cs" />
     <Compile Include="UI\IUIElement.cs" />
-    <Compile Include="UI\IUIElementBase.cs" />
-    <Compile Include="UI\IUIInteractiveElement.cs" />
-    <Compile Include="UI\Line.cs" />
     <Compile Include="UI\UIElementCollection.cs" />
-    <Compile Include="UI\Widgets\Checkbox.cs" />
-    <Compile Include="UI\Widgets\DropdownMenu.cs" />
-    <Compile Include="UI\Widgets\InputBox.cs" />
-    <Compile Include="UI\Widgets\IToolbarTool.cs" />
-    <Compile Include="UI\Widgets\TextBox.cs" />
-    <Compile Include="UI\Widgets\NullTool.cs" />
-    <Compile Include="UI\Widgets\Toolbar.cs" />
     <Compile Include="UpdateInterfaces.cs" />
     <Compile Include="VectorParser.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>del /s /q $(SolutionDir)\Bin\UiTemplates
+md $(SolutionDir)\Bin\UiTemplates
+xcopy /s  $(SolutionDir)\UiTemplates  $(SolutionDir)\Bin\UiTemplates</PreBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

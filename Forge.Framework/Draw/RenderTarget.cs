@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Forge.Framework.Resources;
+using Forge.Framework.UI.Elements;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Matrix = MonoGameUtility.Matrix;
@@ -29,6 +30,7 @@ namespace Forge.Framework.Draw{
         readonly List<IDrawableSprite> _sprites;
 
         readonly RenderTarget2D _targetCanvas;
+        readonly List<IDrawableSprite> _textSprites;
         public float Depth;
         public Vector2 Offset;
         bool _disposed;
@@ -40,6 +42,9 @@ namespace Forge.Framework.Draw{
             _universalDepthStencil = new DepthStencilState();
             _universalDepthStencil.DepthBufferEnable = true;
             _universalDepthStencil.DepthBufferWriteEnable = true;
+            Resource.Device.BlendState = BlendState.Opaque;
+            Resource.Device.SamplerStates[0] = SamplerState.LinearWrap;
+
             _bufferUpdateTasks = new List<Task>();
         }
 
@@ -59,6 +64,7 @@ namespace Forge.Framework.Draw{
             BoundingBox = new Rectangle(x, y, width, height);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
+            _textSprites = new List<IDrawableSprite>();
             _renderTargets.Add(this);
         }
 
@@ -83,15 +89,12 @@ namespace Forge.Framework.Draw{
             BoundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
             _buffers = new List<IDrawableBuffer>();
             _sprites = new List<IDrawableSprite>();
+            _textSprites = new List<IDrawableSprite>();
             _renderTargets.Add(this);
         }
 
         public static List<IDrawableBuffer> Buffers{
             get { return CurTarg._buffers; }
-        }
-
-        public static List<IDrawableSprite> Sprites{
-            get { return CurTarg._sprites; }
         }
 
         public static SpriteBatch CurSpriteBatch{
@@ -109,6 +112,24 @@ namespace Forge.Framework.Draw{
         }
 
         #endregion
+
+        public static void AddSprite(IDrawableSprite sprite){
+            if (sprite is TextBox || sprite is MaskingSprite){
+                CurTarg._textSprites.Add(sprite);
+            }
+            else{
+                CurTarg._sprites.Add(sprite);
+            }
+        }
+
+        public static void RemoveSprite(IDrawableSprite sprite){
+            if (sprite is TextBox || sprite is MaskingSprite){
+                CurTarg._textSprites.Remove(sprite);
+            }
+            else{
+                CurTarg._sprites.Remove(sprite);
+            }
+        }
 
         public static void AddAsynchronousBufferUpdate(Task update){
             lock (_bufferUpdateTasks){
@@ -139,33 +160,62 @@ namespace Forge.Framework.Draw{
             }
 
             lock (Resource.Device){
-                    bool dontUnbindTarget = CurTarg != null; //this has to exist because of globalrendertarget abomination
+                bool dontUnbindTarget = CurTarg != null; //this has to exist because of globalrendertarget abomination
 
-                    CurTarg = this;
-                    Resource.Device.SetRenderTarget(_targetCanvas);
-                    Resource.Device.Clear(fillColor);
-                    Resource.Device.DepthStencilState = _universalDepthStencil;
-                    SpriteBatch.Begin
-                        (
-                            SpriteSortMode.BackToFront,
-                            BlendState.AlphaBlend,
-                            SamplerState.LinearWrap,
-                            DepthStencilState.Default,
-                            RasterizerState.CullNone
-                        );
-                    foreach (var buffer in _buffers){
-                        buffer.Draw(viewMatrix);
-                    }
-                    foreach (var sprite in _sprites){
-                        sprite.Draw();
-                    }
-                    SpriteBatch.End();
-                    Resource.Device.SetRenderTarget(null);
-                    if (!dontUnbindTarget){
-                        CurTarg = null;
-                    }
+                CurTarg = this;
+                Resource.Device.SetRenderTarget(_targetCanvas);
+                Resource.Device.Clear(fillColor);
+                Resource.Device.DepthStencilState = _universalDepthStencil;
+                Resource.Device.BlendState = BlendState.Opaque;
+                Resource.Device.SamplerStates[0] = SamplerState.LinearWrap;
+                foreach (var buffer in _buffers){
+                    buffer.Draw(viewMatrix);
                 }
-            
+
+                //here comes a nice little present from the xna team. Typically when you call spritebatch.begin, the rendering
+                //settings stay associated with the spritebatch and cannot be changed until spritebatch.end is called. Our little
+                //friend DrawString likes to change these settings in the middle of the begin/end without telling anyone, and
+                //doesn't change the settings back to what they originally were. The new settings that the DrawString method sets
+                //up in the spritebatch are typically shit and ruin all the depth detection stuff.
+                //To bypass this, all DrawableSprites that make use of the DrawString function must be separated from all other
+                //sprites. Sprites with DrawString get their own begin/end group so that we can fix the spritebatch settings
+                //for all the other sprites.
+
+                #region draw sprites
+
+                SpriteBatch.Begin
+                    (
+                        SpriteSortMode.BackToFront,
+                        BlendState.AlphaBlend,
+                        SamplerState.LinearWrap,
+                        DepthStencilState.Default,
+                        RasterizerState.CullNone
+                    );
+                foreach (var sprite in _sprites){
+                    sprite.Draw();
+                }
+                SpriteBatch.End();
+
+                SpriteBatch.Begin
+                    (
+                        SpriteSortMode.BackToFront,
+                        BlendState.AlphaBlend,
+                        SamplerState.LinearWrap,
+                        DepthStencilState.Default,
+                        RasterizerState.CullNone
+                    );
+                foreach (var sprite in _textSprites){
+                    sprite.Draw();
+                }
+                SpriteBatch.End();
+
+                #endregion
+
+                Resource.Device.SetRenderTarget(null);
+                if (!dontUnbindTarget){
+                    CurTarg = null;
+                }
+            }
         }
 
         public static void BeginDraw(){

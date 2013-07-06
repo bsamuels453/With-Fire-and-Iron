@@ -1,11 +1,10 @@
 ﻿#region
 
+using System;
 using System.IO;
 using System.Xml;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Forge.Framework.UI;
-using Forge.Framework.UI.Components;
 using Microsoft.Xna.Framework;
 using Matrix = MonoGameUtility.Matrix;
 
@@ -37,7 +36,7 @@ namespace Forge.Core.HullEditor{
     #region abstract target class
 
     public abstract class HullEditorPanel{
-        protected readonly Button Background;
+        //protected readonly Button Background;
         protected readonly FloatingRectangle BoundingBox;
         public BezierCurveCollection Curves;
         protected RenderTarget RenderTarget;
@@ -59,6 +58,8 @@ namespace Forge.Core.HullEditor{
                     ),
                 panelType: panelType
                 );
+            throw new Exception();
+            /*
             UIElementCollection.BoundCollection.AddDragConstraintCallback(ClampChildElements);
             Background =
                 new Button
@@ -67,12 +68,13 @@ namespace Forge.Core.HullEditor{
                     y: y,
                     width: width,
                     height: height,
-                    depth: UIElementCollection.BoundCollection.GetAbsoluteDepth(DepthLevel.Background),
+                    depth: UIElementCollection.BoundCollection.GetAbsoluteDepth(FrameStrata.Background),
                     textureName: "Materials/BlueBox",
                     spriteTexRepeatX: width/(Curves.PixelsPerMeter*1),
                     spriteTexRepeatY: height/(Curves.PixelsPerMeter*1),
                     components: new IUIComponent[]{new PanelComponent()}
                     );
+             */
             Update();
             RenderTarget.Unbind();
         }
@@ -92,11 +94,16 @@ namespace Forge.Core.HullEditor{
 
             for (int i = 0; i < Curves.Count; i++){
                 writer.WriteStartElement("Handle" + i, null);
+                /*
                 writer.WriteElementString("PosX", null, ((Curves[i].CenterHandlePos.X - Curves.MinX)/Curves.PixelsPerMeter).ToString());
                 writer.WriteElementString("PosY", null, ((Curves[i].CenterHandlePos.Y - Curves.MinY)/Curves.PixelsPerMeter).ToString());
-                writer.WriteElementString("Angle", null, Curves[i].Handle.Angle.ToString());
+                 */
+                throw new Exception();
+                //writer.WriteElementString("Angle", null, Curves[i].Handle.Angle.ToString());
+                /*
                 writer.WriteElementString("PrevLength", null, (Curves[i].PrevHandleLength/Curves.PixelsPerMeter).ToString());
                 writer.WriteElementString("NextLength", null, (Curves[i].NextHandleLength/Curves.PixelsPerMeter).ToString());
+                 */
                 writer.WriteEndElement();
             }
 
@@ -104,7 +111,7 @@ namespace Forge.Core.HullEditor{
             writer.Close();
             outputStream.Close();
         }
-
+        /*
         void ClampChildElements(IUIInteractiveElement owner, ref int x, ref int y, int oldX, int oldY){
             if (x > BoundingBox.X + BoundingBox.Width || x < BoundingBox.X){
                 x = oldX;
@@ -113,6 +120,7 @@ namespace Forge.Core.HullEditor{
                 y = oldY;
             }
         }
+         */
 
         public void Draw(){
             RenderTarget.Draw(new Matrix(), Color.Transparent);
@@ -125,7 +133,7 @@ namespace Forge.Core.HullEditor{
         public void Update(){
             Curves.Update();
         }
-
+        /*
         /// <summary>
         ///   this function accepts modifications in METERS
         /// </summary>
@@ -162,6 +170,7 @@ namespace Forge.Core.HullEditor{
             else{
             }
         }
+         */
 
         protected abstract void ProcExternalDrag(object caller, ref float dx, ref float dy, bool doApplyChange);
     }
@@ -177,7 +186,8 @@ namespace Forge.Core.HullEditor{
         public SideEditorPanel(int x, int y, int width, int height, string defaultCurveConfiguration)
             : base(x, y, width, height, defaultCurveConfiguration, PanelAlias.Side){
             foreach (var curve in Curves){
-                curve.Handle.TranslateToExtern = ProcExternalDrag;
+                throw new Exception();
+                //curve.Handle.TranslateToExtern = ProcExternalDrag;
             }
         }
 
@@ -192,7 +202,8 @@ namespace Forge.Core.HullEditor{
 
             var controller = (CurveHandle) caller;
             float _null = 0;
-
+            throw new Exception();
+            /*
             //Curves[0] is the frontmost controller that represents the limit of the bow
             if (controller == Curves[0].Handle){
                 if (TopPanel != null){
@@ -221,6 +232,7 @@ namespace Forge.Core.HullEditor{
                     BackPanel.ModifyHandlePosition(HandleAlias.Middle, ref _null, ref dyf, applyClampCheck);
                 }
             }
+             */
         }
     }
 
@@ -234,9 +246,12 @@ namespace Forge.Core.HullEditor{
 
         public TopEditorPanel(int x, int y, int width, int height, string defaultCurveConfiguration)
             : base(x, y, width, height, defaultCurveConfiguration, PanelAlias.Top){
+                throw new Exception();
+            /*
             Curves[0].Handle.TranslateToExtern = ProcExternalDrag;
             Curves[Curves.Count - 1].Handle.TranslateToExtern = ProcExternalDrag;
             Curves[Curves.Count/2].Handle.TranslateToExtern = ProcExternalDrag;
+             */
         }
 
         protected override void DisposeChild(){
@@ -249,7 +264,8 @@ namespace Forge.Core.HullEditor{
             float dyf = dy/Curves.PixelsPerMeter;
 
             float _null = 0;
-
+            throw new Exception();
+            /*
             var controller = (CurveHandle) caller;
             if (controller == Curves[0].Handle){
                 if (SidePanel != null){
@@ -278,6 +294,7 @@ namespace Forge.Core.HullEditor{
                     SidePanel.ModifyHandlePosition(HandleAlias.First, ref dxf, ref _null, applyClampCheck);
                 }
             }
+             */
         }
     }
 
@@ -291,9 +308,12 @@ namespace Forge.Core.HullEditor{
 
         public BackEditorPanel(int x, int y, int width, int height, string defaultCurveConfiguration)
             : base(x, y, width, height, defaultCurveConfiguration, PanelAlias.Back){
+                throw new Exception();
+            /*
             Curves[0].Handle.TranslateToExtern = ProcExternalDrag;
             Curves[Curves.Count - 1].Handle.TranslateToExtern = ProcExternalDrag;
             Curves[Curves.Count/2].Handle.TranslateToExtern = ProcExternalDrag;
+             */
         }
 
         protected override void DisposeChild(){
@@ -306,6 +326,8 @@ namespace Forge.Core.HullEditor{
             float dyf = dy/Curves.PixelsPerMeter;
 
             float _null = 0;
+            throw new Exception();
+            /*
             var controller = (CurveHandle) caller;
             if (controller == Curves[0].Handle){
                 if (SidePanel != null){
@@ -336,6 +358,7 @@ namespace Forge.Core.HullEditor{
                     SidePanel.ModifyHandlePosition(HandleAlias.ExtremaY, ref _null, ref dyf, applyClampCheck);
                 }
             }
+             */
         }
     }
 

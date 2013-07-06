@@ -11,7 +11,6 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Cloo;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -20,6 +19,7 @@ namespace Forge.Framework.Resources{
     ///   Used to wrap OpenCL script loading, compiling, and saving.
     /// </summary>
     internal class OpenCLScriptLoader : ResourceLoader{
+        const string _openclScriptDir = "Scripts\\Opencl";
         readonly Task _asyncLoadTask;
         readonly List<ComputeDevice> _devices;
         readonly ComputePlatform _platform;
@@ -87,12 +87,11 @@ namespace Forge.Framework.Resources{
             DebugConsole.WriteLine("OpenCL context initialized in " + timer.ElapsedMilliseconds + " ms");
 
             //now we check to make sure none of the scripts have changed since the last time they were compiled.
-            var scriptFiles = GetAllFilesInDirectory("Scripts");
+            var scriptFiles = GetAllFilesInDirectory(_openclScriptDir);
 
-            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
-            var jobj = JObject.Parse(sr.ReadToEnd());
-            sr.Close();
-            var oldMD5 = jobj["Scripts"].ToObject<string>();
+            var jobj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Hashes.json");
+
+            var oldMD5 = jobj["OpenclScripts"].ToObject<string>();
             var currentMD5 = GenerateCumulativeMD5(scriptFiles);
 
             bool compileScripts = !oldMD5.Equals(currentMD5);
@@ -119,11 +118,9 @@ namespace Forge.Framework.Resources{
         /// </summary>
         /// <param name="md5"> </param>
         public static void SaveMD5(string md5){
-            var sr = new StreamReader((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
-            var jobj = JObject.Parse(sr.ReadToEnd());
-            sr.Close();
+            var jobj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Hashes.json");
 
-            jobj["Scripts"] = md5;
+            jobj["OpenclScripts"] = md5;
             var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
             string ss = JsonConvert.SerializeObject(jobj, Formatting.Indented);
             sw.Write(ss);
@@ -227,7 +224,7 @@ namespace Forge.Framework.Resources{
                 using (var sr = new StreamReader(file.FullFileLocation)){
                     scriptContents = sr.ReadToEnd();
                 }
-                var program = new ComputeProgram(ComputeContext, scriptContents);
+                var program = new ComputeProgram(_computeContext, scriptContents);
                 program.Build(null, "", null, IntPtr.Zero);
 
                 ret.Add(new OpenCLScript(program, file));
