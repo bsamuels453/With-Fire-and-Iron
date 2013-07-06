@@ -100,14 +100,14 @@ namespace Forge.Framework.UI.Elements{
             _offset = new Vector2();
             RenderTarget.AddSprite(this);
 
-            FontHeight = Font.MeasureString(".").Y*0.65f; //apparently theres ridic font padding
+            FontHeight = MeasureString(font, "test").Y;
 
             if (maxLines != -1){
                 if (maxLines == 1){
                     _textFieldHeight = (int) FontHeight;
                 }
                 else{
-                    _textFieldHeight = (int) (Font.MeasureString(".").Y*maxLines);
+                    _textFieldHeight = (int) (MeasureString(font, "test", true).Y*maxLines);
                 }
             }
             else{
@@ -272,9 +272,13 @@ namespace Forge.Framework.UI.Elements{
             return Font.MeasureString(line).X;
         }
 
-        public static Vector2 MeasureString(string fontAddr, string text){
+        public static Vector2 MeasureString(string fontAddr, string text, bool multiline = false){
             var font = Resource.LoadContent<SpriteFont>(fontAddr);
-            return font.MeasureString(text);
+            var ret = font.MeasureString(text);
+            if (!multiline){
+                ret.Y = int.Parse(fontAddr.Substring(fontAddr.Length - 2, 2));
+            }
+            return ret;
         }
     }
 }
