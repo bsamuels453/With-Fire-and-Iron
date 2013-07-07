@@ -58,7 +58,7 @@ namespace Forge.Core.HullEditor{
                 _indicies.Count(),
                 _verticies.Count(),
                 (_meshVertexWidth)*(_meshVertexWidth)*2,
-                "Shader_AirshipHull"
+                "Config/Shaders/Airship_Hull.config"
                 );
 
             _mesh = new Vector3[_meshVertexWidth,_meshVertexWidth];

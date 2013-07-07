@@ -41,7 +41,7 @@ namespace Forge.Core.Airship{
             _enemyVariant = enemyVariant;
 
             _activeProjectiles = new List<ProjectilePhysics.Projectile>();
-            _projectileBuff = new ObjectModelBuffer<ProjectilePhysics.Projectile>(5000, "Shader_TintedModel");
+            _projectileBuff = new ObjectModelBuffer<ProjectilePhysics.Projectile>(5000, "Config/Shaders/TintedModel.config");
         }
 
         #region IDisposable Members
