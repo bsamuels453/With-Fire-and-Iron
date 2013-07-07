@@ -19,8 +19,8 @@ namespace Forge.Framework.Resources{
     ///   Used to wrap OpenCL script loading, compiling, and saving.
     /// </summary>
     internal class OpenCLScriptLoader : ResourceLoader{
-        const string _openclScriptDir = "Scripts\\Opencl";
-        const string _hashFile = "Scripts\\Hash.json";
+        const string _openclScriptDir = "Scripts/Opencl";
+        const string _hashFile = "Scripts/Hash.json";
         readonly Task _asyncLoadTask;
         readonly List<ComputeDevice> _devices;
         readonly ComputePlatform _platform;
@@ -177,7 +177,7 @@ namespace Forge.Framework.Resources{
             var ret = new List<OpenCLScript>(files.Count);
 
             foreach (var file in files){
-                string address = "Compiled\\" + file.RelativeFileLocation;
+                string address = "Compiled/" + file.RelativeFileLocation;
                 address += "c"; //the file extension for a compiled binary is .clc for .cl files
 
                 var binaryFormatter = new BinaryFormatter();
@@ -207,7 +207,7 @@ namespace Forge.Framework.Resources{
         /// <param name="scripts"> </param>
         static void SaveBinaries(IEnumerable<OpenCLScript> scripts){
             foreach (var clScript in scripts){
-                var directory = Directory.GetCurrentDirectory() + "\\Compiled\\" + clScript.SrcFileInfo.RelativeFileLocation;
+                var directory = Directory.GetCurrentDirectory() + "/Compiled/" + clScript.SrcFileInfo.RelativeFileLocation;
                 directory += "c"; //the file extension for a compiled binary is .clc for .cl files
                 var binaryFormatter = new BinaryFormatter();
                 var fileStrm = new FileStream(directory, FileMode.Create, FileAccess.Write, FileShare.None);
