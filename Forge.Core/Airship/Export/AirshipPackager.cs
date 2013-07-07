@@ -44,7 +44,7 @@ namespace Forge.Core.Airship.Export{
         /// <returns> </returns>
         public static Airship LoadAirship(string stateName, Battlefield battlefield){
             DebugConsole.WriteLine("Loading airship as defined by: " + stateName + ".json");
-            var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "\\Data\\" + stateName + ".json");
+            var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "/Data/" + stateName + ".json");
             var stateData = DeserializeStateFromReader(stateReader);
             stateReader.Close();
 
@@ -72,7 +72,7 @@ namespace Forge.Core.Airship.Export{
 
             var model = LoadAirshipModel(stateData.Model);
 
-            var writer = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\" + stateDataName + ".json");
+            var writer = new StreamWriter(Directory.GetCurrentDirectory() + "/Data/" + stateDataName + ".json");
 
             SerializeStateToWriter(stateData, writer);
 
@@ -82,7 +82,7 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Converts an airship to protocol format based on its hullSection/deckSection/modelAttributes
         /// </summary>
-        /// <param name="fileName"> The name of the output file, no extension. Base directory is \\Data\\AirshipSchematics\\ </param>
+        /// <param name="fileName"> The name of the output file, no extension. Base directory is /Data/AirshipSchematics/ </param>
         /// <param name="hullSectionContainer"> </param>
         /// <param name="deckSectionContainer"> </param>
         /// <param name="attributes"> </param>
@@ -90,7 +90,7 @@ namespace Forge.Core.Airship.Export{
             ModelAttributes attributes){
             var sw = new Stopwatch();
             sw.Start();
-            var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".protocol", FileMode.Create);
+            var fs = new FileStream(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".protocol", FileMode.Create);
             var sections = hullSectionContainer.ExtractSerializationStruct();
             var decks = deckSectionContainer.ExtractSerializationStruct();
             var aship = new AirshipSerializationStruct();
@@ -106,7 +106,7 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Exports an airship from bezier to definition format.
         /// </summary>
-        /// <param name="fileName"> The name of the output file, no extension. Base directory is \\Data\\AirshipSchematics\\ </param>
+        /// <param name="fileName"> The name of the output file, no extension. Base directory is /Data/AirshipSchematics/ </param>
         /// <param name="backCurveInfo"> </param>
         /// <param name="sideCurveInfo"> </param>
         /// <param name="topCurveInfo"> </param>
@@ -118,7 +118,7 @@ namespace Forge.Core.Airship.Export{
             jObj["SideBezierSurf"] = JToken.FromObject(sideCurveInfo);
             jObj["TopBezierSurf"] = JToken.FromObject(topCurveInfo);
 
-            var sw = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".def");
+            var sw = new StreamWriter(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".def");
             sw.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             sw.Close();
             stopwatch.Stop();
@@ -226,14 +226,14 @@ namespace Forge.Core.Airship.Export{
         }
 
         /// <summary>
-        ///   Converts the airship stored in the specified .def file to .protocol format. Base directory is \\Data\\AirshipSchematics\\
+        ///   Converts the airship stored in the specified .def file to .protocol format. Base directory is /Data/AirshipSchematics/
         /// </summary>
         /// <param name="fileName"> The filename of the .def file, without extension </param>
         public static void ConvertDefToProtocolFile(string fileName){
             var sw = new Stopwatch();
             sw.Start();
 
-            var jObj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".def");
+            var jObj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".def");
 
             var backInfo = jObj["FrontBezierSurf"].ToObject<List<BezierInfo>>();
             var sideInfo = jObj["SideBezierSurf"].ToObject<List<BezierInfo>>();
@@ -251,7 +251,7 @@ namespace Forge.Core.Airship.Export{
             airship.HullSections = hullData.HullSections.ExtractSerializationStruct();
             airship.ModelAttributes = hullData.ModelAttributes;
 
-            var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".protocol", FileMode.Create);
+            var fs = new FileStream(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".protocol", FileMode.Create);
             Serializer.Serialize(fs, airship);
             fs.Close();
 
@@ -266,12 +266,12 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Imports and airship's model from protocol format.
         /// </summary>
-        /// <param name="fileName"> The filename of the ship's model, no extension. Base directory is \\Data\\AirshipSchematics\\ </param>
+        /// <param name="fileName"> The filename of the ship's model, no extension. Base directory is /Data/AirshipSchematics/ </param>
         /// <returns> </returns>
         static AirshipSerializationStruct ImportFromProtocolFromFile(string fileName){
             var sw = new Stopwatch();
             sw.Start();
-            var fs = new FileStream(Directory.GetCurrentDirectory() + "\\Data\\AirshipSchematics\\" + fileName + ".protocol", FileMode.Open);
+            var fs = new FileStream(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".protocol", FileMode.Open);
             var serializedStruct = Serializer.Deserialize<AirshipSerializationStruct>(fs);
             fs.Close();
 
@@ -315,13 +315,13 @@ namespace Forge.Core.Airship.Export{
             int _nextUid;
 
             public AirshipUidGenerator(){
-                _jObject = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Ids.json");
+                _jObject = Resource.LoadJObject(Directory.GetCurrentDirectory() + "/Data/Ids.json");
                 _nextUid = _jObject["MaxId"].ToObject<int>();
             }
 
             public int NextUid(){
                 _jObject["MaxId"] = _nextUid + 1;
-                var writer = new StreamWriter(Directory.GetCurrentDirectory() + "\\Data\\Ids.json");
+                var writer = new StreamWriter(Directory.GetCurrentDirectory() + "/Data/Ids.json");
                 writer.Write(JsonConvert.SerializeObject(_jObject));
                 writer.Close();
                 _nextUid++;

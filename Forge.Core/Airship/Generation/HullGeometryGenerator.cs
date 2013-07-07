@@ -419,7 +419,7 @@ namespace Forge.Core.Airship.Generation{
                     }
                 }
 
-                var buff = new ObjectBuffer<AirshipObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Shader_AirshipDeck");
+                var buff = new ObjectBuffer<AirshipObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Config/Shaders/Airship_Deck.config");
 
                 //add border quads to objectbuffer
                 var nullidentifier = new AirshipObjectIdentifier(ObjectType.Misc, Vector3.Zero);
@@ -668,7 +668,7 @@ namespace Forge.Core.Airship.Generation{
                 var rightVerts = retTuple.Item1;
                 var rightInds = retTuple.Item2;
 
-                var buff = new ObjectBuffer<int>(2, leftInds.Length/3, leftVerts.Length, leftInds.Length, "Shader_AirshipHull");
+                var buff = new ObjectBuffer<int>(2, leftInds.Length / 3, leftVerts.Length, leftInds.Length, "Config/Shaders/Airship_Hull.config");
 
                 buff.AddObject((int) Quadrant.Side.Port, leftInds, leftVerts);
                 buff.AddObject((int) Quadrant.Side.Starboard, rightInds, rightVerts);

@@ -33,7 +33,7 @@ namespace Forge.Core.Terrain{
             _binormals = binormals;
             _tangents = tangents;
             lock (Resource.Device){
-                _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Shader_Terrain");
+                _buffer = new GeometryBuffer<VertexPositionTexture>(indicies.Length, verticies.Count(), indicies.Count()/3, "Config/Shaders/Terrain.config");
             }
 #if WIREFRAME_OVERLAY
             _wbuff = new GeometryBuffer<VertexPositionTexture>(indicies.Count()*2, verticies.Count(), indicies.Count(), "Shader_Wireframe", PrimitiveType.LineList);

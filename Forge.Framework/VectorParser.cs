@@ -9,7 +9,8 @@ using MonoGameUtility;
 
 namespace Forge.Framework{
     /// <summary>
-    ///   this helper class serves as a base to parse values that json is known to fuck up deserializing
+    /// this helper class serves as a base to parse values that json is known to fuck up deserializing.
+    /// This class was around to specifically fix JsonConvert.DeserializeObject<T>(whatever)
     /// </summary>
     internal static class VectorParser{
         public static T Parse<T>(string s){
