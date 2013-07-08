@@ -1,11 +1,10 @@
-﻿//#define RECORD_MOUSE
-#define READ_MOUSE_FROM_FILE
-
-#region
+﻿#region
 
 using System;
 using System.Diagnostics;
 using System.IO;
+using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -22,6 +21,8 @@ namespace Forge.Framework.Control{
         static readonly Stopwatch _leftclickTimer;
         static readonly StreamWriter _mouseRecord;
         static readonly StreamReader _mouseReader;
+        static readonly bool _recordMouse;
+        static readonly bool _playbackMouse;
 
         readonly bool _leftButtonChange;
         readonly bool _leftButtonClick;
@@ -62,19 +63,25 @@ namespace Forge.Framework.Control{
 
         #region ctors
 
-
-
         static ForgeMouseState(){
             _rightclickTimer = new Stopwatch();
             _leftclickTimer = new Stopwatch();
-#if RECORD_MOUSE
-            _mouseRecord = new StreamWriter("mouse.dat");
-            _mouseRecord.AutoFlush = true;
-#endif
 
-#if READ_MOUSE_FROM_FILE
-            _mouseReader = new StreamReader("mouse.dat");
-#endif
+            var settings = Resource.LoadConfig("Config/General.config");
+            bool doRecord = settings["EnableInputRecording"].ToObject<bool>();
+            bool doPlayback = settings["EnableInputPlayback"].ToObject<bool>();
+            Debug.Assert(doRecord != doPlayback);
+
+            _recordMouse = doRecord;
+            _playbackMouse = doPlayback;
+            if (_recordMouse){
+                _mouseRecord = new StreamWriter("mouse.dat");
+                _mouseRecord.AutoFlush = true;
+            }
+
+            if (_playbackMouse){
+                _mouseReader = new StreamReader("mouse.dat");
+            }
         }
 
         /// <summary>
@@ -114,14 +121,12 @@ namespace Forge.Framework.Control{
             PrevState.BlockScrollWheel = false;
             var curState = Mouse.GetState();
 
-
-#if RECORD_MOUSE
-            WriteMouseStateToRecord(curState);
-#endif
-
-#if READ_MOUSE_FROM_FILE
-            curState = ReadMouseStateFromRecord();
-#endif
+            if (_recordMouse){
+                WriteMouseStateToRecord(curState);
+            }
+            if (_playbackMouse){
+                curState = ReadMouseStateFromRecord();
+            }
 
             _mousePos = new Point(curState.X, curState.Y);
 

@@ -1,12 +1,10 @@
-﻿//#define RECORD_KEYBOARD
-#define READ_KEYBOARD_FROM_FILE
-
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
 
 #endregion
@@ -20,21 +18,33 @@ namespace Forge.Framework.Control{
         static readonly Stack<KeyboardController> _cachedBindings;
         static readonly ForgeKeyState[] _keyState;
         static readonly Keys[] _keys;
+        static readonly bool _recordKeyboard;
+        static readonly bool _playbackKeyboard;
         static KeyboardController _activeBinding;
+        static readonly StreamReader _keyboardReader;
+        static readonly StreamWriter _keyboardWriter;
 
         static KeyboardManager(){
             _cachedBindings = new Stack<KeyboardController>();
             _keys = (Keys[]) Enum.GetValues(typeof (Keys));
             _keyState = new ForgeKeyState[_numKeys];
 
-#if RECORD_KEYBOARD
-            _keyboardWriter = new StreamWriter("keyboard.dat");
-            _keyboardWriter.AutoFlush = true;
-#endif
+            var settings = Resource.LoadConfig("Config/General.config");
+            bool doRecord = settings["EnableInputRecording"].ToObject<bool>();
+            bool doPlayback = settings["EnableInputPlayback"].ToObject<bool>();
+            Debug.Assert(doRecord != doPlayback);
 
-#if READ_KEYBOARD_FROM_FILE
-            _keyboardReader = new StreamReader("keyboard.dat");
-#endif
+            _recordKeyboard = doRecord;
+            _playbackKeyboard = doPlayback;
+
+            if (_recordKeyboard){
+                _keyboardWriter = new StreamWriter("keyboard.dat");
+                _keyboardWriter.AutoFlush = true;
+            }
+
+            if (_playbackKeyboard){
+                _keyboardReader = new StreamReader("keyboard.dat");
+            }
         }
 
         /// <summary>
@@ -44,14 +54,12 @@ namespace Forge.Framework.Control{
         public static void UpdateKeyboard(){
             var curState = Keyboard.GetState();
 
-#if RECORD_KEYBOARD
-            WriteMouseStateToRecord(curState);
-#endif
-
-#if READ_KEYBOARD_FROM_FILE
-            curState = ReadMouseStateFromRecord();
-#endif
-
+            if (_recordKeyboard){
+                WriteMouseStateToRecord(curState);
+            }
+            if (_playbackKeyboard){
+                curState = ReadMouseStateFromRecord();
+            }
 
             foreach (var key in _keys){
                 var curKeyState = curState[key];
@@ -97,11 +105,8 @@ namespace Forge.Framework.Control{
             }
         }
 
-        static StreamReader _keyboardReader;
-        static StreamWriter _keyboardWriter;
 
-
-        static void WriteMouseStateToRecord(KeyboardState state) {
+        static void WriteMouseStateToRecord(KeyboardState state){
             var pressedKeys = new List<Keys>();
             foreach (var key in _keys){
                 if (state[key] == KeyState.Down){
@@ -118,18 +123,18 @@ namespace Forge.Framework.Control{
             _keyboardWriter.Write('\n');
         }
 
-        static KeyboardState ReadMouseStateFromRecord() {
+        static KeyboardState ReadMouseStateFromRecord(){
             var line = _keyboardReader.ReadLine();
-            if (line.Length > 0) {
+            if (line.Length > 0){
                 var split = line.Split(' ');
                 var pressedKeys = new List<Keys>(split.Length);
-                foreach (var s in split) {
-                    pressedKeys.Add((Keys)Enum.Parse(typeof(Keys), s));
+                foreach (var s in split){
+                    pressedKeys.Add((Keys) Enum.Parse(typeof (Keys), s));
                 }
                 var keyboardState = new KeyboardState(pressedKeys.ToArray());
                 return keyboardState;
             }
-                return new KeyboardState();
+            return new KeyboardState();
         }
     }
 }
