@@ -17,7 +17,7 @@ namespace Forge.Core.Airship{
     /// </summary>
     public class HullIntegrityMesh : IDisposable{
         readonly float _airshipLength;
-        readonly ProjectilePhysics.CollisionObjectHandle _collisionObjectHandle;
+        readonly CollisionObjectHandle _collisionObjectHandle;
         readonly HullSectionContainer _hullSectionContainer;
         bool _disposed;
 
@@ -36,20 +36,21 @@ namespace Forge.Core.Airship{
                 cumulativeBufferData.AddRange(buffer.DumpObjectData());
             }
 
-            var collisionObjects = new List<ProjectilePhysics.CollisionObject>();
+
+            var collisionObjects = new List<CollisionObject>();
 
             foreach (var section in hullSections){
                 var cSection = (HullSection) section;
 
                 collisionObjects.Add
-                    (new ProjectilePhysics.CollisionObject
+                    (new CollisionObject
                         (cSection.GetHashCode(), new[]{
                             cSection.AliasedVertexes[0],
                             cSection.AliasedVertexes[1],
                             cSection.AliasedVertexes[2]
                         }));
                 collisionObjects.Add
-                    (new ProjectilePhysics.CollisionObject
+                    (new CollisionObject
                         (cSection.GetHashCode(), new[]{
                             cSection.AliasedVertexes[0],
                             cSection.AliasedVertexes[3],
@@ -61,11 +62,11 @@ namespace Forge.Core.Airship{
 
             var boundingSphere = new BoundingSphere(shipCentroid, length);
 
-            _collisionObjectHandle = projectilePhysics.AddShipCollisionObjects
+            _collisionObjectHandle = projectilePhysics.AddCollisionObjectCollection
                 (
                     collisionObjects.ToArray(),
                     boundingSphere,
-                    ProjectilePhysics.EntityVariant.EnemyShip,
+                    1,
                     OnCollision
                 );
         }
