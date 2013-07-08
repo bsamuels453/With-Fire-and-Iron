@@ -98,6 +98,9 @@ namespace Forge.Core.Airship{
             foreach (var decal in _decals){
                 if (decal.Side == side){
                     _batch.Draw(_decalTexture, decal.Position, Color.White);
+                    _batch.Draw(_decalTexture, decal.Position, Color.White);
+                    _batch.Draw(_decalTexture, decal.Position, Color.White);
+                    _batch.Draw(_decalTexture, decal.Position, Color.White);
                 }
             }
             _batch.End();

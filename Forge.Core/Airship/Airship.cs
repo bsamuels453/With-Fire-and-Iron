@@ -10,6 +10,7 @@ using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Core.Physics;
 using Forge.Framework;
+using Forge.Framework.Draw;
 using MonoGameUtility;
 
 #endregion
@@ -42,7 +43,7 @@ namespace Forge.Core.Airship{
             _battlefield = battlefield;
 
             _hardPoints = new List<Hardpoint>();
-            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 10000, 0, _battlefield.ProjectileEngine);
+            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 400000000, 0, _battlefield.ProjectileEngine);
             _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), emitter));
 
             FactionId = stateData.FactionId;
@@ -74,10 +75,6 @@ namespace Forge.Core.Airship{
 #if ENABLE_DAMAGEMESH
             _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, Controller.Position, ModelAttributes.Length);
 #endif
-
-            //DebugText.CreateText("x:", 0, 0);
-            //DebugText.CreateText("y:", 0, 15);
-            //DebugText.CreateText("z:", 0, 30);
 
             sw.Stop();
 
@@ -122,9 +119,6 @@ namespace Forge.Core.Airship{
         }
 
         public void Update(double timeDelta){
-            //DebugText.SetText("x:", "x:" + _controller.StateData.Position.X);
-            //DebugText.SetText("y:", "y:" + _controller.StateData.Position.Y);
-            //DebugText.SetText("z:", "z:" + _controller.StateData.Position.Z);
             Controller.Update(timeDelta);
             SetAirshipWMatrix(Controller.WorldTransform);
         }

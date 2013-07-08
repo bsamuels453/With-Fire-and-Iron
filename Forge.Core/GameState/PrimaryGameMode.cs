@@ -40,7 +40,7 @@ namespace Forge.Core.GameState{
             var binds = ((PlayerAirshipController) controller).GenerateKeyboardBindings();
             KeyboardManager.SetActiveController(binds);
 
-
+            /*
             _battlefield.ShipsOnField[1].SetAutoPilot
                 (new Orbit
                     (
@@ -50,6 +50,7 @@ namespace Forge.Core.GameState{
                     500
                     )
                 );
+             */
 
 
             _cameraController = new BodyCenteredCamera(false);
@@ -97,8 +98,9 @@ namespace Forge.Core.GameState{
 
             _uiElementCollection.Unbind();
              */
-
-            _uiElementCollection.Unbind();
+            DebugText.CreateText("FPS", 0, 0);
+            DebugText.CreateText("RunningSlowly", 0, 11);
+            DebugText.CreateText("PrivateMem", 0, 24);
         }
 
         #region IGameState Members

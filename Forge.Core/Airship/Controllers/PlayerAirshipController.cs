@@ -51,7 +51,7 @@ namespace Forge.Core.Airship.Controllers{
                 (o, i, arg3) => { EngineSpeed++; };
 
             KeyboardController.OnKeyPress decreaseSpeed =
-                (o, i, arg3) => { EngineSpeed = 0; };
+                (o, i, arg3) => { EngineSpeed--; };
 
             KeyboardController.OnKeyPress turnPort =
                 (o, i, arg3) =>{

@@ -30,10 +30,10 @@ namespace Forge.Core.Physics{
         const float _gravity = -10;
         readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
         readonly List<CollisionObjectCollection> _collObjCollections;
-        readonly ObjectModelBuffer<Projectile> _projectileBuff;
+        readonly ObjectModelBuffer<Projectile> _buffer;
         readonly Stopwatch _projectileTimer;
-        readonly Dictionary<string, ProjectileAttributes> _projectileVariants;
-        readonly List<Projectile> _projectiles;
+        readonly Dictionary<string, ProjectileAttributes> _projVariants;
+        readonly List<Projectile> _activeProjectiles;
 
         readonly DiscreteDynamicsWorld _worldDynamics;
         bool _disposed;
@@ -43,14 +43,14 @@ namespace Forge.Core.Physics{
         public ProjectilePhysics(){
             _projectileTimer = new Stopwatch();
             _projectileTimer.Start();
-            _projectileVariants = LoadProjectileVariants();
-            _projectileBuff = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
+            _projVariants = LoadProjectileVariants();
+            _buffer = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
 
             _worldDynamics = GenerateWorldDynamics();
             _worldDynamics.SetGravity(new IndexedVector3(0, _gravity, 0));
-            _bulletCtorLookup = GenerateConstructorLookup(_projectileVariants);
+            _bulletCtorLookup = GenerateConstructorLookup(_projVariants);
             _collObjCollections = new List<CollisionObjectCollection>();
-            _projectiles = new List<Projectile>();
+            _activeProjectiles = new List<Projectile>();
         }
 
         DiscreteDynamicsWorld GenerateWorldDynamics(){
@@ -93,13 +93,14 @@ namespace Forge.Core.Physics{
 
         public void Dispose(){
             Debug.Assert(!_disposed);
-            foreach (var projectile in _projectiles){
+            foreach (var projectile in _activeProjectiles){
                 _worldDynamics.RemoveRigidBody(projectile.Body);
                 projectile.Body.Cleanup();
             }
             //dont have to clean up construction info?
 
             _worldDynamics.Cleanup();
+            _buffer.Dispose();
             _disposed = true;
         }
 
@@ -137,8 +138,9 @@ namespace Forge.Core.Physics{
                 body,
                 getPosition: () => body.GetCenterOfMassPosition(),
                 terminate: proj =>{
-                               _projectiles.Remove(proj);
+                               _activeProjectiles.Remove(proj);
                                _worldDynamics.RemoveRigidBody(body);
+                               _buffer.RemoveObject(proj);
                                body.Cleanup();
                                foreach (var collisionObjectCollection in _collObjCollections){
                                    collisionObjectCollection.BlacklistedProjectiles.Remove(proj);
@@ -147,14 +149,14 @@ namespace Forge.Core.Physics{
                 creationTime: creationTime
                 );
 
-            _projectiles.Add(projectile);
+            _activeProjectiles.Add(projectile);
 
-            if (_projectiles.Count > _maxProjectiles){
+            if (_activeProjectiles.Count > _maxProjectiles){
                 throw new Exception("IMPLEMENT PROJECTILE CIRCULAR BUFFER");
             }
 
             var translation = Matrix.CreateTranslation(position);
-            _projectileBuff.AddObject(projectile, Resource.LoadContent<Model>(projectileVariant.Model), translation);
+            _buffer.AddObject(projectile, Resource.LoadContent<Model>(projectileVariant.Model), translation);
         }
 
         public
@@ -164,7 +166,8 @@ namespace Forge.Core.Physics{
             BoundingSphere soi,
             int factionId,
             CollisionCallback collisionCallback){
-            var collection = new CollisionObjectCollection(collisionObjects, factionId, soi);
+
+            var collection = new CollisionObjectCollection(collisionObjects, factionId, soi, collisionCallback);
             var handle = new CollisionObjectHandle
                 (
                 setObjectMatrix: matrix => collection.WorldTransform = matrix,
@@ -181,7 +184,7 @@ namespace Forge.Core.Physics{
             sw.Start();
 #endif
             float timeDeltaSec = (float) timeDelta/1000f;
-            _worldDynamics.StepSimulation(timeDeltaSec, 100);
+            _worldDynamics.StepSimulation(20/1000f, 100);
             UpdateCollisions();
 
 #if PROFILE_PHYSICS
@@ -196,7 +199,7 @@ namespace Forge.Core.Physics{
 
         void UpdateCollisions(){
             //check for collisions
-            foreach (var projectile in _projectiles){
+            foreach (var projectile in _activeProjectiles){
                 foreach (var shipDat in _collObjCollections){
                     //make sure this projectile is allowed to collide with this ship
                     if (shipDat.BlacklistedProjectiles.Contains(projectile)){
@@ -267,9 +270,9 @@ namespace Forge.Core.Physics{
         }
 
         void UpdateProjectilePositions(){
-            foreach (var projectile in _projectiles){
+            foreach (var projectile in _activeProjectiles){
                 var translation = Matrix.CreateTranslation(projectile.GetPosition());
-                _projectileBuff.SetObjectTransform(projectile, translation);
+                _buffer.SetObjectTransform(projectile, translation);
             }
         }
 
@@ -278,10 +281,15 @@ namespace Forge.Core.Physics{
             long timeIndex = _projectileTimer.ElapsedMilliseconds;
             _projectileTimer.Start();
 
-            foreach (var projectile in _projectiles){
+            var projectilesToTerminate = new List<Projectile>();
+
+            foreach (var projectile in _activeProjectiles){
                 if (timeIndex - projectile.TimeCreationIndex > _projectileLifetime){
-                    projectile.Terminate();
+                    projectilesToTerminate.Add(projectile);
                 }
+            }
+            foreach (var projectile in projectilesToTerminate){
+                projectile.Terminate();
             }
         }
     }
