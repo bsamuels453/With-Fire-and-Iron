@@ -17,7 +17,7 @@ namespace Forge.Core.Physics{
         public CollisionObject(int id, Vector3[] vertexes){
             Id = id;
             Vertexes = vertexes;
-            Debug.Assert(vertexes.Length == 3);
+            //Debug.Assert(vertexes.Length == 3);
         }
     }
 }
