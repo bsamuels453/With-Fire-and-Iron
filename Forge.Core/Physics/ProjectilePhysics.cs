@@ -8,6 +8,9 @@ using BulletXNA.BulletCollision;
 using BulletXNA.BulletDynamics;
 using BulletXNA.LinearMath;
 using Forge.Framework;
+using Forge.Framework.Draw;
+using Forge.Framework.Resources;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
 #endregion
@@ -20,41 +23,71 @@ namespace Forge.Core.Physics{
 
         #endregion
 
-        #region EntityVariant enum
-
-        public enum EntityVariant{
-            EnemyShip,
-            AllyShip
-        }
-
-        #endregion
-
-        readonly List<CollisionObjectCollection> _boundingObjData;
-        readonly RigidBodyConstructionInfo _defaultShotCtor;
+        const float _projectileLifetime = 10000; //milliseconds
+        const int _maxProjectiles = 500;
+        const string _projectileShader = "Config/Shaders/TintedModel.config";
+        const string _projectileList = "Config/Projectiles/ProjectileList.config";
+        const float _gravity = -10;
+        readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
+        readonly List<CollisionObjectCollection> _collObjCollections;
+        readonly ObjectModelBuffer<Projectile> _projectileBuff;
+        readonly Stopwatch _projectileTimer;
+        readonly Dictionary<string, ProjectileAttributes> _projectileVariants;
         readonly List<Projectile> _projectiles;
+
         readonly DiscreteDynamicsWorld _worldDynamics;
-        ProjectileAttributes _defProjectile;
         bool _disposed;
 
+        #region ctor
+
         public ProjectilePhysics(){
-            _defProjectile = new ProjectileAttributes(8320, 0.0285f, 2f);
-            const float gravity = -10;
+            _projectileTimer = new Stopwatch();
+            _projectileTimer.Start();
+            _projectileVariants = LoadProjectileVariants();
+            _projectileBuff = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
+
+            _worldDynamics = GenerateWorldDynamics();
+            _worldDynamics.SetGravity(new IndexedVector3(0, _gravity, 0));
+            _bulletCtorLookup = GenerateConstructorLookup(_projectileVariants);
+            _collObjCollections = new List<CollisionObjectCollection>();
+            _projectiles = new List<Projectile>();
+        }
+
+        DiscreteDynamicsWorld GenerateWorldDynamics(){
             var broadphase = new DbvtBroadphase();
             var collisionConfig = new DefaultCollisionConfiguration();
             var dispatcher = new CollisionDispatcher(collisionConfig);
             var constraintSolver = new SequentialImpulseConstraintSolver();
-            _worldDynamics = new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
-
-            //_worldDynamics.Gravity = new Vector3(0, gravity, 0);
-            _worldDynamics.SetGravity(new IndexedVector3(0, gravity, 0));
-
-            _boundingObjData = new List<CollisionObjectCollection>();
-            _projectiles = new List<Projectile>();
-
-            var shape = new SphereShape(_defProjectile.Radius);
-            var nullMotion = new DefaultMotionState(); //new DefaultMotionState(Matrix.Identity);
-            _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
+            return new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
         }
+
+        Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> GenerateConstructorLookup(Dictionary<string, ProjectileAttributes> projectileVariants){
+            var ret = new Dictionary<ProjectileAttributes, RigidBodyConstructionInfo>(projectileVariants.Count);
+
+            foreach (var variant in projectileVariants){
+                var shape = new SphereShape(variant.Value.Radius);
+                var nullMotion = new DefaultMotionState(); //new DefaultMotionState(Matrix.Identity);
+                var ctor = new RigidBodyConstructionInfo(variant.Value.Mass, nullMotion, shape);
+                ret.Add(variant.Value, ctor);
+            }
+            return ret;
+        }
+
+        Dictionary<string, ProjectileAttributes> LoadProjectileVariants(){
+            var projectileVariants = new Dictionary<string, ProjectileAttributes>(0);
+
+            var projectileDefList = Resource.LoadConfig(_projectileList);
+            foreach (var file in projectileDefList){
+                var jObj = Resource.LoadConfig(file.Value.ToObject<string>());
+
+                var attributes = new ProjectileAttributes(jObj);
+
+                projectileVariants.Add(file.Key, attributes);
+            }
+            return projectileVariants;
+        }
+
+        #endregion
 
         #region IDisposable Members
 
@@ -64,60 +97,82 @@ namespace Forge.Core.Physics{
                 _worldDynamics.RemoveRigidBody(projectile.Body);
                 projectile.Body.Cleanup();
             }
-            //_defaultShotCtor.Dispose();
+            //dont have to clean up construction info?
+
             _worldDynamics.Cleanup();
             _disposed = true;
         }
 
         #endregion
 
-        public CollisionObjectHandle AddShipCollisionObjects(CollisionObject[] collisionObjects, BoundingSphere soi, EntityVariant variant,
-            CollisionCallback collisionCallback){
-            var objpublicData = new CollisionObjectCollection(collisionObjects, variant, soi);
-
-            var objPublicInterface = new CollisionObjectHandle
-                (
-                setObjectMatrix: matrix => objpublicData.WorldTransform = matrix,
-                terminate: () => _boundingObjData.Remove(objpublicData)
-                );
-
-            objpublicData.CollisionEventDispatcher = collisionCallback;
-            _boundingObjData.Add(objpublicData);
-
-            return objPublicInterface;
+        ~ProjectilePhysics(){
+            if (!_disposed){
+                throw new ResourceNotDisposedException();
+            }
         }
 
-        public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
-            var worldTransform = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
-            //_defaultShotCtor.MotionState = new DefaultMotionState(worldTransform);
-            _defaultShotCtor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldTransform), IndexedMatrix.Identity);
+        public
+            void AddProjectile
+            (
+            ProjectileAttributes projectileVariant,
+            Vector3 position,
+            Vector3 aimDir,
+            int factionId,
+            float firingForce){
+            _projectileTimer.Stop();
+            long creationTime = _projectileTimer.ElapsedMilliseconds;
+            _projectileTimer.Start();
 
-            var body = new RigidBody(_defaultShotCtor);
-            var force_i = (IndexedVector3) angle*_defProjectile.FiringForce;
-            body.ApplyCentralForce(ref force_i);
+            var worldTransform = Common.GetWorldTranslation(position, aimDir, projectileVariant.Radius*2);
+            var ctor = _bulletCtorLookup[projectileVariant];
+            ctor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldTransform), IndexedMatrix.Identity);
+
+            var body = new RigidBody(ctor);
+            var forceI = (IndexedVector3) aimDir*firingForce;
+            body.ApplyCentralForce(ref forceI);
             _worldDynamics.AddRigidBody(body);
 
             var projectile = new Projectile
                 (
                 body,
                 getPosition: () => body.GetCenterOfMassPosition(),
-                terminate: (proj) =>{
+                terminate: proj =>{
                                _projectiles.Remove(proj);
                                _worldDynamics.RemoveRigidBody(body);
                                body.Cleanup();
-                               foreach (var collisionObjectCollection in _boundingObjData){
+                               foreach (var collisionObjectCollection in _collObjCollections){
                                    collisionObjectCollection.BlacklistedProjectiles.Remove(proj);
                                }
-                           }
+                           },
+                creationTime: creationTime
                 );
 
             _projectiles.Add(projectile);
-            return projectile;
+
+            if (_projectiles.Count > _maxProjectiles){
+                throw new Exception("IMPLEMENT PROJECTILE CIRCULAR BUFFER");
+            }
+
+            var translation = Matrix.CreateTranslation(position);
+            _projectileBuff.AddObject(projectile, Resource.LoadContent<Model>(projectileVariant.Model), translation);
         }
 
-        ~ProjectilePhysics(){
-            if (!_disposed)
-                throw new ResourceNotDisposedException();
+        public
+            CollisionObjectHandle AddCollisionObjectCollection
+            (
+            CollisionObject[] collisionObjects,
+            BoundingSphere soi,
+            int factionId,
+            CollisionCallback collisionCallback){
+            var collection = new CollisionObjectCollection(collisionObjects, factionId, soi);
+            var handle = new CollisionObjectHandle
+                (
+                setObjectMatrix: matrix => collection.WorldTransform = matrix,
+                terminate: () => _collObjCollections.Remove(collection)
+                );
+
+            _collObjCollections.Add(collection);
+            return handle;
         }
 
         public void Update(double timeDelta){
@@ -127,19 +182,31 @@ namespace Forge.Core.Physics{
 #endif
             float timeDeltaSec = (float) timeDelta/1000f;
             _worldDynamics.StepSimulation(timeDeltaSec, 100);
+            UpdateCollisions();
 
+#if PROFILE_PHYSICS
+            sw.Stop();
+            DebugConsole.WriteLine("Active: " + _projectiles.Count);
+            DebugConsole.WriteLine("Physics loop: "+sw.ElapsedMilliseconds + " ms");
+#endif
+
+            UpdateProjectilePositions();
+            CleanupExpiredProjectiles();
+        }
+
+        void UpdateCollisions(){
             //check for collisions
             foreach (var projectile in _projectiles){
-                foreach (var shipDat in _boundingObjData){
+                foreach (var shipDat in _collObjCollections){
                     //make sure this projectile is allowed to collide with this ship
                     if (shipDat.BlacklistedProjectiles.Contains(projectile)){
                         continue;
                     }
 
-                    var projectileMtx_i = new IndexedMatrix();
+                    IndexedMatrix projectileMtxI;
 
-                    projectile.Body.GetMotionState().GetWorldTransform(out projectileMtx_i);
-                    var projectileMtx = (Matrix) projectileMtx_i;
+                    projectile.Body.GetMotionState().GetWorldTransform(out projectileMtxI);
+                    var projectileMtx = (Matrix) projectileMtxI;
                     var shipMtx = shipDat.WorldTransform;
 
                     var invShipMtx = Matrix.Invert(shipMtx);
@@ -156,9 +223,9 @@ namespace Forge.Core.Physics{
                                 //object confirmed to be in general area
                                 //now check to see if its movement path intersects the object's triangles
                                 var worldPt = Common.MultMatrix(shipMtx, point);
-                                var worldPt_i = (IndexedVector3) worldPt;
-                                var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPt_i);
-                                if (velocity.Length() == 0)
+                                var worldPtI = (IndexedVector3) worldPt;
+                                var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPtI);
+                                if (Math.Abs(velocity.Length() - 0) < 0.0000000001f)
                                     continue;
                                 var rawvel = velocity;
                                 velocity.Normalize();
@@ -184,7 +251,7 @@ namespace Forge.Core.Physics{
                                 if (intersectionConfirmed){
                                     //xxxx these params are not correct (point transform)
                                     shipDat.BlacklistedProjectiles.Add(projectile);
-                                    shipDat.CollisionEventDispatcher.Invoke(boundingObj.Id, point, rawvel); //add id
+                                    shipDat.CollisionEventDispatcher(boundingObj.Id, point, rawvel); //add id
                                     break2 = true;
                                 }
 
@@ -197,133 +264,25 @@ namespace Forge.Core.Physics{
                     }
                 }
             }
-#if PROFILE_PHYSICS
-            sw.Stop();
-            DebugConsole.WriteLine("Active: " + _projectiles.Count);
-            DebugConsole.WriteLine("Physics loop: "+sw.ElapsedMilliseconds + " ms");
-#endif
         }
 
-        #region Nested type: CollisionObject
-
-        /// <summary>
-        ///   Used to define a collision object. IntersectPoints are used for fast-checking whether or not projectiles intersect this object.
-        /// </summary>
-        public struct CollisionObject{
-            public int Id;
-            public Vector3[] Vertexes;
-
-            public CollisionObject(int id, Vector3[] vertexes){
-                Id = id;
-                Vertexes = vertexes;
-                Debug.Assert(vertexes.Length == 3);
+        void UpdateProjectilePositions(){
+            foreach (var projectile in _projectiles){
+                var translation = Matrix.CreateTranslation(projectile.GetPosition());
+                _projectileBuff.SetObjectTransform(projectile, translation);
             }
         }
 
-        #endregion
+        void CleanupExpiredProjectiles(){
+            _projectileTimer.Stop();
+            long timeIndex = _projectileTimer.ElapsedMilliseconds;
+            _projectileTimer.Start();
 
-        #region Nested type: CollisionObjectCollection
-
-        /// <summary>
-        ///   public class that's used to group together collision objects, such as the plates on the side of an airship, into one class.
-        /// </summary>
-        class CollisionObjectCollection{
-            public readonly List<Projectile> BlacklistedProjectiles;
-            public readonly CollisionObject[] CollisionObjects;
-            public readonly BoundingSphere ShipSOI;
-            public readonly EntityVariant Type;
-
-            /// <summary>
-            ///   Position of target sphere, velocity of projectile relative to sphere Implement projectile relative speed multiplier here
-            /// </summary>
-            public CollisionCallback CollisionEventDispatcher;
-
-            public Matrix WorldTransform;
-
-            public CollisionObjectCollection(CollisionObject[] collisionObjects, EntityVariant type, BoundingSphere soi){
-                CollisionObjects = collisionObjects;
-                Type = type;
-                WorldTransform = Matrix.Identity;
-                ShipSOI = soi;
-                BlacklistedProjectiles = new List<Projectile>();
+            foreach (var projectile in _projectiles){
+                if (timeIndex - projectile.TimeCreationIndex > _projectileLifetime){
+                    projectile.Terminate();
+                }
             }
         }
-
-        #endregion
-
-        #region Nested type: CollisionObjectHandle
-
-        /// <summary>
-        ///   Returned on the creation of a collision object. This class allows external classes to manipulate the collision object it created.
-        /// </summary>
-        public class CollisionObjectHandle{
-            public readonly Action<Matrix> SetObjectMatrix;
-            public readonly Action Terminate;
-
-            public CollisionObjectHandle(Action<Matrix> setObjectMatrix, Action terminate){
-                SetObjectMatrix = setObjectMatrix;
-                Terminate = terminate;
-            }
-        }
-
-        #endregion
-
-        #region Nested type: Projectile
-
-        /// <summary>
-        ///   Returned on the creation of a projectile. This class is a handle used by external gamestates to manipulate and read data on the projectile it created.
-        /// </summary>
-        public class Projectile : IEquatable<Projectile>{
-            //god help us if we ever run out of these uids
-            static long _maxUid;
-
-            public readonly RigidBody Body;
-            public readonly Func<Vector3> GetPosition;
-            public readonly long Uid;
-            readonly Action<Projectile> _terminate; //not sure when this is actually needed. might be better to do a timeout
-            //public event Action<float, Vector3, Vector3> OnCollision; //theres no real reason for the projectile to care about OnCollision (yet)
-
-            public Projectile(RigidBody body, Func<Vector3> getPosition, Action<Projectile> terminate){
-                Body = body;
-                GetPosition = getPosition;
-                _terminate = terminate;
-                Uid = _maxUid;
-                _maxUid++;
-            }
-
-            #region IEquatable<Projectile> Members
-
-            public bool Equals(Projectile other){
-                //kinda hacky
-                return Uid == other.Uid;
-            }
-
-            #endregion
-
-            public void Terminate(){
-                _terminate.Invoke(this);
-            }
-        }
-
-        #endregion
-
-        #region Nested type: ProjectileAttributes
-
-        /// <summary>
-        ///   This class is used to define the attributes of each projectile.
-        /// </summary>
-        public struct ProjectileAttributes{
-            public readonly float FiringForce;
-            public readonly float Mass;
-            public readonly float Radius;
-
-            public ProjectileAttributes(float firingForce, float radius, float mass){
-                FiringForce = firingForce;
-                Radius = radius;
-                Mass = mass;
-            }
-        }
-
-        #endregion
     }
 }
