@@ -23,7 +23,7 @@ namespace Forge.Core.Physics{
 
         #endregion
 
-        const float _projectileLifetime = 1000; //milliseconds
+        const float _projectileLifetime = 10000; //milliseconds
         const int _maxProjectiles = 500;
         const string _projectileShader = "Config/Shaders/TintedModel.config";
         const string _projectileList = "Config/Projectiles/ProjectileList.config";
