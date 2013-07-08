@@ -42,7 +42,7 @@ namespace Forge.Core.Airship{
             _battlefield = battlefield;
 
             _hardPoints = new List<Hardpoint>();
-            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 10000, 0, _battlefield.ProjectileEngine);
+            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 400000000, 0, _battlefield.ProjectileEngine);
             _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), emitter));
 
             FactionId = stateData.FactionId;
