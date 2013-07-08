@@ -179,7 +179,7 @@ namespace Forge.Framework.Control{
 
         static MouseState ReadMouseStateFromRecord(){
             var line = _mouseReader.ReadLine();
-            if (line.Length == 0){
+            if (line == null){
                 throw new Exception("End of input stream");
             }
             var elements = line.Split(' ');
