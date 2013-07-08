@@ -17,8 +17,9 @@ namespace Forge.Core.Airship{
     /// </summary>
     public class HullIntegrityMesh : IDisposable{
         readonly float _airshipLength;
-        readonly CollisionObjectHandle _collisionObjectHandle;
         readonly HullSectionContainer _hullSectionContainer;
+        readonly CollisionObjectHandle _portCollisionHandle;
+        readonly CollisionObjectHandle _starboardCollisionHandle;
         bool _disposed;
 
         public HullIntegrityMesh(
@@ -37,42 +38,59 @@ namespace Forge.Core.Airship{
             }
 
 
-            var collisionObjects = new List<CollisionObject>();
+            var portCollisionObjects = new List<CollisionObject>();
+            var starboardCollisionObjects = new List<CollisionObject>();
 
             foreach (var section in hullSections){
                 var cSection = (HullSection) section;
 
-                collisionObjects.Add
+                var col = cSection.Side == Quadrant.Side.Port ? portCollisionObjects : starboardCollisionObjects;
+
+                col.Add
                     (new CollisionObject
                         (cSection.GetHashCode(), new[]{
                             cSection.AliasedVertexes[0],
                             cSection.AliasedVertexes[1],
                             cSection.AliasedVertexes[2]
                         }));
-                collisionObjects.Add
+
+
+                col.Add
                     (new CollisionObject
                         (cSection.GetHashCode(), new[]{
                             cSection.AliasedVertexes[0],
-                            cSection.AliasedVertexes[3],
-                            cSection.AliasedVertexes[2]
+                            cSection.AliasedVertexes[2],
+                            cSection.AliasedVertexes[3]
                         }));
             }
 
             #endregion
 
-            var boundingSphere = new BoundingSphere(shipCentroid, length);
+            var portCentroid = new BoundingSphere(shipCentroid + new Vector3(0, 0, -1), length);
+            var starboardCentroid = new BoundingSphere(shipCentroid + new Vector3(0, 0, 1), length);
 
-            _collisionObjectHandle = projectilePhysics.AddCollisionObjectCollection
+            _portCollisionHandle = projectilePhysics.AddCollisionObjectCollection
                 (
-                    collisionObjects.ToArray(),
-                    boundingSphere,
+                    portCollisionObjects.ToArray(),
+                    portCentroid,
+                    1,
+                    OnCollision
+                );
+
+            _starboardCollisionHandle = projectilePhysics.AddCollisionObjectCollection
+                (
+                    starboardCollisionObjects.ToArray(),
+                    starboardCentroid,
                     1,
                     OnCollision
                 );
         }
 
         public Matrix WorldTransform{
-            set { _collisionObjectHandle.SetObjectMatrix(value); }
+            set{
+                _portCollisionHandle.SetObjectMatrix(value);
+                _starboardCollisionHandle.SetObjectMatrix(value);
+            }
         }
 
         #region IDisposable Members
@@ -86,7 +104,7 @@ namespace Forge.Core.Airship{
 
         void OnCollision(int id, Vector3 position, Vector3 velocity){
             var side = Quadrant.PointToSide(position.Z);
-            _hullSectionContainer.AddDamageDecal(new Vector2(_airshipLength + position.X, Math.Abs(position.Y)), side);
+            _hullSectionContainer.AddDamageDecal(new Vector2(position.X + _airshipLength/2, Math.Abs(position.Y)), side);
         }
 
         ~HullIntegrityMesh(){
