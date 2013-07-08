@@ -80,6 +80,27 @@ namespace Forge.Core.Airship.Generation{
                     );
             }
 
+            //we want to shift everything forward so that the coordinate plane is centered on the center of the airship
+            foreach (var buffer in hullBuffResults){
+                buffer.ApplyTransform
+                    (vert =>{
+                         vert.Position.X += genResults.Length/2;
+                         return vert;
+                     },
+                        true
+                    );
+            }
+
+            foreach (var buffer in deckFloorBuffers){
+                buffer.ApplyTransform
+                    (vert =>{
+                         vert.Position.X += genResults.Length/2;
+                         return vert;
+                     },
+                        true
+                    );
+            }
+
             var reflectionVector = new Vector3(-1, 1, 1);
             foreach (var boxArray in boundingBoxResults.DeckBoundingBoxes){
                 for (int boxIdx = 0; boxIdx < boxArray.Count; boxIdx++){
@@ -668,7 +689,7 @@ namespace Forge.Core.Airship.Generation{
                 var rightVerts = retTuple.Item1;
                 var rightInds = retTuple.Item2;
 
-                var buff = new ObjectBuffer<int>(2, leftInds.Length / 3, leftVerts.Length, leftInds.Length, "Config/Shaders/Airship_Hull.config");
+                var buff = new ObjectBuffer<int>(2, leftInds.Length/3, leftVerts.Length, leftInds.Length, "Config/Shaders/Airship_Hull.config");
 
                 buff.AddObject((int) Quadrant.Side.Port, leftInds, leftVerts);
                 buff.AddObject((int) Quadrant.Side.Starboard, rightInds, rightVerts);
