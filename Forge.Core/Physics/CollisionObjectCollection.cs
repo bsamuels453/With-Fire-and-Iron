@@ -18,15 +18,16 @@ namespace Forge.Core.Physics{
         /// <summary>
         ///   Position of target sphere, velocity of projectile relative to sphere Implement projectile relative speed multiplier here
         /// </summary>
-        public ProjectilePhysics.CollisionCallback CollisionEventDispatcher;
+        public readonly ProjectilePhysics.CollisionCallback CollisionEventDispatcher;
 
         public Matrix WorldTransform;
 
-        public CollisionObjectCollection(CollisionObject[] collisionObjects, int factionId, BoundingSphere soi){
+        public CollisionObjectCollection(CollisionObject[] collisionObjects, int factionId, BoundingSphere soi, ProjectilePhysics.CollisionCallback collisionEventDispatcher){
             CollisionObjects = collisionObjects;
             FactionId = factionId;
             WorldTransform = Matrix.Identity;
             ShipSOI = soi;
+            CollisionEventDispatcher = collisionEventDispatcher;
             BlacklistedProjectiles = new List<Projectile>();
         }
     }
