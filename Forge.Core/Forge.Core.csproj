@@ -175,6 +175,12 @@
     <Compile Include="Airship\Data\ModelAttributes.cs" />
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
+    <Compile Include="Physics\CollisionObject.cs" />
+    <Compile Include="Physics\CollisionObjectCollection.cs" />
+    <Compile Include="Physics\CollisionObjectHandle.cs" />
+    <Compile Include="Physics\Projectile.cs" />
+    <Compile Include="Physics\ProjectileAttributes.cs" />
+    <Compile Include="Physics\ProjectileEmitter.cs" />
     <Compile Include="Physics\ProjectilePhysics.cs" />
     <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
     <Compile Include="HullEditor\BezierCurve.cs" />
