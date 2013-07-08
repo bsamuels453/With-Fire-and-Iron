@@ -21,6 +21,7 @@ namespace Forge.Core.Airship{
         public readonly int Uid;
         readonly Battlefield _battlefield;
         public readonly AirshipController Controller;
+        bool _playerairship;
         readonly List<Hardpoint> _hardPoints;
 #if ENABLE_DAMAGEMESH
         readonly HullIntegrityMesh _hullIntegrityMesh;
@@ -43,8 +44,8 @@ namespace Forge.Core.Airship{
             _battlefield = battlefield;
 
             _hardPoints = new List<Hardpoint>();
-            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 400000000, 0, _battlefield.ProjectileEngine);
-            _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), emitter));
+            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 200000000, 0, _battlefield.ProjectileEngine);
+            _hardPoints.Add(new Hardpoint(new Vector3(25 , 0, 0), new Vector3(1, 0, 0), emitter));
 
             FactionId = stateData.FactionId;
             Uid = stateData.AirshipId;
@@ -61,6 +62,7 @@ namespace Forge.Core.Airship{
                     break;
 
                 case AirshipControllerType.Player:
+                    _playerairship = true;
                     Controller = new PlayerAirshipController
                         (
                         ModelAttributes,
@@ -73,7 +75,9 @@ namespace Forge.Core.Airship{
 
 
 #if ENABLE_DAMAGEMESH
-            _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, Controller.Position, ModelAttributes.Length);
+            if (!_playerairship){
+                _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, Controller.Position, ModelAttributes.Length);
+            }
 #endif
 
             sw.Stop();
@@ -100,7 +104,9 @@ namespace Forge.Core.Airship{
         public void Dispose(){
             Debug.Assert(!_disposed);
 #if ENABLE_DAMAGEMESH
-            _hullIntegrityMesh.Dispose();
+            if (!_playerairship){
+                _hullIntegrityMesh.Dispose();
+            }
 #endif
 
             DeckSectionContainer.Dispose();
@@ -135,7 +141,9 @@ namespace Forge.Core.Airship{
 
         void SetAirshipWMatrix(Matrix worldTransform){
 #if ENABLE_DAMAGEMESH
-            _hullIntegrityMesh.WorldTransform = worldTransform;
+            if (!_playerairship){
+                _hullIntegrityMesh.WorldTransform = worldTransform;
+            }
 #endif
 
             foreach (var hullLayer in HullSectionContainer.HullBuffersByDeck){
