@@ -1,13 +1,9 @@
 ﻿#region
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using Forge.Core.Physics;
 using Forge.Framework;
-using Forge.Framework.Draw;
-using Forge.Framework.Resources;
-using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
 #endregion
@@ -20,8 +16,8 @@ namespace Forge.Core.Airship{
     /// </summary>
     public class Hardpoint : IDisposable{
         readonly Vector3 _aimDir;
-        readonly Vector3 _localPosition;
         readonly ProjectileEmitter _emitter;
+        readonly Vector3 _localPosition;
         public Matrix ShipTranslationMtx;
         bool _disposed;
 
