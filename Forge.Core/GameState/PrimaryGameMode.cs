@@ -40,7 +40,7 @@ namespace Forge.Core.GameState{
             var binds = ((PlayerAirshipController) controller).GenerateKeyboardBindings();
             KeyboardManager.SetActiveController(binds);
 
-
+            /*
             _battlefield.ShipsOnField[1].SetAutoPilot
                 (new Orbit
                     (
@@ -50,6 +50,7 @@ namespace Forge.Core.GameState{
                     500
                     )
                 );
+             */
 
 
             _cameraController = new BodyCenteredCamera(false);
