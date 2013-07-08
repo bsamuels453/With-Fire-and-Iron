@@ -42,7 +42,8 @@ namespace Forge.Core.Airship{
             _battlefield = battlefield;
 
             _hardPoints = new List<Hardpoint>();
-            _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), _battlefield.ProjectileEngine, ProjectilePhysics.EntityVariant.EnemyShip));
+            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 10000, 0, _battlefield.ProjectileEngine);
+            _hardPoints.Add(new Hardpoint(new Vector3(5, 0, 0), new Vector3(1, 0, 0), emitter));
 
             FactionId = stateData.FactionId;
             Uid = stateData.AirshipId;
@@ -124,14 +125,8 @@ namespace Forge.Core.Airship{
             //DebugText.SetText("x:", "x:" + _controller.StateData.Position.X);
             //DebugText.SetText("y:", "y:" + _controller.StateData.Position.Y);
             //DebugText.SetText("z:", "z:" + _controller.StateData.Position.Z);
-
-
             Controller.Update(timeDelta);
             SetAirshipWMatrix(Controller.WorldTransform);
-
-            foreach (var hardPoint in _hardPoints){
-                hardPoint.Update(timeDelta);
-            }
         }
 
         public void AddVisibleLayer(int _){
