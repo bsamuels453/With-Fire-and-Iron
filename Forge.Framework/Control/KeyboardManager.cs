@@ -1,8 +1,12 @@
-﻿#region
+﻿//#define RECORD_KEYBOARD
+#define READ_KEYBOARD_FROM_FILE
+
+#region
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using Microsoft.Xna.Framework.Input;
 
 #endregion
@@ -22,6 +26,15 @@ namespace Forge.Framework.Control{
             _cachedBindings = new Stack<KeyboardController>();
             _keys = (Keys[]) Enum.GetValues(typeof (Keys));
             _keyState = new ForgeKeyState[_numKeys];
+
+#if RECORD_KEYBOARD
+            _keyboardWriter = new StreamWriter("keyboard.dat");
+            _keyboardWriter.AutoFlush = true;
+#endif
+
+#if READ_KEYBOARD_FROM_FILE
+            _keyboardReader = new StreamReader("keyboard.dat");
+#endif
         }
 
         /// <summary>
@@ -30,6 +43,15 @@ namespace Forge.Framework.Control{
         /// </summary>
         public static void UpdateKeyboard(){
             var curState = Keyboard.GetState();
+
+#if RECORD_KEYBOARD
+            WriteMouseStateToRecord(curState);
+#endif
+
+#if READ_KEYBOARD_FROM_FILE
+            curState = ReadMouseStateFromRecord();
+#endif
+
 
             foreach (var key in _keys){
                 var curKeyState = curState[key];
@@ -73,6 +95,41 @@ namespace Forge.Framework.Control{
             if (_cachedBindings.Count > 0){
                 _activeBinding = _cachedBindings.Pop();
             }
+        }
+
+        static StreamReader _keyboardReader;
+        static StreamWriter _keyboardWriter;
+
+
+        static void WriteMouseStateToRecord(KeyboardState state) {
+            var pressedKeys = new List<Keys>();
+            foreach (var key in _keys){
+                if (state[key] == KeyState.Down){
+                    pressedKeys.Add(key);
+                }
+            }
+
+            for (int i = 0; i < pressedKeys.Count; i++){
+                _keyboardWriter.Write(pressedKeys[i]);
+                if (i != pressedKeys.Count - 1){
+                    _keyboardWriter.Write(' ');
+                }
+            }
+            _keyboardWriter.Write('\n');
+        }
+
+        static KeyboardState ReadMouseStateFromRecord() {
+            var line = _keyboardReader.ReadLine();
+            if (line.Length > 0) {
+                var split = line.Split(' ');
+                var pressedKeys = new List<Keys>(split.Length);
+                foreach (var s in split) {
+                    pressedKeys.Add((Keys)Enum.Parse(typeof(Keys), s));
+                }
+                var keyboardState = new KeyboardState(pressedKeys.ToArray());
+                return keyboardState;
+            }
+                return new KeyboardState();
         }
     }
 }
