@@ -1,5 +1,5 @@
-﻿#define RECORD_MOUSE
-//#define READ_MOUSE_FROM_FILE
+﻿//#define RECORD_MOUSE
+#define READ_MOUSE_FROM_FILE
 
 #region
 
@@ -32,6 +32,7 @@ namespace Forge.Framework.Control{
         readonly bool _rightButtonChange;
         readonly bool _rightButtonClick;
         readonly ButtonState _rightButtonState;
+        readonly int _scrollWheelValue;
 
         #endregion
 
@@ -61,7 +62,7 @@ namespace Forge.Framework.Control{
 
         #region ctors
 
-        readonly int _scrollWheelValue;
+
 
         static ForgeMouseState(){
             _rightclickTimer = new Stopwatch();
@@ -169,6 +170,8 @@ namespace Forge.Framework.Control{
             }
         }
 
+        #endregion
+
         static void WriteMouseStateToRecord(MouseState state){
             _mouseRecord.WriteLine
                 (state.X + " " + state.Y + " " + state.LeftButton + " " + state.RightButton + " " + state.MiddleButton + " " + state.ScrollWheelValue);
@@ -191,8 +194,6 @@ namespace Forge.Framework.Control{
             var state = new MouseState(x, y, scrollwheel, left, middle, right, ButtonState.Released, ButtonState.Released);
             return state;
         }
-
-        #endregion
 
         #region properties
 
