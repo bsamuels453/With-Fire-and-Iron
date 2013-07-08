@@ -3,6 +3,8 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
 
 #endregion
@@ -16,12 +18,33 @@ namespace Forge.Framework.Control{
         static readonly Stack<KeyboardController> _cachedBindings;
         static readonly ForgeKeyState[] _keyState;
         static readonly Keys[] _keys;
+        static readonly bool _recordKeyboard;
+        static readonly bool _playbackKeyboard;
         static KeyboardController _activeBinding;
+        static readonly StreamReader _keyboardReader;
+        static readonly StreamWriter _keyboardWriter;
 
         static KeyboardManager(){
             _cachedBindings = new Stack<KeyboardController>();
             _keys = (Keys[]) Enum.GetValues(typeof (Keys));
             _keyState = new ForgeKeyState[_numKeys];
+
+            var settings = Resource.LoadConfig("Config/General.config");
+            bool doRecord = settings["EnableInputRecording"].ToObject<bool>();
+            bool doPlayback = settings["EnableInputPlayback"].ToObject<bool>();
+            Debug.Assert(doRecord != doPlayback);
+
+            _recordKeyboard = doRecord;
+            _playbackKeyboard = doPlayback;
+
+            if (_recordKeyboard){
+                _keyboardWriter = new StreamWriter("keyboard.dat");
+                _keyboardWriter.AutoFlush = true;
+            }
+
+            if (_playbackKeyboard){
+                _keyboardReader = new StreamReader("keyboard.dat");
+            }
         }
 
         /// <summary>
@@ -30,6 +53,13 @@ namespace Forge.Framework.Control{
         /// </summary>
         public static void UpdateKeyboard(){
             var curState = Keyboard.GetState();
+
+            if (_recordKeyboard){
+                WriteMouseStateToRecord(curState);
+            }
+            if (_playbackKeyboard){
+                curState = ReadMouseStateFromRecord();
+            }
 
             foreach (var key in _keys){
                 var curKeyState = curState[key];
@@ -73,6 +103,38 @@ namespace Forge.Framework.Control{
             if (_cachedBindings.Count > 0){
                 _activeBinding = _cachedBindings.Pop();
             }
+        }
+
+
+        static void WriteMouseStateToRecord(KeyboardState state){
+            var pressedKeys = new List<Keys>();
+            foreach (var key in _keys){
+                if (state[key] == KeyState.Down){
+                    pressedKeys.Add(key);
+                }
+            }
+
+            for (int i = 0; i < pressedKeys.Count; i++){
+                _keyboardWriter.Write(pressedKeys[i]);
+                if (i != pressedKeys.Count - 1){
+                    _keyboardWriter.Write(' ');
+                }
+            }
+            _keyboardWriter.Write('\n');
+        }
+
+        static KeyboardState ReadMouseStateFromRecord(){
+            var line = _keyboardReader.ReadLine();
+            if (line.Length > 0){
+                var split = line.Split(' ');
+                var pressedKeys = new List<Keys>(split.Length);
+                foreach (var s in split){
+                    pressedKeys.Add((Keys) Enum.Parse(typeof (Keys), s));
+                }
+                var keyboardState = new KeyboardState(pressedKeys.ToArray());
+                return keyboardState;
+            }
+            return new KeyboardState();
         }
     }
 }

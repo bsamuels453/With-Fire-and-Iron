@@ -16,14 +16,15 @@ namespace Forge.Framework.Draw{
     /// </summary>
     public static class DebugText{
         static readonly Dictionary<string, TextBox> _text;
+        static readonly UIElementCollection _collection;
 
         static DebugText(){
             _text = new Dictionary<string, TextBox>();
+            _collection = new UIElementCollection(null);
         }
 
         public static void CreateText(string id, int x, int y){
-            _text.Add(id, new TextBox(new Point(x,y), FrameStrata.Level.DebugHigh, Color.LimeGreen));
-            int g = 5;
+            _text.Add(id, new TextBox(new Point(x,y), _collection, FrameStrata.Level.DebugHigh, Color.LimeGreen));
         }
 
         public static void SetText(string id, string text){

@@ -1,6 +1,10 @@
 ﻿#region
 
+using System;
 using System.Diagnostics;
+using System.IO;
+using Forge.Framework.Draw;
+using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -15,6 +19,10 @@ namespace Forge.Framework.Control{
 
         static readonly Stopwatch _rightclickTimer;
         static readonly Stopwatch _leftclickTimer;
+        static readonly StreamWriter _mouseRecord;
+        static readonly StreamReader _mouseReader;
+        static readonly bool _recordMouse;
+        static readonly bool _playbackMouse;
 
         readonly bool _leftButtonChange;
         readonly bool _leftButtonClick;
@@ -25,6 +33,7 @@ namespace Forge.Framework.Control{
         readonly bool _rightButtonChange;
         readonly bool _rightButtonClick;
         readonly ButtonState _rightButtonState;
+        readonly int _scrollWheelValue;
 
         #endregion
 
@@ -54,11 +63,28 @@ namespace Forge.Framework.Control{
 
         #region ctors
 
-        readonly int _scrollWheelValue;
-
         static ForgeMouseState(){
             _rightclickTimer = new Stopwatch();
             _leftclickTimer = new Stopwatch();
+
+            var settings = Resource.LoadConfig("Config/General.config");
+            bool doRecord = settings["EnableInputRecording"].ToObject<bool>();
+            bool doPlayback = settings["EnableInputPlayback"].ToObject<bool>();
+            Debug.Assert(doRecord != doPlayback);
+
+            DebugText.CreateText("recording", 500, 0);
+            _recordMouse = doRecord;
+            _playbackMouse = doPlayback;
+            if (_recordMouse){
+                _mouseRecord = new StreamWriter("mouse.dat");
+                _mouseRecord.AutoFlush = true;
+                DebugText.SetText("recording", "MOUSE/KEYBOARD INPUT BEING CAPTURED");
+            }
+
+            if (_playbackMouse){
+                _mouseReader = new StreamReader("mouse.dat");
+                DebugText.SetText("recording", "MOUSE/KEYBOARD INPUT BEING PLAYED BACK");
+            }
         }
 
         /// <summary>
@@ -97,6 +123,13 @@ namespace Forge.Framework.Control{
             PrevState.BlockRightMButton = false;
             PrevState.BlockScrollWheel = false;
             var curState = Mouse.GetState();
+
+            if (_recordMouse){
+                WriteMouseStateToRecord(curState);
+            }
+            if (_playbackMouse){
+                curState = ReadMouseStateFromRecord();
+            }
 
             _mousePos = new Point(curState.X, curState.Y);
 
@@ -146,6 +179,29 @@ namespace Forge.Framework.Control{
         }
 
         #endregion
+
+        static void WriteMouseStateToRecord(MouseState state){
+            _mouseRecord.WriteLine
+                (state.X + " " + state.Y + " " + state.LeftButton + " " + state.RightButton + " " + state.MiddleButton + " " + state.ScrollWheelValue);
+        }
+
+        static MouseState ReadMouseStateFromRecord(){
+            var line = _mouseReader.ReadLine();
+            if (line == null){
+                throw new Exception("End of input stream");
+            }
+            var elements = line.Split(' ');
+
+            int x = int.Parse(elements[0]);
+            int y = int.Parse(elements[1]);
+            ButtonState left = (ButtonState) Enum.Parse(typeof (ButtonState), elements[2]);
+            ButtonState right = (ButtonState) Enum.Parse(typeof (ButtonState), elements[3]);
+            ButtonState middle = (ButtonState) Enum.Parse(typeof (ButtonState), elements[4]);
+            int scrollwheel = int.Parse(elements[5]);
+
+            var state = new MouseState(x, y, scrollwheel, left, middle, right, ButtonState.Released, ButtonState.Released);
+            return state;
+        }
 
         #region properties
 
