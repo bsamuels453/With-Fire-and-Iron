@@ -57,6 +57,10 @@ namespace Forge.Core.Terrain{
                 generationTask.Start();
             }
 
+            foreach (var generationTask in _generationTasks) {
+                generationTask.Wait();
+            }
+
             /*
             for (int x = 0; x < 2; x++){
                 for (int z = 0; z < 2; z++){
@@ -96,9 +100,13 @@ namespace Forge.Core.Terrain{
 
         public void Update(double timeDelta){
             lock (_generationTasks){
-                _generationTasks = (from task in _generationTasks
+                /*
+                var freshCompletedChunks = (from task in _generationTasks
                     where task.Status != TaskStatus.RanToCompletion
                     select task).ToList();
+
+                _loadedChunks.AddRange();
+                 */
             }
         }
     }
