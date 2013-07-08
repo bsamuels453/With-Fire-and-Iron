@@ -184,7 +184,7 @@ namespace Forge.Core.Physics{
             sw.Start();
 #endif
             float timeDeltaSec = (float) timeDelta/1000f;
-            _worldDynamics.StepSimulation(timeDeltaSec, 100);
+            _worldDynamics.StepSimulation(20/1000f, 100);
             UpdateCollisions();
 
 #if PROFILE_PHYSICS
