@@ -19,12 +19,9 @@ namespace Forge.Core.Airship{
     /// and wraps it behind a pretty class.
     /// </summary>
     public class Hardpoint : IDisposable{
-        readonly List<ProjectilePhysics.Projectile> _activeProjectiles;
         readonly Vector3 _aimDir;
-        readonly ProjectilePhysics.EntityVariant _enemyVariant;
         readonly Vector3 _localPosition;
-        readonly ObjectModelBuffer<ProjectilePhysics.Projectile> _projectileBuff;
-        readonly ProjectilePhysics _projectileEngine;
+        readonly ProjectileEmitter _emitter;
         public Matrix ShipTranslationMtx;
         bool _disposed;
 
@@ -32,23 +29,17 @@ namespace Forge.Core.Airship{
         /// </summary>
         /// <param name="position"> Model space position of cannon </param>
         /// <param name="aimDir"> Direction in which the cannon fires. </param>
-        /// <param name="projectileEngine"> </param>
-        /// <param name="enemyVariant"> The kind of enemy that this hardpoint can damage </param>
-        public Hardpoint(Vector3 position, Vector3 aimDir, ProjectilePhysics projectileEngine, ProjectilePhysics.EntityVariant enemyVariant){
+        /// <param name="emitter"> </param>
+        public Hardpoint(Vector3 position, Vector3 aimDir, ProjectileEmitter emitter){
             _localPosition = position;
             _aimDir = aimDir;
-            _projectileEngine = projectileEngine;
-            _enemyVariant = enemyVariant;
-
-            _activeProjectiles = new List<ProjectilePhysics.Projectile>();
-            _projectileBuff = new ObjectModelBuffer<ProjectilePhysics.Projectile>(5000, "Config/Shaders/TintedModel.config");
+            _emitter = emitter;
         }
 
         #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
-            _projectileBuff.Dispose();
             _disposed = true;
         }
 
@@ -57,30 +48,13 @@ namespace Forge.Core.Airship{
         public void Fire(){
             var globalPosition = Common.MultMatrix(ShipTranslationMtx, _localPosition);
 
-
             Vector3 _, __;
             Quaternion q;
             ShipTranslationMtx.Decompose(out _, out q, out __);
             var rotate = Matrix.CreateFromQuaternion(q);
             var globalAim = Common.MultMatrix(rotate, _aimDir);
 
-            var translation = Matrix.CreateTranslation(globalPosition);
-            var handle = _projectileEngine.AddProjectile(globalPosition, globalAim, _enemyVariant);
-            _projectileBuff.AddObject(handle, Resource.LoadContent<Model>("Models/Sphere"), translation);
-            _activeProjectiles.Add(handle);
-        }
-
-        public void Terminate(){
-            foreach (var projectile in _activeProjectiles){
-                projectile.Terminate();
-            }
-        }
-
-        public void Update(double timeDelta){
-            foreach (var projectile in _activeProjectiles){
-                var translation = Matrix.CreateTranslation(projectile.GetPosition.Invoke());
-                _projectileBuff.SetObjectTransform(projectile, translation);
-            }
+            _emitter.CreateProjectile(globalPosition, globalAim);
         }
 
         //target will need to be converted to local coords
