@@ -72,15 +72,18 @@ namespace Forge.Framework.Control{
             bool doPlayback = settings["EnableInputPlayback"].ToObject<bool>();
             Debug.Assert(doRecord != doPlayback);
 
+            DebugText.CreateText("recording", 500, 0);
             _recordMouse = doRecord;
             _playbackMouse = doPlayback;
             if (_recordMouse){
                 _mouseRecord = new StreamWriter("mouse.dat");
                 _mouseRecord.AutoFlush = true;
+                DebugText.SetText("recording", "MOUSE/KEYBOARD INPUT BEING CAPTURED");
             }
 
             if (_playbackMouse){
                 _mouseReader = new StreamReader("mouse.dat");
+                DebugText.SetText("recording", "MOUSE/KEYBOARD INPUT BEING PLAYED BACK");
             }
         }
 
