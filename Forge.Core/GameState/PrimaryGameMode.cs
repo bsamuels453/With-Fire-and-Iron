@@ -23,10 +23,10 @@ namespace Forge.Core.GameState{
 
 
         public PrimaryGameMode(){
-            _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
-            _uiElementCollection.Bind();
             _renderTarget = new RenderTarget();
             _renderTarget.Bind();
+            _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
+            _uiElementCollection.Bind();
 
             _terrainUpdater = new TerrainUpdater();
 
