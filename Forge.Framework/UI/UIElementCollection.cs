@@ -45,11 +45,15 @@ namespace Forge.Framework.UI{
             _mouseController = new MouseController(this);
             _alpha = 1;
             _hoverTimer = new Stopwatch();
-            Debug.Assert(_globalUIParent == null);
-            _globalUIParent = this;
-            SetupEventPropagation();
-            SetupEventPropagationToChildren();
-            MouseManager.AddGlobalController(_mouseController, 0);
+
+            //mousemanager is only null for very special uielementcollections like the one used for debug text
+            if (mouseManager != null){
+                Debug.Assert(_globalUIParent == null);
+                _globalUIParent = this;
+                SetupEventPropagation();
+                SetupEventPropagationToChildren();
+                MouseManager.AddGlobalController(_mouseController, 0);
+            }
         }
 
         /// <summary>
