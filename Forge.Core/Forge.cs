@@ -84,8 +84,8 @@ namespace Forge.Core{
         protected override void Update(GameTime gameTime){
             GamestateManager.Update();
             base.Update(gameTime);
-            //DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
-            //DebugText.SetText("PrivateMem", "Private: " + _currentProcess.PrivateMemorySize64/1000000f + " MB");
+            DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
+            DebugText.SetText("PrivateMem", "Private: " + _currentProcess.PrivateMemorySize64/1000000f + " MB");
         }
 
         protected override void Draw(GameTime gameTime){
@@ -95,7 +95,7 @@ namespace Forge.Core{
             base.Draw(gameTime);
             _numFramesLastSecond++;
             if (_fpsStopwatch.ElapsedMilliseconds > 1000){
-                //DebugText.SetText("FPS", "FPS: " + _numFramesLastSecond);
+                DebugText.SetText("FPS", "FPS: " + _numFramesLastSecond);
                 _numFramesLastSecond = 0;
                 _fpsStopwatch.Restart();
             }
