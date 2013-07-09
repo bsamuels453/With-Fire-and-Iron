@@ -15,18 +15,24 @@ using Matrix = MonoGameUtility.Matrix;
 
 namespace Forge.Core{
     public class Forge : Game{
+        static Forge _game;
         readonly GraphicsDeviceManager _graphics;
         Process _currentProcess;
         Stopwatch _fpsStopwatch;
         int _numFramesLastSecond;
 
         public Forge(){
+            _game = this;
             Content.RootDirectory = "Content";
             _graphics = new GraphicsDeviceManager(this){
                 PreferredBackBufferWidth = 1200,
                 PreferredBackBufferHeight = 800,
                 SynchronizeWithVerticalRetrace = false,
             };
+        }
+
+        public static void ExitGame(){
+            _game.Exit();
         }
 
         protected override void Initialize(){
