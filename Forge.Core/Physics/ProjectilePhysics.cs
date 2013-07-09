@@ -34,6 +34,7 @@ namespace Forge.Core.Physics{
         readonly Stopwatch _projectileTimer;
         readonly Dictionary<string, ProjectileAttributes> _projVariants;
         readonly List<Projectile> _activeProjectiles;
+        readonly DebugDraw _debugDraw;
 
         readonly DiscreteDynamicsWorld _worldDynamics;
         bool _disposed;
@@ -46,19 +47,22 @@ namespace Forge.Core.Physics{
             _projVariants = LoadProjectileVariants();
             _buffer = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
 
-            _worldDynamics = GenerateWorldDynamics();
+            _worldDynamics = GenerateWorldDynamics(_debugDraw = new DebugDraw());
             _worldDynamics.SetGravity(new IndexedVector3(0, _gravity, 0));
             _bulletCtorLookup = GenerateConstructorLookup(_projVariants);
             _collObjCollections = new List<CollisionObjectCollection>();
             _activeProjectiles = new List<Projectile>();
         }
 
-        DiscreteDynamicsWorld GenerateWorldDynamics(){
+        DiscreteDynamicsWorld GenerateWorldDynamics(DebugDraw debugDraw){
             var broadphase = new DbvtBroadphase();
             var collisionConfig = new DefaultCollisionConfiguration();
             var dispatcher = new CollisionDispatcher(collisionConfig);
             var constraintSolver = new SequentialImpulseConstraintSolver();
-            return new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
+            var dynamics = new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
+            dynamics.SetDebugDrawer(debugDraw);
+
+            return dynamics;
         }
 
         Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> GenerateConstructorLookup(Dictionary<string, ProjectileAttributes> projectileVariants){
@@ -101,6 +105,7 @@ namespace Forge.Core.Physics{
 
             _worldDynamics.Cleanup();
             _buffer.Dispose();
+            _debugDraw.Dispose();
             _disposed = true;
         }
 
@@ -195,6 +200,7 @@ namespace Forge.Core.Physics{
 
             UpdateProjectilePositions();
             CleanupExpiredProjectiles();
+            _worldDynamics.DebugDrawWorld();
         }
 
         void UpdateCollisions(){
