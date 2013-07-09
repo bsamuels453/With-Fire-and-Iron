@@ -166,6 +166,7 @@
     <Compile Include="Airship\Export\AirshipPackager.cs" />
     <Compile Include="Airship\AirshipIndexer.cs" />
     <Compile Include="Airship\Generation\HullAttributeGenerator.cs" />
+    <Compile Include="DebugDraw.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
     <Compile Include="Airship\HullIntegrityMesh.cs" />
