@@ -18,12 +18,6 @@ using MonoGameUtility;
 
 namespace Forge.Core.Physics{
     public class ProjectilePhysics : IDisposable{
-        #region Delegates
-
-        public delegate void CollisionCallback(int id, Vector3 intersectPos, Vector3 velocity);
-
-        #endregion
-
         const float _projectileLifetime = 99999999; //milliseconds
         const int _maxProjectiles = 500;
         const string _projectileShader = "Config/Shaders/TintedModel.config";
@@ -284,7 +278,12 @@ namespace Forge.Core.Physics{
                             _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, projectilePos), Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction*5));
                             */
                             shipDat.BlacklistedProjectiles.Add(projectile);
-                            shipDat.CollisionEventDispatcher(obj.Id, obj.Centroid, translatedVelMtx); //add id
+                            shipDat.CollisionEventDispatcher(
+                                obj.Id,
+                                obj.Centroid,
+                                velocityRay,
+                                new Ray(projectileMtx.Translation, untranslatedTranslation)
+                                );
                             break;
                         }
                     }
