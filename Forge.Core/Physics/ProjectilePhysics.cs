@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using BulletXNA;
 using BulletXNA.BulletCollision;
 using BulletXNA.BulletDynamics;
@@ -23,21 +24,24 @@ namespace Forge.Core.Physics{
 
         #endregion
 
-        const float _projectileLifetime = 10000; //milliseconds
+        const float _projectileLifetime = 99999999; //milliseconds
         const int _maxProjectiles = 500;
         const string _projectileShader = "Config/Shaders/TintedModel.config";
         const string _projectileList = "Config/Projectiles/ProjectileList.config";
         const float _gravity = -10;
+        readonly List<Projectile> _activeProjectiles;
+        readonly ObjectModelBuffer<Projectile> _buffer;
         readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
         readonly List<CollisionObjectCollection> _collObjCollections;
-        readonly ObjectModelBuffer<Projectile> _buffer;
-        readonly Stopwatch _projectileTimer;
-        readonly Dictionary<string, ProjectileAttributes> _projVariants;
-        readonly List<Projectile> _activeProjectiles;
         readonly DebugDraw _debugDraw;
+        readonly List<TriangleMesh> _hullMesh;
+        readonly Dictionary<string, ProjectileAttributes> _projVariants;
+        readonly Stopwatch _projectileTimer;
+        readonly RigidBodyConstructionInfo _shieldCtor;
 
         readonly DiscreteDynamicsWorld _worldDynamics;
         bool _disposed;
+        List<BvhTriangleMeshShape> _hullMeshShape;
 
         #region ctor
 
@@ -52,6 +56,9 @@ namespace Forge.Core.Physics{
             _bulletCtorLookup = GenerateConstructorLookup(_projVariants);
             _collObjCollections = new List<CollisionObjectCollection>();
             _activeProjectiles = new List<Projectile>();
+
+            _hullMesh = new List<TriangleMesh>();
+            _hullMeshShape = new List<BvhTriangleMeshShape>();
         }
 
         DiscreteDynamicsWorld GenerateWorldDynamics(DebugDraw debugDraw){
@@ -171,7 +178,6 @@ namespace Forge.Core.Physics{
             BoundingSphere soi,
             int factionId,
             CollisionCallback collisionCallback){
-
             var collection = new CollisionObjectCollection(collisionObjects, factionId, soi, collisionCallback);
             var handle = new CollisionObjectHandle
                 (
@@ -221,53 +227,64 @@ namespace Forge.Core.Physics{
                     var invShipMtx = Matrix.Invert(shipMtx);
                     var projectilePos = Common.MultMatrix(invShipMtx, (projectileMtx).Translation);
 
-                    if (Vector3.Distance(projectilePos, Vector3.Zero) > shipDat.ShipSOI.Radius)
+                    if (Vector3.Distance(projectilePos, Vector3.Zero) > shipDat.ShipSOI.Radius){
                         continue;
+                    }
 
-                    foreach (var boundingObj in shipDat.CollisionObjects){
-                        bool break2 = false;
-                        //fast check to see if the projectile is in same area as the object
-                        foreach (var point in boundingObj.Vertexes){
-                            if (Vector3.Distance(projectilePos, point) < 1f){
-                                //object confirmed to be in general area
-                                //now check to see if its movement path intersects the object's triangles
-                                var worldPt = Common.MultMatrix(shipMtx, point);
-                                var worldPtI = (IndexedVector3) worldPt;
-                                var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPtI);
-                                if (Math.Abs(velocity.Length() - 0) < 0.0000000001f)
-                                    continue;
-                                var rawvel = velocity;
-                                velocity.Normalize();
-                                var velocityRay = new Ray(projectilePos, velocity);
+                    var inRangeObjects = from obj in shipDat.CollisionObjects
+                        where obj.IsInRange(projectilePos, 2.5f)
+                        select obj;
 
-                                bool intersectionConfirmed = true; //false
-                                //for now this is disabled because havent implemented a way to represent the entire projectile rather than just its central velocity vector
-                                /*
-                                for (int i = 0; i < boundingObj.Vertexes.Length; i += 3){
-                                    float? dist;
-                                    Common.RayIntersectsTriangle(
-                                        ref velocityRay,
-                                        ref boundingObj.Vertexes[i],
-                                        ref boundingObj.Vertexes[i + 1],
-                                        ref boundingObj.Vertexes[i + 2],
-                                        out dist);
-                                    if (dist != null){
-                                        intersectionConfirmed = true;
-                                        break;
-                                    }
-                                }
-                                */
-                                if (intersectionConfirmed){
-                                    //xxxx these params are not correct (point transform)
-                                    shipDat.BlacklistedProjectiles.Add(projectile);
-                                    shipDat.CollisionEventDispatcher(boundingObj.Id, point, rawvel); //add id
-                                    break2 = true;
-                                }
+                    foreach (var obj in inRangeObjects){
+                        //object confirmed to be in general area
+                        //now check to see if its movement path intersects the object's triangles
+                        var worldPt = Common.MultMatrix(shipMtx, obj.Centroid);
+                        var worldPtI = (IndexedVector3) worldPt;
+                        var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPtI);
 
+                        //need a big mess of crap to translate velocity from world to object space
+                        //possible optimize: cache worldToObj matrix
+                        var untranslatedVelMtx = Common.GetWorldTranslation(velocity, new Vector3(0, 0, 0), 0);
+                        var untranslatedTranslation = untranslatedVelMtx.Translation;
+                        Vector3 _, __;
+                        Quaternion q;
+                        invShipMtx.Decompose(out _, out q, out __);
+                        var worldToObj = Matrix.CreateFromQuaternion(q);
+                        var translatedVelMtx = Common.MultMatrix(worldToObj, untranslatedTranslation);
+
+                        var velocityRay = new Ray(projectilePos, translatedVelMtx);
+                        /*
+                        var originalPos = Common.MultMatrix(shipMtx, projectilePos);
+                        var originalPos2 = Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction);
+                        _debugDraw.DrawLineImmediate(originalPos,originalPos2) ;
+                         */
+                        bool intersectionConfirmed = false; //false
+                        //for now this is disabled because havent implemented a way to represent the entire projectile rather than just its central velocity vector
+
+                        for (int i = 0; i < obj.Vertexes.Length; i += 3){
+                            float? dist;
+                            Common.RayIntersectsTriangle
+                                (
+                                    ref velocityRay,
+                                    ref obj.Vertexes[i],
+                                    ref obj.Vertexes[i + 1],
+                                    ref obj.Vertexes[i + 2],
+                                    out dist);
+                            if (dist != null){
+                                intersectionConfirmed = true;
                                 break;
                             }
                         }
-                        if (break2){
+
+                        if (intersectionConfirmed){
+                            /*
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[0]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[1]*1.01f));
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[0]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[2]*1.01f));
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[1]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[2]*1.01f));
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, projectilePos), Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction*5));
+                            */
+                            shipDat.BlacklistedProjectiles.Add(projectile);
+                            shipDat.CollisionEventDispatcher(obj.Id, obj.Centroid, translatedVelMtx); //add id
                             break;
                         }
                     }
