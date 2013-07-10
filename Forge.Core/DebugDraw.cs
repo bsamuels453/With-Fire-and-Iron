@@ -2,6 +2,7 @@
 
 using System;
 using BulletXNA.LinearMath;
+using Forge.Framework;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
@@ -51,9 +52,41 @@ namespace Forge.Core{
         }
 
         public void DrawBox(ref IndexedVector3 bbMin, ref IndexedVector3 bbMax, ref IndexedMatrix trans, ref IndexedVector3 color){
-            bbMin += trans.ToMatrix().Translation;
-            bbMax += trans.ToMatrix().Translation;
-            DrawAabb(ref bbMin, ref bbMax, ref color);
+            Matrix mtx = trans;
+
+            var v1 = new Vector3(bbMin.X, bbMin.Y, bbMin.Z);
+            var v2 = new Vector3(bbMin.X, bbMin.Y, bbMax.Z);
+            var v3 = new Vector3(bbMax.X, bbMin.Y, bbMax.Z);
+            var v4 = new Vector3(bbMax.X, bbMin.Y, bbMin.Z);
+
+            var v5 = new Vector3(bbMin.X, bbMax.Y, bbMin.Z);
+            var v6 = new Vector3(bbMin.X, bbMax.Y, bbMax.Z);
+            var v7 = new Vector3(bbMax.X, bbMax.Y, bbMax.Z);
+            var v8 = new Vector3(bbMax.X, bbMax.Y, bbMin.Z);
+
+            v1 = Common.MultMatrix(mtx, v1);
+            v2 = Common.MultMatrix(mtx, v2);
+            v3 = Common.MultMatrix(mtx, v3);
+            v4 = Common.MultMatrix(mtx, v4);
+            v5 = Common.MultMatrix(mtx, v5);
+            v6 = Common.MultMatrix(mtx, v6);
+            v7 = Common.MultMatrix(mtx, v7);
+            v8 = Common.MultMatrix(mtx, v8);
+
+            AddLine(v1, v2);
+            AddLine(v2, v3);
+            AddLine(v3, v4);
+            AddLine(v4, v1);
+
+            AddLine(v5, v6);
+            AddLine(v6, v7);
+            AddLine(v7, v8);
+            AddLine(v8, v5);
+
+            AddLine(v1, v5);
+            AddLine(v2, v6);
+            AddLine(v3, v7);
+            AddLine(v4, v8);
         }
 
         public void DrawSphere(IndexedVector3 p, float radius, IndexedVector3 color){
@@ -78,7 +111,9 @@ namespace Forge.Core{
         }
 
         public void DrawContactPoint(IndexedVector3 pointOnB, IndexedVector3 normalOnB, float distance, int lifeTime, IndexedVector3 color){
-            throw new NotImplementedException();
+            var pt2 = normalOnB*10 + pointOnB;
+
+            DrawLine(ref pointOnB, ref pt2, ref color);
         }
 
         public void DrawContactPoint(ref IndexedVector3 pointOnB, ref IndexedVector3 normalOnB, float distance, int lifeTime, ref IndexedVector3 color){
@@ -98,11 +133,11 @@ namespace Forge.Core{
         }
 
         public DebugDrawModes GetDebugMode(){
-            return DebugDrawModes.DBG_DrawWireframe | DebugDrawModes.DBG_DrawAabb | DebugDrawModes.DBG_DrawText;
+            return DebugDrawModes.ALL;
         }
 
         public void DrawAabb(IndexedVector3 @from, IndexedVector3 to, IndexedVector3 color){
-            throw new NotImplementedException();
+            DrawAabb(ref @from, ref to, ref color);
         }
 
         public void DrawAabb(ref IndexedVector3 @from, ref IndexedVector3 to, ref IndexedVector3 color){
