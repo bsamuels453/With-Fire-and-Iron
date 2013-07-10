@@ -31,11 +31,15 @@ namespace Forge.Core{
         #region IDebugDraw Members
 
         public void DrawLine(IndexedVector3 @from, IndexedVector3 to, IndexedVector3 color){
-            throw new NotImplementedException();
+#if !NO_REFRESH
+            AddLine(@from, to);
+#endif
         }
 
         public void DrawLine(ref IndexedVector3 @from, ref IndexedVector3 to, ref IndexedVector3 fromColor){
+#if !NO_REFRESH
             AddLine(@from, to);
+#endif
         }
 
         public void DrawLine(ref IndexedVector3 @from, ref IndexedVector3 to, ref IndexedVector3 fromColor, ref IndexedVector3 toColor){
@@ -47,7 +51,9 @@ namespace Forge.Core{
         }
 
         public void DrawBox(ref IndexedVector3 bbMin, ref IndexedVector3 bbMax, ref IndexedMatrix trans, ref IndexedVector3 color){
-            throw new NotImplementedException();
+            bbMin += trans.ToMatrix().Translation;
+            bbMax += trans.ToMatrix().Translation;
+            DrawAabb(ref bbMin, ref bbMax, ref color);
         }
 
         public void DrawSphere(IndexedVector3 p, float radius, IndexedVector3 color){
@@ -102,7 +108,7 @@ namespace Forge.Core{
         public void DrawAabb(ref IndexedVector3 @from, ref IndexedVector3 to, ref IndexedVector3 color){
             var v1 = @from;
             var v2 = to;
-
+#if !NO_REFRESH
             AddLine(new Vector3(v1.X, v1.Y, v1.Z), new Vector3(v1.X, v1.Y, v2.Z));
             AddLine(new Vector3(v1.X, v1.Y, v2.Z), new Vector3(v2.X, v1.Y, v2.Z));
             AddLine(new Vector3(v2.X, v1.Y, v2.Z), new Vector3(v2.X, v1.Y, v1.Z));
@@ -117,11 +123,14 @@ namespace Forge.Core{
             AddLine(new Vector3(v1.X, v1.Y, v2.Z), new Vector3(v1.X, v2.Y, v2.Z));
             AddLine(new Vector3(v2.X, v1.Y, v2.Z), new Vector3(v2.X, v2.Y, v2.Z));
             AddLine(new Vector3(v2.X, v1.Y, v1.Z), new Vector3(v2.X, v2.Y, v1.Z));
+#endif
         }
 
         public void DrawTransform(ref IndexedMatrix transform, float orthoLen){
+#if !NO_REFRESH
             _lineBuffer.SetVertexBufferData(_lines);
             _numLines = 0;
+#endif
         }
 
         public void DrawArc(ref IndexedVector3 center, ref IndexedVector3 normal, ref IndexedVector3 axis, float radiusA, float radiusB, float minAngle,
@@ -169,6 +178,11 @@ namespace Forge.Core{
         }
 
         #endregion
+
+        public void DrawLineImmediate(Vector3 @from, Vector3 to){
+            AddLine(@from, to);
+            _lineBuffer.SetVertexBufferData(_lines);
+        }
 
         void AddLine(Vector3 p1, Vector3 p2){
             _lines[_numLines] = new VertexPositionTexture(p1, new Vector2());
