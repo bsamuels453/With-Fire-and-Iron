@@ -133,7 +133,7 @@ namespace Forge.Core{
         }
 
         public DebugDrawModes GetDebugMode(){
-            return DebugDrawModes.ALL;
+            return DebugDrawModes.ALL | DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE;
         }
 
         public void DrawAabb(IndexedVector3 @from, IndexedVector3 to, IndexedVector3 color){
@@ -162,10 +162,6 @@ namespace Forge.Core{
         }
 
         public void DrawTransform(ref IndexedMatrix transform, float orthoLen){
-#if !NO_REFRESH
-            _lineBuffer.SetVertexBufferData(_lines);
-            _numLines = 0;
-#endif
         }
 
         public void DrawArc(ref IndexedVector3 center, ref IndexedVector3 normal, ref IndexedVector3 axis, float radiusA, float radiusB, float minAngle,
@@ -213,6 +209,11 @@ namespace Forge.Core{
         }
 
         #endregion
+
+        public void Clear(){
+            _lineBuffer.SetVertexBufferData(_lines);
+            _numLines = 0;
+        }
 
         public void DrawLineImmediate(Vector3 @from, Vector3 to){
             AddLine(@from, to);

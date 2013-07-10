@@ -200,6 +200,7 @@ namespace Forge.Core.Physics{
 
             UpdateProjectilePositions();
             CleanupExpiredProjectiles();
+            _debugDraw.Clear();
             _worldDynamics.DebugDrawWorld();
         }
 
