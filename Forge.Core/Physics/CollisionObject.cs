@@ -10,10 +10,10 @@ namespace Forge.Core.Physics{
     ///   fast-checking whether or not projectiles intersect this object.
     /// </summary>
     public struct CollisionObject{
-        public Vector3 Centroid;
-        public int Id;
-        public Vector3 Normal;
-        public Vector3[] Vertexes;
+        public readonly Vector3 Centroid;
+        public readonly int Id;
+        public readonly Vector3 Normal;
+        public readonly Vector3[] Vertexes;
 
         public CollisionObject(int id, Vector3[] vertexes){
             Id = id;
