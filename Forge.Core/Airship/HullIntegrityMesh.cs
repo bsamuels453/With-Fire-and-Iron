@@ -102,9 +102,9 @@ namespace Forge.Core.Airship{
 
         #endregion
 
-        void OnCollision(int id, Vector3 position, Vector3 velocity){
-            var side = Quadrant.PointToSide(position.Z);
-            _hullSectionContainer.AddDamageDecal(new Vector2(position.X + _airshipLength/2, Math.Abs(position.Y)), side);
+        void OnCollision(int id, Vector3 localCollisionPoint, Ray localCollisionRay, Ray globalCollisionRay) {
+            var side = Quadrant.PointToSide(localCollisionPoint.Z);
+            _hullSectionContainer.AddDamageDecal(new Vector2(localCollisionPoint.X + _airshipLength / 2, Math.Abs(localCollisionPoint.Y)), side);
         }
 
         ~HullIntegrityMesh(){
