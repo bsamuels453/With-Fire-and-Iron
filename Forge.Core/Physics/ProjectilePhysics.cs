@@ -25,14 +25,15 @@ namespace Forge.Core.Physics{
         const float _gravity = -10;
         const float _shieldThickness = 3;
         readonly List<Projectile> _activeProjectiles;
+        readonly List<Reflector> _activeReflectors;
         readonly ObjectModelBuffer<Projectile> _buffer;
         readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
         readonly List<CollisionObjectCollection> _collObjCollections;
         readonly DebugDraw _debugDraw;
         readonly Dictionary<string, ProjectileAttributes> _projVariants;
         readonly Stopwatch _projectileTimer;
-        readonly List<RigidBody> _reflectionShields;
-        readonly RigidBodyConstructionInfo _shieldCtor;
+        readonly RigidBodyConstructionInfo _reflectorCtor;
+        readonly CollisionWorld _worldCollision;
 
         readonly DiscreteDynamicsWorld _worldDynamics;
         bool _disposed;
@@ -44,14 +45,15 @@ namespace Forge.Core.Physics{
             _projectileTimer.Start();
             _projVariants = LoadProjectileVariants();
             _buffer = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
-            _reflectionShields = new List<RigidBody>();
+            _activeReflectors = new List<Reflector>();
 
             _worldDynamics = GenerateWorldDynamics(_debugDraw = new DebugDraw());
             _worldDynamics.SetGravity(new IndexedVector3(0, _gravity, 0));
             _bulletCtorLookup = GenerateConstructorLookup(_projVariants);
             _collObjCollections = new List<CollisionObjectCollection>();
             _activeProjectiles = new List<Projectile>();
-            _shieldCtor = GenerateShieldCtor();
+            _reflectorCtor = GenerateReflectorCtor();
+            _worldCollision = _worldDynamics.GetCollisionWorld();
         }
 
         DiscreteDynamicsWorld GenerateWorldDynamics(DebugDraw debugDraw){
@@ -65,7 +67,7 @@ namespace Forge.Core.Physics{
             return dynamics;
         }
 
-        RigidBodyConstructionInfo GenerateShieldCtor(){
+        RigidBodyConstructionInfo GenerateReflectorCtor(){
             var shape = new BoxShape(new IndexedVector3(3, 3, _shieldThickness));
             var nullMotion = new DefaultMotionState();
             var ctor = new RigidBodyConstructionInfo(0, nullMotion, shape);
@@ -206,8 +208,10 @@ namespace Forge.Core.Physics{
 
             UpdateProjectilePositions();
             CleanupExpiredProjectiles();
+            UpdateReflectors();
             _debugDraw.Clear();
             _worldDynamics.DebugDrawWorld();
+            _debugDraw.UpdateBuffers();
         }
 
         void UpdateCollisions(){
@@ -322,15 +326,53 @@ namespace Forge.Core.Physics{
                     globalCollideRay
                 );
 
-            var shield = new RigidBody(_shieldCtor);
+            var shield = new RigidBody(_reflectorCtor);
 
             var state = Matrix.CreateWorld(globalCollideRay.Position - collideeNormal*_shieldThickness, collideeNormal, Vector3.Up);
             var motion = new DefaultMotionState(state, IndexedMatrix.Identity);
 
-            _reflectionShields.Add(shield);
+            _activeReflectors.Add(new Reflector(shield));
+
             _worldDynamics.AddRigidBody(shield);
 
             shield.SetMotionState(motion);
+        }
+
+        void UpdateReflectors(){
+            for (int i = 0; i < _activeReflectors.Count; i++){
+                if (_activeReflectors[i].TicksUntilDeath == 0){
+                    _worldDynamics.RemoveRigidBody(_activeReflectors[i].Body);
+                    _activeReflectors.Remove(_activeReflectors[i]);
+                }
+                else{
+                    _activeReflectors[i].TicksUntilDeath--;
+                }
+            }
+            var pairCache = _worldCollision.GetPairCache();
+
+            if (pairCache.GetNumOverlappingPairs() > 0){
+                var overlapping = pairCache.GetOverlappingPairArray();
+
+                foreach (var broadphasePair in overlapping){
+                    foreach (var reflector in _activeReflectors){
+                        if (broadphasePair.m_pProxy0 == reflector.Body.GetBroadphaseProxy() ||
+                            broadphasePair.m_pProxy1 == reflector.Body.GetBroadphaseProxy()
+                            ){
+                            reflector.TicksUntilDeath = 2;
+                        }
+                    }
+                }
+            }
+            /*
+            foreach (Reflector t in _activeReflectors){
+                foreach (var projectile in _activeProjectiles) {
+                    if (t.Body.CheckCollideWith(projectile.Body)) {
+                        t.TicksUntilDeath = 10;
+                        _dyingReflectors.Add(t);
+                    }
+                }
+            }
+             */
         }
 
         void UpdateProjectilePositions(){
@@ -356,5 +398,20 @@ namespace Forge.Core.Physics{
                 projectile.Terminate();
             }
         }
+
+        #region Nested type: Reflector
+
+        class Reflector{
+            const int _defaultTicksToDeath = 100;
+            public readonly RigidBody Body;
+            public int TicksUntilDeath;
+
+            public Reflector(RigidBody body, int ticksUntilDeath = _defaultTicksToDeath){
+                Body = body;
+                TicksUntilDeath = ticksUntilDeath;
+            }
+        }
+
+        #endregion
     }
 }
