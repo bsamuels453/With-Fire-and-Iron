@@ -23,6 +23,7 @@ namespace Forge.Core.Physics{
         const string _projectileShader = "Config/Shaders/TintedModel.config";
         const string _projectileList = "Config/Projectiles/ProjectileList.config";
         const float _gravity = -10;
+        const float _shieldThickness = 3;
         readonly List<Projectile> _activeProjectiles;
         readonly ObjectModelBuffer<Projectile> _buffer;
         readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
@@ -65,7 +66,7 @@ namespace Forge.Core.Physics{
         }
 
         RigidBodyConstructionInfo GenerateShieldCtor(){
-            var shape = new BoxShape(new IndexedVector3(5, 5, 1));
+            var shape = new BoxShape(new IndexedVector3(3, 3, _shieldThickness));
             var nullMotion = new DefaultMotionState();
             var ctor = new RigidBodyConstructionInfo(0, nullMotion, shape);
             return ctor;
@@ -323,7 +324,7 @@ namespace Forge.Core.Physics{
 
             var shield = new RigidBody(_shieldCtor);
 
-            var state = Matrix.CreateWorld(globalCollideRay.Position, collideeNormal, Vector3.Up);
+            var state = Matrix.CreateWorld(globalCollideRay.Position - collideeNormal*_shieldThickness, collideeNormal, Vector3.Up);
             var motion = new DefaultMotionState(state, IndexedMatrix.Identity);
 
             _reflectionShields.Add(shield);
