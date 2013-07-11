@@ -28,14 +28,13 @@ namespace Forge.Core.Physics{
         readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
         readonly List<CollisionObjectCollection> _collObjCollections;
         readonly DebugDraw _debugDraw;
-        readonly List<TriangleMesh> _hullMesh;
         readonly Dictionary<string, ProjectileAttributes> _projVariants;
         readonly Stopwatch _projectileTimer;
+        readonly List<RigidBody> _reflectionShields;
         readonly RigidBodyConstructionInfo _shieldCtor;
 
         readonly DiscreteDynamicsWorld _worldDynamics;
         bool _disposed;
-        List<BvhTriangleMeshShape> _hullMeshShape;
 
         #region ctor
 
@@ -44,15 +43,14 @@ namespace Forge.Core.Physics{
             _projectileTimer.Start();
             _projVariants = LoadProjectileVariants();
             _buffer = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
+            _reflectionShields = new List<RigidBody>();
 
             _worldDynamics = GenerateWorldDynamics(_debugDraw = new DebugDraw());
             _worldDynamics.SetGravity(new IndexedVector3(0, _gravity, 0));
             _bulletCtorLookup = GenerateConstructorLookup(_projVariants);
             _collObjCollections = new List<CollisionObjectCollection>();
             _activeProjectiles = new List<Projectile>();
-
-            _hullMesh = new List<TriangleMesh>();
-            _hullMeshShape = new List<BvhTriangleMeshShape>();
+            _shieldCtor = GenerateShieldCtor();
         }
 
         DiscreteDynamicsWorld GenerateWorldDynamics(DebugDraw debugDraw){
@@ -64,6 +62,13 @@ namespace Forge.Core.Physics{
             dynamics.SetDebugDrawer(debugDraw);
 
             return dynamics;
+        }
+
+        RigidBodyConstructionInfo GenerateShieldCtor(){
+            var shape = new BoxShape(new IndexedVector3(5, 5, 1));
+            var nullMotion = new DefaultMotionState();
+            var ctor = new RigidBodyConstructionInfo(0, nullMotion, shape);
+            return ctor;
         }
 
         Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> GenerateConstructorLookup(Dictionary<string, ProjectileAttributes> projectileVariants){
@@ -227,7 +232,7 @@ namespace Forge.Core.Physics{
                     }
 
                     var inRangeObjects = from obj in shipDat.CollisionObjects
-                        where obj.IsInRange(projectilePos, 2.5f)
+                        where obj.IsInRange(projectilePos, 4.5f)
                         select obj;
 
                     foreach (var obj in inRangeObjects){
@@ -240,14 +245,10 @@ namespace Forge.Core.Physics{
                         //need a big mess of crap to translate velocity from world to object space
                         //possible optimize: cache worldToObj matrix
                         var untranslatedVelMtx = Common.GetWorldTranslation(velocity, new Vector3(0, 0, 0), 0);
-                        var untranslatedTranslation = untranslatedVelMtx.Translation;
-                        Vector3 _, __;
-                        Quaternion q;
-                        invShipMtx.Decompose(out _, out q, out __);
-                        var worldToObj = Matrix.CreateFromQuaternion(q);
-                        var translatedVelMtx = Common.MultMatrix(worldToObj, untranslatedTranslation);
+                        var untranslatedVel = untranslatedVelMtx.Translation;
+                        var translatedAngle = TranslateAngle(untranslatedVel, invShipMtx);
 
-                        var velocityRay = new Ray(projectilePos, translatedVelMtx);
+                        var velocityRay = new Ray(projectilePos, translatedAngle);
                         /*
                         var originalPos = Common.MultMatrix(shipMtx, projectilePos);
                         var originalPos2 = Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction);
@@ -255,7 +256,6 @@ namespace Forge.Core.Physics{
                          */
                         bool intersectionConfirmed = false; //false
                         //for now this is disabled because havent implemented a way to represent the entire projectile rather than just its central velocity vector
-
                         for (int i = 0; i < obj.Vertexes.Length; i += 3){
                             float? dist;
                             Common.RayIntersectsTriangle
@@ -278,18 +278,58 @@ namespace Forge.Core.Physics{
                             _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[1]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[2]*1.01f));
                             _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, projectilePos), Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction*5));
                             */
-                            shipDat.BlacklistedProjectiles.Add(projectile);
-                            shipDat.CollisionEventDispatcher(
-                                obj.Id,
-                                obj.Centroid,
-                                velocityRay,
-                                new Ray(projectileMtx.Translation, untranslatedTranslation)
+                            Vector3 intersectPt = Common.MultMatrix(shipMtx, obj.Centroid);
+
+                            ApplyCollision
+                                (
+                                    projectile,
+                                    shipDat,
+                                    obj,
+                                    TranslateAngle(obj.Normal, shipMtx),
+                                    new Ray(obj.Centroid, translatedAngle),
+                                    new Ray(intersectPt, untranslatedVel)
                                 );
                             break;
                         }
                     }
                 }
             }
+        }
+
+        Vector3 TranslateAngle(Vector3 angle, Matrix translationMtx){
+            Vector3 _, __;
+            Quaternion q;
+            translationMtx.Decompose(out _, out q, out __);
+            var worldToObj = Matrix.CreateFromQuaternion(q);
+            var translatedAngle = Common.MultMatrix(worldToObj, angle);
+            return translatedAngle;
+        }
+
+        void ApplyCollision(
+            Projectile projectile,
+            CollisionObjectCollection collection,
+            CollisionObject collidee,
+            Vector3 collideeNormal,
+            Ray localCollideRay,
+            Ray globalCollideRay){
+            collection.BlacklistedProjectiles.Add(projectile);
+            collection.CollisionEventDispatcher
+                (
+                    collidee.Id,
+                    collidee.Centroid,
+                    localCollideRay,
+                    globalCollideRay
+                );
+
+            var shield = new RigidBody(_shieldCtor);
+
+            var state = Matrix.CreateWorld(globalCollideRay.Position, collideeNormal, Vector3.Up);
+            var motion = new DefaultMotionState(state, IndexedMatrix.Identity);
+
+            _reflectionShields.Add(shield);
+            _worldDynamics.AddRigidBody(shield);
+
+            shield.SetMotionState(motion);
         }
 
         void UpdateProjectilePositions(){
