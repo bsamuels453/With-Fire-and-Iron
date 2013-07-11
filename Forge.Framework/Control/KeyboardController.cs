@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Input;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -32,13 +32,11 @@ namespace Forge.Framework.Control{
         /// callbacks must be set using the AddBindCallback method, or else they won't fire.
         /// </summary>
         /// <typeparam name="T">The type of the BindIdentifier enum used for this binding group.</typeparam>
-        /// <param name="fileName"></param>
-        public void LoadFromFile<T>(string fileName){
-            var jObj = Resource.LoadJObject(fileName);
-
+        /// <param name="binds"> </param>
+        public void LoadFromFile<T>(JObject binds){
             var allBindings = (T[]) Enum.GetValues(typeof (T));
 
-            foreach (var jtoken in jObj){
+            foreach (var jtoken in binds){
                 //convert the key from a string to the binding identifier enum
                 var bindIdentifier = (T) Enum.Parse(typeof (T), jtoken.Key);
                 Debug.Assert(allBindings.Contains(bindIdentifier));

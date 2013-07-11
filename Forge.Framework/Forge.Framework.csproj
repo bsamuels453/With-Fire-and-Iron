@@ -150,6 +150,7 @@
     <Compile Include="FloatingRectangle.cs" />
     <Compile Include="PriorityQueue.cs" />
     <Compile Include="ProtoBuffWrappers.cs" />
+    <Compile Include="Resources\ConfigLoader.cs" />
     <Compile Include="Resources\HLSLShaderLoader.cs" />
     <Compile Include="Resources\OpenCLScriptLoader.cs" />
     <Compile Include="Resources\Resource.cs" />

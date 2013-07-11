@@ -25,7 +25,7 @@ namespace Forge.Framework.Resources{
         /// <returns> </returns>
         protected List<FileAttributes> GetAllFilesInDirectory(string directory){
             var rawDir = (string) directory.Clone();
-            directory = "\\" + directory + "\\";
+            directory = "/" + directory + "/";
 
             var directoriesToSearchForFiles = new List<string>();
             var directoriesToSearchForDirs = new Queue<string>(_numEstimatedDirectories);
@@ -55,20 +55,25 @@ namespace Forge.Framework.Resources{
                     }
                     string extension = extensionSepIdx == -1 ? "" : file.Substring(extensionSepIdx);
 
-                    var splitByFolder = file.Split('\\').ToList();
+                    var splitByFolder = file.Split('/').ToList();
 
                     string fileName = splitByFolder.Last();
                     string fullLocation = file;
 
 
-                    var splitRawDir = rawDir.Split('\\');//make sure the split doesnt search for multiple nested files
+                    var splitRawDir = rawDir.Split('/'); //make sure the split doesnt search for multiple nested files
                     int baseFolderIdx = splitByFolder.IndexOf(splitRawDir[0]);
 
                     var relativeDirArr = splitByFolder.GetRange(baseFolderIdx, splitByFolder.Count - baseFolderIdx);
                     string relativeLocation = "";
                     foreach (var name in relativeDirArr){
-                        relativeLocation += "\\" + name;
+                        relativeLocation += "/" + name;
                     }
+                    relativeLocation = relativeLocation.Substring(1);
+
+                    //i will standardize this shit if it's the last thing i do
+                    relativeLocation = relativeLocation.Replace('\\', '/');
+                    fullLocation = fullLocation.Replace('\\', '/');
 
                     files.Add
                         (new FileAttributes

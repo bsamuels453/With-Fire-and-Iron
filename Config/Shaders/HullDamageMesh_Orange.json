@@ -1,8 +1,0 @@
-{
-	"InternalAbbreviation": "Shader_DamageMeshOrange",
-	"f3_DiffuseLightDirection": "0,-1,1",
-	"f_DiffuseIntensity": "0.8",
-	"f_AmbientIntensity": "0.2",
-	"tex_Material": "Materials/DamageMesh_Orange",
-	"Shader": "HLSL/HullShader"
-}

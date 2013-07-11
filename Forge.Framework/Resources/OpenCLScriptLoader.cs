@@ -19,7 +19,8 @@ namespace Forge.Framework.Resources{
     ///   Used to wrap OpenCL script loading, compiling, and saving.
     /// </summary>
     internal class OpenCLScriptLoader : ResourceLoader{
-        const string _openclScriptDir = "Scripts\\Opencl";
+        const string _openclScriptDir = "Scripts/Opencl";
+        const string _hashFile = "Scripts/Hash.json";
         readonly Task _asyncLoadTask;
         readonly List<ComputeDevice> _devices;
         readonly ComputePlatform _platform;
@@ -89,22 +90,22 @@ namespace Forge.Framework.Resources{
             //now we check to make sure none of the scripts have changed since the last time they were compiled.
             var scriptFiles = GetAllFilesInDirectory(_openclScriptDir);
 
-            var jobj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Hashes.json");
+            var jobj = Resource.LoadJObject(_hashFile);
 
-            var oldMD5 = jobj["OpenclScripts"].ToObject<string>();
-            var currentMD5 = GenerateCumulativeMD5(scriptFiles);
+            var oldhash = jobj["Hash"].ToObject<string>();
+            var currenthash = GenerateCumulativeSHA(scriptFiles);
 
-            bool compileScripts = !oldMD5.Equals(currentMD5);
+            bool compileScripts = !oldhash.Equals(currenthash);
 
             List<OpenCLScript> compiledScripts;
 
             if (compileScripts){
-                DebugConsole.WriteLine("The md5 of an OpenCL script has changed since last execution, recompiling OpenCL scripts...");
+                DebugConsole.WriteLine("The hash of an OpenCL script has changed since last execution, recompiling OpenCL scripts...");
                 timer.Restart();
                 compiledScripts = CompileScripts(scriptFiles);
                 DebugConsole.WriteLine("OpenCL script recompilation completed in " + timer.ElapsedMilliseconds + " ms");
                 SaveBinaries(compiledScripts);
-                SaveMD5(currentMD5);
+                SaveSHA(currenthash);
             }
             else{
                 compiledScripts = LoadScripts(scriptFiles);
@@ -114,14 +115,14 @@ namespace Forge.Framework.Resources{
         }
 
         /// <summary>
-        ///   Saves md5 to the //Data//Hashes.json file under the Scripts category.
+        ///   Saves hash to the _hashFile file under the Scripts category.
         /// </summary>
-        /// <param name="md5"> </param>
-        public static void SaveMD5(string md5){
-            var jobj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "\\Data\\Hashes.json");
+        /// <param name="hash"> </param>
+        public static void SaveSHA(string hash){
+            var jobj = Resource.LoadJObject(_hashFile);
 
-            jobj["OpenclScripts"] = md5;
-            var sw = new StreamWriter((Directory.GetCurrentDirectory() + "\\Data\\Hashes.json"));
+            jobj["Hash"] = hash;
+            var sw = new StreamWriter(_hashFile);
             string ss = JsonConvert.SerializeObject(jobj, Formatting.Indented);
             sw.Write(ss);
             sw.Close();
@@ -140,28 +141,31 @@ namespace Forge.Framework.Resources{
         }
 
         /// <summary>
-        ///   Generates a md5 that represents the contents of all of the files in the files parameter. The md5 for each individual file is appended together into one string and returned.
+        ///   Generates a hash that represents the contents of all of the files in the files parameter. The hash for each individual file is appended together into one string and returned.
         /// </summary>
         /// <param name="files"> </param>
         /// <returns> </returns>
-        static string GenerateCumulativeMD5(List<FileAttributes> files){
-            var md5Gen = MD5.Create();
-            string hash = "";
+        static string GenerateCumulativeSHA(List<FileAttributes> files){
+            var shaGen = SHA256.Create();
+
+            string cumulative = "";
 
             foreach (var file in files){
-                var fr = new FileStream(file.FullFileLocation, FileMode.Open, FileAccess.Read);
-                var fileHash = md5Gen.ComputeHash(fr);
-                fr.Close();
-
-                for (int i = 0; i < 16; i++){
-                    string temp = "";
-                    foreach (var b in fileHash){
-                        temp += b.ToString();
-                    }
-                    hash += temp;
-                }
+                var strmRdr = new StreamReader(file.FullFileLocation);
+                cumulative += strmRdr.ReadToEnd();
+                strmRdr.Close();
             }
-            return hash;
+
+            var byteRepresen = new byte[cumulative.Length];
+
+            for (int i = 0; i < cumulative.Length; i++){
+                byteRepresen[i] = Convert.ToByte(cumulative[i]);
+            }
+
+            var hash = shaGen.ComputeHash(byteRepresen);
+            var strHash = Convert.ToBase64String(hash);
+
+            return strHash;
         }
 
         /// <summary>
@@ -173,7 +177,7 @@ namespace Forge.Framework.Resources{
             var ret = new List<OpenCLScript>(files.Count);
 
             foreach (var file in files){
-                string address = "Compiled\\" + file.RelativeFileLocation;
+                string address = "Compiled/" + file.RelativeFileLocation;
                 address += "c"; //the file extension for a compiled binary is .clc for .cl files
 
                 var binaryFormatter = new BinaryFormatter();
@@ -203,7 +207,7 @@ namespace Forge.Framework.Resources{
         /// <param name="scripts"> </param>
         static void SaveBinaries(IEnumerable<OpenCLScript> scripts){
             foreach (var clScript in scripts){
-                var directory = Directory.GetCurrentDirectory() + "\\Compiled\\" + clScript.SrcFileInfo.RelativeFileLocation;
+                var directory = Directory.GetCurrentDirectory() + "/Compiled/" + clScript.SrcFileInfo.RelativeFileLocation;
                 directory += "c"; //the file extension for a compiled binary is .clc for .cl files
                 var binaryFormatter = new BinaryFormatter();
                 var fileStrm = new FileStream(directory, FileMode.Create, FileAccess.Write, FileShare.None);

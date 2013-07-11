@@ -15,18 +15,24 @@ using Matrix = MonoGameUtility.Matrix;
 
 namespace Forge.Core{
     public class Forge : Game{
+        static Forge _game;
         readonly GraphicsDeviceManager _graphics;
         Process _currentProcess;
         Stopwatch _fpsStopwatch;
         int _numFramesLastSecond;
 
         public Forge(){
+            _game = this;
             Content.RootDirectory = "Content";
             _graphics = new GraphicsDeviceManager(this){
                 PreferredBackBufferWidth = 1200,
                 PreferredBackBufferHeight = 800,
                 SynchronizeWithVerticalRetrace = false,
             };
+        }
+
+        public static void ExitGame(){
+            _game.Exit();
         }
 
         protected override void Initialize(){
@@ -84,8 +90,8 @@ namespace Forge.Core{
         protected override void Update(GameTime gameTime){
             GamestateManager.Update();
             base.Update(gameTime);
-            //DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
-            //DebugText.SetText("PrivateMem", "Private: " + _currentProcess.PrivateMemorySize64/1000000f + " MB");
+            DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
+            DebugText.SetText("PrivateMem", "Private: " + _currentProcess.PrivateMemorySize64/1000000f + " MB");
         }
 
         protected override void Draw(GameTime gameTime){
@@ -95,7 +101,7 @@ namespace Forge.Core{
             base.Draw(gameTime);
             _numFramesLastSecond++;
             if (_fpsStopwatch.ElapsedMilliseconds > 1000){
-                //DebugText.SetText("FPS", "FPS: " + _numFramesLastSecond);
+                DebugText.SetText("FPS", "FPS: " + _numFramesLastSecond);
                 _numFramesLastSecond = 0;
                 _fpsStopwatch.Restart();
             }

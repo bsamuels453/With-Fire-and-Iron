@@ -284,7 +284,7 @@ namespace Forge.Core.Airship.Controllers{
             position.Y += StateData.AscentRate*timeDeltaSeconds;
             Position = position;
 
-            WorldTransform = Common.GetWorldTranslation(Position, Angle + new Vector3(0, -(float) Math.PI/2, 0), _airshipModelData.Length);
+            WorldTransform = Common.GetWorldTranslation(Position, Angle + new Vector3(0, -(float) Math.PI/2, 0), 0);
         }
 
         protected abstract void UpdateController(double timeDelta);

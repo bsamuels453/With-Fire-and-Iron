@@ -3,121 +3,192 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using BulletXNA;
 using BulletXNA.BulletCollision;
 using BulletXNA.BulletDynamics;
 using BulletXNA.LinearMath;
 using Forge.Framework;
+using Forge.Framework.Draw;
+using Forge.Framework.Resources;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
 #endregion
 
 namespace Forge.Core.Physics{
     public class ProjectilePhysics : IDisposable{
-        #region Delegates
+        const float _projectileLifetime = 10000; //milliseconds
+        const int _maxProjectiles = 500;
+        const string _projectileShader = "Config/Shaders/TintedModel.config";
+        const string _projectileList = "Config/Projectiles/ProjectileList.config";
+        const float _gravity = -10;
+        const float _shieldThickness = 3;
+        readonly List<Projectile> _activeProjectiles;
+        readonly List<Reflector> _activeReflectors;
+        readonly ObjectModelBuffer<Projectile> _buffer;
+        readonly Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> _bulletCtorLookup;
+        readonly List<CollisionObjectCollection> _collObjCollections;
+        readonly DebugDraw _debugDraw;
+        readonly Dictionary<string, ProjectileAttributes> _projVariants;
+        readonly Stopwatch _projectileTimer;
+        readonly RigidBodyConstructionInfo _reflectorCtor;
+        readonly CollisionWorld _worldCollision;
 
-        public delegate void CollisionCallback(int id, Vector3 intersectPos, Vector3 velocity);
-
-        #endregion
-
-        #region EntityVariant enum
-
-        public enum EntityVariant{
-            EnemyShip,
-            AllyShip
-        }
-
-        #endregion
-
-        readonly List<CollisionObjectCollection> _boundingObjData;
-        readonly RigidBodyConstructionInfo _defaultShotCtor;
-        readonly List<Projectile> _projectiles;
         readonly DiscreteDynamicsWorld _worldDynamics;
-        ProjectileAttributes _defProjectile;
         bool _disposed;
 
+        #region ctor
+
         public ProjectilePhysics(){
-            _defProjectile = new ProjectileAttributes(8320, 0.0285f, 2f);
-            const float gravity = -10;
+            _projectileTimer = new Stopwatch();
+            _projectileTimer.Start();
+            _projVariants = LoadProjectileVariants();
+            _buffer = new ObjectModelBuffer<Projectile>(_maxProjectiles, _projectileShader);
+            _activeReflectors = new List<Reflector>();
+
+            _worldDynamics = GenerateWorldDynamics(_debugDraw = new DebugDraw());
+            _worldDynamics.SetGravity(new IndexedVector3(0, _gravity, 0));
+            _bulletCtorLookup = GenerateConstructorLookup(_projVariants);
+            _collObjCollections = new List<CollisionObjectCollection>();
+            _activeProjectiles = new List<Projectile>();
+            _reflectorCtor = GenerateReflectorCtor();
+            _worldCollision = _worldDynamics.GetCollisionWorld();
+        }
+
+        DiscreteDynamicsWorld GenerateWorldDynamics(DebugDraw debugDraw){
             var broadphase = new DbvtBroadphase();
             var collisionConfig = new DefaultCollisionConfiguration();
             var dispatcher = new CollisionDispatcher(collisionConfig);
             var constraintSolver = new SequentialImpulseConstraintSolver();
-            _worldDynamics = new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
+            var dynamics = new DiscreteDynamicsWorld(dispatcher, broadphase, constraintSolver, collisionConfig);
+            dynamics.SetDebugDrawer(debugDraw);
 
-            //_worldDynamics.Gravity = new Vector3(0, gravity, 0);
-            _worldDynamics.SetGravity(new IndexedVector3(0, gravity, 0));
-
-            _boundingObjData = new List<CollisionObjectCollection>();
-            _projectiles = new List<Projectile>();
-
-            var shape = new SphereShape(_defProjectile.Radius);
-            var nullMotion = new DefaultMotionState(); //new DefaultMotionState(Matrix.Identity);
-            _defaultShotCtor = new RigidBodyConstructionInfo(_defProjectile.Mass, nullMotion, shape);
+            return dynamics;
         }
+
+        RigidBodyConstructionInfo GenerateReflectorCtor(){
+            var shape = new BoxShape(new IndexedVector3(3, 3, _shieldThickness));
+            var nullMotion = new DefaultMotionState();
+            var ctor = new RigidBodyConstructionInfo(0, nullMotion, shape);
+            return ctor;
+        }
+
+        Dictionary<ProjectileAttributes, RigidBodyConstructionInfo> GenerateConstructorLookup(Dictionary<string, ProjectileAttributes> projectileVariants){
+            var ret = new Dictionary<ProjectileAttributes, RigidBodyConstructionInfo>(projectileVariants.Count);
+
+            foreach (var variant in projectileVariants){
+                var shape = new SphereShape(variant.Value.Radius);
+                var nullMotion = new DefaultMotionState(); //new DefaultMotionState(Matrix.Identity);
+                var ctor = new RigidBodyConstructionInfo(variant.Value.Mass, nullMotion, shape);
+                ret.Add(variant.Value, ctor);
+            }
+            return ret;
+        }
+
+        Dictionary<string, ProjectileAttributes> LoadProjectileVariants(){
+            var projectileVariants = new Dictionary<string, ProjectileAttributes>(0);
+
+            var projectileDefList = Resource.LoadConfig(_projectileList);
+            foreach (var file in projectileDefList){
+                var jObj = Resource.LoadConfig(file.Value.ToObject<string>());
+
+                var attributes = new ProjectileAttributes(jObj);
+
+                projectileVariants.Add(file.Key, attributes);
+            }
+            return projectileVariants;
+        }
+
+        #endregion
 
         #region IDisposable Members
 
         public void Dispose(){
             Debug.Assert(!_disposed);
-            foreach (var projectile in _projectiles){
+            foreach (var projectile in _activeProjectiles){
                 _worldDynamics.RemoveRigidBody(projectile.Body);
                 projectile.Body.Cleanup();
             }
-            //_defaultShotCtor.Dispose();
+            //dont have to clean up construction info?
+
             _worldDynamics.Cleanup();
+            _buffer.Dispose();
+            _debugDraw.Dispose();
             _disposed = true;
         }
 
         #endregion
 
-        public CollisionObjectHandle AddShipCollisionObjects(CollisionObject[] collisionObjects, BoundingSphere soi, EntityVariant variant,
-            CollisionCallback collisionCallback){
-            var objpublicData = new CollisionObjectCollection(collisionObjects, variant, soi);
-
-            var objPublicInterface = new CollisionObjectHandle
-                (
-                setObjectMatrix: matrix => objpublicData.WorldTransform = matrix,
-                terminate: () => _boundingObjData.Remove(objpublicData)
-                );
-
-            objpublicData.CollisionEventDispatcher = collisionCallback;
-            _boundingObjData.Add(objpublicData);
-
-            return objPublicInterface;
+        ~ProjectilePhysics(){
+            if (!_disposed){
+                throw new ResourceNotDisposedException();
+            }
         }
 
-        public Projectile AddProjectile(Vector3 position, Vector3 angle, EntityVariant collisionFilter){
-            var worldTransform = Common.GetWorldTranslation(position, angle, _defProjectile.Radius*2);
-            //_defaultShotCtor.MotionState = new DefaultMotionState(worldTransform);
-            _defaultShotCtor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldTransform), IndexedMatrix.Identity);
+        public
+            void AddProjectile
+            (
+            ProjectileAttributes projectileVariant,
+            Vector3 position,
+            Vector3 aimDir,
+            int factionId,
+            float firingForce){
+            _projectileTimer.Stop();
+            long creationTime = _projectileTimer.ElapsedMilliseconds;
+            _projectileTimer.Start();
 
-            var body = new RigidBody(_defaultShotCtor);
-            var force_i = (IndexedVector3) angle*_defProjectile.FiringForce;
-            body.ApplyCentralForce(ref force_i);
+            var worldTransform = Common.GetWorldTranslation(position, aimDir, projectileVariant.Radius*2);
+            var ctor = _bulletCtorLookup[projectileVariant];
+            ctor.m_motionState = new DefaultMotionState(new IndexedMatrix(worldTransform), IndexedMatrix.Identity);
+
+            var body = new RigidBody(ctor);
+            var forceI = (IndexedVector3) aimDir*firingForce;
+            body.ApplyCentralForce(ref forceI);
             _worldDynamics.AddRigidBody(body);
 
             var projectile = new Projectile
                 (
                 body,
                 getPosition: () => body.GetCenterOfMassPosition(),
-                terminate: (proj) =>{
-                               _projectiles.Remove(proj);
+                terminate: proj =>{
+                               _activeProjectiles.Remove(proj);
                                _worldDynamics.RemoveRigidBody(body);
+                               _buffer.RemoveObject(proj);
                                body.Cleanup();
-                               foreach (var collisionObjectCollection in _boundingObjData){
+                               foreach (var collisionObjectCollection in _collObjCollections){
                                    collisionObjectCollection.BlacklistedProjectiles.Remove(proj);
                                }
-                           }
+                           },
+                creationTime: creationTime
                 );
 
-            _projectiles.Add(projectile);
-            return projectile;
+            _activeProjectiles.Add(projectile);
+
+            if (_activeProjectiles.Count > _maxProjectiles){
+                throw new Exception("IMPLEMENT PROJECTILE CIRCULAR BUFFER");
+            }
+
+            var translation = Matrix.CreateTranslation(position);
+            _buffer.AddObject(projectile, Resource.LoadContent<Model>(projectileVariant.Model), translation);
         }
 
-        ~ProjectilePhysics(){
-            if (!_disposed)
-                throw new ResourceNotDisposedException();
+        public
+            CollisionObjectHandle AddCollisionObjectCollection
+            (
+            CollisionObject[] collisionObjects,
+            BoundingSphere soi,
+            int factionId,
+            CollisionCallback collisionCallback){
+            var collection = new CollisionObjectCollection(collisionObjects, factionId, soi, collisionCallback);
+            var handle = new CollisionObjectHandle
+                (
+                setObjectMatrix: matrix => collection.WorldTransform = matrix,
+                terminate: () => _collObjCollections.Remove(collection)
+                );
+
+            _collObjCollections.Add(collection);
+            return handle;
         }
 
         public void Update(double timeDelta){
@@ -126,201 +197,218 @@ namespace Forge.Core.Physics{
             sw.Start();
 #endif
             float timeDeltaSec = (float) timeDelta/1000f;
-            _worldDynamics.StepSimulation(timeDeltaSec, 100);
+            _worldDynamics.StepSimulation(20/1000f, 1);
+            UpdateCollisions();
 
-            //check for collisions
-            foreach (var projectile in _projectiles){
-                foreach (var shipDat in _boundingObjData){
-                    //make sure this projectile is allowed to collide with this ship
-                    if (shipDat.BlacklistedProjectiles.Contains(projectile)){
-                        continue;
-                    }
-
-                    var projectileMtx_i = new IndexedMatrix();
-
-                    projectile.Body.GetMotionState().GetWorldTransform(out projectileMtx_i);
-                    var projectileMtx = (Matrix) projectileMtx_i;
-                    var shipMtx = shipDat.WorldTransform;
-
-                    var invShipMtx = Matrix.Invert(shipMtx);
-                    var projectilePos = Common.MultMatrix(invShipMtx, (projectileMtx).Translation);
-
-                    if (Vector3.Distance(projectilePos, Vector3.Zero) > shipDat.ShipSOI.Radius)
-                        continue;
-
-                    foreach (var boundingObj in shipDat.CollisionObjects){
-                        bool break2 = false;
-                        //fast check to see if the projectile is in same area as the object
-                        foreach (var point in boundingObj.Vertexes){
-                            if (Vector3.Distance(projectilePos, point) < 1f){
-                                //object confirmed to be in general area
-                                //now check to see if its movement path intersects the object's triangles
-                                var worldPt = Common.MultMatrix(shipMtx, point);
-                                var worldPt_i = (IndexedVector3) worldPt;
-                                var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPt_i);
-                                if (velocity.Length() == 0)
-                                    continue;
-                                var rawvel = velocity;
-                                velocity.Normalize();
-                                var velocityRay = new Ray(projectilePos, velocity);
-
-                                bool intersectionConfirmed = true; //false
-                                //for now this is disabled because havent implemented a way to represent the entire projectile rather than just its central velocity vector
-                                /*
-                                for (int i = 0; i < boundingObj.Vertexes.Length; i += 3){
-                                    float? dist;
-                                    Common.RayIntersectsTriangle(
-                                        ref velocityRay,
-                                        ref boundingObj.Vertexes[i],
-                                        ref boundingObj.Vertexes[i + 1],
-                                        ref boundingObj.Vertexes[i + 2],
-                                        out dist);
-                                    if (dist != null){
-                                        intersectionConfirmed = true;
-                                        break;
-                                    }
-                                }
-                                */
-                                if (intersectionConfirmed){
-                                    //xxxx these params are not correct (point transform)
-                                    shipDat.BlacklistedProjectiles.Add(projectile);
-                                    shipDat.CollisionEventDispatcher.Invoke(boundingObj.Id, point, rawvel); //add id
-                                    break2 = true;
-                                }
-
-                                break;
-                            }
-                        }
-                        if (break2){
-                            break;
-                        }
-                    }
-                }
-            }
 #if PROFILE_PHYSICS
             sw.Stop();
             DebugConsole.WriteLine("Active: " + _projectiles.Count);
             DebugConsole.WriteLine("Physics loop: "+sw.ElapsedMilliseconds + " ms");
 #endif
+
+            UpdateProjectilePositions();
+            CleanupExpiredProjectiles();
+            UpdateReflectors();
+            _debugDraw.Clear();
+            _worldDynamics.DebugDrawWorld();
+            _debugDraw.UpdateBuffers();
         }
 
-        #region Nested type: CollisionObject
+        void UpdateCollisions(){
+            //check for collisions
+            foreach (var projectile in _activeProjectiles){
+                foreach (var shipDat in _collObjCollections){
+                    //make sure this projectile is allowed to collide with this ship
+                    if (shipDat.BlacklistedProjectiles.Contains(projectile)){
+                        continue;
+                    }
 
-        /// <summary>
-        ///   Used to define a collision object. IntersectPoints are used for fast-checking whether or not projectiles intersect this object.
-        /// </summary>
-        public struct CollisionObject{
-            public int Id;
-            public Vector3[] Vertexes;
+                    IndexedMatrix projectileMtxI;
 
-            public CollisionObject(int id, Vector3[] vertexes){
-                Id = id;
-                Vertexes = vertexes;
-                Debug.Assert(vertexes.Length == 3);
+                    projectile.Body.GetMotionState().GetWorldTransform(out projectileMtxI);
+                    var projectileMtx = (Matrix) projectileMtxI;
+                    var shipMtx = shipDat.WorldTransform;
+
+                    var invShipMtx = Matrix.Invert(shipMtx);
+                    var projectilePos = Common.MultMatrix(invShipMtx, (projectileMtx).Translation);
+
+                    if (Vector3.Distance(projectilePos, Vector3.Zero) > shipDat.ShipSOI.Radius){
+                        continue;
+                    }
+
+                    var inRangeObjects = from obj in shipDat.CollisionObjects
+                        where obj.IsInRange(projectilePos, 4.5f)
+                        select obj;
+
+                    foreach (var obj in inRangeObjects){
+                        //object confirmed to be in general area
+                        //now check to see if its movement path intersects the object's triangles
+                        var worldPt = Common.MultMatrix(shipMtx, obj.Centroid);
+                        var worldPtI = (IndexedVector3) worldPt;
+                        var velocity = projectile.Body.GetVelocityInLocalPoint(ref worldPtI);
+
+                        //need a big mess of crap to translate velocity from world to object space
+                        //possible optimize: cache worldToObj matrix
+                        var untranslatedVelMtx = Common.GetWorldTranslation(velocity, new Vector3(0, 0, 0), 0);
+                        var untranslatedVel = untranslatedVelMtx.Translation;
+                        var translatedAngle = TranslateAngle(untranslatedVel, invShipMtx);
+
+                        var velocityRay = new Ray(projectilePos, translatedAngle);
+                        /*
+                        var originalPos = Common.MultMatrix(shipMtx, projectilePos);
+                        var originalPos2 = Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction);
+                        _debugDraw.DrawLineImmediate(originalPos,originalPos2) ;
+                         */
+                        bool intersectionConfirmed = false; //false
+                        //for now this is disabled because havent implemented a way to represent the entire projectile rather than just its central velocity vector
+                        for (int i = 0; i < obj.Vertexes.Length; i += 3){
+                            float? dist;
+                            Common.RayIntersectsTriangle
+                                (
+                                    ref velocityRay,
+                                    ref obj.Vertexes[i],
+                                    ref obj.Vertexes[i + 1],
+                                    ref obj.Vertexes[i + 2],
+                                    out dist);
+                            if (dist != null){
+                                intersectionConfirmed = true;
+                                break;
+                            }
+                        }
+
+                        if (intersectionConfirmed){
+                            /*
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[0]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[1]*1.01f));
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[0]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[2]*1.01f));
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, obj.Vertexes[1]*1.01f), Common.MultMatrix(shipMtx, obj.Vertexes[2]*1.01f));
+                            _debugDraw.DrawLineImmediate(Common.MultMatrix(shipMtx, projectilePos), Common.MultMatrix(shipMtx, projectilePos + velocityRay.Direction*5));
+                            */
+                            Vector3 intersectPt = Common.MultMatrix(shipMtx, obj.Centroid);
+
+                            ApplyCollision
+                                (
+                                    projectile,
+                                    shipDat,
+                                    obj,
+                                    TranslateAngle(obj.Normal, shipMtx),
+                                    new Ray(obj.Centroid, translatedAngle),
+                                    new Ray(intersectPt, untranslatedVel)
+                                );
+                            break;
+                        }
+                    }
+                }
             }
         }
 
-        #endregion
+        Vector3 TranslateAngle(Vector3 angle, Matrix translationMtx){
+            Vector3 _, __;
+            Quaternion q;
+            translationMtx.Decompose(out _, out q, out __);
+            var worldToObj = Matrix.CreateFromQuaternion(q);
+            var translatedAngle = Common.MultMatrix(worldToObj, angle);
+            return translatedAngle;
+        }
 
-        #region Nested type: CollisionObjectCollection
+        void ApplyCollision(
+            Projectile projectile,
+            CollisionObjectCollection collection,
+            CollisionObject collidee,
+            Vector3 collideeNormal,
+            Ray localCollideRay,
+            Ray globalCollideRay){
+            collection.BlacklistedProjectiles.Add(projectile);
+            collection.CollisionEventDispatcher
+                (
+                    collidee.Id,
+                    collidee.Centroid,
+                    localCollideRay,
+                    globalCollideRay
+                );
 
-        /// <summary>
-        ///   public class that's used to group together collision objects, such as the plates on the side of an airship, into one class.
-        /// </summary>
-        class CollisionObjectCollection{
-            public readonly List<Projectile> BlacklistedProjectiles;
-            public readonly CollisionObject[] CollisionObjects;
-            public readonly BoundingSphere ShipSOI;
-            public readonly EntityVariant Type;
+            var shield = new RigidBody(_reflectorCtor);
 
-            /// <summary>
-            ///   Position of target sphere, velocity of projectile relative to sphere Implement projectile relative speed multiplier here
-            /// </summary>
-            public CollisionCallback CollisionEventDispatcher;
+            var state = Matrix.CreateWorld(globalCollideRay.Position - collideeNormal*_shieldThickness, collideeNormal, Vector3.Up);
+            var motion = new DefaultMotionState(state, IndexedMatrix.Identity);
 
-            public Matrix WorldTransform;
+            _activeReflectors.Add(new Reflector(shield));
 
-            public CollisionObjectCollection(CollisionObject[] collisionObjects, EntityVariant type, BoundingSphere soi){
-                CollisionObjects = collisionObjects;
-                Type = type;
-                WorldTransform = Matrix.Identity;
-                ShipSOI = soi;
-                BlacklistedProjectiles = new List<Projectile>();
+            _worldDynamics.AddRigidBody(shield);
+
+            shield.SetMotionState(motion);
+        }
+
+        void UpdateReflectors(){
+            for (int i = 0; i < _activeReflectors.Count; i++){
+                if (_activeReflectors[i].TicksUntilDeath == 0){
+                    _worldDynamics.RemoveRigidBody(_activeReflectors[i].Body);
+                    _activeReflectors.Remove(_activeReflectors[i]);
+                }
+                else{
+                    _activeReflectors[i].TicksUntilDeath--;
+                }
+            }
+            var pairCache = _worldCollision.GetPairCache();
+
+            if (pairCache.GetNumOverlappingPairs() > 0){
+                var overlapping = pairCache.GetOverlappingPairArray();
+
+                foreach (var broadphasePair in overlapping){
+                    foreach (var reflector in _activeReflectors){
+                        if (broadphasePair.m_pProxy0 == reflector.Body.GetBroadphaseProxy() ||
+                            broadphasePair.m_pProxy1 == reflector.Body.GetBroadphaseProxy()
+                            ){
+                            reflector.TicksUntilDeath = 2;
+                        }
+                    }
+                }
+            }
+            /*
+            foreach (Reflector t in _activeReflectors){
+                foreach (var projectile in _activeProjectiles) {
+                    if (t.Body.CheckCollideWith(projectile.Body)) {
+                        t.TicksUntilDeath = 10;
+                        _dyingReflectors.Add(t);
+                    }
+                }
+            }
+             */
+        }
+
+        void UpdateProjectilePositions(){
+            foreach (var projectile in _activeProjectiles){
+                var translation = Matrix.CreateTranslation(projectile.GetPosition());
+                _buffer.SetObjectTransform(projectile, translation);
             }
         }
 
-        #endregion
+        void CleanupExpiredProjectiles(){
+            _projectileTimer.Stop();
+            long timeIndex = _projectileTimer.ElapsedMilliseconds;
+            _projectileTimer.Start();
 
-        #region Nested type: CollisionObjectHandle
+            var projectilesToTerminate = new List<Projectile>();
 
-        /// <summary>
-        ///   Returned on the creation of a collision object. This class allows external classes to manipulate the collision object it created.
-        /// </summary>
-        public class CollisionObjectHandle{
-            public readonly Action<Matrix> SetObjectMatrix;
-            public readonly Action Terminate;
-
-            public CollisionObjectHandle(Action<Matrix> setObjectMatrix, Action terminate){
-                SetObjectMatrix = setObjectMatrix;
-                Terminate = terminate;
+            foreach (var projectile in _activeProjectiles){
+                if (timeIndex - projectile.TimeCreationIndex > _projectileLifetime){
+                    projectilesToTerminate.Add(projectile);
+                }
+            }
+            foreach (var projectile in projectilesToTerminate){
+                projectile.Terminate();
             }
         }
 
-        #endregion
+        #region Nested type: Reflector
 
-        #region Nested type: Projectile
-
-        /// <summary>
-        ///   Returned on the creation of a projectile. This class is a handle used by external gamestates to manipulate and read data on the projectile it created.
-        /// </summary>
-        public class Projectile : IEquatable<Projectile>{
-            //god help us if we ever run out of these uids
-            static long _maxUid;
-
+        class Reflector{
+            const int _defaultTicksToDeath = 100;
             public readonly RigidBody Body;
-            public readonly Func<Vector3> GetPosition;
-            public readonly long Uid;
-            readonly Action<Projectile> _terminate; //not sure when this is actually needed. might be better to do a timeout
-            //public event Action<float, Vector3, Vector3> OnCollision; //theres no real reason for the projectile to care about OnCollision (yet)
+            public int TicksUntilDeath;
 
-            public Projectile(RigidBody body, Func<Vector3> getPosition, Action<Projectile> terminate){
+            public Reflector(RigidBody body, int ticksUntilDeath = _defaultTicksToDeath){
                 Body = body;
-                GetPosition = getPosition;
-                _terminate = terminate;
-                Uid = _maxUid;
-                _maxUid++;
-            }
-
-            #region IEquatable<Projectile> Members
-
-            public bool Equals(Projectile other){
-                //kinda hacky
-                return Uid == other.Uid;
-            }
-
-            #endregion
-
-            public void Terminate(){
-                _terminate.Invoke(this);
-            }
-        }
-
-        #endregion
-
-        #region Nested type: ProjectileAttributes
-
-        /// <summary>
-        ///   This class is used to define the attributes of each projectile.
-        /// </summary>
-        public struct ProjectileAttributes{
-            public readonly float FiringForce;
-            public readonly float Mass;
-            public readonly float Radius;
-
-            public ProjectileAttributes(float firingForce, float radius, float mass){
-                FiringForce = firingForce;
-                Radius = radius;
-                Mass = mass;
+                TicksUntilDeath = ticksUntilDeath;
             }
         }
 

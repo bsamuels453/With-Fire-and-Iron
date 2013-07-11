@@ -1,6 +1,0 @@
-{
-	"InternalAbbreviation": "Shader_Wireframe",	
-	"f3_Color": "0,0,0",
-	"f_Alpha": "0.07",
-	"Shader": "HLSL/WireframeEffect"
-}

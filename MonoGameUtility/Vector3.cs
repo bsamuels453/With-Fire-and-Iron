@@ -132,6 +132,12 @@ namespace MonoGameUtility {
             this.Z = z;
         }
 
+        public Vector3(Quaternion quaternion){
+            this.X = 2 * (quaternion.X * quaternion.Z + quaternion.W * quaternion.Y);
+            this.Y = 2 * (quaternion.Y * quaternion.X - quaternion.W * quaternion.X);
+            this.Z = 1 - 2 * (quaternion.X * quaternion.X + quaternion.Y * quaternion.Y);
+        }
+
 
         #endregion Constructors
 

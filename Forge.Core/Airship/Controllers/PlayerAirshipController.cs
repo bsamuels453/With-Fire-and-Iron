@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using Forge.Core.Airship.Data;
 using Forge.Framework.Control;
+using Forge.Framework.Resources;
 
 #endregion
 
@@ -39,8 +40,10 @@ namespace Forge.Core.Airship.Controllers{
         }
 
         public KeyboardController GenerateKeyboardBindings(){
-            var binds = new KeyboardController();
-            binds.LoadFromFile<AirshipBinds>("Config/AirshipBindings.config");
+            var controller = new KeyboardController();
+
+            var bindingDefs = Resource.LoadConfig("Config/AirshipBindings.config");
+            controller.LoadFromFile<AirshipBinds>(bindingDefs);
 
             #region lambda defs
 
@@ -48,7 +51,7 @@ namespace Forge.Core.Airship.Controllers{
                 (o, i, arg3) => { EngineSpeed++; };
 
             KeyboardController.OnKeyPress decreaseSpeed =
-                (o, i, arg3) => { EngineSpeed = 0; };
+                (o, i, arg3) => { EngineSpeed--; };
 
             KeyboardController.OnKeyPress turnPort =
                 (o, i, arg3) =>{
@@ -96,15 +99,15 @@ namespace Forge.Core.Airship.Controllers{
 
             #endregion
 
-            binds.AddBindCallback(AirshipBinds.IncreaseForwardSpeed, BindCondition.OnKeyDown, increaseSpeed);
-            binds.AddBindCallback(AirshipBinds.DecreaseForwardSpeed, BindCondition.OnKeyDown, decreaseSpeed);
-            binds.AddBindCallback(AirshipBinds.TurnPort, BindCondition.KeyHeldDown, turnPort);
-            binds.AddBindCallback(AirshipBinds.TurnStarboard, BindCondition.KeyHeldDown, turnStarboard);
-            binds.AddBindCallback(AirshipBinds.DecreaseAltitude, BindCondition.KeyHeldDown, decreaseAltitude);
-            binds.AddBindCallback(AirshipBinds.IncreaseAltitude, BindCondition.KeyHeldDown, increaseAltitude);
-            binds.AddBindCallback(AirshipBinds.Fire, BindCondition.OnKeyDown, fire);
+            controller.AddBindCallback(AirshipBinds.IncreaseForwardSpeed, BindCondition.OnKeyDown, increaseSpeed);
+            controller.AddBindCallback(AirshipBinds.DecreaseForwardSpeed, BindCondition.OnKeyDown, decreaseSpeed);
+            controller.AddBindCallback(AirshipBinds.TurnPort, BindCondition.KeyHeldDown, turnPort);
+            controller.AddBindCallback(AirshipBinds.TurnStarboard, BindCondition.KeyHeldDown, turnStarboard);
+            controller.AddBindCallback(AirshipBinds.DecreaseAltitude, BindCondition.KeyHeldDown, decreaseAltitude);
+            controller.AddBindCallback(AirshipBinds.IncreaseAltitude, BindCondition.KeyHeldDown, increaseAltitude);
+            controller.AddBindCallback(AirshipBinds.Fire, BindCondition.OnKeyDown, fire);
 
-            return binds;
+            return controller;
         }
 
         protected override void UpdateController(double timeDelta){
