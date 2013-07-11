@@ -18,7 +18,7 @@ using MonoGameUtility;
 
 namespace Forge.Core.Physics{
     public class ProjectilePhysics : IDisposable{
-        const float _projectileLifetime = 99999999; //milliseconds
+        const float _projectileLifetime = 10000; //milliseconds
         const int _maxProjectiles = 500;
         const string _projectileShader = "Config/Shaders/TintedModel.config";
         const string _projectileList = "Config/Projectiles/ProjectileList.config";
