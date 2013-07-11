@@ -133,7 +133,7 @@ namespace Forge.Core{
         }
 
         public DebugDrawModes GetDebugMode(){
-            return DebugDrawModes.ALL | DebugDrawModes.DBG_MAX_DEBUG_DRAW_MODE;
+            return DebugDrawModes.DBG_DrawAabb | DebugDrawModes.DBG_DrawWireframe | DebugDrawModes.DBG_DrawContactPoints;
         }
 
         public void DrawAabb(IndexedVector3 @from, IndexedVector3 to, IndexedVector3 color){
@@ -211,8 +211,15 @@ namespace Forge.Core{
         #endregion
 
         public void Clear(){
-            _lineBuffer.SetVertexBufferData(_lines);
+            for (int i = 0; i < _numLines; i++){
+                _lines[i].Position = Vector3.Zero;
+            }
+            UpdateBuffers();
             _numLines = 0;
+        }
+
+        public void UpdateBuffers(){
+            _lineBuffer.SetVertexBufferData(_lines);
         }
 
         public void DrawLineImmediate(Vector3 @from, Vector3 to){
