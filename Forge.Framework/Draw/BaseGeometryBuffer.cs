@@ -59,10 +59,6 @@ namespace Forge.Framework.Draw{
             RenderTarget.Buffers.Add(this);
         }
 
-        public EffectParameterCollection ShaderParams{
-            get { return Shader.Parameters; }
-        }
-
         #region IDisposable Members
 
         public void Dispose(){
@@ -78,10 +74,15 @@ namespace Forge.Framework.Draw{
 
         #region IDrawableBuffer Members
 
+        public EffectParameterCollection ShaderParams{
+            get { return Shader.Parameters; }
+        }
+
         public void Draw(Matrix viewMatrix){
             if (Enabled){
                 Shader.Parameters["mtx_View"].SetValue(viewMatrix);
                 Shader.Parameters["mtx_World"].SetValue(BaseWorldTransform);
+                Shader.Parameters["f3_EyePosition"].SetValue(viewMatrix.Translation);
                 Resource.Device.RasterizerState = Rasterizer;
 
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){

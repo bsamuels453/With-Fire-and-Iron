@@ -34,11 +34,11 @@ namespace Forge.Framework.Draw{
             RenderTarget.Buffers.Add(this);
         }
 
+        #region IDrawableBuffer Members
+
         public EffectParameterCollection ShaderParams{
             get { return _shader.Parameters; }
         }
-
-        #region IDrawableBuffer Members
 
         public void Draw(Matrix viewMatrix){
             if (!Enabled)
@@ -51,6 +51,7 @@ namespace Forge.Framework.Draw{
                         part.Effect = _shader;
                     }
                     foreach (var effect in mesh.Effects){
+                        effect.Parameters["f3_EyePosition"].SetValue(viewMatrix.Translation);
                         effect.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
                         effect.Parameters["mtx_World"].SetValue(obj.Transform*_globalTransform);
                         effect.Parameters["mtx_View"].SetValue(viewMatrix);

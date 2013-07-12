@@ -1,5 +1,6 @@
 ﻿#region
 
+using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
 #endregion
@@ -11,6 +12,7 @@ namespace Forge.Framework.Draw{
     }
 
     public interface IDrawableBuffer{
+        EffectParameterCollection ShaderParams { get; }
         void Draw(Matrix viewMatrix);
     }
 }
