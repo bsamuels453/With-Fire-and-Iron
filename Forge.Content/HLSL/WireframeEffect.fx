@@ -1,6 +1,5 @@
-float4x4 mtx_World;
-float4x4 mtx_View;
-float4x4 mtx_Projection;
+#include <Lighting.c>
+
 float3 f3_Color = (1,1,1);
 float f_Alpha = 1;
 

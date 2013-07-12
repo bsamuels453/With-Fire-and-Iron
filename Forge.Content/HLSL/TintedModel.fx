@@ -1,7 +1,5 @@
-float4x4 mtx_World;
-float4x4 mtx_View;
-float4x4 mtx_Projection;
-float4x4 mtx_WorldInverseTranspose;
+#include <Lighting.c>
+
 float4 f4_TintColor;
 
 ////////////////////////////////////////////

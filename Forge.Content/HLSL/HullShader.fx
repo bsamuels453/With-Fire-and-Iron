@@ -1,7 +1,4 @@
-float4x4 mtx_World;
-float4x4 mtx_View;
-float4x4 mtx_Projection;
-float4x4 mtx_WorldInverseTranspose;
+#include <Lighting.c>
 
 float f_AmbientIntensity = 1;
 float f_DiffuseIntensity;
@@ -9,7 +6,6 @@ float f_DecalScaleMult;
 
 float3 f3_DiffuseLightDirection;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
-float4 f4_AmbientColor;
 
 texture tex_Material;
 texture tex_Normalmap;
@@ -73,23 +69,23 @@ struct VertexShaderInput
 
 struct VertexShaderOutput
 {
-    float4 Position : POSITION0;
-    float3 Normal : TEXCOORD0;
-    float2 TextureCoordinate : TEXCOORD1;
-	float3 UntransformedNormal : TEXCOORD2;
+	float4 Position : POSITION;
+	float4 WorldPosition : DEPTH;
+	float2 TexCoord : TEXCOORD1;
+	float3 Normal : TEXCOORD2;
+	float3 UntransformedNormal : TEXCOORD3;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-	float4x4 WorldInverseTranspose = transpose(mtx_World);
-    float4 worldPosition = mul(input.Position, mtx_World);
-	float4 viewPosition = mul(worldPosition, mtx_View);
+    output.WorldPosition = mul(input.Position, mtx_World);
+	float4 viewPosition = mul(output.WorldPosition, mtx_View);
 
 	output.Position = mul(viewPosition, mtx_Projection);
-	output.Normal = mul(input.Normal, WorldInverseTranspose);
-	output.TextureCoordinate = input.TextureCoordinate;
-	output.UntransformedNormal = input.Normal;
+	output.Normal = normalize(mul(input.Normal, mtx_World));
+	output.TexCoord = input.TextureCoordinate;
+	output.UntransformedNormal = normalize(input.Normal);
 
     return output;
 }
@@ -97,14 +93,14 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 ////////////////////////////////////////////
 /////////////////PIXEL SHADER///////////////
 ////////////////////////////////////////////
-float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
+float4 PixelShaderFunction(VertexShaderOutput input) : SV_Target
 {
-	float4 color = tex2D(samp_Material, input.TextureCoordinate);
-	float4 decalColor = tex2D(samp_DecalMaterial, input.TextureCoordinate);
+	float4 color = tex2D(samp_Material, input.TexCoord);
+	float4 decalColor = tex2D(samp_DecalMaterial, input.TexCoord);
 
 	float2 decalCoords;
-	decalCoords.x = input.TextureCoordinate.x/f_DecalScaleMult;
-	decalCoords.y = input.TextureCoordinate.y/f_DecalScaleMult;
+	decalCoords.x = input.TexCoord.x/f_DecalScaleMult;
+	decalCoords.y = input.TexCoord.y/f_DecalScaleMult;
 
 	float4 decalMask;
 	if(input.UntransformedNormal.z < 0){
@@ -120,7 +116,26 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	color = color +  decalColor * decalMask.a;
 	color = saturate(color);
 
-	float3 normal = tex2D(samp_Normalmap, input.TextureCoordinate) + input.Normal;
+
+	//calculate lighting vectors - renormalize vectors
+	input.Normal = normalize( input.Normal );		
+	float3 V = normalize( f3_EyePosition - (float3) input.WorldPosition );
+	//DONOT USE -light.dir since the reflection returns a ray from the surface
+	float3 R = reflect( f3_DiffuseLightDirection, input.Normal);
+	
+	//calculate lighting
+	LightingAttribs attribs = {0.1,0.5,0.5,30};	
+	float4 I = calcPhong( attribs, f4_DiffuseColor, input.Normal, -f3_DiffuseLightDirection, V, R );
+    
+	//with texturing
+	//return I * colorMap.Sample(linearSampler, input.t);
+	
+	//no texturing pure lighting
+	float4 finalColor = saturate(color) * I;
+	finalColor.a = 1;
+	return finalColor; 
+	/*
+	float3 normal = tex2D(samp_Normalmap, input.TexCoord) + input.Normal;
 	normalize(normal);
 
 	float diffuseQuantity = dot(normalize(f3_DiffuseLightDirection), normal) * f_DiffuseIntensity;
@@ -132,7 +147,9 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 	float4 shadedColor = diffuseContribution + ambientContribution;
 
 	shadedColor.a = 1;
-	return saturate(shadedColor);
+	*/
+
+	//return saturate(color);
 }
 
 technique Standard

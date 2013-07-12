@@ -1,14 +1,10 @@
-float4x4 mtx_World;
-float4x4 mtx_View;
-float4x4 mtx_Projection;
-float4x4 mtx_WorldInverseTranspose;
+#include <Lighting.c>
 
 float f_AmbientIntensity = 1;
 float f_DiffuseIntensity;
 
 float3 f3_DiffuseLightDirection;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
-float4 f4_AmbientColor;
 
 texture tex_Material;
 
@@ -33,38 +29,39 @@ struct VertexShaderInput
 
 struct VertexShaderOutput
 {
+	
     float4 Position : POSITION0;
-    float4 Color : COLOR0;
-    //float3 Normal : TEXCOORD0;
-    float2 TextureCoordinate : TEXCOORD0;
+	float4 WPosition : TEXCOORD2;
+    float3 Normal : TEXCOORD0;
+    float2 TextureCoordinate : TEXCOORD1;
 };
 
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-	//float4x4 WorldInverseTranspose = transpose(World);
-    float4 worldPosition = mul(input.Position, mtx_World);
-	
-	//valid alternative
-	//float4x4 test = mul (View, Projection);
-	//output.Position = mul(worldPosition, test);
-	
-    float4 viewPosition = mul(worldPosition, mtx_View);
-    output.Position = mul(viewPosition, mtx_Projection);
 
-	float4 normal = input.Normal;
+    output.WPosition = localToWorld(input.Position);
+    float4 viewPosition = worldToView(output.WPosition);
+	//float4 ww = localToWorld(input.Position);
+	//float4 viewPosition = worldToView(ww);
+    output.Position = viewToProjection(viewPosition);
+	// * 
+
     //float4 normal = mul(input.Normal, View);
 	//normal = mul(normal, Projection);
 	//float4 normal = input.Normal;
-	normal = normalize(normal);
 
+
+
+	/*
 	float4 diffuseDir = mul(f3_DiffuseLightDirection, mtx_World);
 	//float3 dir = normalize(DiffuseLightDirection);
     //float lightIntensity = dot(normal, dir) * AmbientIntensity;
 	float lightIntensity = dot(normal, diffuseDir) * f_DiffuseIntensity;
     output.Color = saturate(f4_AmbientColor * f_AmbientIntensity + lightIntensity);
-
+	*/
     //output.Normal = normal;
+	output.Normal = localToWorld(input.Normal);
     output.TextureCoordinate = input.TextureCoordinate;
 
     return output;
@@ -75,13 +72,21 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 ////////////////////////////////////////////
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-	input.Color = clamp(input.Color, 0.35, 1);
+	input.Normal = normalize(input.Normal);
+	float3 V = normalize( f3_EyePosition - (float3) input.WPosition	 );
+	float3 R = reflect( f3_DiffuseLightDirection, input.Normal);
+	//input.Color = clamp(input.Color, 0.35, 1);
 
 	float4 textureColor = tex2D(samp_Material, input.TextureCoordinate);
-    float4 tex = saturate(textureColor * input.Color);
+    float4 tex =(1,1,1,1);//= /saturate(textureColor * input.Color);
 	tex.a = 1;
-	return tex;
+	LightingAttribs attribs = {1,1,1,1};
+	return calcPhong( attribs, f4_DiffuseColor, input.Normal, -f3_DiffuseLightDirection, V, R );
 }
+
+
+
+
 
 technique Standard
 {

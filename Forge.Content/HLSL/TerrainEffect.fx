@@ -1,10 +1,6 @@
-float4x4 mtx_World;
-float4x4 mtx_View;
-float4x4 mtx_Projection;
-float4x4 mtx_WorldInverseTranspose;
+#include <Lighting.c>
 
 float3 f3_DiffuseLightDirection = float3(1, 1, 0);
-float4 f4_AmbientColor;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
 
 float f_TextureScalingFactor;
