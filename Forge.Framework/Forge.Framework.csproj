@@ -107,7 +107,7 @@
     </Reference>
     <Reference Include="MonoGame.Framework, Version=3.0.1.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\MonoGame\MonoGame.Framework\bin\WindowsGL\Debug\MonoGame.Framework.dll</HintPath>
+      <HintPath>..\MonoGame.Framework.dll</HintPath>
     </Reference>
     <Reference Include="MonoGameUtility, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -180,7 +180,6 @@
     <Compile Include="UpdateInterfaces.cs" />
     <Compile Include="VectorParser.cs" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PreBuildEvent>del /s /q $(SolutionDir)\Bin\UiTemplates
