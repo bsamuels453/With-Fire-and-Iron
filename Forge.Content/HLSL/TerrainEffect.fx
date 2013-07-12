@@ -7,7 +7,7 @@ float3 f3_DiffuseLightDirection = float3(1, 1, 0);
 float4 f4_AmbientColor;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
 
-float f_TextureScalingFactor;
+float f_TextureScalingFactor = 0.0;
 float f_DiffuseIntensity;
 float f_AmbientIntensity;
 

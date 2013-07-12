@@ -2,9 +2,13 @@
 
 using System;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
+using Vector2 = MonoGameUtility.Vector2;
+using Vector3 = MonoGameUtility.Vector3;
+using Vector4 = MonoGameUtility.Vector4;
 
 #endregion
 

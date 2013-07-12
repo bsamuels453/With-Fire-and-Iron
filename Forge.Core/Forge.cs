@@ -45,7 +45,7 @@ namespace Forge.Core{
 
             IsFixedTimeStep = true;
             //for some reason beyond my comprehension, you have to use 64 denomator for 60fps
-            TargetElapsedTime = new TimeSpan((long) (TimeSpan.TicksPerSecond*(1/64d)));
+            TargetElapsedTime = new TimeSpan((long) (TimeSpan.TicksPerSecond*(1/60d)));
 
             var aspectRatio = Resource.Device.Viewport.Bounds.Width/(float) Resource.Device.Viewport.Bounds.Height;
             Resource.ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView
