@@ -7,7 +7,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
-    public class ElementGrid : Panel{
+    public class ElementGrid : DraggableCollection{
         readonly IUIElement[,] _elements;
         readonly int _gridInsetX;
         readonly int _gridInsetY;
@@ -39,7 +39,6 @@ namespace Forge.Framework.UI.Elements{
             _elements = new IUIElement[horizItems,vertItems];
 
             base.BoundingBox = new Rectangle(position.X, position.Y, width, height);
-            base.GenerateBackgroundSprite();
         }
 
         public void SetElement(IUIElement element, int x, int y){
