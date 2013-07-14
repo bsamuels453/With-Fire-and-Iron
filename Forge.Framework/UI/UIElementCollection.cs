@@ -22,12 +22,12 @@ namespace Forge.Framework.UI{
     public class UIElementCollection : IUIElement{
         const float _hoverTime = 200;
         protected readonly MouseManager MouseManager;
+        protected readonly UIElementCollection ParentCollection;
         readonly string _alias;
         readonly PriorityQueue<IUIElement> _elements;
         readonly FrameStrata _frameStrata;
         readonly Stopwatch _hoverTimer;
         readonly MouseController _mouseController;
-        readonly UIElementCollection _parentCollection;
         float _alpha;
         Rectangle _boundingBox;
         Sprite2D _boundingTexture;
@@ -40,7 +40,7 @@ namespace Forge.Framework.UI{
             _frameStrata = new FrameStrata();
             _elements = new PriorityQueue<IUIElement>();
             _boundingBox = new Rectangle(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
-            _parentCollection = null;
+            ParentCollection = null;
             MouseManager = mouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
@@ -70,9 +70,9 @@ namespace Forge.Framework.UI{
             _frameStrata = new FrameStrata(depth, parent.FrameStrata, alias);
             _elements = new PriorityQueue<IUIElement>();
             _boundingBox = boundingBox;
-            _parentCollection = parent;
-            _parentCollection.AddCollection(this);
-            MouseManager = _parentCollection.MouseManager;
+            ParentCollection = parent;
+            ParentCollection.AddCollection(this);
+            MouseManager = ParentCollection.MouseManager;
             _mouseController = new MouseController(this);
             _alpha = 1;
             _hoverTimer = new Stopwatch();
@@ -134,8 +134,8 @@ namespace Forge.Framework.UI{
                 foreach (var element in _elements){
                     element.Dispose();
                 }
-                if (_parentCollection != null){
-                    _parentCollection.RemoveElement(this);
+                if (ParentCollection != null){
+                    ParentCollection.RemoveElement(this);
                 }
                 _disposed = true;
             }
