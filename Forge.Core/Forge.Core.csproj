@@ -165,6 +165,9 @@
     <Compile Include="Airship\DecalBlitter.cs" />
     <Compile Include="Airship\Export\AirshipPackager.cs" />
     <Compile Include="Airship\AirshipIndexer.cs" />
+    <Compile Include="Airship\Export\AirshipStatePath.cs" />
+    <Compile Include="Airship\Export\DefinitionPath.cs" />
+    <Compile Include="Airship\Export\SerializedPath.cs" />
     <Compile Include="Airship\Generation\HullAttributeGenerator.cs" />
     <Compile Include="DebugDraw.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
@@ -176,6 +179,11 @@
     <Compile Include="Airship\Data\ModelAttributes.cs" />
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
+    <Compile Include="HullEditor\HandleButton.cs" />
+    <Compile Include="ObjectEditor\ConstructionBar.cs" />
+    <Compile Include="ObjectEditor\NavBar.cs" />
+    <Compile Include="ObjectEditor\ToolbarButton.cs" />
+    <Compile Include="ObjectEditor\Tools\IToolbarTool.cs" />
     <Compile Include="Physics\CollisionObject.cs" />
     <Compile Include="Physics\CollisionObjectCollection.cs" />
     <Compile Include="Physics\CollisionObjectHandle.cs" />
