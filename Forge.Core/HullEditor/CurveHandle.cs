@@ -141,7 +141,7 @@ namespace Forge.Core.HullEditor{
         }
 
         public void TranslatePosition(float dx, float dy){
-            BalancedCenterTranslate(dx, dy);
+            BalancedCenterTranslate((int) dx, (int) dy);
         }
 
         public void ClampPositionFromExternal(float dx, float dy){
@@ -427,7 +427,7 @@ namespace Forge.Core.HullEditor{
             }
         }
 
-        void BalancedCenterTranslate(float dx, float dy){
+        void BalancedCenterTranslate(int dx, int dy){
             _centerButton.X += dx;
             _centerButton.Y += dy;
             _prevButton.X += dx;
@@ -452,8 +452,8 @@ namespace Forge.Core.HullEditor{
             RawPrevTranslate(dx, dy);
             _nextLine.Angle = (float) (_prevLine.Angle + Math.PI);
 
-            _nextButton.X = _nextLine.DestPoint.X - _nextButton.Width/2;
-            _nextButton.Y = _nextLine.DestPoint.Y - _nextButton.Height/2;
+            _nextButton.X = (int) (_nextLine.DestPoint.X - _nextButton.Width/2f);
+            _nextButton.Y = (int) (_nextLine.DestPoint.Y - _nextButton.Height/2f);
         }
 
         void RawNextTranslate(int dx, int dy){
@@ -466,8 +466,8 @@ namespace Forge.Core.HullEditor{
             RawNextTranslate(dx, dy);
             _prevLine.Angle = (float) (_nextLine.Angle + Math.PI);
 
-            _prevButton.X = _prevLine.DestPoint.X - _prevButton.Width/2;
-            _prevButton.Y = _prevLine.DestPoint.Y - _prevButton.Height/2;
+            _prevButton.X = (int) (_prevLine.DestPoint.X - _prevButton.Width/2f);
+            _prevButton.Y = (int) (_prevLine.DestPoint.Y - _prevButton.Height/2f);
         }
 
         void TranslateToLinks(object caller, int dx, int dy){
