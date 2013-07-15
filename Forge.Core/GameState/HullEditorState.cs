@@ -60,6 +60,7 @@ namespace Forge.Core.GameState{
             _sidepanel.Dispose();
             _backpanel.Dispose();
             _toppanel.Dispose();
+            _elementCollection.Dispose();
         }
 
         public void Update(double timeDelta){
