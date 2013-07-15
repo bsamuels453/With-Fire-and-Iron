@@ -6,7 +6,9 @@ using System.IO;
 using System.Xml;
 using Forge.Core.HullEditor;
 using Forge.Framework;
+using Forge.Framework.Draw;
 using Forge.Framework.Resources;
+using Forge.Framework.UI;
 using Microsoft.Xna.Framework.Input;
 using MonoGameUtility;
 
@@ -15,16 +17,19 @@ using MonoGameUtility;
 namespace Forge.Core.GameState{
     public class HullEditorState : IGameState{
         readonly BackEditorPanel _backpanel;
-        //readonly UIElementCollection _elementCollection;
+        readonly UIElementCollection _elementCollection;
 
         readonly PreviewRenderer _previewRenderer;
         readonly SideEditorPanel _sidepanel;
         readonly TopEditorPanel _toppanel;
+        readonly RenderTarget test;
 
         public HullEditorState(){
-            throw new Exception();
-            //_elementCollection = new UIElementCollection();
-            //_elementCollection.Bind();
+            test = new RenderTarget();
+            test.Bind();
+            _elementCollection = new UIElementCollection(GamestateManager.MouseManager);
+            _elementCollection.Bind();
+            test.Unbind();
 
             _sidepanel = new SideEditorPanel(0, 0, Resource.ScreenSize.GetScreenValueX(0.5f), Resource.ScreenSize.GetScreenValueY(0.5f), "Data/side.xml");
             _toppanel = new TopEditorPanel
@@ -67,6 +72,7 @@ namespace Forge.Core.GameState{
             GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
             return;
             throw new Exception();
+
             /*
             _elementCollection.Bind();
             _sidepanel.Update();
