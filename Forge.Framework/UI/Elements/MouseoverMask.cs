@@ -9,7 +9,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
-    internal class MouseoverMask : IUIElement{
+    public class MouseoverMask : IUIElement{
         const float _fadedInAlpha = 0.1f;
         readonly MaskingSprite _mask;
         float _alpha;

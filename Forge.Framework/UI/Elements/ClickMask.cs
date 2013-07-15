@@ -8,7 +8,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
-    internal class ClickMask : IUIElement{
+    public class ClickMask : IUIElement{
         const float _fadedInAlpha = 0.2f;
         readonly MaskingSprite _mask;
         float _alpha;
