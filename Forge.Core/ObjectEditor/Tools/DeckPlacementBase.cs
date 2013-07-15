@@ -19,7 +19,6 @@ using Vector3 = MonoGameUtility.Vector3;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
-    /*
     public abstract class DeckPlacementBase : IToolbarTool{
         protected readonly float GridResolution;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
@@ -64,8 +63,6 @@ namespace Forge.Core.ObjectEditor.Tools{
             GuideGridBuffers = new GeometryBuffer<VertexPositionColor>[hullData.NumDecks];
             GenerateGuideGrid();
         }
-
-        #region IToolbarTool Members
 
         public bool Enabled{
             get { return _enabled; }
@@ -207,8 +204,6 @@ namespace Forge.Core.ObjectEditor.Tools{
             DisposeChild();
             _disposed = true;
         }
-
-        #endregion
 
         bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
             if (_selectionResolution == -1){
@@ -393,5 +388,4 @@ namespace Forge.Core.ObjectEditor.Tools{
             Debug.Assert(_disposed);
         }
     }
-     */
 }

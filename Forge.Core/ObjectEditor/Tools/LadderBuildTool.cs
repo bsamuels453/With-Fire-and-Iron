@@ -14,7 +14,6 @@ using Vector3 = MonoGameUtility.Vector3;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
-    /*
     public class LadderBuildTool : DeckPlacementBase{
         const float _ladderWidth = 1f;
         const float _gridWidth = 0.5f;
@@ -113,5 +112,4 @@ namespace Forge.Core.ObjectEditor.Tools{
             _ghostedLadderModel.Dispose();
         }
     }
-     */
 }
