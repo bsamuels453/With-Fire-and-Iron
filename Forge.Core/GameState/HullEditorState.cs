@@ -70,7 +70,7 @@ namespace Forge.Core.GameState{
             var topInfo = _toppanel.Curves.GetControllerInfo();
 
             GamestateManager.ClearState();
-            GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
+            GamestateManager.AddGameState(new ObjectEditorState());
             return;
             throw new Exception();
 
@@ -107,7 +107,7 @@ namespace Forge.Core.GameState{
                 var topInfo = _toppanel.Curves.GetControllerInfo();
 
                 GamestateManager.ClearState();
-                GamestateManager.AddGameState(new ObjectEditorState(backInfo, sideInfo, topInfo));
+                GamestateManager.AddGameState(new ObjectEditorState());
             }
         }
 
