@@ -21,10 +21,11 @@ namespace Forge.Core.Airship.Generation{
             modelAttribs.Berth = 13.95f;
             modelAttribs.Depth = 7.250177f;
             modelAttribs.NumDecks = numDecks;
-            modelAttribs.Centroid = new Vector3(modelAttribs.Length/3, 0, 0);
+            modelAttribs.Centroid = new Vector3(0, 0, 0);
             modelAttribs.MaxAcceleration = 10;
             modelAttribs.MaxAscentAcceleration = 7f;
             modelAttribs.MaxTurnAcceleration = 0.22685f;
+            modelAttribs.DeckHeight = 2.13f;
             return modelAttribs;
         }
     }
