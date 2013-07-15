@@ -98,9 +98,6 @@ namespace Forge.Core.GameState{
 
             _uiElementCollection.Unbind();
              */
-            DebugText.CreateText("FPS", 0, 0);
-            DebugText.CreateText("RunningSlowly", 0, 11);
-            DebugText.CreateText("PrivateMem", 0, 24);
         }
 
         #region IGameState Members

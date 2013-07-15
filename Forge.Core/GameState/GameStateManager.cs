@@ -21,6 +21,9 @@ namespace Forge.Core.GameState{
             MouseManager = new MouseManager();
             _stopwatch = new Stopwatch();
             _stopwatch.Start();
+            DebugText.CreateText("FPS", 0, 0);
+            DebugText.CreateText("RunningSlowly", 0, 11);
+            DebugText.CreateText("PrivateMem", 0, 24);
         }
 
         public static ICamera CameraController { get; set; }
