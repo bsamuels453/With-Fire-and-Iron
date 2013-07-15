@@ -1,0 +1,12 @@
+{
+	"NumHorizontalItems": 1,
+	"NumVerticalItems": 2,
+	"HorizontalPadding": 3,
+	"VerticalPadding": 3,
+	"ItemWidth": 32,
+	"ItemHeight": 32,
+	"GridInsetX": 0,
+	"GridInsetY": 0,
+	"UpButtonTex": "Icons/UpArrow",
+	"DownButtonTex": "Icons/DownArrow"
+}
