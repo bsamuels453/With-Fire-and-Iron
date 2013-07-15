@@ -66,7 +66,7 @@ namespace Forge.Core.Airship.Export{
         /// <param name="stateData"> The state data that will be used to initalize the airship. If you specify an Id in this structure, it will be ignored. </param>
         /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship GenerateNewAirship(AirshipStatePath statePath, AirshipStateData stateData, Battlefield battlefield) {
+        public static Airship GenerateNewAirship(AirshipStatePath statePath, AirshipStateData stateData, Battlefield battlefield){
             stateData.AirshipId = _uidGenerator.NextUid();
             DebugConsole.WriteLine("New airship being generated with uid " + stateData.AirshipId);
 
@@ -132,7 +132,7 @@ namespace Forge.Core.Airship.Export{
         /// <returns> </returns>
         public static AirshipSerializationStruct LoadAirshipSerialization(SerializedPath model){
             AirshipSerializationStruct airship;
-            if (_modelCache.ContainsKey(model.Path)) {
+            if (_modelCache.ContainsKey(model.Path)){
                 airship = _modelCache[model.Path];
                 DebugConsole.WriteLine("Airship serialization structure loaded from cache");
             }
