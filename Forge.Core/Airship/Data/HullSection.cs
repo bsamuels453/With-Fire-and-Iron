@@ -18,7 +18,7 @@ namespace Forge.Core.Airship.Data{
         /// While the aliasedVertexes will always stay the same no matter what the contents of the hullSection is,
         /// it's important to remember that they only represent where the plane on which the geometry lies.
         /// </summary>
-        [ProtoMember(1)] public readonly Vector3[] AliasedVertexes; 
+        [ProtoMember(1)] public readonly Vector3[] AliasedVertexes;
 
         /// <summary>
         /// This field represents the texture coordinates of this hull section on the damagemap texture.
