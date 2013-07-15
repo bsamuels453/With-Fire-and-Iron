@@ -142,6 +142,7 @@
     <Compile Include="Draw\DebugText.cs" />
     <Compile Include="Draw\GeometryBuffer.cs" />
     <Compile Include="Draw\IDrawableSprite.cs" />
+    <Compile Include="Draw\Line2D.cs" />
     <Compile Include="Draw\MaskingSprite.cs" />
     <Compile Include="Draw\ObjectBuffer.cs" />
     <Compile Include="Draw\ObjectModelBuffer.cs" />
