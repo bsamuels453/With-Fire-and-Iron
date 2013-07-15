@@ -21,7 +21,6 @@ namespace Forge.Framework.Draw{
         float _angle;
 
         bool _disposed;
-        float _length;
 
         Vector2 _point1;
         Vector2 _point2;
@@ -48,6 +47,8 @@ namespace Forge.Framework.Draw{
 
             this.FrameStrata = new FrameStrata(targetStrata, parentStrata, "Line2D");
         }
+
+        public float Length { get; private set; }
 
         public float Angle{
             get { return _angle; }
@@ -85,7 +86,7 @@ namespace Forge.Framework.Draw{
                     Color.White*Alpha,
                     _angle,
                     Vector2.Zero,
-                    new Vector2(_length, _lineWidth),
+                    new Vector2(Length, _lineWidth),
                     SpriteEffects.None,
                     FrameStrata.FrameStrataValue
                 );
@@ -172,8 +173,8 @@ namespace Forge.Framework.Draw{
         ///   calculates the line's destination point from the line's unit vector and length
         /// </summary>
         void CalculateDestFromUnitVector(){
-            _point2.X = _uVec.X*_length + _point1.X;
-            _point2.Y = _uVec.Y*_length + _point1.Y;
+            _point2.X = _uVec.X*Length + _point1.X;
+            _point2.Y = _uVec.Y*Length + _point1.Y;
         }
 
         /// <summary>
@@ -182,7 +183,7 @@ namespace Forge.Framework.Draw{
         void CalculateInfoFromPoints(){
             _angle = (float) Math.Atan2(_point2.Y - _point1.Y, _point2.X - _point1.X);
             _uVec = Common.GetComponentFromAngle(_angle, 1);
-            _length = Vector2.Distance(_point1, _point2);
+            Length = Vector2.Distance(_point1, _point2);
         }
     }
 }
