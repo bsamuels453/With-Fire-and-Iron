@@ -41,7 +41,17 @@ namespace Forge.Framework.UI.Elements{
             base.BoundingBox = new Rectangle(position.X, position.Y, width, height);
         }
 
-        public void SetElement(IUIElement element, int x, int y){
+        public void AddGridElement(UIElementCollection element, int x, int y){
+            element.X = base.BoundingBox.X + _gridInsetX + x*_itemWidth + (x + 1)*_horizPadding;
+            element.Y = base.BoundingBox.Y + _gridInsetY + y*_itemHeight + (y + 1)*_vertPadding;
+
+            Debug.Assert(element.Width == _itemWidth);
+            Debug.Assert(element.Height == _itemHeight);
+
+            _elements[x, y] = element;
+        }
+
+        public void AddGridElement(IUIElement element, int x, int y){
             element.X = base.BoundingBox.X + _gridInsetX + x*_itemWidth + (x + 1)*_horizPadding;
             element.Y = base.BoundingBox.Y + _gridInsetY + y*_itemHeight + (y + 1)*_vertPadding;
 
