@@ -137,6 +137,11 @@ namespace Forge.Framework.UI{
                 if (ParentCollection != null){
                     ParentCollection.RemoveElement(this);
                 }
+                //allow the disposal of the parent element collection.
+                //this typically happens when gamestates are disposed.
+                if (_globalUIParent == this){
+                    _globalUIParent = null;
+                }
                 _disposed = true;
             }
             else{
