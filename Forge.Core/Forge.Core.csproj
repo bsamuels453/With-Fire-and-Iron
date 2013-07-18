@@ -180,7 +180,7 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
-    <Compile Include="ObjectEditor\ConstructionBar.cs" />
+    <Compile Include="ObjectEditor\EditorToolbar.cs" />
     <Compile Include="ObjectEditor\NavBar.cs" />
     <Compile Include="ObjectEditor\ToolbarButton.cs" />
     <Compile Include="ObjectEditor\Tools\IToolbarTool.cs" />
