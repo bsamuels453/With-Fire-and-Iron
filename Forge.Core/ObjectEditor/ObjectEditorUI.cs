@@ -14,6 +14,7 @@ namespace Forge.Core.ObjectEditor{
     ///   this class handles the display of the prototype airship and all of its components
     /// </summary>
     public class ObjectEditorUI : IDisposable{
+        readonly EditorToolbar _editorToolbar;
         readonly HullDataManager _hullData;
         readonly NavBar _navBar;
         readonly UIElementCollection _uiElementCollection;
@@ -25,20 +26,8 @@ namespace Forge.Core.ObjectEditor{
             _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
             _uiElementCollection.Bind();
 
-            _navBar = new NavBar(_uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));
-
-            _navBar.OnUpPressed =
-                (state, f, arg3) =>{
-                    if (arg3.ContainsMouse){
-                        _hullData.MoveUpOneDeck();
-                    }
-                };
-            _navBar.OnDownPressed =
-                (state, f, arg3) =>{
-                    if (arg3.ContainsMouse){
-                        _hullData.MoveDownOneDeck();
-                    }
-                };
+            _navBar = new NavBar(hullData, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));
+            _editorToolbar = new EditorToolbar(_uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
         }
 
         #region IDisposable Members

@@ -1,7 +1,5 @@
 ﻿#region
 
-using System;
-using Forge.Framework.Control;
 using Forge.Framework.Resources;
 using Forge.Framework.UI;
 using Forge.Framework.UI.Elements;
@@ -14,9 +12,10 @@ namespace Forge.Core.ObjectEditor{
         const string _template = "UiTemplates/Specialized/NavBar.json";
 
         readonly ToolbarButton _downButton;
+        readonly HullDataManager _hullData;
         readonly ToolbarButton _upButton;
 
-        public NavBar(UIElementCollection parent, FrameStrata.Level depth, Point position) : base(parent, depth, position, _template){
+        public NavBar(HullDataManager hullData, UIElementCollection parent, FrameStrata.Level depth, Point position) : base(parent, depth, position, _template){
             var jobj = Resource.LoadJObject(_template);
             var upTex = jobj["UpButtonTex"].ToObject<string>();
             var downTex = jobj["DownButtonTex"].ToObject<string>();
@@ -26,14 +25,21 @@ namespace Forge.Core.ObjectEditor{
 
             base.AddGridElement(_upButton, 0, 0);
             base.AddGridElement(_downButton, 0, 1);
-        }
+            _hullData = hullData;
 
-        public Action<ForgeMouseState, float, UIElementCollection> OnUpPressed{
-            set { _upButton.OnLeftClick += value; }
-        }
+            _downButton.OnLeftClick +=
+                (state, f, arg3) =>{
+                    if (arg3.ContainsMouse){
+                        _hullData.MoveDownOneDeck();
+                    }
+                };
 
-        public Action<ForgeMouseState, float, UIElementCollection> OnDownPressed{
-            set { _downButton.OnLeftClick += value; }
+            _upButton.OnLeftClick +=
+                (state, f, arg3) =>{
+                    if (arg3.ContainsMouse){
+                        _hullData.MoveUpOneDeck();
+                    }
+                };
         }
     }
 }
