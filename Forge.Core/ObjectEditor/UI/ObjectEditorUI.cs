@@ -9,7 +9,7 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.ObjectEditor.UI{
     /// <summary>
     ///   this class handles the display of the prototype airship and all of its components
     /// </summary>

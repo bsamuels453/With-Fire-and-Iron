@@ -180,9 +180,9 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
-    <Compile Include="ObjectEditor\EditorToolbar.cs" />
-    <Compile Include="ObjectEditor\NavBar.cs" />
-    <Compile Include="ObjectEditor\ToolbarButton.cs" />
+    <Compile Include="ObjectEditor\UI\EditorToolbar.cs" />
+    <Compile Include="ObjectEditor\UI\NavBar.cs" />
+    <Compile Include="ObjectEditor\UI\ToolbarButton.cs" />
     <Compile Include="ObjectEditor\Tools\IToolbarTool.cs" />
     <Compile Include="Physics\CollisionObject.cs" />
     <Compile Include="Physics\CollisionObjectCollection.cs" />
@@ -191,7 +191,6 @@
     <Compile Include="Physics\ProjectileAttributes.cs" />
     <Compile Include="Physics\ProjectileEmitter.cs" />
     <Compile Include="Physics\ProjectilePhysics.cs" />
-    <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
     <Compile Include="HullEditor\BezierCurve.cs" />
     <Compile Include="HullEditor\BezierCurveCollection.cs" />
     <Compile Include="HullEditor\CurveHandle.cs" />
@@ -206,7 +205,7 @@
     <Compile Include="ObjectEditor\HullDataManager.cs" />
     <Compile Include="Airship\Generation\HullGeometryGenerator.cs" />
     <Compile Include="GameState\ObjectEditorState.cs" />
-    <Compile Include="ObjectEditor\ObjectEditorUI.cs" />
+    <Compile Include="ObjectEditor\UI\ObjectEditorUI.cs" />
     <Compile Include="Camera\BodyCenteredCamera.cs" />
     <Compile Include="Camera\ICamera.cs" />
     <Compile Include="ObjectEditor\AirshipObjectIdentifier.cs" />

@@ -1,4 +1,4 @@
-﻿#region
+#region
 
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Resources;
@@ -8,7 +8,7 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.ObjectEditor.UI{
     internal class EditorToolbar : ElementGrid{
         const string _template = "UiTemplates/Specialized/ObjectEditorToolbar.json";
 

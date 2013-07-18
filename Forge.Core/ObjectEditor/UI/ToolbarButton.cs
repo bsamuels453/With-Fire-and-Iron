@@ -8,7 +8,7 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.ObjectEditor.UI{
     internal class ToolbarButton : UIElementCollection{
         public ToolbarButton(UIElementCollection parent, FrameStrata.Level depth, Point position, string texture)
             : base(parent, depth, new Rectangle(), "ToolbarButton"){

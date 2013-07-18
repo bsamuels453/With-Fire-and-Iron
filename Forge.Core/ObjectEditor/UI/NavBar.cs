@@ -7,7 +7,7 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.ObjectEditor.UI{
     internal class NavBar : ElementGrid{
         const string _template = "UiTemplates/Specialized/NavBar.json";
 
