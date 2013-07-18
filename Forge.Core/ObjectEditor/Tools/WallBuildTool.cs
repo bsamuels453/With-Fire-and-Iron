@@ -24,7 +24,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 10,
                 20,
                 30,
-                "Shader_AirshipWalls"){UpdateBufferManually = true};
+                "Config/Shaders/Airship_InternalWalls.config"){UpdateBufferManually = true};
 
             _tempWallIdentifiers = new List<WallSegmentIdentifier>();
             _wallHeight = hullData.DeckHeight - 0.01f;

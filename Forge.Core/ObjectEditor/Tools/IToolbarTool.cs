@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿#region
 
-namespace Forge.Core.ObjectEditor.Tools {
-    interface IToolbarTool {
+using System;
+
+#endregion
+
+namespace Forge.Core.ObjectEditor.Tools{
+    internal interface IToolbarTool : IDisposable{
+        bool Enabled { get; set; }
     }
 }

@@ -28,7 +28,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             // ReSharper restore CompareOfFloatsByEqualityOperator
             _hullData = hullData;
 
-            _ghostedLadderModel = new ObjectModelBuffer<int>(1, "Shader_TintedModel");
+            _ghostedLadderModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
             //Matrix trans = Matrix.CreateRotationX((float)-Math.PI / 2) * Matrix.CreateRotationY((float)-Math.PI / 2);
             var trans = Matrix.Identity;
 
@@ -37,11 +37,11 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void EnableCursorGhost(){
-            _ghostedLadderModel.ShaderParams["TintColor"].SetValue(Color.Green.ToVector4());
+            _ghostedLadderModel.ShaderParams["f4_TintColor"].SetValue(Color.Green.ToVector4());
         }
 
         protected override void DisableCursorGhost(){
-            _ghostedLadderModel.ShaderParams["TintColor"].SetValue(Color.DarkRed.ToVector4());
+            _ghostedLadderModel.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
         }
 
         protected override void UpdateCursorGhost(){
