@@ -137,6 +137,11 @@ namespace Forge.Framework.Draw{
 
         public MouseController MouseController { get; private set; }
 
+        public bool IsTransparent{
+            get { return true; }
+            set { Debug.Assert(value); }
+        }
+
         public bool HitTest(int x, int y){
             return false;
         }

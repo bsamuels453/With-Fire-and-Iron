@@ -1,6 +1,8 @@
 ﻿#region
 
 using System.Diagnostics;
+using Forge.Framework.Control;
+using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using MonoGameUtility;
 
@@ -8,12 +10,16 @@ using MonoGameUtility;
 
 namespace Forge.Framework.UI.Elements{
     public class ElementGrid : DraggableCollection{
+        const string _selectionMaskTex = "Effects/SolidBlack";
+        const float _selectionMaskAlpha = 0.5f;
         protected readonly IUIElement[,] Elements;
         readonly int _gridInsetX;
         readonly int _gridInsetY;
         readonly int _horizPadding;
         readonly int _itemHeight;
         readonly int _itemWidth;
+        readonly Sprite2D _selectionMask;
+        readonly bool _useSelectionMask;
         readonly int _vertPadding;
 
         public ElementGrid(
@@ -32,6 +38,7 @@ namespace Forge.Framework.UI.Elements{
             _itemHeight = jobj["ItemHeight"].ToObject<int>();
             _gridInsetX = jobj["GridInsetX"].ToObject<int>();
             _gridInsetY = jobj["GridInsetY"].ToObject<int>();
+            _useSelectionMask = jobj["SelectionMask"].ToObject<bool>();
 
             int width = horizItems*_itemWidth + (horizItems + 1)*_horizPadding + _gridInsetX*2;
             int height = vertItems*_itemHeight + (vertItems + 1)*_vertPadding + _gridInsetY*2;
@@ -39,6 +46,27 @@ namespace Forge.Framework.UI.Elements{
             Elements = new IUIElement[horizItems,vertItems];
 
             base.BoundingBox = new Rectangle(position.X, position.Y, width, height);
+
+            if (_useSelectionMask){
+                _selectionMask = new Sprite2D(_selectionMaskTex, base.X, base.Y, _itemWidth, _itemHeight, FrameStrata, FrameStrata.Level.Highlight, true);
+                _selectionMask.Alpha = _selectionMaskAlpha;
+                _selectionMask.Enabled = false;
+                this.AddElement(_selectionMask);
+                this.OnLeftDown += ProcSelectionMask;
+            }
+        }
+
+        void ProcSelectionMask(ForgeMouseState state, float delta, UIElementCollection elem){
+            if (elem.ContainsPoint(state.X, state.Y)){
+                foreach (var element in Elements){
+                    if (element.HitTest(state.X, state.Y)){
+                        _selectionMask.X = element.X;
+                        _selectionMask.Y = element.Y;
+                        _selectionMask.Enabled = true;
+                        break;
+                    }
+                }
+            }
         }
 
         protected void AddGridElement(UIElementCollection element, int x, int y){
