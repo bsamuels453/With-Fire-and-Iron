@@ -59,6 +59,8 @@ namespace Forge.Core.Airship.Generation{
 
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
 
+            #region reflection/translation
+
             //reflect everything around the X axis
             foreach (var buffer in hullBuffResults){
                 buffer.ApplyTransform
@@ -102,16 +104,19 @@ namespace Forge.Core.Airship.Generation{
             }
 
             var reflectionVector = new Vector3(-1, 1, 1);
+            var offset = new Vector3(genResults.Length/2, 0, 0);
             foreach (var boxArray in boundingBoxResults.DeckBoundingBoxes){
                 for (int boxIdx = 0; boxIdx < boxArray.Count; boxIdx++){
-                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min*reflectionVector, boxArray[boxIdx].Max*reflectionVector);
+                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min*reflectionVector + offset, boxArray[boxIdx].Max*reflectionVector + offset);
                 }
             }
             foreach (var vertArray in boundingBoxResults.DeckVertexes){
                 for (int vertIdx = 0; vertIdx < vertArray.Count; vertIdx++){
-                    vertArray[vertIdx] = vertArray[vertIdx]*reflectionVector;
+                    vertArray[vertIdx] = vertArray[vertIdx]*reflectionVector + offset;
                 }
             }
+
+            #endregion
 
             var attributes = HullAttributeGenerator.Generate(genResults.NumDecks);
             var hullSections = GenerateHullSections(hullBuffResults, attributes);
