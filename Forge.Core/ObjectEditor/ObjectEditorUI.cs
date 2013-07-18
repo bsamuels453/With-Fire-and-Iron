@@ -27,7 +27,7 @@ namespace Forge.Core.ObjectEditor{
             _uiElementCollection.Bind();
 
             _navBar = new NavBar(hullData, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));
-            _editorToolbar = new EditorToolbar(_uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
+            _editorToolbar = new EditorToolbar(hullData, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
         }
 
         #region IDisposable Members
@@ -36,6 +36,7 @@ namespace Forge.Core.ObjectEditor{
             Debug.Assert(!_disposed);
             _uiElementCollection.Dispose();
             _disposed = true;
+            _editorToolbar.DisposeTools();
         }
 
         #endregion
