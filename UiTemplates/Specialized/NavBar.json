@@ -7,6 +7,7 @@
 	"ItemHeight": 32,
 	"GridInsetX": 0,
 	"GridInsetY": 0,
+	"SelectionMask": "false",
 	"UpButtonTex": "Icons/UpArrow",
 	"DownButtonTex": "Icons/DownArrow"
 }
