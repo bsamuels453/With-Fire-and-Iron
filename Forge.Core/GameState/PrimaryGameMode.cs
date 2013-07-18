@@ -25,7 +25,7 @@ namespace Forge.Core.GameState{
         public PrimaryGameMode(){
             _renderTarget = new RenderTarget();
             _renderTarget.Bind();
-            _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
+            _uiElementCollection = new UIElementCollection(GameStateManager.MouseManager);
             _uiElementCollection.Bind();
 
             _terrainUpdater = new TerrainUpdater();
@@ -33,8 +33,8 @@ namespace Forge.Core.GameState{
             _battlefield = new Battlefield();
             //AirshipPackager.ConvertDefToProtocolFile("ExportedAirship");
 
-            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("PlayerShip", _battlefield));
-            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship("AIShip", _battlefield));
+            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship(new AirshipStatePath("PlayerShip"), _battlefield));
+            _battlefield.ShipsOnField.Add(AirshipPackager.LoadAirship(new AirshipStatePath("AIShip"), _battlefield));
 
             var controller = _battlefield.ShipsOnField[0].Controller;
             var binds = ((PlayerAirshipController) controller).GenerateKeyboardBindings();
@@ -54,7 +54,7 @@ namespace Forge.Core.GameState{
 
 
             _cameraController = new BodyCenteredCamera(false);
-            GamestateManager.CameraController = _cameraController;
+            GameStateManager.CameraController = _cameraController;
             _cameraController.SetCameraTarget(_battlefield.ShipsOnField[0].StateData.Position);
             /*
             var buttonGen = new ButtonGenerator();
