@@ -17,7 +17,7 @@ namespace Forge.Core.GameState{
             _viewportSize = viewportSize;
 
             _cameraController = new SubmarineCamera(new Vector3(-31, 1043, -50), new Angle3(-0.49f, 0, -11.7f));
-            GamestateManager.CameraController = _cameraController;
+            GameStateManager.CameraController = _cameraController;
 
             _clampMouse = true;
             _skipNextMouseUpdate = true;

@@ -60,7 +60,7 @@ namespace Forge.Core{
 
             DebugConsole.WriteLine("Initializing game-state...");
 #if PLAYMODE
-            GamestateManager.AddGameState(new PrimaryGameMode());
+            GameStateManager.AddGameState(new ObjectEditorState());
 #else
             GamestateManager.AddGameState(new HullEditorState());
 #endif
@@ -80,7 +80,7 @@ namespace Forge.Core{
             var timer = new Stopwatch();
             DebugConsole.WriteLine("Unloading game-state resources...");
             timer.Start();
-            GamestateManager.ClearState();
+            GameStateManager.ClearState();
             timer.Stop();
             DebugConsole.WriteLine("Game-state resources released in " + timer.ElapsedMilliseconds + " ms");
             DebugConsole.DisposeStatic();
@@ -88,7 +88,7 @@ namespace Forge.Core{
         }
 
         protected override void Update(GameTime gameTime){
-            GamestateManager.Update();
+            GameStateManager.Update();
             base.Update(gameTime);
             DebugText.SetText("RunningSlowly", "RunningSlowly: " + gameTime.IsRunningSlowly);
             DebugText.SetText("PrivateMem", "Private: " + _currentProcess.PrivateMemorySize64/1000000f + " MB");
@@ -96,7 +96,7 @@ namespace Forge.Core{
 
         protected override void Draw(GameTime gameTime){
             RenderTarget.BeginDraw();
-            GamestateManager.Draw();
+            GameStateManager.Draw();
             RenderTarget.EndDraw();
             base.Draw(gameTime);
             _numFramesLastSecond++;

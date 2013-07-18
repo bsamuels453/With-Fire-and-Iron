@@ -63,7 +63,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             var mouseController = new MouseController(this);
             mouseController.OnMouseMovement += OnMouseMove;
             mouseController.OnMouseButton += OnMouseButton;
-            GamestateManager.MouseManager.AddGlobalController(mouseController, 100);
+            GameStateManager.MouseManager.AddGlobalController(mouseController, 100);
 
 
             GuideGridBuffers = new GeometryBuffer<VertexPositionColor>[hullData.NumDecks];
@@ -112,7 +112,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             var nearMouse = new Vector3(state.MousePos.X, state.MousePos.Y, 0);
             var farMouse = new Vector3(state.MousePos.X, state.MousePos.Y, 1);
 
-            var camera = (BodyCenteredCamera) GamestateManager.CameraController;
+            var camera = (BodyCenteredCamera) GameStateManager.CameraController;
 
             var camPos = camera.CameraPosition;
             var camTarg = camera.CameraTarget;

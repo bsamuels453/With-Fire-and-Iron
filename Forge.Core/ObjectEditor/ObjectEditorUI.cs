@@ -23,7 +23,7 @@ namespace Forge.Core.ObjectEditor{
         public ObjectEditorUI(HullDataManager hullData, RenderTarget target){
             _hullData = hullData;
 
-            _uiElementCollection = new UIElementCollection(GamestateManager.MouseManager);
+            _uiElementCollection = new UIElementCollection(GameStateManager.MouseManager);
             _uiElementCollection.Bind();
 
             _navBar = new NavBar(hullData, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));

@@ -27,7 +27,7 @@ namespace Forge.Core.GameState{
         public HullEditorState(){
             test = new RenderTarget();
             test.Bind();
-            _elementCollection = new UIElementCollection(GamestateManager.MouseManager);
+            _elementCollection = new UIElementCollection(GameStateManager.MouseManager);
             _elementCollection.Bind();
             test.Unbind();
 
@@ -69,8 +69,8 @@ namespace Forge.Core.GameState{
             var backInfo = _backpanel.Curves.GetControllerInfo();
             var topInfo = _toppanel.Curves.GetControllerInfo();
 
-            GamestateManager.ClearState();
-            GamestateManager.AddGameState(new ObjectEditorState());
+            GameStateManager.ClearState();
+            GameStateManager.AddGameState(new ObjectEditorState());
             return;
             throw new Exception();
 
@@ -106,8 +106,8 @@ namespace Forge.Core.GameState{
                 var backInfo = _backpanel.Curves.GetControllerInfo();
                 var topInfo = _toppanel.Curves.GetControllerInfo();
 
-                GamestateManager.ClearState();
-                GamestateManager.AddGameState(new ObjectEditorState());
+                GameStateManager.ClearState();
+                GameStateManager.AddGameState(new ObjectEditorState());
             }
         }
 

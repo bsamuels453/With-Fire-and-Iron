@@ -10,13 +10,13 @@ using Forge.Framework.Draw;
 namespace Forge.Core.GameState{
     public delegate void OnCameraControllerChange(ICamera prevCamera, ICamera newCamera);
 
-    public static class GamestateManager{
+    public static class GameStateManager{
         public static readonly MouseManager MouseManager;
 
         static IGameState _activeState;
         static readonly Stopwatch _stopwatch;
 
-        static GamestateManager(){
+        static GameStateManager(){
             _activeState = null;
             MouseManager = new MouseManager();
             _stopwatch = new Stopwatch();

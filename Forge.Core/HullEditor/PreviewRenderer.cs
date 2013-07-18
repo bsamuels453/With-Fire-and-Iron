@@ -39,7 +39,7 @@ namespace Forge.Core.HullEditor{
                     Resource.ScreenSize.GetScreenValueY(0.5f)
                     )
                 );
-            GamestateManager.CameraController = _camera;
+            GameStateManager.CameraController = _camera;
 
             _renderTarget = new RenderTarget
                 (

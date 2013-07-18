@@ -46,7 +46,7 @@ namespace Forge.Core.Camera{
             _mouseController.OnMouseMovement += OnMouseMovement;
             _mouseController.OnMouseScroll += OnMouseMovement;
 
-            GamestateManager.MouseManager.AddGlobalController(_mouseController, 100);
+            GameStateManager.MouseManager.AddGlobalController(_mouseController, 100);
         }
 
         #region ICamera Members
