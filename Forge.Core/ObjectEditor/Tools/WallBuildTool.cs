@@ -17,7 +17,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly float _wallHeight;
 
         public WallBuildTool(HullDataManager hullData) :
-            base(hullData, hullData.WallResolution){
+            base(hullData){
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
                 (
                 hullData.DeckSectionContainer.DeckVertexesByDeck[0].Count()*2,

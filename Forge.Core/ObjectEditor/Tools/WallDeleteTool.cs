@@ -15,7 +15,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         List<WallSegmentIdentifier> _prevIdentifiers;
 
         public WallDeleteTool(HullDataManager hullData) :
-            base(hullData, hullData.WallResolution){
+            base(hullData){
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
                 (5000, 10, 20, 30, "Config/Shaders/GroundDecal.config"){UpdateBufferManually = true};
             _prevIdentifiers = new List<WallSegmentIdentifier>();
