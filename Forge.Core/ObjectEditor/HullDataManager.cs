@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
-using Forge.Core.Logic;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
 using MonoGameUtility;
@@ -29,7 +28,7 @@ namespace Forge.Core.ObjectEditor{
         public readonly DeckSectionContainer DeckSectionContainer;
         public readonly HullSectionContainer HullSectionContainer;
         public readonly int NumDecks;
-        public readonly ObjectModelBuffer<AirshipObjectIdentifier>[] ObjectBuffers;
+        public readonly ObjectModelBuffer<ObjectIdentifier>[] ObjectBuffers;
         public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
         public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
         public readonly float WallResolution;
@@ -45,9 +44,9 @@ namespace Forge.Core.ObjectEditor{
             CenterPoint = data.ModelAttributes.Centroid;
             HullSectionContainer = new HullSectionContainer(data.HullSections);
 
-            ObjectBuffers = new ObjectModelBuffer<AirshipObjectIdentifier>[NumDecks];
+            ObjectBuffers = new ObjectModelBuffer<ObjectIdentifier>[NumDecks];
             for (int i = 0; i < ObjectBuffers.Count(); i++){
-                ObjectBuffers[i] = new ObjectModelBuffer<AirshipObjectIdentifier>(100, "Config/Shaders/TintedModel.config");
+                ObjectBuffers[i] = new ObjectModelBuffer<ObjectIdentifier>(100, "Config/Shaders/TintedModel.config");
             }
 
             WallBuffers = new ObjectBuffer<WallSegmentIdentifier>[NumDecks];
@@ -66,7 +65,7 @@ namespace Forge.Core.ObjectEditor{
 
         public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
         public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
-        public ObjectModelBuffer<AirshipObjectIdentifier> CurObjBuffer { get; private set; }
+        public ObjectModelBuffer<ObjectIdentifier> CurObjBuffer { get; private set; }
 
         public int VisibleDecks { get; private set; }
 
