@@ -159,7 +159,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                             f)
                         ){
                         _cursorGhostActive = false;
-                        DisableCursorGhost();
+                        DisableCursorGhost(DisableReason.CursorNotValid);
                         break;
                     }
 
@@ -175,7 +175,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             }
             if (!intersectionFound){
                 _cursorGhostActive = false;
-                DisableCursorGhost();
+                DisableCursorGhost(DisableReason.NoBoundingBoxInterception);
             }
         }
 
@@ -287,7 +287,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <summary>
         ///   this is called when the cursor ghost is turned off
         /// </summary>
-        protected virtual void DisableCursorGhost(){
+        protected virtual void DisableCursorGhost(DisableReason reason){
             _cursorBuff.Enabled = false;
         }
 
@@ -369,5 +369,14 @@ namespace Forge.Core.ObjectEditor.Tools{
         ~DeckPlacementBase(){
             Debug.Assert(_disposed);
         }
+
+        #region Nested type: DisableReason
+
+        protected enum DisableReason{
+            NoBoundingBoxInterception,
+            CursorNotValid
+        }
+
+        #endregion
     }
 }
