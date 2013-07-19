@@ -83,10 +83,15 @@ namespace Forge.Core.Airship.Generation{
             }
 
             //we want to shift everything forward so that the coordinate plane is centered on the center of the airship
+
+            //this tidbit makes sure the offset is a multiple of 0.5f
+            int offset = (int) ((genResults.Length/2)*2f);
+            offset /= 2;
+
             foreach (var buffer in hullBuffResults){
                 buffer.ApplyTransform
                     (vert =>{
-                         vert.Position.X += genResults.Length/2;
+                         vert.Position.X += offset;
                          return vert;
                      },
                         true
@@ -96,7 +101,7 @@ namespace Forge.Core.Airship.Generation{
             foreach (var buffer in deckFloorBuffers){
                 buffer.ApplyTransform
                     (vert =>{
-                         vert.Position.X += genResults.Length/2;
+                         vert.Position.X += offset;
                          return vert;
                      },
                         true
@@ -104,15 +109,15 @@ namespace Forge.Core.Airship.Generation{
             }
 
             var reflectionVector = new Vector3(-1, 1, 1);
-            var offset = new Vector3(genResults.Length/2, 0, 0);
+            var vecOffset = new Vector3(offset, 0, 0);
             foreach (var boxArray in boundingBoxResults.DeckBoundingBoxes){
                 for (int boxIdx = 0; boxIdx < boxArray.Count; boxIdx++){
-                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min*reflectionVector + offset, boxArray[boxIdx].Max*reflectionVector + offset);
+                    boxArray[boxIdx] = new BoundingBox(boxArray[boxIdx].Min*reflectionVector + vecOffset, boxArray[boxIdx].Max*reflectionVector + vecOffset);
                 }
             }
             foreach (var vertArray in boundingBoxResults.DeckVertexes){
                 for (int vertIdx = 0; vertIdx < vertArray.Count; vertIdx++){
-                    vertArray[vertIdx] = vertArray[vertIdx]*reflectionVector + offset;
+                    vertArray[vertIdx] = vertArray[vertIdx]*reflectionVector + vecOffset;
                 }
             }
 
@@ -825,35 +830,22 @@ namespace Forge.Core.Airship.Generation{
                 );
 
 
-            var wallSelectionBoxes = deckBoundingBoxes;
-            var wallSelectionPoints = new List<List<Vector3>>();
             //generate vertexes of the bounding boxes
+            var vertexes = new List<List<Vector3>>();
 
-            for (int layer = 0; layer < wallSelectionBoxes.Count(); layer++){
-                wallSelectionPoints.Add(new List<Vector3>());
-                foreach (var box in wallSelectionBoxes[layer]){
-                    wallSelectionPoints.Last().Add(box.Min);
-                    wallSelectionPoints.Last().Add(box.Max);
-                    wallSelectionPoints.Last().Add(new Vector3(box.Max.X, box.Max.Y, box.Min.Z));
-                    wallSelectionPoints.Last().Add(new Vector3(box.Min.X, box.Max.Y, box.Max.Z));
+            for (int layer = 0; layer < deckBoundingBoxes.Count(); layer++){
+                vertexes.Add(new List<Vector3>());
+                foreach (var box in deckBoundingBoxes[layer]){
+                    vertexes.Last().Add(box.Min);
+                    vertexes.Last().Add(box.Max);
+                    vertexes.Last().Add(new Vector3(box.Max.X, box.Max.Y, box.Min.Z));
+                    vertexes.Last().Add(new Vector3(box.Min.X, box.Max.Y, box.Max.Z));
                 }
-
-                //now we clear out all of the double entries (stupid time hog optimization)
-                /*for (int box = 0; box < wallSelectionPoints[layer].Count(); box++){
-                    for (int otherBox = 0; otherBox < wallSelectionPoints[layer].Count(); otherBox++){
-                        if (box == otherBox)
-                            continue;
-
-                        if (wallSelectionPoints[layer][box] == wallSelectionPoints[layer][otherBox]){
-                            wallSelectionPoints[layer].RemoveAt(otherBox);
-                        }
-                    }
-                }*/
             }
 
             ret.DeckVertexes =
                 (
-                    from layer in wallSelectionPoints
+                    from layer in vertexes
                     select layer.ToList()
                     ).ToArray();
             return ret;
