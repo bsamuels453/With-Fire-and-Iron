@@ -10,7 +10,7 @@ namespace Forge.Core.ObjectEditor{
     /// <summary>
     /// provides an interface through which objects can be added and removed from the airship.
     /// </summary>
-    internal class ObjectEnvironment{
+    internal class DeckObjectEnvironment{
         /// <summary>
         /// These offsets are used to convert from model space to grid space.
         /// </summary>
@@ -26,8 +26,7 @@ namespace Forge.Core.ObjectEditor{
 
         bool[,] _curOccupationGrid;
 
-        public ObjectEnvironment(HullDataManager hullData){
-            //hullsections for portholes
+        public DeckObjectEnvironment(HullDataManager hullData){
             //decksections for ladders/objects
 
             //grid representing avail spots
@@ -81,7 +80,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="position">The model space position of the object to be placed</param>
         /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
         /// <param name="deck"></param>
-        /// /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
+        /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
         void ValidateObjectPlacement(Vector3 position, Point gridDimensions, int deck, bool clearAboveObject = false){
             throw new NotImplementedException();
         }
