@@ -270,6 +270,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 #endregion
 
                 GuideGridBuffers[i].Enabled = false;
+                GuideGridBuffers[i].ShaderParams["f_Alpha"].SetValue(0.2f);
             }
             VisibleDeckChange(-1, HullData.CurDeck);
         }
