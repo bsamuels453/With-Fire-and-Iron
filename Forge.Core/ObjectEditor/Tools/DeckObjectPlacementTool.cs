@@ -14,6 +14,9 @@ using Vector3 = MonoGameUtility.Vector3;
 #endregion
 
 namespace Forge.Core.ObjectEditor.Tools{
+    /// <summary>
+    /// Tool for placing generic objects on the airship's deck.
+    /// </summary>
     internal class DeckObjectPlacementTool : DeckPlacementBase{
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullDataManager _hullData;
