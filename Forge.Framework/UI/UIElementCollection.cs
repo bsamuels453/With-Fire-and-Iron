@@ -129,7 +129,7 @@ namespace Forge.Framework.UI{
 
         #region IUIElement Members
 
-        public void Dispose(){
+        public virtual void Dispose(){
             if (!_disposed){
                 foreach (var element in _elements){
                     element.Dispose();

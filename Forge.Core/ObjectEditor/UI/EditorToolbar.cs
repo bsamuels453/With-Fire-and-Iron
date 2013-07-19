@@ -71,10 +71,11 @@ namespace Forge.Core.ObjectEditor.UI{
                 };
         }
 
-        public void DisposeTools(){
+        public override void Dispose(){
             foreach (var tool in _tools){
                 tool.Dispose();
             }
+            base.Dispose();
         }
 
         #region Nested type: Tools

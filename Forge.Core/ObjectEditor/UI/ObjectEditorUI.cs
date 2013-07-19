@@ -36,7 +36,6 @@ namespace Forge.Core.ObjectEditor.UI{
             Debug.Assert(!_disposed);
             _uiElementCollection.Dispose();
             _disposed = true;
-            _editorToolbar.DisposeTools();
         }
 
         #endregion
