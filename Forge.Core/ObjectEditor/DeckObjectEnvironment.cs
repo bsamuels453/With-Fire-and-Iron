@@ -120,8 +120,21 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
         /// <param name="deck"></param>
         /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
-        void ValidateObjectPlacement(Vector3 position, Point gridDimensions, int deck, bool clearAboveObject = false){
-            throw new NotImplementedException();
+        public bool IsObjectPlacementValid(Vector3 position, Point gridDimensions, int deck, bool clearAboveObject = false){
+            var gridPosition = ConvertToGridSpace(position, deck);
+            var gridLimitMax = _gridLimitMax[deck];
+            var gridLimitMin = _gridLimitMin[deck];
+            for (int x = gridPosition.X; x <= gridDimensions.X + gridPosition.X; x++){
+                if (x < 0 || x >= gridLimitMax.Length){
+                    return false;
+                }
+                for (int z = gridPosition.Y; z <= gridDimensions.Y + gridPosition.Y; z++){
+                    if (z < gridLimitMin[x] || z > gridLimitMax[x]){
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         /// <summary>
