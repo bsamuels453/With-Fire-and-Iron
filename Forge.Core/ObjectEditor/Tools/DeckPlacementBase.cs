@@ -41,8 +41,6 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <param name="selectionResolution"> how many grid tiles wide the selection marquee is intended to be. Set to -1 for selection type to be set to vertexes, rather than tiles. </param>
         protected DeckPlacementBase(HullDataManager hullData){
             HullData = hullData;
-
-            //XXX gridResolution is not being reated properly, beware
             _enabled = false;
 
             _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Config/Shaders/Wireframe.config", PrimitiveType.LineList);
@@ -215,7 +213,6 @@ namespace Forge.Core.ObjectEditor.Tools{
             return true;
         }
 
-        //todo: refactor gridResolution
         protected void GenerateGuideGrid(){
             for (int i = 0; i < HullData.NumDecks; i++){
                 #region indicies
