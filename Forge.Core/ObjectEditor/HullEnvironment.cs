@@ -13,9 +13,6 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Core.ObjectEditor{
-    /// <summary>
-    ///   NOTICE: the next time work is done on the editor, encapsulate ObjectModelBuffer, WallIdentifiers, and WallBuffer
-    /// </summary>
     public class HullEnvironment : IDisposable{
         #region Delegates
 
