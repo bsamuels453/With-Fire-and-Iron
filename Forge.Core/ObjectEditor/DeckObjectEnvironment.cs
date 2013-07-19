@@ -24,8 +24,6 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly bool[][,] _occupationGrids;
 
-        bool[,] _curOccupationGrid;
-
         public DeckObjectEnvironment(HullDataManager hullData){
             //decksections for ladders/objects
 
@@ -33,8 +31,6 @@ namespace Forge.Core.ObjectEditor{
             _occupationGrids = new bool[hullData.NumDecks][,];
             _gridOffsets = new Vector2[hullData.NumDecks];
             SetupObjectOccupationGrids(hullData.DeckSectionContainer.DeckVertexesByDeck);
-
-            hullData.OnCurDeckChange += OnDeckChange;
         }
 
         Point ConvertToGridSpace(Vector3 modelSpacePos, int deck){
@@ -68,10 +64,6 @@ namespace Forge.Core.ObjectEditor{
                 var grid = new bool[layerLength,layerWidth];
                 _occupationGrids[i] = grid;
             }
-        }
-
-        void OnDeckChange(int oldDeck, int newDeck){
-            _curOccupationGrid = _occupationGrids[newDeck];
         }
 
         /// <summary>
