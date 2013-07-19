@@ -14,8 +14,9 @@ using Microsoft.Xna.Framework;
 namespace Forge.Core.GameState{
     public class ObjectEditorState : IGameState{
         readonly BodyCenteredCamera _cameraController;
+        readonly DeckObjectEnvironment _deckObjectEnvironment;
         readonly ObjectEditorUI _doodadUI;
-        readonly HullEnvironment _hullData;
+        readonly HullEnvironment _hullEnvironment;
         readonly Battlefield _placeboBattlefield;
         readonly RenderTarget _renderTarget;
 
@@ -29,15 +30,18 @@ namespace Forge.Core.GameState{
             _placeboBattlefield = new Battlefield();
             AirshipPackager.ConvertDefToProtocol(new DefinitionPath("ExportedAirship"), new SerializedPath("ExportedAirship"));
             var serial = AirshipPackager.LoadAirshipSerialization(new SerializedPath("ExportedAirship"));
-            _hullData = new HullEnvironment(serial);
-            _cameraController.SetCameraTarget(_hullData.CenterPoint);
-            _doodadUI = new ObjectEditorUI(_hullData, _renderTarget);
+
+            _hullEnvironment = new HullEnvironment(serial);
+            _deckObjectEnvironment = new DeckObjectEnvironment(_hullEnvironment);
+
+            _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
+            _doodadUI = new ObjectEditorUI(_hullEnvironment, _deckObjectEnvironment, _renderTarget);
         }
 
         #region IGameState Members
 
         public void Dispose(){
-            _hullData.Dispose();
+            _hullEnvironment.Dispose();
             _placeboBattlefield.Dispose();
             _doodadUI.Dispose();
             _renderTarget.Unbind();
