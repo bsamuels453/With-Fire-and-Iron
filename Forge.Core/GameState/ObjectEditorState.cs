@@ -15,7 +15,7 @@ namespace Forge.Core.GameState{
     public class ObjectEditorState : IGameState{
         readonly BodyCenteredCamera _cameraController;
         readonly ObjectEditorUI _doodadUI;
-        readonly HullDataManager _hullData;
+        readonly HullEnvironment _hullData;
         readonly Battlefield _placeboBattlefield;
         readonly RenderTarget _renderTarget;
 
@@ -29,7 +29,7 @@ namespace Forge.Core.GameState{
             _placeboBattlefield = new Battlefield();
             AirshipPackager.ConvertDefToProtocol(new DefinitionPath("ExportedAirship"), new SerializedPath("ExportedAirship"));
             var serial = AirshipPackager.LoadAirshipSerialization(new SerializedPath("ExportedAirship"));
-            _hullData = new HullDataManager(serial);
+            _hullData = new HullEnvironment(serial);
             _cameraController.SetCameraTarget(_hullData.CenterPoint);
             _doodadUI = new ObjectEditorUI(_hullData, _renderTarget);
         }

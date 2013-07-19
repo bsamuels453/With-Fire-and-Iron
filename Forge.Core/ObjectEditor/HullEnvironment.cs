@@ -16,7 +16,7 @@ namespace Forge.Core.ObjectEditor{
     /// <summary>
     ///   NOTICE: the next time work is done on the editor, encapsulate ObjectModelBuffer, WallIdentifiers, and WallBuffer
     /// </summary>
-    public class HullDataManager : IDisposable{
+    public class HullEnvironment : IDisposable{
         #region Delegates
 
         public delegate void CurDeckChanged(int oldDeck, int newDeck);
@@ -35,7 +35,7 @@ namespace Forge.Core.ObjectEditor{
         int _curDeck;
         bool _disposed;
 
-        public HullDataManager(AirshipPackager.AirshipSerializationStruct data){
+        public HullEnvironment(AirshipPackager.AirshipSerializationStruct data){
             NumDecks = data.ModelAttributes.NumDecks;
             VisibleDecks = NumDecks;
             DeckSectionContainer = new DeckSectionContainer(data.DeckSections);
@@ -59,6 +59,8 @@ namespace Forge.Core.ObjectEditor{
             for (int i = 0; i < WallIdentifiers.Length; i++){
                 WallIdentifiers[i] = new List<WallSegmentIdentifier>();
             }
+
+            var test = new DeckObjectEnvironment(this);
 
             CurDeck = 0;
         }
@@ -131,7 +133,7 @@ namespace Forge.Core.ObjectEditor{
             CurDeck++;
         }
 
-        ~HullDataManager(){
+        ~HullEnvironment(){
             Debug.Assert(_disposed);
         }
     }

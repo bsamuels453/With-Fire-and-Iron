@@ -16,7 +16,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly List<WallSegmentIdentifier> _tempWallIdentifiers;
         readonly float _wallHeight;
 
-        public WallBuildTool(HullDataManager hullData) :
+        public WallBuildTool(HullEnvironment hullData) :
             base(hullData){
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
                 (

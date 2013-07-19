@@ -17,7 +17,7 @@ namespace Forge.Core.ObjectEditor.UI{
         readonly ToolbarButton _deleteWallBut;
         readonly IToolbarTool[] _tools;
 
-        public EditorToolbar(HullDataManager hullData, UIElementCollection parent, FrameStrata.Level depth, Point position) :
+        public EditorToolbar(HullEnvironment hullData, UIElementCollection parent, FrameStrata.Level depth, Point position) :
             base(parent, depth, position, _template){
             var jobj = Resource.LoadJObject(_template);
             var wallBuildTex = jobj["BuildWallTex"].ToObject<string>();
@@ -36,7 +36,7 @@ namespace Forge.Core.ObjectEditor.UI{
 
             _tools[(int) Tools.BuildWall] = new WallBuildTool(hullData);
             _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullData);
-            _tools[(int) Tools.BuildLadder] = new DeckObjectPlacementTool(hullData, "Models/Ladder", 1, 1);
+            _tools[(int) Tools.BuildLadder] = new DeckObjectPlacementTool(hullData, "Models/Ladder", new Point(2, 2));
 
             InitializeToolEvents();
         }

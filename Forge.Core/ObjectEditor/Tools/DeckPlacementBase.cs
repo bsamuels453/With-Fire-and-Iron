@@ -22,7 +22,7 @@ namespace Forge.Core.ObjectEditor.Tools{
     public abstract class DeckPlacementBase : IToolbarTool{
         protected const float GridResolution = 0.5f;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
-        protected readonly HullDataManager HullData;
+        protected readonly HullEnvironment HullData;
 
         readonly GeometryBuffer<VertexPositionColor> _cursorBuff;
         protected Vector3 CursorPosition;
@@ -39,7 +39,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <param name="hullData"> </param>
         /// <param name="gridResolution"> not functioning properly </param>
         /// <param name="selectionResolution"> how many grid tiles wide the selection marquee is intended to be. Set to -1 for selection type to be set to vertexes, rather than tiles. </param>
-        protected DeckPlacementBase(HullDataManager hullData){
+        protected DeckPlacementBase(HullEnvironment hullData){
             HullData = hullData;
             _enabled = false;
 

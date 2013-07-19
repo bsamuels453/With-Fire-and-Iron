@@ -206,7 +206,7 @@
     <Compile Include="ObjectEditor\Tools\DeckPlacementBase.cs" />
     <Compile Include="ObjectEditor\Tools\WallBuildTool.cs" />
     <Compile Include="ObjectEditor\Tools\WallDeleteTool.cs" />
-    <Compile Include="ObjectEditor\HullDataManager.cs" />
+    <Compile Include="ObjectEditor\HullEnvironment.cs" />
     <Compile Include="Airship\Generation\HullGeometryGenerator.cs" />
     <Compile Include="GameState\ObjectEditorState.cs" />
     <Compile Include="ObjectEditor\UI\ObjectEditorUI.cs" />

@@ -15,12 +15,12 @@ namespace Forge.Core.ObjectEditor.UI{
     /// </summary>
     public class ObjectEditorUI : IDisposable{
         readonly EditorToolbar _editorToolbar;
-        readonly HullDataManager _hullData;
+        readonly HullEnvironment _hullData;
         readonly NavBar _navBar;
         readonly UIElementCollection _uiElementCollection;
         bool _disposed;
 
-        public ObjectEditorUI(HullDataManager hullData, RenderTarget target){
+        public ObjectEditorUI(HullEnvironment hullData, RenderTarget target){
             _hullData = hullData;
 
             _uiElementCollection = new UIElementCollection(GameStateManager.MouseManager);
