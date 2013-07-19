@@ -180,11 +180,15 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
+    <Compile Include="ObjectEditor\ObjectEnvironment.cs" />
+    <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
+    <Compile Include="ObjectEditor\ObjectIdentifier.cs" />
     <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
     <Compile Include="ObjectEditor\UI\EditorToolbar.cs" />
     <Compile Include="ObjectEditor\UI\NavBar.cs" />
     <Compile Include="ObjectEditor\UI\ToolbarButton.cs" />
     <Compile Include="ObjectEditor\Tools\IToolbarTool.cs" />
+    <Compile Include="ObjectEditor\WallSegmentIdentifier.cs" />
     <Compile Include="Physics\CollisionObject.cs" />
     <Compile Include="Physics\CollisionObjectCollection.cs" />
     <Compile Include="Physics\CollisionObjectHandle.cs" />
@@ -208,7 +212,6 @@
     <Compile Include="ObjectEditor\UI\ObjectEditorUI.cs" />
     <Compile Include="Camera\BodyCenteredCamera.cs" />
     <Compile Include="Camera\ICamera.cs" />
-    <Compile Include="ObjectEditor\AirshipObjectIdentifier.cs" />
     <Compile Include="Camera\SubmarineCamera.cs" />
     <None Include="Scrap.cs" />
     <Compile Include="Util\Bezier.cs" />
