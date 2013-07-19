@@ -42,6 +42,7 @@ namespace Forge.Core.GameState{
 
         public void Dispose(){
             _hullEnvironment.Dispose();
+            _deckObjectEnvironment.Dispose();
             _placeboBattlefield.Dispose();
             _doodadUI.Dispose();
             _renderTarget.Unbind();
