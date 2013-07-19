@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
-using Forge.Core.Logic;
+using Forge.Core.ObjectEditor;
 using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -354,10 +354,10 @@ namespace Forge.Core.Airship.Generation{
             return retMesh;
         }
 
-        static ObjectBuffer<AirshipObjectIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks){
+        static ObjectBuffer<DeckPlateIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks){
             float boundingBoxWidth = Math.Abs(deckBoundingBoxes[0][0].Max.X - deckBoundingBoxes[0][0].Min.X);
             Vector3 reflection = new Vector3(-1, 1, 1);
-            var ret = new ObjectBuffer<AirshipObjectIdentifier>[numDecks];
+            var ret = new ObjectBuffer<DeckPlateIdentifier>[numDecks];
 
             for (int deck = 0; deck < numDecks; deck++){
                 var deckBBoxes = deckBoundingBoxes[deck];
@@ -445,10 +445,10 @@ namespace Forge.Core.Airship.Generation{
                     }
                 }
 
-                var buff = new ObjectBuffer<AirshipObjectIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Config/Shaders/Airship_Deck.config");
+                var buff = new ObjectBuffer<DeckPlateIdentifier>(verts.Count + deckBBoxes.Count, 2, 4, 6, "Config/Shaders/Airship_Deck.config");
 
                 //add border quads to objectbuffer
-                var nullidentifier = new AirshipObjectIdentifier(ObjectType.Misc, Vector3.Zero);
+                var nullidentifier = new DeckPlateIdentifier(new Vector3(int.MaxValue/2, int.MaxValue/2, 0), -1);
                 var idxWinding = new[]{0, 1, 2, 2, 3, 0};
                 var vertli = new List<VertexPositionNormalTexture>();
                 for (int i = 0; i < verts.Count; i += 4){
@@ -565,7 +565,7 @@ namespace Forge.Core.Airship.Generation{
                                     (min.X + zWidth.X)/_deckTextureTilingSize,
                                     (min.Z + zWidth.Z)/_deckTextureTilingSize
                                     )));
-                    buff.AddObject(new AirshipObjectIdentifier(ObjectType.Deckboard, min*reflection), (int[]) idxWinding.Clone(), vertli.ToArray());
+                    buff.AddObject(new DeckPlateIdentifier(min*reflection, deck), (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
             }
