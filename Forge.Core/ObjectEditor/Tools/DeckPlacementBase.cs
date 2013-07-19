@@ -20,12 +20,11 @@ using Vector3 = MonoGameUtility.Vector3;
 
 namespace Forge.Core.ObjectEditor.Tools{
     public abstract class DeckPlacementBase : IToolbarTool{
-        protected readonly float GridResolution;
+        protected const float GridResolution = 0.5f;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
         protected readonly HullDataManager HullData;
 
         readonly GeometryBuffer<VertexPositionColor> _cursorBuff;
-        readonly int _selectionResolution;
         protected Vector3 CursorPosition;
 
         protected Vector3 StrokeEnd;
@@ -40,17 +39,11 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <param name="hullData"> </param>
         /// <param name="gridResolution"> not functioning properly </param>
         /// <param name="selectionResolution"> how many grid tiles wide the selection marquee is intended to be. Set to -1 for selection type to be set to vertexes, rather than tiles. </param>
-        protected DeckPlacementBase(HullDataManager hullData, float gridResolution, int selectionResolution = -1){
+        protected DeckPlacementBase(HullDataManager hullData){
             HullData = hullData;
-            if (selectionResolution > 0)
-                _selectionResolution = selectionResolution + 1;
-            else
-                _selectionResolution = selectionResolution;
-
 
             //XXX gridResolution is not being reated properly, beware
             _enabled = false;
-            GridResolution = gridResolution;
 
             _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Config/Shaders/Wireframe.config", PrimitiveType.LineList);
             var selectionIndicies = new[]{0, 1};
@@ -140,7 +133,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             direction.Normalize();
             var ray = new Ray(nearPoint, direction);
 
-            //xx eventually might want to dissect this with comments
+            //eventually might want to dissect this with comments
             bool intersectionFound = false;
             foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes){
                 float? ndist;
@@ -179,10 +172,10 @@ namespace Forge.Core.ObjectEditor.Tools{
                     intersectionFound = true;
                     break;
                 }
-                if (!intersectionFound){
-                    _cursorGhostActive = false;
-                    DisableCursorGhost();
-                }
+            }
+            if (!intersectionFound){
+                _cursorGhostActive = false;
+                DisableCursorGhost();
             }
         }
 
@@ -209,33 +202,17 @@ namespace Forge.Core.ObjectEditor.Tools{
             }
         }
 
-        bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
-            if (_selectionResolution == -1){
-                //vertex selection/wall drawing
-                if (deckFloorVertexes.Contains(prevCursorPosition) && _isDrawing){
-                    var v1 = new Vector3(newCursorPos.X, newCursorPos.Y, StrokeOrigin.Z);
-                    var v2 = new Vector3(StrokeOrigin.X, newCursorPos.Y, newCursorPos.Z);
+        protected virtual bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
+            if (deckFloorVertexes.Contains(prevCursorPosition) && _isDrawing){
+                var v1 = new Vector3(newCursorPos.X, newCursorPos.Y, StrokeOrigin.Z);
+                var v2 = new Vector3(StrokeOrigin.X, newCursorPos.Y, newCursorPos.Z);
 
-                    if (!deckFloorVertexes.Contains(v1))
-                        return false;
-                    if (!deckFloorVertexes.Contains(v2))
-                        return false;
-                }
-                return true;
+                if (!deckFloorVertexes.Contains(v1))
+                    return false;
+                if (!deckFloorVertexes.Contains(v2))
+                    return false;
             }
-
-            //object placement
-            bool validCursor = true;
-            for (int x = 0; x < _selectionResolution; x++){
-                for (int z = 0; z < _selectionResolution; z++){
-                    var vert = newCursorPos + new Vector3(x*GridResolution, 0, z*GridResolution);
-                    if (!deckFloorVertexes.Contains(vert)){
-                        validCursor = false;
-                        break;
-                    }
-                }
-            }
-            return validCursor;
+            return true;
         }
 
         //todo: refactor gridResolution
