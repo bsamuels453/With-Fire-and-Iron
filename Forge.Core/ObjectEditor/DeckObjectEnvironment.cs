@@ -74,7 +74,7 @@ namespace Forge.Core.ObjectEditor{
 
                 var layerLength = (int) ((maxX - minX)*2);
                 var layerWidth = (int) ((maxZ)*4);
-                _gridOffsets[i] = new Point((int) (minX*2), (int) (maxZ*2));
+                _gridOffsets[i] = new Point(-(int) (minX*2), (int) (maxZ*2));
 
                 var grid = new bool[layerLength,layerWidth];
                 _occupationGrids[i] = grid;
