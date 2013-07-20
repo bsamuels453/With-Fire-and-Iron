@@ -150,13 +150,35 @@ namespace Forge.Core.ObjectEditor{
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="modelName"></param>
         /// <param name="position">Model space position</param>
+        /// <param name="dimensions">Dimensions of the object in grid-space units </param>
         /// <param name="deck"></param>
-        /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
+        /// <param name="sideEffects"> </param>
         /// <returns></returns>
-        ObjectIdentifier AddObject(string model, Vector3 position, int deck, bool clearAboveObject = false){
-            throw new NotImplementedException();
+        public ObjectIdentifier AddObject(
+            string modelName,
+            Vector3 position,
+            Point dimensions,
+            int deck,
+            ObjectSideEffects sideEffects = ObjectSideEffects.None){
+            var identifier = new ObjectIdentifier(position, deck);
+
+            Matrix trans = Matrix.CreateTranslation(position);
+            var model = Resource.LoadContent<Model>(modelName);
+            _objectModelBuffer[deck].AddObject(identifier, model, trans);
+
+            var occupationGrid = _occupationGrids[deck];
+            var gridPos = ConvertToGridSpace(position, deck);
+
+            for (int x = gridPos.X; x < gridPos.X + dimensions.X; x++){
+                for (int z = gridPos.Y; z < gridPos.Y + dimensions.Y; z++){
+                    occupationGrid[x, z] = true;
+                }
+            }
+
+
+            return identifier;
         }
 
         void RemoveObject(ObjectIdentifier obj){
