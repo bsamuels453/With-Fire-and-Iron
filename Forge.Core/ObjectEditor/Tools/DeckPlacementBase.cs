@@ -133,6 +133,7 @@ namespace Forge.Core.ObjectEditor.Tools{
 
             //eventually might want to dissect this with comments
             bool intersectionFound = false;
+            bool cursorNotValid = false;
             foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes){
                 float? ndist;
                 if ((ndist = ray.Intersects(t)) != null){
@@ -158,6 +159,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                         ){
                         _cursorGhostActive = false;
                         DisableCursorGhost(DisableReason.CursorNotValid);
+                        cursorNotValid = true;
                         break;
                     }
 
@@ -171,7 +173,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     break;
                 }
             }
-            if (!intersectionFound){
+            if (!intersectionFound && !cursorNotValid) {
                 _cursorGhostActive = false;
                 DisableCursorGhost(DisableReason.NoBoundingBoxInterception);
             }
