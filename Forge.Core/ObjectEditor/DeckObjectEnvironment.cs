@@ -319,5 +319,31 @@ namespace Forge.Core.ObjectEditor{
         }
 
         #endregion
+
+        #region Nested type: OccupationGridPos
+
+        struct OccupationGridPos{
+            public readonly int X;
+            public readonly int Z;
+
+            public OccupationGridPos(int x, int z){
+                X = x;
+                Z = z;
+            }
+
+            public static OccupationGridPos operator +(OccupationGridPos value1, XZPoint value2){
+                return new OccupationGridPos(value2.X + value1.X, value2.Z + value1.Z);
+            }
+
+            public static OccupationGridPos operator -(OccupationGridPos value1, XZPoint value2){
+                return new OccupationGridPos(value1.X - value2.X, value1.Z - value2.Z);
+            }
+
+            public override string ToString(){
+                return string.Format("{{X:{0} Z:{1}}}", X, Z);
+            }
+        }
+
+        #endregion
     }
 }
