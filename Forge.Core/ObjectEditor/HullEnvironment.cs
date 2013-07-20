@@ -54,7 +54,6 @@ namespace Forge.Core.ObjectEditor{
 
         public ObjectBuffer<WallSegmentIdentifier> CurWallBuffer { get; private set; }
         public List<WallSegmentIdentifier> CurWallIdentifiers { get; private set; }
-        public ObjectModelBuffer<ObjectIdentifier> CurObjBuffer { get; private set; }
 
         public int VisibleDecks { get; private set; }
 
