@@ -3,6 +3,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Forge.Core.Airship.Data;
+using Forge.Framework.Draw;
+using Forge.Framework.Resources;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
 #endregion
@@ -11,7 +15,22 @@ namespace Forge.Core.ObjectEditor{
     /// <summary>
     /// provides an interface through which objects can be added and removed from the airship.
     /// </summary>
-    internal class DeckObjectEnvironment{
+    public class DeckObjectEnvironment : IDisposable{
+        #region ObjectSideEffects enum
+
+        public enum ObjectSideEffects{
+            None,
+            CutsIntoCeiling,
+            CutsIntoStarboardHull,
+            CutsIntoPortHull
+        }
+
+        #endregion
+
+        const string _objectModelShader = "Config/Shaders/TintedModel.config";
+        const int _maxObjectsPerLayer = 100;
+        readonly DeckSectionContainer _deckSectionContainer;
+
         /// <summary>
         /// Represents the limits of the silhouette that make up the outline of the airship deck.
         /// This is used to prevent objects from being placed in the "rectangle" that makes up the
@@ -26,6 +45,10 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly Point[] _gridOffsets;
 
+        readonly HullEnvironment _hullEnvironment;
+
+        readonly ObjectModelBuffer<ObjectIdentifier>[] _objectModelBuffer;
+
         /// <summary>
         /// Tables of booleans that represent whether the "area" the table maps to is occupied
         /// by an object or not. In order to index an occupation grid, the model space value of
@@ -34,18 +57,26 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly bool[][,] _occupationGrids;
 
-        public DeckObjectEnvironment(HullDataManager hullData){
-            //decksections for ladders/objects
+        public DeckObjectEnvironment(HullEnvironment hullEnv){
+            _hullEnvironment = hullEnv;
+            _deckSectionContainer = hullEnv.DeckSectionContainer;
 
-            //grid representing avail spots
-            _occupationGrids = new bool[hullData.NumDecks][,];
-            _gridOffsets = new Point[hullData.NumDecks];
+            _occupationGrids = new bool[hullEnv.NumDecks][,];
+            _gridOffsets = new Point[hullEnv.NumDecks];
 
-            var vertexes = hullData.DeckSectionContainer.DeckVertexesByDeck;
+            var vertexes = hullEnv.DeckSectionContainer.DeckVertexesByDeck;
 
             SetupObjectOccupationGrids(vertexes);
             CalculateGridLimits(vertexes, out _gridLimitMax, out _gridLimitMin);
-            int gfgf = 4;
+
+            _hullEnvironment.OnCurDeckChange += OnVisibleDeckChange;
+
+            _objectModelBuffer = new ObjectModelBuffer<ObjectIdentifier>[hullEnv.NumDecks];
+            for (int i = 0; i < hullEnv.NumDecks; i++){
+                _objectModelBuffer[i] = new ObjectModelBuffer<ObjectIdentifier>(_maxObjectsPerLayer, _objectModelShader);
+            }
+
+            OnVisibleDeckChange(0, 0);
         }
 
         #region IDisposable Members
