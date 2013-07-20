@@ -24,7 +24,7 @@ namespace Forge.Core.ObjectEditor{
 
         public DeckPlateIdentifier(Vector3 origin, int deck){
             //deck plate step is 0.5f
-            var scaled = new Point((int) (origin.X*2), (int) (origin.Y*2));
+            var scaled = new Point((int) (origin.X*2), (int) (origin.Z*2));
             Origin = scaled;
             Deck = deck;
         }
