@@ -5,6 +5,7 @@ using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 using Matrix = MonoGameUtility.Matrix;
 using Point = MonoGameUtility.Point;
 using Vector3 = MonoGameUtility.Vector3;
@@ -19,10 +20,10 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly DeckObjectEnvironment _deckObjectEnvironment;
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullEnvironment _hullData;
-        readonly Point _objectGridDims;
+        readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
 
-        public DeckObjectPlacementTool(HullEnvironment hullData, DeckObjectEnvironment deckObjectEnvironment, string objectModel, Point objectGridDims) :
+        public DeckObjectPlacementTool(HullEnvironment hullData, DeckObjectEnvironment deckObjectEnvironment, string objectModel, XZPoint objectGridDims) :
             base(hullData){
             _objectGridDims = objectGridDims;
             _objectModelName = objectModel;

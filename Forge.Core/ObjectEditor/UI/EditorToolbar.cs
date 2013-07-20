@@ -41,7 +41,7 @@ namespace Forge.Core.ObjectEditor.UI{
 
             _tools[(int) Tools.BuildWall] = new WallBuildTool(hullEnv);
             _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullEnv);
-            _tools[(int) Tools.BuildLadder] = new DeckObjectPlacementTool(hullEnv, deckObjEnv, "Models/Ladder", new Point(2, 2));
+            _tools[(int)Tools.BuildLadder] = new DeckObjectPlacementTool(hullEnv, deckObjEnv, "Models/Ladder", new XZPoint(2, 2));
 
             InitializeToolEvents();
         }
