@@ -43,7 +43,7 @@ namespace Forge.Core.ObjectEditor{
         /// <summary>
         /// These offsets are used to convert from model space to grid space.
         /// </summary>
-        readonly Point[] _gridOffsets;
+        readonly XZPoint[] _gridOffsets;
 
         readonly HullEnvironment _hullEnvironment;
 
@@ -67,7 +67,7 @@ namespace Forge.Core.ObjectEditor{
                 _objectSideEffects[i] = new List<ObjectSideEffect>();
             }
             _occupationGrids = new bool[hullEnv.NumDecks][,];
-            _gridOffsets = new Point[hullEnv.NumDecks];
+            _gridOffsets = new XZPoint[hullEnv.NumDecks];
 
             var vertexes = hullEnv.DeckSectionContainer.DeckVertexesByDeck;
 
@@ -94,15 +94,15 @@ namespace Forge.Core.ObjectEditor{
 
         #endregion
 
-        Point ConvertToGridspace(Vector3 modelSpacePos, int deck){
+        OccupationGridPos ConvertToGridspace(Vector3 modelSpacePos, int deck){
             modelSpacePos *= 2;
-            Point offset = _gridOffsets[deck];
+            XZPoint offset = _gridOffsets[deck];
             int gridX = (int) (offset.X + modelSpacePos.X);
-            int gridZ = (int) (offset.Y + modelSpacePos.Z);
-            return new Point(gridX, gridZ);
+            int gridZ = (int) (offset.Z + modelSpacePos.Z);
+            return new OccupationGridPos(gridX, gridZ);
         }
 
-        Point ConvertGridspaceBetweenDecks(Point gridPos, int initlDeck, int destDeck){
+        OccupationGridPos ConvertGridspaceBetweenDecks(OccupationGridPos gridPos, int initlDeck, int destDeck){
             gridPos -= _gridOffsets[initlDeck];
             gridPos += _gridOffsets[destDeck];
             return gridPos;
@@ -126,7 +126,7 @@ namespace Forge.Core.ObjectEditor{
 
                 var layerLength = (int) ((maxX - minX)*2);
                 var layerWidth = (int) ((maxZ)*4);
-                _gridOffsets[i] = new Point(-(int) (minX*2), (int) (maxZ*2));
+                _gridOffsets[i] = new XZPoint(-(int) (minX*2), (int) (maxZ*2));
 
                 var grid = new bool[layerLength,layerWidth];
                 _occupationGrids[i] = grid;
@@ -156,7 +156,7 @@ namespace Forge.Core.ObjectEditor{
                 var rowArrayMax = _occupationGrids[deck].GetLength(1);
                 for (int row = 0; row < sortedVertsByRow.Length; row++){
                     float max = sortedVertsByRow[row].Max(v => v.Z);
-                    var converted = ConvertToGridspace(new Vector3(0, 0, -max), deck).Y;
+                    var converted = ConvertToGridspace(new Vector3(0, 0, -max), deck).Z;
                     layerLimitMin[row] = converted;
                     layerLimitMax[row] = rowArrayMax - converted;
                 }
@@ -172,7 +172,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
         /// <param name="deck"></param>
         /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
-        public bool IsObjectPlacementValid(Vector3 position, Point gridDimensions, int deck, bool clearAboveObject = false){
+        public bool IsObjectPlacementValid(Vector3 position, XZPoint gridDimensions, int deck, bool clearAboveObject = false){
             var gridPosition = ConvertToGridspace(position, deck);
             var gridLimitMax = _gridLimitMax[deck];
             var gridLimitMin = _gridLimitMin[deck];
@@ -181,7 +181,7 @@ namespace Forge.Core.ObjectEditor{
                 if (x < 0 || x >= gridLimitMax.Length){
                     return false;
                 }
-                for (int z = gridPosition.Y; z < gridDimensions.Y + gridPosition.Y; z++){
+                for (int z = gridPosition.Z; z < gridDimensions.Z + gridPosition.Z; z++){
                     if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
                         return false;
                     }
@@ -211,7 +211,7 @@ namespace Forge.Core.ObjectEditor{
         public ObjectIdentifier AddObject(
             string modelName,
             Vector3 position,
-            Point dimensions,
+            XZPoint dimensions,
             int deck,
             SideEffect sideEffect = SideEffect.None){
             var identifier = new ObjectIdentifier(position, deck);
@@ -235,10 +235,10 @@ namespace Forge.Core.ObjectEditor{
             return identifier;
         }
 
-        void SetOccupationGridState(Point position, Point dims, int deck, bool value){
+        void SetOccupationGridState(OccupationGridPos origin, XZPoint dims, int deck, bool value){
             var occupationGrid = _occupationGrids[deck];
-            for (int x = position.X; x < position.X + dims.X; x++){
-                for (int z = position.Y; z < position.Y + dims.Y; z++){
+            for (int x = origin.X; x < origin.X + dims.X; x++){
+                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
                     occupationGrid[x, z] = value;
                 }
             }
@@ -297,12 +297,12 @@ namespace Forge.Core.ObjectEditor{
         #region Nested type: ObjectSideEffect
 
         struct ObjectSideEffect : IEquatable<ObjectIdentifier>{
-            public readonly Point GridDimensions;
-            public readonly Point GridPosition;
+            public readonly XZPoint GridDimensions;
+            public readonly OccupationGridPos GridPosition;
             public readonly ObjectIdentifier Identifier;
             public readonly SideEffect SideEffect;
 
-            public ObjectSideEffect(ObjectIdentifier identifier, Point gridDimensions, Point gridPosition, SideEffect sideEffect){
+            public ObjectSideEffect(ObjectIdentifier identifier, XZPoint gridDimensions, OccupationGridPos gridPosition, SideEffect sideEffect){
                 Identifier = identifier;
                 GridDimensions = gridDimensions;
                 GridPosition = gridPosition;
