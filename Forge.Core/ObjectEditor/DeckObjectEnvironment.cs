@@ -124,15 +124,25 @@ namespace Forge.Core.ObjectEditor{
             var gridPosition = ConvertToGridSpace(position, deck);
             var gridLimitMax = _gridLimitMax[deck];
             var gridLimitMin = _gridLimitMin[deck];
-            for (int x = gridPosition.X; x <= gridDimensions.X + gridPosition.X; x++){
+            var occupationGrid = _occupationGrids[deck];
+            for (int x = gridPosition.X; x < gridDimensions.X + gridPosition.X; x++){
                 if (x < 0 || x >= gridLimitMax.Length){
                     return false;
                 }
-                for (int z = gridPosition.Y; z <= gridDimensions.Y + gridPosition.Y; z++){
-                    if (z < gridLimitMin[x] || z > gridLimitMax[x]){
+                for (int z = gridPosition.Y; z < gridDimensions.Y + gridPosition.Y; z++){
+                    if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
+                        return false;
+                    }
+                    //confirms there is no object in the section of grid
+                    if (occupationGrid[x, z]){
                         return false;
                     }
                 }
+            }
+            if (clearAboveObject){
+                if (deck == 0)
+                    return true;
+                return IsObjectPlacementValid(position, gridDimensions, deck - 1);
             }
             return true;
         }
