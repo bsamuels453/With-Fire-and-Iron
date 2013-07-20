@@ -57,7 +57,12 @@ namespace Forge.Core.Airship.Generation{
                     genResults.Depth
                 );
 
-            var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks);
+            //we want to shift everything forward so that the coordinate plane is centered on the center of the airship
+            //this tidbit makes sure the offset is a multiple of 0.5f
+            int offset = ((int)(genResults.Length / 2)) * 2;
+            offset /= 2;
+
+            var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks, offset);
 
             #region reflection/translation
 
@@ -82,11 +87,6 @@ namespace Forge.Core.Airship.Generation{
                     );
             }
 
-            //we want to shift everything forward so that the coordinate plane is centered on the center of the airship
-
-            //this tidbit makes sure the offset is a multiple of 0.5f
-            int offset = (int) ((genResults.Length/2)*2f);
-            offset /= 2;
 
             foreach (var buffer in hullBuffResults){
                 buffer.ApplyTransform
@@ -359,7 +359,7 @@ namespace Forge.Core.Airship.Generation{
             return retMesh;
         }
 
-        static ObjectBuffer<DeckPlateIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks){
+        static ObjectBuffer<DeckPlateIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks, int xOffset){
             float boundingBoxWidth = Math.Abs(deckBoundingBoxes[0][0].Max.X - deckBoundingBoxes[0][0].Min.X);
             Vector3 reflection = new Vector3(-1, 1, 1);
             var ret = new ObjectBuffer<DeckPlateIdentifier>[numDecks];
@@ -570,7 +570,11 @@ namespace Forge.Core.Airship.Generation{
                                     (min.X + zWidth.X)/_deckTextureTilingSize,
                                     (min.Z + zWidth.Z)/_deckTextureTilingSize
                                     )));
-                    buff.AddObject(new DeckPlateIdentifier(min*reflection, deck), (int[]) idxWinding.Clone(), vertli.ToArray());
+
+                    var origin = min * reflection;
+                    origin.X += xOffset;
+                    
+                    buff.AddObject(new DeckPlateIdentifier(origin, deck), (int[])idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
             }
