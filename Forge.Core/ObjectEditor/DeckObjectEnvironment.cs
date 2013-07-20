@@ -108,6 +108,11 @@ namespace Forge.Core.ObjectEditor{
             return gridPos;
         }
 
+        XZPoint ConvertFromGridspace(OccupationGridPos gridPos, int deck){
+            gridPos -= _gridOffsets[deck];
+            return new XZPoint(gridPos.X, gridPos.Z);
+        }
+
         void SetupObjectOccupationGrids(List<Vector3>[] vertexes){
             for (int i = 0; i < vertexes.Length; i++){
                 var layerVerts = vertexes[i];
@@ -244,15 +249,17 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void ModifyDeckPlates(XZPoint origin, Point dims, int deck, bool value){
+        void ModifyDeckPlates(OccupationGridPos origin, XZPoint dims, int deck, bool value) {
+            var transformedOrigin = ConvertFromGridspace(origin, deck);
+            var buffer = _deckSectionContainer.DeckBufferByDeck[deck];
             for (int x = origin.X; x < origin.X + dims.X; x++){
-                for (int z = origin.Z; z < origin.Z + dims.Y; z++){
+                for (int z = transformedOrigin.Z; z < transformedOrigin.Z + dims.Z; z++) {
                     var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
                     if (value){
-                        _deckSectionContainer.DeckBufferByDeck[deck].EnableObject(identifier);
+                        bool b = buffer.EnableObject(identifier);
                     }
                     else{
-                        _deckSectionContainer.DeckBufferByDeck[deck].DisableObject(identifier);
+                        bool b = buffer.DisableObject(identifier);
                     }
                 }
             }
@@ -267,6 +274,7 @@ namespace Forge.Core.ObjectEditor{
                     var convertedPos = ConvertGridspaceBetweenDecks(sideEffect.GridPosition, deck, deck - 1);
 
                     SetOccupationGridState(convertedPos, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(convertedPos, sideEffect.GridDimensions, deck - 1, false);
                 }
             }
             if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
