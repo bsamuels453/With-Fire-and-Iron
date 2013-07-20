@@ -134,6 +134,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             //eventually might want to dissect this with comments
             bool intersectionFound = false;
             bool cursorNotValid = false;
+            int acceptablePtIdx = -1;
             foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes){
                 float? ndist;
                 if ((ndist = ray.Intersects(t)) != null){
@@ -149,6 +150,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     float f = distList.Min();
 
                     int ptIdx = distList.IndexOf(f);
+                    acceptablePtIdx = ptIdx;
 
                     if (!IsCursorValid
                         (
@@ -162,20 +164,19 @@ namespace Forge.Core.ObjectEditor.Tools{
                         cursorNotValid = true;
                         break;
                     }
-
-                    CursorPosition = HullData.DeckSectionContainer.TopExposedVertexes[ptIdx];
-                    if (CursorPosition != prevCursorPosition){
-                        UpdateCursorGhost();
-                        HandleCursorChange(_isDrawing);
-                    }
-
                     intersectionFound = true;
                     break;
                 }
             }
-            if (!intersectionFound && !cursorNotValid) {
+            if (!intersectionFound && !cursorNotValid){
                 _cursorGhostActive = false;
                 DisableCursorGhost(DisableReason.NoBoundingBoxInterception);
+            }
+
+            if (acceptablePtIdx != -1){
+                CursorPosition = HullData.DeckSectionContainer.TopExposedVertexes[acceptablePtIdx];
+                UpdateCursorGhost();
+                HandleCursorChange(_isDrawing);
             }
         }
 
