@@ -244,6 +244,20 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
+        void ModifyDeckPlates(XZPoint origin, Point dims, int deck, bool value){
+            for (int x = origin.X; x < origin.X + dims.X; x++){
+                for (int z = origin.Z; z < origin.Z + dims.Y; z++){
+                    var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
+                    if (value){
+                        _deckSectionContainer.DeckBufferByDeck[deck].EnableObject(identifier);
+                    }
+                    else{
+                        _deckSectionContainer.DeckBufferByDeck[deck].DisableObject(identifier);
+                    }
+                }
+            }
+        }
+
         void ApplyObjectSideEffect(ObjectSideEffect sideEffect){
             if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
                 int deck = sideEffect.Identifier.Deck;
