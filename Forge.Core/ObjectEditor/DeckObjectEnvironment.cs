@@ -48,6 +48,16 @@ namespace Forge.Core.ObjectEditor{
             int gfgf = 4;
         }
 
+        #region IDisposable Members
+
+        public void Dispose(){
+            foreach (var buffer in _objectModelBuffer){
+                buffer.Dispose();
+            }
+        }
+
+        #endregion
+
         Point ConvertToGridSpace(Vector3 modelSpacePos, int deck){
             modelSpacePos *= 2;
             Point offset = _gridOffsets[deck];
@@ -183,6 +193,15 @@ namespace Forge.Core.ObjectEditor{
 
         void RemoveObject(ObjectIdentifier obj){
             throw new NotImplementedException();
+        }
+
+        void OnVisibleDeckChange(int old, int newDeck){
+            foreach (var buffer in _objectModelBuffer){
+                buffer.Enabled = false;
+            }
+            for (int i = _hullEnvironment.NumDecks - 1; i >= newDeck; i--){
+                _objectModelBuffer[i].Enabled = true;
+            }
         }
     }
 }
