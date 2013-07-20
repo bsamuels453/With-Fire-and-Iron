@@ -64,7 +64,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     CursorPosition,
                     _objectGridDims,
                     _hullData.CurDeck,
-                    DeckObjectEnvironment.ObjectSideEffects.CutsIntoCeiling
+                    DeckObjectEnvironment.SideEffect.CutsIntoCeiling
                 );
             //This used to be used to regenerate grid to remove grid lines obfuscated/covered by objects.
             //For now, the deckobjectenvironment doesn't mess with the deck's bounding boxes because it
