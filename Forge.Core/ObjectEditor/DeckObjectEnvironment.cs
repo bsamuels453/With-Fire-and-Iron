@@ -209,17 +209,18 @@ namespace Forge.Core.ObjectEditor{
             var model = Resource.LoadContent<Model>(modelName);
             _objectModelBuffer[deck].AddObject(identifier, model, trans);
 
-            var occupationGrid = _occupationGrids[deck];
             var gridPos = ConvertToGridSpace(position, deck);
+            SetOccupationGridState(gridPos, dimensions, deck, true);
+            return identifier;
+        }
 
-            for (int x = gridPos.X; x < gridPos.X + dimensions.X; x++){
-                for (int z = gridPos.Y; z < gridPos.Y + dimensions.Y; z++){
-                    occupationGrid[x, z] = true;
+        void SetOccupationGridState(Point position, Point dims, int deck, bool value){
+            var occupationGrid = _occupationGrids[deck];
+            for (int x = position.X; x < position.X + dims.X; x++){
+                for (int z = position.Y; z < position.Y + dims.Y; z++){
+                    occupationGrid[x, z] = value;
                 }
             }
-
-
-            return identifier;
         }
 
         void RemoveObject(ObjectIdentifier obj){
