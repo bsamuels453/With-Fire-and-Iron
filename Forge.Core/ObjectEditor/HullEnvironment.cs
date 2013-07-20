@@ -6,7 +6,6 @@ using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
-using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Draw;
 using MonoGameUtility;
 
@@ -25,7 +24,6 @@ namespace Forge.Core.ObjectEditor{
         public readonly DeckSectionContainer DeckSectionContainer;
         public readonly HullSectionContainer HullSectionContainer;
         public readonly int NumDecks;
-        public readonly ObjectModelBuffer<ObjectIdentifier>[] ObjectBuffers;
         public readonly ObjectBuffer<WallSegmentIdentifier>[] WallBuffers;
         public readonly List<WallSegmentIdentifier>[] WallIdentifiers;
         public readonly float WallResolution;
@@ -41,11 +39,6 @@ namespace Forge.Core.ObjectEditor{
             CenterPoint = data.ModelAttributes.Centroid;
             HullSectionContainer = new HullSectionContainer(data.HullSections);
 
-            ObjectBuffers = new ObjectModelBuffer<ObjectIdentifier>[NumDecks];
-            for (int i = 0; i < ObjectBuffers.Count(); i++){
-                ObjectBuffers[i] = new ObjectModelBuffer<ObjectIdentifier>(100, "Config/Shaders/TintedModel.config");
-            }
-
             WallBuffers = new ObjectBuffer<WallSegmentIdentifier>[NumDecks];
             for (int i = 0; i < WallBuffers.Count(); i++){
                 int potentialWalls = DeckSectionContainer.DeckVertexesByDeck[i].Count()*2;
@@ -56,9 +49,6 @@ namespace Forge.Core.ObjectEditor{
             for (int i = 0; i < WallIdentifiers.Length; i++){
                 WallIdentifiers[i] = new List<WallSegmentIdentifier>();
             }
-
-            var test = new DeckObjectEnvironment(this);
-
             CurDeck = 0;
         }
 
@@ -90,11 +80,6 @@ namespace Forge.Core.ObjectEditor{
 
                 CurWallBuffer = WallBuffers[_curDeck];
                 CurWallIdentifiers = WallIdentifiers[_curDeck];
-                CurObjBuffer = ObjectBuffers[_curDeck];
-
-                for (int i = _curDeck; i < NumDecks; i++){
-                    ObjectBuffers[i].Enabled = true;
-                }
 
                 if (OnCurDeckChange != null){
                     OnCurDeckChange.Invoke(oldDeck, _curDeck);
@@ -108,9 +93,6 @@ namespace Forge.Core.ObjectEditor{
             Debug.Assert(!_disposed);
 
             foreach (var buffer in WallBuffers){
-                buffer.Dispose();
-            }
-            foreach (var buffer in ObjectBuffers){
                 buffer.Dispose();
             }
             DeckSectionContainer.Dispose();
