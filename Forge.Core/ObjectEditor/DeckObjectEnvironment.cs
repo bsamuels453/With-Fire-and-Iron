@@ -101,11 +101,6 @@ namespace Forge.Core.ObjectEditor{
             return new OccupationGridPos(gridX, gridZ);
         }
 
-        XZPoint ConvertFromGridspace(OccupationGridPos gridPos){
-            gridPos -= _gridOffset;
-            return new XZPoint(gridPos.X, gridPos.Z);
-        }
-
         XZPoint SetupObjectOccupationGrids(List<Vector3>[] vertexes){
             var layerVerts = vertexes[0];
             float maxX = float.MinValue;
