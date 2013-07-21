@@ -48,8 +48,16 @@ namespace Forge.Core.ObjectEditor{
 
         readonly HullEnvironment _hullEnvironment;
 
+        /// <summary>
+        /// used by the wall-construction component to make sure none of the constructed walls bisect placed objects
+        /// </summary>
+        readonly Dictionary<ObjectIdentifier, XZPoint>[] _objectFootprints;
+
         readonly ObjectModelBuffer<ObjectIdentifier>[] _objectModelBuffer;
 
+        /// <summary>
+        /// used to keep track of side effects such as removing deck plates or removing hull sections
+        /// </summary>
         readonly List<ObjectSideEffect>[] _objectSideEffects;
 
         /// <summary>
