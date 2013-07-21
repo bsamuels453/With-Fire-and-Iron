@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
 using Forge.Framework.Draw;
@@ -43,7 +44,7 @@ namespace Forge.Core.ObjectEditor{
         /// <summary>
         /// These offsets are used to convert from model space to grid space.
         /// </summary>
-        readonly XZPoint[] _gridOffsets;
+        readonly XZPoint _gridOffset;
 
         readonly HullEnvironment _hullEnvironment;
 
@@ -67,11 +68,10 @@ namespace Forge.Core.ObjectEditor{
                 _objectSideEffects[i] = new List<ObjectSideEffect>();
             }
             _occupationGrids = new bool[hullEnv.NumDecks][,];
-            _gridOffsets = new XZPoint[hullEnv.NumDecks];
 
             var vertexes = hullEnv.DeckSectionContainer.DeckVertexesByDeck;
 
-            SetupObjectOccupationGrids(vertexes);
+            _gridOffset = SetupObjectOccupationGrids(vertexes);
             CalculateGridLimits(vertexes, out _gridLimitMax, out _gridLimitMin);
 
             _hullEnvironment.OnCurDeckChange += OnVisibleDeckChange;
@@ -96,51 +96,49 @@ namespace Forge.Core.ObjectEditor{
 
         OccupationGridPos ConvertToGridspace(Vector3 modelSpacePos, int deck){
             modelSpacePos *= 2;
-            XZPoint offset = _gridOffsets[deck];
-            int gridX = (int) (offset.X + modelSpacePos.X);
-            int gridZ = (int) (offset.Z + modelSpacePos.Z);
+            int gridX = (int) (_gridOffset.X + modelSpacePos.X);
+            int gridZ = (int) (_gridOffset.Z + modelSpacePos.Z);
             return new OccupationGridPos(gridX, gridZ);
         }
 
-        OccupationGridPos ConvertGridspaceBetweenDecks(OccupationGridPos gridPos, int initlDeck, int destDeck){
-            gridPos -= _gridOffsets[initlDeck];
-            gridPos += _gridOffsets[destDeck];
-            return gridPos;
-        }
-
-        XZPoint ConvertFromGridspace(OccupationGridPos gridPos, int deck){
-            gridPos -= _gridOffsets[deck];
+        XZPoint ConvertFromGridspace(OccupationGridPos gridPos){
+            gridPos -= _gridOffset;
             return new XZPoint(gridPos.X, gridPos.Z);
         }
 
-        void SetupObjectOccupationGrids(List<Vector3>[] vertexes){
+        XZPoint SetupObjectOccupationGrids(List<Vector3>[] vertexes){
+            var layerVerts = vertexes[0];
+            float maxX = float.MinValue;
+            float maxZ = float.MinValue;
+            float minX = float.MaxValue;
+
+            foreach (var vert in layerVerts){
+                if (vert.X > maxX)
+                    maxX = vert.X;
+                if (vert.Z > maxZ)
+                    maxZ = vert.Z;
+                if (vert.X < minX)
+                    minX = vert.X;
+            }
+
+            var layerLength = (int) ((maxX - minX)*2);
+            var layerWidth = (int) ((maxZ)*4);
+
             for (int i = 0; i < vertexes.Length; i++){
-                var layerVerts = vertexes[i];
-                float maxX = float.MinValue;
-                float maxZ = float.MinValue;
-                float minX = float.MaxValue;
-
-                foreach (var vert in layerVerts){
-                    if (vert.X > maxX)
-                        maxX = vert.X;
-                    if (vert.Z > maxZ)
-                        maxZ = vert.Z;
-                    if (vert.X < minX)
-                        minX = vert.X;
-                }
-
-                var layerLength = (int) ((maxX - minX)*2);
-                var layerWidth = (int) ((maxZ)*4);
-                _gridOffsets[i] = new XZPoint(-(int) (minX*2), (int) (maxZ*2));
-
                 var grid = new bool[layerLength,layerWidth];
                 _occupationGrids[i] = grid;
             }
+
+            var ret = new XZPoint(-(int) (minX*2) + 2, (int) (maxZ*2));
+            return ret;
         }
 
         void CalculateGridLimits(List<Vector3>[] vertexes, out int[][] gridLimitMax, out int[][] gridLimitMin){
             gridLimitMax = new int[vertexes.Length][];
             gridLimitMin = new int[vertexes.Length][];
+
+            float minX = vertexes[0].Min(v => v.X);
+            float maxX = vertexes[0].Max(v => v.X);
             for (int deck = 0; deck < vertexes.Length; deck++){
                 var layerVerts = vertexes[deck];
 
@@ -153,14 +151,28 @@ namespace Forge.Core.ObjectEditor{
                     from pairing in vertsByRow
                     orderby pairing.Key ascending
                     select pairing
-                    ).ToArray();
+                    ).ToList();
 
-                var layerLimitMin = new int[sortedVertsByRow.Length];
-                var layerLimitMax = new int[sortedVertsByRow.Length];
+                int southPadding = (int) ((sortedVertsByRow[0].Key - minX)*2);
+                int northPadding = (int) ((maxX - sortedVertsByRow.Last().Key)*2);
+                int length = southPadding + northPadding + sortedVertsByRow.Count;
+
+                var layerLimitMin = new int[length];
+                var layerLimitMax = new int[length];
 
                 var rowArrayMax = _occupationGrids[deck].GetLength(1);
-                for (int row = 0; row < sortedVertsByRow.Length; row++){
-                    float max = sortedVertsByRow[row].Max(v => v.Z);
+                //fill padding area
+                for (int row = 0; row < southPadding; row++){
+                    layerLimitMin[row] = int.MaxValue;
+                    layerLimitMax[row] = int.MinValue;
+                }
+                for (int row = southPadding + sortedVertsByRow.Count; row < length; row++){
+                    layerLimitMin[row] = int.MaxValue;
+                    layerLimitMax[row] = int.MinValue;
+                }
+
+                for (int row = southPadding; row < southPadding + sortedVertsByRow.Count; row++){
+                    float max = sortedVertsByRow[row - southPadding].Max(v => v.Z);
                     var converted = ConvertToGridspace(new Vector3(0, 0, -max), deck).Z;
                     layerLimitMin[row] = converted;
                     layerLimitMax[row] = rowArrayMax - converted;
@@ -249,18 +261,22 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void ModifyDeckPlates(OccupationGridPos origin, XZPoint dims, int deck, bool value) {
-            var transformedOrigin = ConvertFromGridspace(origin, deck);
+        void ModifyDeckPlates(OccupationGridPos origin, XZPoint dims, int deck, bool value){
             var buffer = _deckSectionContainer.DeckBufferByDeck[deck];
+            //convert origin point so z axis bisects the ship instead of being left justified to it
+            origin.Z -= _gridOffset.Z;
+
             for (int x = origin.X; x < origin.X + dims.X; x++){
-                for (int z = transformedOrigin.Z; z < transformedOrigin.Z + dims.Z; z++) {
+                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
                     var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
+                    bool b;
                     if (value){
-                        bool b = buffer.EnableObject(identifier);
+                        b = buffer.EnableObject(identifier);
                     }
                     else{
-                        bool b = buffer.DisableObject(identifier);
+                        b = buffer.DisableObject(identifier);
                     }
+                    Debug.Assert(b);
                 }
             }
         }
@@ -269,12 +285,8 @@ namespace Forge.Core.ObjectEditor{
             if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
                 int deck = sideEffect.Identifier.Deck;
                 if (deck != 0){
-                    //convert out of the gridspace because gridspace values are only accurate for the deck
-                    //they were created for
-                    var convertedPos = ConvertGridspaceBetweenDecks(sideEffect.GridPosition, deck, deck - 1);
-
-                    SetOccupationGridState(convertedPos, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(convertedPos, sideEffect.GridDimensions, deck - 1, false);
+                    SetOccupationGridState(sideEffect.GridPosition, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(sideEffect.GridPosition, sideEffect.GridDimensions, deck - 1, false);
                 }
             }
             if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
@@ -332,7 +344,7 @@ namespace Forge.Core.ObjectEditor{
 
         struct OccupationGridPos{
             public readonly int X;
-            public readonly int Z;
+            public int Z;
 
             public OccupationGridPos(int x, int z){
                 X = x;
