@@ -30,6 +30,12 @@ namespace Forge.Core.ObjectEditor{
 
         const string _objectModelShader = "Config/Shaders/TintedModel.config";
         const int _maxObjectsPerLayer = 100;
+
+        /// <summary>
+        /// used by the wall-construction component to make sure none of the constructed walls bisect placed objects
+        /// </summary>
+        public readonly Dictionary<ObjectIdentifier, XZPoint>[] ObjectFootprints;
+
         readonly DeckSectionContainer _deckSectionContainer;
 
         /// <summary>
@@ -47,11 +53,6 @@ namespace Forge.Core.ObjectEditor{
         readonly XZPoint _gridOffset;
 
         readonly HullEnvironment _hullEnvironment;
-
-        /// <summary>
-        /// used by the wall-construction component to make sure none of the constructed walls bisect placed objects
-        /// </summary>
-        readonly Dictionary<ObjectIdentifier, XZPoint>[] _objectFootprints;
 
         readonly ObjectModelBuffer<ObjectIdentifier>[] _objectModelBuffer;
 
@@ -85,12 +86,16 @@ namespace Forge.Core.ObjectEditor{
             _hullEnvironment.OnCurDeckChange += OnVisibleDeckChange;
 
             _objectModelBuffer = new ObjectModelBuffer<ObjectIdentifier>[hullEnv.NumDecks];
+            ObjectFootprints = new Dictionary<ObjectIdentifier, XZPoint>[hullEnv.NumDecks];
             for (int i = 0; i < hullEnv.NumDecks; i++){
                 _objectModelBuffer[i] = new ObjectModelBuffer<ObjectIdentifier>(_maxObjectsPerLayer, _objectModelShader);
+                ObjectFootprints[i] = new Dictionary<ObjectIdentifier, XZPoint>(_maxObjectsPerLayer);
             }
 
             OnVisibleDeckChange(0, 0);
         }
+
+        public InternalWallEnvironment InternalWallEnvironment { private get; set; }
 
         #region IDisposable Members
 
@@ -272,9 +277,14 @@ namespace Forge.Core.ObjectEditor{
                 }
             }
             if (clearAboveObject){
-                if (deck == 0)
-                    return true;
-                return IsObjectPlacementValid(position, gridDimensions, deck - 1);
+                if (deck != 0){
+                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1))
+                        return false;
+                }
+            }
+
+            if (!InternalWallEnvironment.IsObjectPlacementValid(position, gridDimensions, deck)){
+                return false;
             }
             return true;
         }
@@ -311,6 +321,7 @@ namespace Forge.Core.ObjectEditor{
                 );
             _objectSideEffects[deck].Add(objSideEffect);
             ApplyObjectSideEffect(objSideEffect);
+            ObjectFootprints[deck].Add(identifier, dimensions);
 
             return identifier;
         }
@@ -349,6 +360,9 @@ namespace Forge.Core.ObjectEditor{
 
         #region Nested type: OccupationGridPos
 
+        /// <summary>
+        /// Point pseudo-class used for type richness to prevent errors with the conversions common to this class.
+        /// </summary>
         struct OccupationGridPos{
             public readonly int X;
             public int Z;

@@ -33,8 +33,10 @@ namespace Forge.Core.GameState{
             var serial = AirshipPackager.LoadAirshipSerialization(new SerializedPath("ExportedAirship"));
 
             _hullEnvironment = new HullEnvironment(serial);
-            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment);
+
             _deckObjectEnvironment = new DeckObjectEnvironment(_hullEnvironment);
+            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _deckObjectEnvironment);
+            _deckObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
 
             _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
             _doodadUI = new ObjectEditorUI(_hullEnvironment, _deckObjectEnvironment, _wallEnvironment, _renderTarget);
