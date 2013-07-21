@@ -12,10 +12,10 @@ namespace Forge.Core.ObjectEditor.UI{
         const string _template = "UiTemplates/Specialized/NavBar.json";
 
         readonly ToolbarButton _downButton;
-        readonly HullDataManager _hullData;
+        readonly HullEnvironment _hullData;
         readonly ToolbarButton _upButton;
 
-        public NavBar(HullDataManager hullData, UIElementCollection parent, FrameStrata.Level depth, Point position) : base(parent, depth, position, _template){
+        public NavBar(HullEnvironment hullData, UIElementCollection parent, FrameStrata.Level depth, Point position) : base(parent, depth, position, _template){
             var jobj = Resource.LoadJObject(_template);
             var upTex = jobj["UpButtonTex"].ToObject<string>();
             var downTex = jobj["DownButtonTex"].ToObject<string>();

@@ -15,19 +15,19 @@ namespace Forge.Core.ObjectEditor.UI{
     /// </summary>
     public class ObjectEditorUI : IDisposable{
         readonly EditorToolbar _editorToolbar;
-        readonly HullDataManager _hullData;
+        readonly HullEnvironment _hullEnv;
         readonly NavBar _navBar;
         readonly UIElementCollection _uiElementCollection;
         bool _disposed;
 
-        public ObjectEditorUI(HullDataManager hullData, RenderTarget target){
-            _hullData = hullData;
+        public ObjectEditorUI(HullEnvironment hullEnv, DeckObjectEnvironment deckObjEnv, InternalWallEnvironment wallEnv, RenderTarget target){
+            _hullEnv = hullEnv;
 
             _uiElementCollection = new UIElementCollection(GameStateManager.MouseManager);
             _uiElementCollection.Bind();
 
-            _navBar = new NavBar(hullData, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));
-            _editorToolbar = new EditorToolbar(hullData, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
+            _navBar = new NavBar(hullEnv, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));
+            _editorToolbar = new EditorToolbar(hullEnv, deckObjEnv, wallEnv, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
         }
 
         #region IDisposable Members
@@ -36,7 +36,6 @@ namespace Forge.Core.ObjectEditor.UI{
             Debug.Assert(!_disposed);
             _uiElementCollection.Dispose();
             _disposed = true;
-            _editorToolbar.DisposeTools();
         }
 
         #endregion

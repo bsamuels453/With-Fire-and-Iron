@@ -14,10 +14,12 @@ using Microsoft.Xna.Framework;
 namespace Forge.Core.GameState{
     public class ObjectEditorState : IGameState{
         readonly BodyCenteredCamera _cameraController;
+        readonly DeckObjectEnvironment _deckObjectEnvironment;
         readonly ObjectEditorUI _doodadUI;
-        readonly HullDataManager _hullData;
+        readonly HullEnvironment _hullEnvironment;
         readonly Battlefield _placeboBattlefield;
         readonly RenderTarget _renderTarget;
+        readonly InternalWallEnvironment _wallEnvironment;
 
         public ObjectEditorState(){
             _renderTarget = new RenderTarget(0, 0, Resource.ScreenSize.X, Resource.ScreenSize.Y);
@@ -29,15 +31,23 @@ namespace Forge.Core.GameState{
             _placeboBattlefield = new Battlefield();
             AirshipPackager.ConvertDefToProtocol(new DefinitionPath("ExportedAirship"), new SerializedPath("ExportedAirship"));
             var serial = AirshipPackager.LoadAirshipSerialization(new SerializedPath("ExportedAirship"));
-            _hullData = new HullDataManager(serial);
-            _cameraController.SetCameraTarget(_hullData.CenterPoint);
-            _doodadUI = new ObjectEditorUI(_hullData, _renderTarget);
+
+            _hullEnvironment = new HullEnvironment(serial);
+
+            _deckObjectEnvironment = new DeckObjectEnvironment(_hullEnvironment);
+            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _deckObjectEnvironment);
+            _deckObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
+
+            _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
+            _doodadUI = new ObjectEditorUI(_hullEnvironment, _deckObjectEnvironment, _wallEnvironment, _renderTarget);
         }
 
         #region IGameState Members
 
         public void Dispose(){
-            _hullData.Dispose();
+            _hullEnvironment.Dispose();
+            _deckObjectEnvironment.Dispose();
+            _wallEnvironment.Dispose();
             _placeboBattlefield.Dispose();
             _doodadUI.Dispose();
             _renderTarget.Unbind();

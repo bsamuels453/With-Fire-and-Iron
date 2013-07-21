@@ -17,8 +17,14 @@ namespace Forge.Core.ObjectEditor.UI{
         readonly ToolbarButton _deleteWallBut;
         readonly IToolbarTool[] _tools;
 
-        public EditorToolbar(HullDataManager hullData, UIElementCollection parent, FrameStrata.Level depth, Point position) :
-            base(parent, depth, position, _template){
+        public EditorToolbar(
+            HullEnvironment hullEnv,
+            DeckObjectEnvironment deckObjEnv,
+            InternalWallEnvironment wallEnv,
+            UIElementCollection parent,
+            FrameStrata.Level depth,
+            Point position) :
+                base(parent, depth, position, _template){
             var jobj = Resource.LoadJObject(_template);
             var wallBuildTex = jobj["BuildWallTex"].ToObject<string>();
             var wallDeleteTex = jobj["DeleteWallTex"].ToObject<string>();
@@ -34,9 +40,9 @@ namespace Forge.Core.ObjectEditor.UI{
 
             _tools = new IToolbarTool[3];
 
-            _tools[(int) Tools.BuildWall] = new WallBuildTool(hullData);
-            _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullData);
-            _tools[(int) Tools.BuildLadder] = new LadderBuildTool(hullData);
+            _tools[(int) Tools.BuildWall] = new WallBuildTool(hullEnv, wallEnv);
+            _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullEnv, wallEnv);
+            _tools[(int) Tools.BuildLadder] = new DeckObjectPlacementTool(hullEnv, deckObjEnv, "Models/Ladder", new XZPoint(2, 2));
 
             InitializeToolEvents();
         }
@@ -71,10 +77,11 @@ namespace Forge.Core.ObjectEditor.UI{
                 };
         }
 
-        public void DisposeTools(){
+        public override void Dispose(){
             foreach (var tool in _tools){
                 tool.Dispose();
             }
+            base.Dispose();
         }
 
         #region Nested type: Tools

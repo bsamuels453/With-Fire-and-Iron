@@ -20,12 +20,11 @@ using Vector3 = MonoGameUtility.Vector3;
 
 namespace Forge.Core.ObjectEditor.Tools{
     public abstract class DeckPlacementBase : IToolbarTool{
-        protected readonly float GridResolution;
+        protected const float GridResolution = 0.5f;
         protected readonly GeometryBuffer<VertexPositionColor>[] GuideGridBuffers;
-        protected readonly HullDataManager HullData;
+        protected readonly HullEnvironment HullData;
 
         readonly GeometryBuffer<VertexPositionColor> _cursorBuff;
-        readonly int _selectionResolution;
         protected Vector3 CursorPosition;
 
         protected Vector3 StrokeEnd;
@@ -40,17 +39,9 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <param name="hullData"> </param>
         /// <param name="gridResolution"> not functioning properly </param>
         /// <param name="selectionResolution"> how many grid tiles wide the selection marquee is intended to be. Set to -1 for selection type to be set to vertexes, rather than tiles. </param>
-        protected DeckPlacementBase(HullDataManager hullData, float gridResolution, int selectionResolution = -1){
+        protected DeckPlacementBase(HullEnvironment hullData){
             HullData = hullData;
-            if (selectionResolution > 0)
-                _selectionResolution = selectionResolution + 1;
-            else
-                _selectionResolution = selectionResolution;
-
-
-            //XXX gridResolution is not being reated properly, beware
             _enabled = false;
-            GridResolution = gridResolution;
 
             _cursorBuff = new GeometryBuffer<VertexPositionColor>(2, 2, 1, "Config/Shaders/Wireframe.config", PrimitiveType.LineList);
             var selectionIndicies = new[]{0, 1};
@@ -140,8 +131,10 @@ namespace Forge.Core.ObjectEditor.Tools{
             direction.Normalize();
             var ray = new Ray(nearPoint, direction);
 
-            //xx eventually might want to dissect this with comments
+            //eventually might want to dissect this with comments
             bool intersectionFound = false;
+            bool cursorNotValid = false;
+            int acceptablePtIdx = -1;
             foreach (BoundingBox t in HullData.DeckSectionContainer.TopExposedBoundingBoxes){
                 float? ndist;
                 if ((ndist = ray.Intersects(t)) != null){
@@ -157,6 +150,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     float f = distList.Min();
 
                     int ptIdx = distList.IndexOf(f);
+                    acceptablePtIdx = ptIdx;
 
                     if (!IsCursorValid
                         (
@@ -166,23 +160,23 @@ namespace Forge.Core.ObjectEditor.Tools{
                             f)
                         ){
                         _cursorGhostActive = false;
-                        DisableCursorGhost();
+                        DisableCursorGhost(DisableReason.CursorNotValid);
+                        cursorNotValid = true;
                         break;
                     }
-
-                    CursorPosition = HullData.DeckSectionContainer.TopExposedVertexes[ptIdx];
-                    if (CursorPosition != prevCursorPosition){
-                        UpdateCursorGhost();
-                        HandleCursorChange(_isDrawing);
-                    }
-
                     intersectionFound = true;
                     break;
                 }
-                if (!intersectionFound){
-                    _cursorGhostActive = false;
-                    DisableCursorGhost();
-                }
+            }
+            if (!intersectionFound && !cursorNotValid){
+                _cursorGhostActive = false;
+                DisableCursorGhost(DisableReason.NoBoundingBoxInterception);
+            }
+
+            if (acceptablePtIdx != -1){
+                CursorPosition = HullData.DeckSectionContainer.TopExposedVertexes[acceptablePtIdx];
+                UpdateCursorGhost();
+                HandleCursorChange(_isDrawing);
             }
         }
 
@@ -209,36 +203,19 @@ namespace Forge.Core.ObjectEditor.Tools{
             }
         }
 
-        bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
-            if (_selectionResolution == -1){
-                //vertex selection/wall drawing
-                if (deckFloorVertexes.Contains(prevCursorPosition) && _isDrawing){
-                    var v1 = new Vector3(newCursorPos.X, newCursorPos.Y, StrokeOrigin.Z);
-                    var v2 = new Vector3(StrokeOrigin.X, newCursorPos.Y, newCursorPos.Z);
+        protected virtual bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
+            if (deckFloorVertexes.Contains(prevCursorPosition) && _isDrawing){
+                var v1 = new Vector3(newCursorPos.X, newCursorPos.Y, StrokeOrigin.Z);
+                var v2 = new Vector3(StrokeOrigin.X, newCursorPos.Y, newCursorPos.Z);
 
-                    if (!deckFloorVertexes.Contains(v1))
-                        return false;
-                    if (!deckFloorVertexes.Contains(v2))
-                        return false;
-                }
-                return true;
+                if (!deckFloorVertexes.Contains(v1))
+                    return false;
+                if (!deckFloorVertexes.Contains(v2))
+                    return false;
             }
-
-            //object placement
-            bool validCursor = true;
-            for (int x = 0; x < _selectionResolution; x++){
-                for (int z = 0; z < _selectionResolution; z++){
-                    var vert = newCursorPos + new Vector3(x*GridResolution, 0, z*GridResolution);
-                    if (!deckFloorVertexes.Contains(vert)){
-                        validCursor = false;
-                        break;
-                    }
-                }
-            }
-            return validCursor;
+            return true;
         }
 
-        //todo: refactor gridResolution
         protected void GenerateGuideGrid(){
             for (int i = 0; i < HullData.NumDecks; i++){
                 #region indicies
@@ -296,6 +273,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 #endregion
 
                 GuideGridBuffers[i].Enabled = false;
+                GuideGridBuffers[i].ShaderParams["f_Alpha"].SetValue(0.2f);
             }
             VisibleDeckChange(-1, HullData.CurDeck);
         }
@@ -310,7 +288,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <summary>
         ///   this is called when the cursor ghost is turned off
         /// </summary>
-        protected virtual void DisableCursorGhost(){
+        protected virtual void DisableCursorGhost(DisableReason reason){
             _cursorBuff.Enabled = false;
         }
 
@@ -392,5 +370,14 @@ namespace Forge.Core.ObjectEditor.Tools{
         ~DeckPlacementBase(){
             Debug.Assert(_disposed);
         }
+
+        #region Nested type: DisableReason
+
+        protected enum DisableReason{
+            NoBoundingBoxInterception,
+            CursorNotValid
+        }
+
+        #endregion
     }
 }

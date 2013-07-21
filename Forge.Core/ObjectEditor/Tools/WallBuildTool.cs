@@ -14,10 +14,11 @@ namespace Forge.Core.ObjectEditor.Tools{
     public class WallBuildTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         readonly List<WallSegmentIdentifier> _tempWallIdentifiers;
+        readonly InternalWallEnvironment _wallEnv;
         readonly float _wallHeight;
 
-        public WallBuildTool(HullDataManager hullData) :
-            base(hullData, hullData.WallResolution){
+        public WallBuildTool(HullEnvironment hullData, InternalWallEnvironment wallEnv) :
+            base(hullData){
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
                 (
                 hullData.DeckSectionContainer.DeckVertexesByDeck[0].Count()*2,
@@ -28,6 +29,7 @@ namespace Forge.Core.ObjectEditor.Tools{
 
             _tempWallIdentifiers = new List<WallSegmentIdentifier>();
             _wallHeight = hullData.DeckHeight - 0.01f;
+            _wallEnv = wallEnv;
         }
 
         protected override void HandleCursorChange(bool isDrawing){
@@ -36,14 +38,9 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void HandleCursorRelease(){
-            HullData.CurWallIdentifiers.AddRange
-                (
-                    from id in _tempWallIdentifiers
-                    where !HullData.CurWallIdentifiers.Contains(id)
-                    select id
-                );
+            _wallEnv.AddWalls(_tempWallBuffer, _tempWallIdentifiers);
+            _tempWallBuffer.ClearObjects();
             _tempWallIdentifiers.Clear();
-            HullData.CurWallBuffer.AbsorbBuffer(_tempWallBuffer);
         }
 
         protected override void HandleCursorDown(){
@@ -124,60 +121,4 @@ namespace Forge.Core.ObjectEditor.Tools{
             _tempWallBuffer.UpdateBuffers();
         }
     }
-
-    #region wallidentifier
-
-    public struct WallSegmentIdentifier : IEquatable<WallSegmentIdentifier>{
-        public readonly Vector3 RefPoint1;
-        public readonly Vector3 RefPoint2;
-
-        public WallSegmentIdentifier(Vector3 refPoint2, Vector3 refPoint1){
-            RefPoint2 = refPoint2;
-            RefPoint1 = refPoint1;
-        }
-
-        #region equality operators
-
-        public bool Equals(WallSegmentIdentifier other){
-            if (RefPoint2 == other.RefPoint2 && RefPoint1 == other.RefPoint1)
-                return true;
-            if (RefPoint2 == other.RefPoint1 && other.RefPoint2 == RefPoint1)
-                return true;
-            return false;
-        }
-
-        public static bool operator ==(WallSegmentIdentifier wallid1, WallSegmentIdentifier wallid2){
-            if (wallid1.RefPoint2 == wallid2.RefPoint2 && wallid1.RefPoint1 == wallid2.RefPoint1)
-                return true;
-            if (wallid1.RefPoint2 == wallid2.RefPoint1 && wallid2.RefPoint1 == wallid1.RefPoint2)
-                return true;
-            return false;
-        }
-
-        public static bool operator !=(WallSegmentIdentifier wallid1, WallSegmentIdentifier wallid2){
-            if (wallid1.RefPoint2 == wallid2.RefPoint2 && wallid1.RefPoint1 == wallid2.RefPoint1)
-                return false;
-            if (wallid1.RefPoint2 == wallid2.RefPoint1 && wallid2.RefPoint1 == wallid1.RefPoint2)
-                return false;
-            return true;
-        }
-
-        public override bool Equals(object obj){
-            if (ReferenceEquals(null, obj)) return false;
-            if (obj.GetType() != typeof (WallSegmentIdentifier)) return false;
-            return Equals((WallSegmentIdentifier) obj);
-        }
-
-        #endregion
-
-        public override int GetHashCode(){
-            unchecked{
-                // ReSharper disable NonReadonlyFieldInGetHashCode
-                return (RefPoint2.GetHashCode()*397) ^ RefPoint1.GetHashCode();
-                // ReSharper restore NonReadonlyFieldInGetHashCode
-            }
-        }
-    }
-
-    #endregion
 }

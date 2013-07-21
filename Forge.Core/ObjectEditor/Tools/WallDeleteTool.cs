@@ -12,13 +12,15 @@ using MonoGameUtility;
 namespace Forge.Core.ObjectEditor.Tools{
     public class WallDeleteTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
+        readonly InternalWallEnvironment _wallEnv;
         List<WallSegmentIdentifier> _prevIdentifiers;
 
-        public WallDeleteTool(HullDataManager hullData) :
-            base(hullData, hullData.WallResolution){
+        public WallDeleteTool(HullEnvironment hullData, InternalWallEnvironment wallEnv) :
+            base(hullData){
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
                 (5000, 10, 20, 30, "Config/Shaders/GroundDecal.config"){UpdateBufferManually = true};
             _prevIdentifiers = new List<WallSegmentIdentifier>();
+            _wallEnv = wallEnv;
         }
 
         protected override void HandleCursorChange(bool isDrawing){
@@ -83,31 +85,19 @@ namespace Forge.Core.ObjectEditor.Tools{
 
             _tempWallBuffer.UpdateBuffers();
 
-            HullData.CurWallBuffer.UpdateBufferManually = true;
-
             foreach (var identifier in _prevIdentifiers){
-                HullData.CurWallBuffer.EnableObject(identifier);
+                _wallEnv.EnableSegment(identifier);
             }
             foreach (var identifier in identifiers){
-                HullData.CurWallBuffer.DisableObject(identifier);
+                _wallEnv.DisableSegment(identifier);
             }
-
-            HullData.CurWallBuffer.UpdateBuffers();
-            HullData.CurWallBuffer.UpdateBufferManually = false;
 
             _prevIdentifiers = identifiers;
         }
 
         protected override void HandleCursorRelease(){
-            HullData.CurWallBuffer.UpdateBufferManually = true;
             foreach (var identifier in _prevIdentifiers){
-                HullData.CurWallBuffer.RemoveObject(identifier);
-            }
-            HullData.CurWallBuffer.UpdateBuffers();
-            HullData.CurWallBuffer.UpdateBufferManually = false;
-
-            foreach (var identifier in _prevIdentifiers){
-                HullData.CurWallIdentifiers.Remove(identifier);
+                _wallEnv.RemoveSegment(identifier);
             }
 
             _tempWallBuffer.ClearObjects();
@@ -115,7 +105,6 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void HandleCursorDown(){
-            //throw new NotImplementedException();
         }
 
         protected override void OnCurDeckChange(){
