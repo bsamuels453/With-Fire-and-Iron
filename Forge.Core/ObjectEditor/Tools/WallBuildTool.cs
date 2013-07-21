@@ -38,7 +38,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void HandleCursorRelease(){
-            _wallEnv.AddWalls(_tempWallBuffer);
+            _wallEnv.AddWalls(_tempWallBuffer, _tempWallIdentifiers);
             _tempWallBuffer.ClearObjects();
             _tempWallIdentifiers.Clear();
         }
