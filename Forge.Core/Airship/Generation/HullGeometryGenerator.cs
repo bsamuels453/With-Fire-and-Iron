@@ -571,8 +571,8 @@ namespace Forge.Core.Airship.Generation{
                                     (min.Z + zWidth.Z)/_deckTextureTilingSize
                                     )));
 
-                    var origin = min * reflection;
-                    origin.X += xOffset;
+                    var origin = min*reflection;
+                    origin.X += xOffset*2;
                     
                     buff.AddObject(new DeckPlateIdentifier(origin, deck), (int[])idxWinding.Clone(), vertli.ToArray());
                 }
