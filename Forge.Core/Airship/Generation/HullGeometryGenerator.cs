@@ -359,7 +359,11 @@ namespace Forge.Core.Airship.Generation{
             return retMesh;
         }
 
-        static ObjectBuffer<DeckPlateIdentifier>[] GenerateDeckFloorMesh(Vector3[][][] deckSVerts, List<BoundingBox>[] deckBoundingBoxes, int numDecks, int xOffset){
+        static ObjectBuffer<DeckPlateIdentifier>[] GenerateDeckFloorMesh(
+            Vector3[][][] deckSVerts,
+            List<BoundingBox>[] deckBoundingBoxes,
+            int numDecks,
+            int xOffset){
             float boundingBoxWidth = Math.Abs(deckBoundingBoxes[0][0].Max.X - deckBoundingBoxes[0][0].Min.X);
             Vector3 reflection = new Vector3(-1, 1, 1);
             var ret = new ObjectBuffer<DeckPlateIdentifier>[numDecks];
