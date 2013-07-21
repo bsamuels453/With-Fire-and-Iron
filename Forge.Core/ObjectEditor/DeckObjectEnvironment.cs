@@ -30,6 +30,12 @@ namespace Forge.Core.ObjectEditor{
 
         const string _objectModelShader = "Config/Shaders/TintedModel.config";
         const int _maxObjectsPerLayer = 100;
+
+        /// <summary>
+        /// used by the wall-construction component to make sure none of the constructed walls bisect placed objects
+        /// </summary>
+        public readonly Dictionary<ObjectIdentifier, XZPoint>[] ObjectFootprints;
+
         readonly DeckSectionContainer _deckSectionContainer;
 
         /// <summary>
@@ -50,6 +56,9 @@ namespace Forge.Core.ObjectEditor{
 
         readonly ObjectModelBuffer<ObjectIdentifier>[] _objectModelBuffer;
 
+        /// <summary>
+        /// used to keep track of side effects such as removing deck plates or removing hull sections
+        /// </summary>
         readonly List<ObjectSideEffect>[] _objectSideEffects;
 
         /// <summary>
@@ -77,12 +86,16 @@ namespace Forge.Core.ObjectEditor{
             _hullEnvironment.OnCurDeckChange += OnVisibleDeckChange;
 
             _objectModelBuffer = new ObjectModelBuffer<ObjectIdentifier>[hullEnv.NumDecks];
+            ObjectFootprints = new Dictionary<ObjectIdentifier, XZPoint>[hullEnv.NumDecks];
             for (int i = 0; i < hullEnv.NumDecks; i++){
                 _objectModelBuffer[i] = new ObjectModelBuffer<ObjectIdentifier>(_maxObjectsPerLayer, _objectModelShader);
+                ObjectFootprints[i] = new Dictionary<ObjectIdentifier, XZPoint>(_maxObjectsPerLayer);
             }
 
             OnVisibleDeckChange(0, 0);
         }
+
+        public InternalWallEnvironment InternalWallEnvironment { private get; set; }
 
         #region IDisposable Members
 
@@ -177,76 +190,6 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="position">The model space position of the object to be placed</param>
-        /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
-        /// <param name="deck"></param>
-        /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
-        public bool IsObjectPlacementValid(Vector3 position, XZPoint gridDimensions, int deck, bool clearAboveObject = false){
-            var gridPosition = ConvertToGridspace(position, deck);
-            var gridLimitMax = _gridLimitMax[deck];
-            var gridLimitMin = _gridLimitMin[deck];
-            var occupationGrid = _occupationGrids[deck];
-            for (int x = gridPosition.X; x < gridDimensions.X + gridPosition.X; x++){
-                if (x < 0 || x >= gridLimitMax.Length){
-                    return false;
-                }
-                for (int z = gridPosition.Z; z < gridDimensions.Z + gridPosition.Z; z++){
-                    if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
-                        return false;
-                    }
-                    //confirms there is no object in the section of grid
-                    if (occupationGrid[x, z]){
-                        return false;
-                    }
-                }
-            }
-            if (clearAboveObject){
-                if (deck == 0)
-                    return true;
-                return IsObjectPlacementValid(position, gridDimensions, deck - 1);
-            }
-            return true;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="modelName"></param>
-        /// <param name="position">Model space position</param>
-        /// <param name="dimensions">Dimensions of the object in grid-space units </param>
-        /// <param name="deck"></param>
-        /// <param name="sideEffect"> </param>
-        /// <returns></returns>
-        public ObjectIdentifier AddObject(
-            string modelName,
-            Vector3 position,
-            XZPoint dimensions,
-            int deck,
-            SideEffect sideEffect = SideEffect.None){
-            var identifier = new ObjectIdentifier(position, deck);
-
-            Matrix trans = Matrix.CreateTranslation(position);
-            var model = Resource.LoadContent<Model>(modelName);
-            _objectModelBuffer[deck].AddObject(identifier, model, trans);
-
-            var gridPos = ConvertToGridspace(position, deck);
-            SetOccupationGridState(gridPos, dimensions, deck, true);
-            var objSideEffect = new ObjectSideEffect
-                (
-                identifier,
-                dimensions,
-                gridPos,
-                sideEffect
-                );
-            _objectSideEffects[deck].Add(objSideEffect);
-            ApplyObjectSideEffect(objSideEffect);
-
-            return identifier;
-        }
-
         void SetOccupationGridState(OccupationGridPos origin, XZPoint dims, int deck, bool value){
             var occupationGrid = _occupationGrids[deck];
             for (int x = origin.X; x < origin.X + dims.X; x++){
@@ -296,10 +239,6 @@ namespace Forge.Core.ObjectEditor{
             throw new NotImplementedException();
         }
 
-        void RemoveObject(ObjectIdentifier obj){
-            throw new NotImplementedException();
-        }
-
         void OnVisibleDeckChange(int old, int newDeck){
             foreach (var buffer in _objectModelBuffer){
                 buffer.Enabled = false;
@@ -308,6 +247,90 @@ namespace Forge.Core.ObjectEditor{
                 _objectModelBuffer[i].Enabled = true;
             }
         }
+
+        #region public interfaces
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position">The model space position of the object to be placed</param>
+        /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
+        /// <param name="deck"></param>
+        /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
+        public bool IsObjectPlacementValid(Vector3 position, XZPoint gridDimensions, int deck, bool clearAboveObject = false){
+            var gridPosition = ConvertToGridspace(position, deck);
+            var gridLimitMax = _gridLimitMax[deck];
+            var gridLimitMin = _gridLimitMin[deck];
+            var occupationGrid = _occupationGrids[deck];
+            for (int x = gridPosition.X; x < gridDimensions.X + gridPosition.X; x++){
+                if (x < 0 || x >= gridLimitMax.Length){
+                    return false;
+                }
+                for (int z = gridPosition.Z; z < gridDimensions.Z + gridPosition.Z; z++){
+                    if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
+                        return false;
+                    }
+                    //confirms there is no object in the section of grid
+                    if (occupationGrid[x, z]){
+                        return false;
+                    }
+                }
+            }
+            if (clearAboveObject){
+                if (deck != 0){
+                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1))
+                        return false;
+                }
+            }
+
+            if (!InternalWallEnvironment.IsObjectPlacementValid(position, gridDimensions, deck)){
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="modelName"></param>
+        /// <param name="position">Model space position</param>
+        /// <param name="dimensions">Dimensions of the object in grid-space units </param>
+        /// <param name="deck"></param>
+        /// <param name="sideEffect"> </param>
+        /// <returns></returns>
+        public ObjectIdentifier AddObject(
+            string modelName,
+            Vector3 position,
+            XZPoint dimensions,
+            int deck,
+            SideEffect sideEffect = SideEffect.None){
+            var identifier = new ObjectIdentifier(position, deck);
+
+            Matrix trans = Matrix.CreateTranslation(position);
+            var model = Resource.LoadContent<Model>(modelName);
+            _objectModelBuffer[deck].AddObject(identifier, model, trans);
+
+            var gridPos = ConvertToGridspace(position, deck);
+            SetOccupationGridState(gridPos, dimensions, deck, true);
+            var objSideEffect = new ObjectSideEffect
+                (
+                identifier,
+                dimensions,
+                gridPos,
+                sideEffect
+                );
+            _objectSideEffects[deck].Add(objSideEffect);
+            ApplyObjectSideEffect(objSideEffect);
+            ObjectFootprints[deck].Add(identifier, dimensions);
+
+            return identifier;
+        }
+
+        public void RemoveObject(ObjectIdentifier obj){
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #region Nested type: ObjectSideEffect
 
@@ -337,6 +360,9 @@ namespace Forge.Core.ObjectEditor{
 
         #region Nested type: OccupationGridPos
 
+        /// <summary>
+        /// Point pseudo-class used for type richness to prevent errors with the conversions common to this class.
+        /// </summary>
         struct OccupationGridPos{
             public readonly int X;
             public int Z;

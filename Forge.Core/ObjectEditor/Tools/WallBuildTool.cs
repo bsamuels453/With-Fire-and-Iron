@@ -14,9 +14,10 @@ namespace Forge.Core.ObjectEditor.Tools{
     public class WallBuildTool : DeckPlacementBase{
         readonly ObjectBuffer<WallSegmentIdentifier> _tempWallBuffer;
         readonly List<WallSegmentIdentifier> _tempWallIdentifiers;
+        readonly InternalWallEnvironment _wallEnv;
         readonly float _wallHeight;
 
-        public WallBuildTool(HullEnvironment hullData) :
+        public WallBuildTool(HullEnvironment hullData, InternalWallEnvironment wallEnv) :
             base(hullData){
             _tempWallBuffer = new ObjectBuffer<WallSegmentIdentifier>
                 (
@@ -28,6 +29,7 @@ namespace Forge.Core.ObjectEditor.Tools{
 
             _tempWallIdentifiers = new List<WallSegmentIdentifier>();
             _wallHeight = hullData.DeckHeight - 0.01f;
+            _wallEnv = wallEnv;
         }
 
         protected override void HandleCursorChange(bool isDrawing){
@@ -36,14 +38,9 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void HandleCursorRelease(){
-            HullData.CurWallIdentifiers.AddRange
-                (
-                    from id in _tempWallIdentifiers
-                    where !HullData.CurWallIdentifiers.Contains(id)
-                    select id
-                );
+            _wallEnv.AddWalls(_tempWallBuffer, _tempWallIdentifiers);
+            _tempWallBuffer.ClearObjects();
             _tempWallIdentifiers.Clear();
-            HullData.CurWallBuffer.AbsorbBuffer(_tempWallBuffer);
         }
 
         protected override void HandleCursorDown(){

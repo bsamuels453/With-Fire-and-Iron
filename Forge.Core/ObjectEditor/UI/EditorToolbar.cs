@@ -20,6 +20,7 @@ namespace Forge.Core.ObjectEditor.UI{
         public EditorToolbar(
             HullEnvironment hullEnv,
             DeckObjectEnvironment deckObjEnv,
+            InternalWallEnvironment wallEnv,
             UIElementCollection parent,
             FrameStrata.Level depth,
             Point position) :
@@ -39,9 +40,9 @@ namespace Forge.Core.ObjectEditor.UI{
 
             _tools = new IToolbarTool[3];
 
-            _tools[(int) Tools.BuildWall] = new WallBuildTool(hullEnv);
-            _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullEnv);
-            _tools[(int)Tools.BuildLadder] = new DeckObjectPlacementTool(hullEnv, deckObjEnv, "Models/Ladder", new XZPoint(2, 2));
+            _tools[(int) Tools.BuildWall] = new WallBuildTool(hullEnv, wallEnv);
+            _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullEnv, wallEnv);
+            _tools[(int) Tools.BuildLadder] = new DeckObjectPlacementTool(hullEnv, deckObjEnv, "Models/Ladder", new XZPoint(2, 2));
 
             InitializeToolEvents();
         }
