@@ -120,7 +120,7 @@ namespace Forge.Core.ObjectEditor{
             var layerWidth = (int) ((maxZ)*4);
 
             for (int i = 0; i < vertexes.Length; i++){
-                var grid = new bool[layerLength,layerWidth];
+                var grid = new bool[layerLength + 1,layerWidth];
                 _occupationGrids[i] = grid;
             }
 
@@ -261,12 +261,6 @@ namespace Forge.Core.ObjectEditor{
             //convert origin point so z axis bisects the ship instead of being left justified to it
             origin.Z -= _gridOffset.Z;
 
-            //this hack is a serious case of "how the fuck did this bug get here"
-            //there's an unexplainable shift that causes origin.X to actually be 1 unit less than it should be.
-            //I suspect it's because deck plates are addressed by their max.x rather than min.x, or something
-            //having to do with the flip in geometrygenerator
-            origin.X += 1;
-
             for (int x = origin.X; x < origin.X + dims.X; x++){
                 for (int z = origin.Z; z < origin.Z + dims.Z; z++){
                     var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
@@ -344,7 +338,7 @@ namespace Forge.Core.ObjectEditor{
         #region Nested type: OccupationGridPos
 
         struct OccupationGridPos{
-            public int X;
+            public readonly int X;
             public int Z;
 
             public OccupationGridPos(int x, int z){

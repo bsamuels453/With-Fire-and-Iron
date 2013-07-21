@@ -59,7 +59,7 @@ namespace Forge.Core.Airship.Generation{
 
             //we want to shift everything forward so that the coordinate plane is centered on the center of the airship
             //this tidbit makes sure the offset is a multiple of 0.5f
-            int offset = ((int)(genResults.Length / 2)) * 2;
+            int offset = ((int) (genResults.Length/2))*2;
             offset /= 2;
 
             var deckFloorBuffers = GenerateDeckFloorMesh(genResults.DeckSilhouetteVerts, boundingBoxResults.DeckBoundingBoxes, genResults.NumDecks, offset);
@@ -570,11 +570,11 @@ namespace Forge.Core.Airship.Generation{
                                     (min.X + zWidth.X)/_deckTextureTilingSize,
                                     (min.Z + zWidth.Z)/_deckTextureTilingSize
                                     )));
-
-                    var origin = min*reflection;
+                    var origin = new Vector3(boundingBox.Max.X, boundingBox.Min.Y, boundingBox.Min.Z);
+                    origin *= reflection;
                     origin.X += xOffset*2;
-                    
-                    buff.AddObject(new DeckPlateIdentifier(origin, deck), (int[])idxWinding.Clone(), vertli.ToArray());
+
+                    buff.AddObject(new DeckPlateIdentifier(origin, deck), (int[]) idxWinding.Clone(), vertli.ToArray());
                 }
                 ret[deck] = buff;
             }
