@@ -177,6 +177,66 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
+        void SetOccupationGridState(OccupationGridPos origin, XZPoint dims, int deck, bool value){
+            var occupationGrid = _occupationGrids[deck];
+            for (int x = origin.X; x < origin.X + dims.X; x++){
+                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
+                    occupationGrid[x, z] = value;
+                }
+            }
+        }
+
+        void ModifyDeckPlates(OccupationGridPos origin, XZPoint dims, int deck, bool value){
+            var buffer = _deckSectionContainer.DeckBufferByDeck[deck];
+            //convert origin point so z axis bisects the ship instead of being left justified to it
+            origin.Z -= _gridOffset.Z;
+
+            for (int x = origin.X; x < origin.X + dims.X; x++){
+                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
+                    var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
+                    bool b;
+                    if (value){
+                        b = buffer.EnableObject(identifier);
+                    }
+                    else{
+                        b = buffer.DisableObject(identifier);
+                    }
+                    Debug.Assert(b);
+                }
+            }
+        }
+
+        void ApplyObjectSideEffect(ObjectSideEffect sideEffect){
+            if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
+                int deck = sideEffect.Identifier.Deck;
+                if (deck != 0){
+                    SetOccupationGridState(sideEffect.GridPosition, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(sideEffect.GridPosition, sideEffect.GridDimensions, deck - 1, false);
+                }
+            }
+            if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
+                throw new NotImplementedException();
+            }
+            if (sideEffect.SideEffect == SideEffect.CutsIntoStarboardHull){
+                throw new NotImplementedException();
+            }
+        }
+
+        void RemoveObjectSideEffect(){
+            throw new NotImplementedException();
+        }
+
+        void OnVisibleDeckChange(int old, int newDeck){
+            foreach (var buffer in _objectModelBuffer){
+                buffer.Enabled = false;
+            }
+            for (int i = _hullEnvironment.NumDecks - 1; i >= newDeck; i--){
+                _objectModelBuffer[i].Enabled = true;
+            }
+        }
+
+        #region public interfaces
+
         /// <summary>
         /// 
         /// </summary>
@@ -247,67 +307,11 @@ namespace Forge.Core.ObjectEditor{
             return identifier;
         }
 
-        void SetOccupationGridState(OccupationGridPos origin, XZPoint dims, int deck, bool value){
-            var occupationGrid = _occupationGrids[deck];
-            for (int x = origin.X; x < origin.X + dims.X; x++){
-                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
-                    occupationGrid[x, z] = value;
-                }
-            }
-        }
-
-        void ModifyDeckPlates(OccupationGridPos origin, XZPoint dims, int deck, bool value){
-            var buffer = _deckSectionContainer.DeckBufferByDeck[deck];
-            //convert origin point so z axis bisects the ship instead of being left justified to it
-            origin.Z -= _gridOffset.Z;
-
-            for (int x = origin.X; x < origin.X + dims.X; x++){
-                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
-                    var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
-                    bool b;
-                    if (value){
-                        b = buffer.EnableObject(identifier);
-                    }
-                    else{
-                        b = buffer.DisableObject(identifier);
-                    }
-                    Debug.Assert(b);
-                }
-            }
-        }
-
-        void ApplyObjectSideEffect(ObjectSideEffect sideEffect){
-            if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
-                int deck = sideEffect.Identifier.Deck;
-                if (deck != 0){
-                    SetOccupationGridState(sideEffect.GridPosition, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(sideEffect.GridPosition, sideEffect.GridDimensions, deck - 1, false);
-                }
-            }
-            if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
-                throw new NotImplementedException();
-            }
-            if (sideEffect.SideEffect == SideEffect.CutsIntoStarboardHull){
-                throw new NotImplementedException();
-            }
-        }
-
-        void RemoveObjectSideEffect(){
+        public void RemoveObject(ObjectIdentifier obj){
             throw new NotImplementedException();
         }
 
-        void RemoveObject(ObjectIdentifier obj){
-            throw new NotImplementedException();
-        }
-
-        void OnVisibleDeckChange(int old, int newDeck){
-            foreach (var buffer in _objectModelBuffer){
-                buffer.Enabled = false;
-            }
-            for (int i = _hullEnvironment.NumDecks - 1; i >= newDeck; i--){
-                _objectModelBuffer[i].Enabled = true;
-            }
-        }
+        #endregion
 
         #region Nested type: ObjectSideEffect
 
