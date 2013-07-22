@@ -7,7 +7,7 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Forge.Framework.Resources{
-    internal class GameObjectLoader : ResourceLoader{
+    public class GameObjectLoader : ResourceLoader{
         readonly Dictionary<string, GameObjectTag[]> _gameObjectFamilies;
 
         public GameObjectLoader(){

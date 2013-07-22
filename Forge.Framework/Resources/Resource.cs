@@ -19,6 +19,7 @@ namespace Forge.Framework.Resources{
         static OpenCLScriptLoader _openCLScriptLoader;
         static ConfigLoader _configLoader;
         static HLSLShaderLoader _shaderLoader;
+        public static GameObjectLoader GameObjectLoader { get; private set; }
         static bool _disposed;
         public static GraphicsDevice Device { get; private set; }
 
@@ -28,6 +29,7 @@ namespace Forge.Framework.Resources{
             _openCLScriptLoader = new OpenCLScriptLoader();
             _configLoader = new ConfigLoader();
             _shaderLoader = new HLSLShaderLoader(_contentManager, _configLoader);
+            GameObjectLoader = new GameObjectLoader();
         }
 
         /// <summary>
@@ -124,11 +126,11 @@ namespace Forge.Framework.Resources{
             _shaderLoader.LoadShader(configLocation, out effect);
         }
 
-
         public static void Dispose(){
             Debug.Assert(!_disposed);
             _openCLScriptLoader.Dispose();
             _contentManager.Dispose();
+            GameObjectLoader.Dispose();
             _disposed = true;
         }
 

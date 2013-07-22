@@ -8,7 +8,7 @@ using System.Linq;
 #endregion
 
 namespace Forge.Framework.Resources{
-    internal abstract class ResourceLoader : IDisposable{
+    public abstract class ResourceLoader : IDisposable{
         const int _numEstimatedDirectories = 20;
         const int _numEstimatedFiles = 50;
 
