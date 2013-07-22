@@ -153,6 +153,7 @@
     <Compile Include="ProtoBuffWrappers.cs" />
     <Compile Include="Resources\ConfigLoader.cs" />
     <Compile Include="Resources\HLSLShaderLoader.cs" />
+    <Compile Include="Resources\GameObjectLoader.cs" />
     <Compile Include="Resources\OpenCLScriptLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="InputState.cs" />
