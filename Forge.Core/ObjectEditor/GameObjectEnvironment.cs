@@ -114,6 +114,12 @@ namespace Forge.Core.ObjectEditor{
             return new OccupationGridPos(gridX, gridZ);
         }
 
+        OccupationGridPos ConvertToGridspace(XZPoint gridPos){
+            int gridX = (_gridOffset.X + gridPos.X);
+            int gridZ = (_gridOffset.Z + gridPos.Z);
+            return new OccupationGridPos(gridX, gridZ);
+        }
+
         XZPoint SetupObjectOccupationGrids(List<Vector3>[] vertexes){
             var layerVerts = vertexes[0];
             float maxX = float.MinValue;
@@ -223,8 +229,9 @@ namespace Forge.Core.ObjectEditor{
             if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
                 int deck = sideEffect.Identifier.Deck;
                 if (deck != 0){
-                    SetOccupationGridState(sideEffect.GridPosition, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(sideEffect.GridPosition, sideEffect.GridDimensions, deck - 1, false);
+                    var gridPos = ConvertToGridspace(sideEffect.Position);
+                    SetOccupationGridState(gridPos, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(gridPos, sideEffect.GridDimensions, deck - 1, false);
                 }
             }
             if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
@@ -319,8 +326,9 @@ namespace Forge.Core.ObjectEditor{
             }
             _objectModelBuffer[deck].AddObject(identifier, model, posTransform);
 
-            var gridPos = ConvertToGridspace(position);
-            SetOccupationGridState(gridPos, dimensions, deck, true);
+            var gridPos = new XZPoint((int) (position.X*2), (int) (position.Z*2));
+            var occPos = ConvertToGridspace(position);
+            SetOccupationGridState(occPos, dimensions, deck, true);
             var objSideEffect = new GameObject
                 (
                 identifier,
@@ -340,44 +348,6 @@ namespace Forge.Core.ObjectEditor{
 
         public void RemoveObject(ObjectIdentifier obj){
             throw new NotImplementedException();
-        }
-
-        #endregion
-
-        #region Nested type: GameObject
-
-        struct GameObject : IEquatable<ObjectIdentifier>{
-            public readonly int Deck;
-            public readonly XZPoint GridDimensions;
-            public readonly OccupationGridPos GridPosition;
-            public readonly ObjectIdentifier Identifier;
-            public readonly long ObjectUid;
-            public readonly SideEffect SideEffect;
-            public readonly GameObjectType Type;
-
-            public GameObject(
-                ObjectIdentifier identifier,
-                XZPoint gridDimensions,
-                OccupationGridPos gridPosition,
-                SideEffect sideEffect,
-                long objectUid,
-                int deck, GameObjectType type){
-                Identifier = identifier;
-                GridDimensions = gridDimensions;
-                GridPosition = gridPosition;
-                SideEffect = sideEffect;
-                ObjectUid = objectUid;
-                Deck = deck;
-                Type = type;
-            }
-
-            #region IEquatable<ObjectIdentifier> Members
-
-            public bool Equals(ObjectIdentifier other){
-                return Identifier == other;
-            }
-
-            #endregion
         }
 
         #endregion
