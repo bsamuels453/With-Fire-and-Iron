@@ -296,6 +296,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="position">Model space position</param>
         /// <param name="dimensions">Dimensions of the object in grid-space units </param>
         /// <param name="deck"></param>
+        /// <param name="objectUid"> </param>
         /// <param name="transform"> </param>
         /// <param name="sideEffect"> </param>
         /// <returns></returns>
@@ -304,6 +305,7 @@ namespace Forge.Core.ObjectEditor{
             Vector3 position,
             XZPoint dimensions,
             int deck,
+            long objectUid,
             Matrix? transform = null,
             SideEffect sideEffect = SideEffect.None){
             var identifier = new ObjectIdentifier(position, deck);
@@ -311,7 +313,7 @@ namespace Forge.Core.ObjectEditor{
             Matrix posTransform = Matrix.CreateTranslation(position);
             var model = Resource.LoadContent<Model>(modelName);
             if (transform != null){
-                posTransform = (Matrix)transform * posTransform;
+                posTransform = (Matrix) transform*posTransform;
             }
             _objectModelBuffer[deck].AddObject(identifier, model, posTransform);
 
@@ -322,7 +324,9 @@ namespace Forge.Core.ObjectEditor{
                 identifier,
                 dimensions,
                 gridPos,
-                sideEffect
+                sideEffect,
+                objectUid,
+                deck
                 );
             _objectSideEffects[deck].Add(objSideEffect);
             ApplyObjectSideEffect(objSideEffect);
@@ -340,16 +344,26 @@ namespace Forge.Core.ObjectEditor{
         #region Nested type: GameObject
 
         struct GameObject : IEquatable<ObjectIdentifier>{
+            public readonly int Deck;
             public readonly XZPoint GridDimensions;
             public readonly OccupationGridPos GridPosition;
             public readonly ObjectIdentifier Identifier;
+            public readonly long ObjectUid;
             public readonly SideEffect SideEffect;
 
-            public GameObject(ObjectIdentifier identifier, XZPoint gridDimensions, OccupationGridPos gridPosition, SideEffect sideEffect){
+            public GameObject(
+                ObjectIdentifier identifier,
+                XZPoint gridDimensions,
+                OccupationGridPos gridPosition,
+                SideEffect sideEffect,
+                long objectUid,
+                int deck){
                 Identifier = identifier;
                 GridDimensions = gridDimensions;
                 GridPosition = gridPosition;
                 SideEffect = sideEffect;
+                ObjectUid = objectUid;
+                Deck = deck;
             }
 
             #region IEquatable<ObjectIdentifier> Members
