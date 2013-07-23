@@ -182,6 +182,7 @@
     <Compile Include="HullEditor\HandleButton.cs" />
     <Compile Include="ObjectEditor\GameObjectEnvironment.cs" />
     <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
+    <Compile Include="ObjectEditor\GameObjectType.cs" />
     <Compile Include="ObjectEditor\InternalWallEnvironment.cs" />
     <Compile Include="ObjectEditor\ObjectIdentifier.cs" />
     <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
