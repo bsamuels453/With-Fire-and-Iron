@@ -21,7 +21,6 @@ namespace Forge.Core.Physics{
         const float _projectileLifetime = 10000; //milliseconds
         const int _maxProjectiles = 500;
         const string _projectileShader = "Config/Shaders/TintedModel.config";
-        const string _projectileList = "Config/Projectiles/ProjectileList.config";
         const float _gravity = -10;
         const float _shieldThickness = 3;
         readonly List<Projectile> _activeProjectiles;
@@ -89,13 +88,11 @@ namespace Forge.Core.Physics{
         Dictionary<string, ProjectileAttributes> LoadProjectileVariants(){
             var projectileVariants = new Dictionary<string, ProjectileAttributes>(0);
 
-            var projectileDefList = Resource.LoadConfig(_projectileList);
-            foreach (var file in projectileDefList){
-                var jObj = Resource.LoadConfig(file.Value.ToObject<string>());
+            var projectileDefList = Resource.GameObjectLoader.LoadGameObjectFamily("Projectiles");
+            foreach (var projectile in projectileDefList){
+                var attributes = new ProjectileAttributes(projectile);
 
-                var attributes = new ProjectileAttributes(jObj);
-
-                projectileVariants.Add(file.Key, attributes);
+                projectileVariants.Add(projectile["Name"].ToObject<string>(), attributes);
             }
             return projectileVariants;
         }
