@@ -21,6 +21,8 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly HullEnvironment _hullData;
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
+        readonly GameObjectType _objectType;
+        readonly long _objectUid;
         protected Vector3 CursorOffset;
         protected Matrix ObjectRotTransorm;
 
@@ -31,6 +33,8 @@ namespace Forge.Core.ObjectEditor.Tools{
             GameObjectEnvironment gameObjectEnvironment,
             string objectModel,
             XZPoint objectGridDims,
+            long objectUid,
+            GameObjectType type,
             GameObjectEnvironment.SideEffect placementSideEffects) :
                 base(hullData){
             _objectGridDims = objectGridDims;
@@ -38,6 +42,8 @@ namespace Forge.Core.ObjectEditor.Tools{
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
             PlacementSideEffect = placementSideEffects;
+            _objectUid = objectUid;
+            _objectType = type;
             CursorOffset = new Vector3(-objectGridDims.X/4f, 0, -objectGridDims.Z/4f);
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
@@ -78,6 +84,8 @@ namespace Forge.Core.ObjectEditor.Tools{
                     CursorPosition + CursorOffset,
                     _objectGridDims,
                     _hullData.CurDeck,
+                    _objectUid,
+                    _objectType,
                     ObjectRotTransorm,
                     PlacementSideEffect
                 );
