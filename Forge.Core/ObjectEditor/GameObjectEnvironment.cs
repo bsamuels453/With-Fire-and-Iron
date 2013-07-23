@@ -297,6 +297,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="dimensions">Dimensions of the object in grid-space units </param>
         /// <param name="deck"></param>
         /// <param name="objectUid"> </param>
+        /// <param name="type"> </param>
         /// <param name="transform"> </param>
         /// <param name="sideEffect"> </param>
         /// <returns></returns>
@@ -306,6 +307,7 @@ namespace Forge.Core.ObjectEditor{
             XZPoint dimensions,
             int deck,
             long objectUid,
+            GameObjectType type,
             Matrix? transform = null,
             SideEffect sideEffect = SideEffect.None){
             var identifier = new ObjectIdentifier(position, deck);
@@ -326,7 +328,8 @@ namespace Forge.Core.ObjectEditor{
                 gridPos,
                 sideEffect,
                 objectUid,
-                deck
+                deck,
+                type
                 );
             _objectSideEffects[deck].Add(objSideEffect);
             ApplyObjectSideEffect(objSideEffect);
@@ -350,6 +353,7 @@ namespace Forge.Core.ObjectEditor{
             public readonly ObjectIdentifier Identifier;
             public readonly long ObjectUid;
             public readonly SideEffect SideEffect;
+            public readonly GameObjectType Type;
 
             public GameObject(
                 ObjectIdentifier identifier,
@@ -357,13 +361,14 @@ namespace Forge.Core.ObjectEditor{
                 OccupationGridPos gridPosition,
                 SideEffect sideEffect,
                 long objectUid,
-                int deck){
+                int deck, GameObjectType type){
                 Identifier = identifier;
                 GridDimensions = gridDimensions;
                 GridPosition = gridPosition;
                 SideEffect = sideEffect;
                 ObjectUid = objectUid;
                 Deck = deck;
+                Type = type;
             }
 
             #region IEquatable<ObjectIdentifier> Members
