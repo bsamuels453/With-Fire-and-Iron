@@ -107,7 +107,7 @@ namespace Forge.Core.ObjectEditor{
 
         #endregion
 
-        OccupationGridPos ConvertToGridspace(Vector3 modelSpacePos, int deck){
+        OccupationGridPos ConvertToGridspace(Vector3 modelSpacePos){
             modelSpacePos *= 2;
             int gridX = (int) (_gridOffset.X + modelSpacePos.X);
             int gridZ = (int) (_gridOffset.Z + modelSpacePos.Z);
@@ -181,7 +181,7 @@ namespace Forge.Core.ObjectEditor{
 
                 for (int row = southPadding; row < southPadding + sortedVertsByRow.Count; row++){
                     float max = sortedVertsByRow[row - southPadding].Max(v => v.Z);
-                    var converted = ConvertToGridspace(new Vector3(0, 0, -max), deck).Z;
+                    var converted = ConvertToGridspace(new Vector3(0, 0, -max)).Z;
                     layerLimitMin[row] = converted;
                     layerLimitMax[row] = rowArrayMax - converted;
                 }
@@ -258,7 +258,7 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="deck"></param>
         /// <param name="placementSideEffects"> </param>
         public bool IsObjectPlacementValid(Vector3 position, XZPoint gridDimensions, int deck, SideEffect placementSideEffects){
-            var gridPosition = ConvertToGridspace(position, deck);
+            var gridPosition = ConvertToGridspace(position);
             var gridLimitMax = _gridLimitMax[deck];
             var gridLimitMin = _gridLimitMin[deck];
             var occupationGrid = _occupationGrids[deck];
@@ -276,7 +276,7 @@ namespace Forge.Core.ObjectEditor{
                     }
                 }
             }
-            if (placementSideEffects == SideEffect.CutsIntoCeiling) {
+            if (placementSideEffects == SideEffect.CutsIntoCeiling){
                 if (deck != 0){
                     if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, SideEffect.None))
                         return false;
@@ -315,7 +315,7 @@ namespace Forge.Core.ObjectEditor{
             }
             _objectModelBuffer[deck].AddObject(identifier, model, posTransform);
 
-            var gridPos = ConvertToGridspace(position, deck);
+            var gridPos = ConvertToGridspace(position);
             SetOccupationGridState(gridPos, dimensions, deck, true);
             var objSideEffect = new GameObject
                 (
