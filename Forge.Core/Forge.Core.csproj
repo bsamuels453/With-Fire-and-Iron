@@ -180,7 +180,7 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
-    <Compile Include="ObjectEditor\DeckObjectEnvironment.cs" />
+    <Compile Include="ObjectEditor\GameObjectEnvironment.cs" />
     <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
     <Compile Include="ObjectEditor\InternalWallEnvironment.cs" />
     <Compile Include="ObjectEditor\ObjectIdentifier.cs" />

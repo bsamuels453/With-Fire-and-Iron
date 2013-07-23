@@ -17,18 +17,27 @@ namespace Forge.Core.ObjectEditor.Tools{
     /// Tool for placing generic objects on the airship's deck.
     /// </summary>
     internal class DeckObjectPlacementTool : DeckPlacementBase{
-        readonly DeckObjectEnvironment _deckObjectEnvironment;
+        readonly GameObjectEnvironment _gameObjectEnvironment;
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullEnvironment _hullData;
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
 
-        public DeckObjectPlacementTool(HullEnvironment hullData, DeckObjectEnvironment deckObjectEnvironment, string objectModel, XZPoint objectGridDims) :
-            base(hullData){
+        public GameObjectEnvironment.SideEffect PlacementSideEffect;
+        Matrix _rotTransform;
+
+        public DeckObjectPlacementTool(
+            HullEnvironment hullData,
+            GameObjectEnvironment gameObjectEnvironment,
+            string objectModel,
+            XZPoint objectGridDims,
+            GameObjectEnvironment.SideEffect placementSideEffects,
+            Matrix? objTransform = null) :
+                base(hullData){
             _objectGridDims = objectGridDims;
             _objectModelName = objectModel;
             _hullData = hullData;
-            _deckObjectEnvironment = deckObjectEnvironment;
+            _gameObjectEnvironment = gameObjectEnvironment;
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
@@ -59,7 +68,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void HandleCursorRelease(){
-            _deckObjectEnvironment.AddObject
+            _gameObjectEnvironment.AddObject
                 (
                     _objectModelName,
                     CursorPosition,
@@ -93,7 +102,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
-            return _deckObjectEnvironment.IsObjectPlacementValid(newCursorPos, _objectGridDims, _hullData.CurDeck, true);
+            return _gameObjectEnvironment.IsObjectPlacementValid(newCursorPos, _objectGridDims, _hullData.CurDeck, PlacementSideEffect);
         }
     }
 }

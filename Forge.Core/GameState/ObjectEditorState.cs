@@ -14,7 +14,7 @@ using Microsoft.Xna.Framework;
 namespace Forge.Core.GameState{
     public class ObjectEditorState : IGameState{
         readonly BodyCenteredCamera _cameraController;
-        readonly DeckObjectEnvironment _deckObjectEnvironment;
+        readonly GameObjectEnvironment _gameObjectEnvironment;
         readonly ObjectEditorUI _doodadUI;
         readonly HullEnvironment _hullEnvironment;
         readonly Battlefield _placeboBattlefield;
@@ -34,19 +34,20 @@ namespace Forge.Core.GameState{
 
             _hullEnvironment = new HullEnvironment(serial);
 
-            _deckObjectEnvironment = new DeckObjectEnvironment(_hullEnvironment);
-            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _deckObjectEnvironment);
-            _deckObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
+            _gameObjectEnvironment = new GameObjectEnvironment(_hullEnvironment);
+            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _gameObjectEnvironment);
+            _gameObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
 
             _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
-            _doodadUI = new ObjectEditorUI(_hullEnvironment, _deckObjectEnvironment, _wallEnvironment, _renderTarget);
+            _doodadUI = new ObjectEditorUI(_hullEnvironment, _gameObjectEnvironment, _wallEnvironment, _renderTarget);
+
         }
 
         #region IGameState Members
 
         public void Dispose(){
             _hullEnvironment.Dispose();
-            _deckObjectEnvironment.Dispose();
+            _gameObjectEnvironment.Dispose();
             _wallEnvironment.Dispose();
             _placeboBattlefield.Dispose();
             _doodadUI.Dispose();

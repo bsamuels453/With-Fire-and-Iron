@@ -16,10 +16,10 @@ namespace Forge.Core.ObjectEditor{
         readonly List<WallSegmentIdentifier>[] _wallIdentifiers;
         int _curDeck;
 
-        public InternalWallEnvironment(HullEnvironment hullEnv, DeckObjectEnvironment deckEnv){
+        public InternalWallEnvironment(HullEnvironment hullEnv, GameObjectEnvironment gameEnv){
             var deckSecContainer = hullEnv.DeckSectionContainer;
             _numDecks = hullEnv.NumDecks;
-            _objectFootprints = deckEnv.ObjectFootprints;
+            _objectFootprints = gameEnv.ObjectFootprints;
 
             _wallBuffers = new ObjectBuffer<WallSegmentIdentifier>[_numDecks];
             for (int i = 0; i < _wallBuffers.Count(); i++){
