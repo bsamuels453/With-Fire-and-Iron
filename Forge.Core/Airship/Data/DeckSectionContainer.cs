@@ -121,7 +121,7 @@ namespace Forge.Core.Airship.Data{
         public Serialized ExtractSerializationStruct(){
             var deckBuffData = new ObjectBuffer<DeckPlateIdentifier>.Serialized[NumDecks];
             for (int i = 0; i < NumDecks; i++){
-                deckBuffData[i] = DeckBufferByDeck[i].ExtractSerializationStruct();
+                deckBuffData[i] = DeckBufferByDeck[i].ExtractSerializationStruct(true);
             }
 
             var deckVertexes = new ProtoBuffWrappers.Vector3Container[NumDecks];
