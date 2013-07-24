@@ -299,51 +299,23 @@ namespace Forge.Core.ObjectEditor{
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="modelName"></param>
-        /// <param name="position">Model space position</param>
-        /// <param name="dimensions">Dimensions of the object in grid-space units </param>
-        /// <param name="deck"></param>
-        /// <param name="objectUid"> </param>
-        /// <param name="type"> </param>
-        /// <param name="transform"> </param>
-        /// <param name="sideEffect"> </param>
         /// <returns></returns>
-        public ObjectIdentifier AddObject(
-            string modelName,
-            Vector3 position,
-            XZPoint dimensions,
-            int deck,
-            long objectUid,
-            GameObjectType type,
-            Matrix? transform = null,
-            SideEffect sideEffect = SideEffect.None){
-            var identifier = new ObjectIdentifier(position, deck);
+        public ObjectIdentifier AddObject(GameObject obj){
+            Matrix posTransform = Matrix.CreateTranslation(obj.ModelspacePosition);
+            var model = Resource.LoadContent<Model>(obj.ModelName);
+            var rotTransform = Matrix.CreateFromYawPitchRoll(obj.Rotation, 0, 0);
+            posTransform = rotTransform*posTransform;
 
-            Matrix posTransform = Matrix.CreateTranslation(position);
-            var model = Resource.LoadContent<Model>(modelName);
-            if (transform != null){
-                posTransform = (Matrix) transform*posTransform;
-            }
-            _objectModelBuffer[deck].AddObject(identifier, model, posTransform);
+            _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
-            var gridPos = new XZPoint((int) (position.X*2), (int) (position.Z*2));
-            var occPos = ConvertToGridspace(position);
-            SetOccupationGridState(occPos, dimensions, deck, true);
-            var objSideEffect = new GameObject
-                (
-                identifier,
-                dimensions,
-                gridPos,
-                sideEffect,
-                objectUid,
-                deck,
-                type
-                );
-            _objectSideEffects[deck].Add(objSideEffect);
-            ApplyObjectSideEffect(objSideEffect);
-            ObjectFootprints[deck].Add(identifier, dimensions);
+            var occPos = ConvertToGridspace(obj.ModelspacePosition);
+            SetOccupationGridState(occPos, obj.GridDimensions, obj.Deck, true);
 
-            return identifier;
+            _objectSideEffects[obj.Deck].Add(obj);
+            ApplyObjectSideEffect(obj);
+            ObjectFootprints[obj.Deck].Add(obj.Identifier, obj.GridDimensions);
+
+            return obj.Identifier;
         }
 
         public void RemoveObject(ObjectIdentifier obj){
