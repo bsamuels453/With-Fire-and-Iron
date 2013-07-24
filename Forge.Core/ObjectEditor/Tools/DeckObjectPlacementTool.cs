@@ -24,9 +24,9 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly GameObjectType _objectType;
         readonly long _objectUid;
         protected Vector3 CursorOffset;
-        protected Matrix ObjectRotTransorm;
-
         public GameObjectEnvironment.SideEffect PlacementSideEffect;
+        float _rotation;
+        Matrix _transform;
 
         public DeckObjectPlacementTool(
             HullEnvironment hullData,
@@ -50,7 +50,15 @@ namespace Forge.Core.ObjectEditor.Tools{
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
             _ghostedObjectModel.Enabled = false;
 
-            ObjectRotTransorm = Matrix.Identity;
+            _transform = Matrix.Identity;
+        }
+
+        protected float Rotation{
+            get { return _rotation; }
+            set{
+                _rotation = value;
+                _transform = Matrix.CreateFromYawPitchRoll(_rotation, 0, 0);
+            }
         }
 
         protected override void EnableCursorGhost(){
@@ -71,24 +79,26 @@ namespace Forge.Core.ObjectEditor.Tools{
 
         protected override void UpdateCursorGhost(){
             var translation = Matrix.CreateTranslation(base.CursorPosition + CursorOffset);
-            _ghostedObjectModel.SetObjectTransform(0, ObjectRotTransorm*translation);
+            _ghostedObjectModel.SetObjectTransform(0, _transform*translation);
         }
 
         protected override void HandleCursorChange(bool isDrawing){
         }
 
         protected override void HandleCursorRelease(){
-            _gameObjectEnvironment.AddObject
+            var gameObj = new GameObject
                 (
-                    _objectModelName,
-                    CursorPosition + CursorOffset,
-                    _objectGridDims,
-                    _hullData.CurDeck,
-                    _objectUid,
-                    _objectType,
-                    ObjectRotTransorm,
-                    PlacementSideEffect
+                CursorPosition + CursorOffset,
+                _hullData.CurDeck,
+                _objectGridDims,
+                PlacementSideEffect,
+                _objectUid,
+                _objectType,
+                _objectModelName,
+                _rotation
                 );
+            _gameObjectEnvironment.AddObject(gameObj);
+
             //This used to be used to regenerate grid to remove grid lines obfuscated/covered by objects.
             //For now, the deckobjectenvironment doesn't mess with the deck's bounding boxes because it
             //would create ridic coupling issues. Leaving this here though as a footnote to keep in mind
