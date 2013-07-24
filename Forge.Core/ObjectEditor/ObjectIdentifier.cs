@@ -12,7 +12,7 @@ namespace Forge.Core.ObjectEditor{
     ///the object editor uses this to identify objects to be added/removed from the environment
     /// </summary>
     [ProtoContract]
-    public class ObjectIdentifier : IEquatable<ObjectIdentifier>{
+    public struct ObjectIdentifier : IEquatable<ObjectIdentifier>{
         [ProtoMember(1)] public readonly int Deck;
         [ProtoMember(2)] public readonly XZPoint Origin;
 
