@@ -2,19 +2,21 @@
 
 using System;
 using MonoGameUtility;
+using ProtoBuf;
 
 #endregion
 
 namespace Forge.Core.ObjectEditor{
+    [ProtoContract]
     public struct GameObject : IEquatable<ObjectIdentifier>{
-        public readonly int Deck;
-        public readonly XZPoint GridDimensions;
-        public readonly ObjectIdentifier Identifier;
-        public readonly Vector3 ModelspacePosition;
-        public readonly long ObjectUid;
-        public readonly XZPoint Position;
-        public readonly float Rotation;
-        public readonly GameObjectType Type;
+        [ProtoMember(1)] public readonly int Deck;
+        [ProtoMember(2)] public readonly XZPoint GridDimensions;
+        [ProtoMember(3)] public readonly ObjectIdentifier Identifier;
+        [ProtoMember(4)] public readonly Vector3 ModelspacePosition;
+        [ProtoMember(5)] public readonly long ObjectUid;
+        [ProtoMember(6)] public readonly XZPoint Position;
+        [ProtoMember(7)] public readonly float Rotation;
+        [ProtoMember(8)] public readonly GameObjectType Type;
 
         public GameObject(
             Vector3 modelspacePosition,
