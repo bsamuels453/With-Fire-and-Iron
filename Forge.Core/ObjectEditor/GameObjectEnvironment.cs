@@ -266,19 +266,37 @@ namespace Forge.Core.ObjectEditor{
 
         #region Delegates
 
-        public delegate bool ObjectPlacementTest(GameObject obj);
+        public delegate bool ObjectPlacementTest(
+            Vector3 mPosition,
+            XZPoint gridDims,
+            int deck,
+            float rotation,
+            GameObjectType type,
+            long uid,
+            SideEffect pSideEffects);
 
         public delegate void OnObjectAddRemove(GameObject obj);
 
         #endregion
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="position">The model space position of the object to be placed</param>
         /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
         /// <param name="deck"></param>
-        /// <param name="placementSideEffects"> </param>
-        public bool IsObjectPlacementValid(Vector3 position, XZPoint gridDimensions, int deck, SideEffect placementSideEffects){
+        /// <param name="uid"> </param>
+        /// <param name="pSideEffects"> </param>
+        /// <param name="rotation"> </param>
+        /// <param name="type"> </param>
+        public bool IsObjectPlacementValid(
+            Vector3 position,
+            XZPoint gridDimensions,
+            int deck,
+            float rotation,
+            GameObjectType type,
+            long uid,
+            SideEffect pSideEffects){
             var gridPosition = ConvertToGridspace(position);
             var gridLimitMax = _gridLimitMax[deck];
             var gridLimitMin = _gridLimitMin[deck];
@@ -297,9 +315,9 @@ namespace Forge.Core.ObjectEditor{
                     }
                 }
             }
-            if (placementSideEffects == SideEffect.CutsIntoCeiling){
+            if (pSideEffects == SideEffect.CutsIntoCeiling){
                 if (deck != 0){
-                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, SideEffect.None))
+                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, rotation, type, uid, SideEffect.None))
                         return false;
                 }
             }
@@ -307,6 +325,14 @@ namespace Forge.Core.ObjectEditor{
             if (!InternalWallEnvironment.IsObjectPlacementValid(position, gridDimensions, deck)){
                 return false;
             }
+
+            foreach (var deleg in _objectPlacementTestDelegs){
+                bool result = deleg.Invoke(position, gridDimensions, deck, rotation, type, uid, pSideEffects);
+                if (!result){
+                    return false;
+                }
+            }
+
             return true;
         }
 
@@ -329,11 +355,19 @@ namespace Forge.Core.ObjectEditor{
             ApplyObjectSideEffect(obj);
             ObjectFootprints[obj.Deck].Add(obj.Identifier, obj.GridDimensions);
 
+            foreach (var deleg in _objectAddedEvent){
+                deleg.Invoke(obj);
+            }
+
             return obj.Identifier;
         }
 
         public void RemoveObject(ObjectIdentifier obj){
             throw new NotImplementedException();
+
+            foreach (var deleg in _objectRemovedEvent){
+                //deleg.Invoke(obj);
+            }
         }
 
         public void AddOnObjectPlacement(OnObjectAddRemove deleg){
