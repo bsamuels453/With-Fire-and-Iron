@@ -236,20 +236,6 @@ namespace Forge.Framework.Draw{
         public ObjectData[] DumpObjectData(){
             return _objectData.ToArray();
         }
-        /*
-        public VertexPositionNormalTexture[] DumpVerticies(){
-            var data = new VertexPositionNormalTexture[base.BaseVertexBuffer.VertexCount];
-            BaseVertexBuffer.GetData(data);
-            return data;
-        }
-         */
-        /*
-        public int[] DumpIndicies(){
-            var data = new int[base.BaseIndexBuffer.IndexCount];
-            BaseIndexBuffer.GetData(data);
-            return data;
-        }
-         */
 
         #region serialization
 
@@ -308,10 +294,17 @@ namespace Forge.Framework.Draw{
             UpdateBufferManually = false;
         }
 
-        public Serialized ExtractSerializationStruct(){
+        public Serialized ExtractSerializationStruct(bool cullDisabled = false){
             var objectData = new ObjectData.ChildSerialized[_objectData.Count];
             for (int i = 0; i < _objectData.Count; i++){
-                objectData[i] = _objectData[i].ExtractSerializationStruct();
+                if (cullDisabled){
+                    if (_objectData[i].Enabled){
+                        objectData[i] = _objectData[i].ExtractSerializationStruct();
+                    }
+                }
+                else{
+                    objectData[i] = _objectData[i].ExtractSerializationStruct();
+                }
             }
 
             var ret = new Serialized
@@ -343,6 +336,21 @@ namespace Forge.Framework.Draw{
         }
 
         #endregion
+
+        /*
+        public VertexPositionNormalTexture[] DumpVerticies(){
+            var data = new VertexPositionNormalTexture[base.BaseVertexBuffer.VertexCount];
+            BaseVertexBuffer.GetData(data);
+            return data;
+        }
+         */
+        /*
+        public int[] DumpIndicies(){
+            var data = new int[base.BaseIndexBuffer.IndexCount];
+            BaseIndexBuffer.GetData(data);
+            return data;
+        }
+         */
 
         #region Nested type: ObjectData
 
