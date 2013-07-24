@@ -340,9 +340,9 @@ namespace Forge.Core.ObjectEditor{
         /// 
         /// </summary>
         /// <returns></returns>
-        public ObjectIdentifier AddObject(GameObject obj){
+        public ObjectIdentifier AddObject(GameObject obj, string modelName){
             Matrix posTransform = Matrix.CreateTranslation(obj.ModelspacePosition);
-            var model = Resource.LoadContent<Model>(obj.ModelName);
+            var model = Resource.LoadContent<Model>(modelName);
             var rotTransform = Matrix.CreateFromYawPitchRoll(obj.Rotation, 0, 0);
             posTransform = rotTransform*posTransform;
 
