@@ -391,6 +391,15 @@ namespace Forge.Core.ObjectEditor{
             _objectPlacementTestDelegs.Add(deleg);
         }
 
+        public List<GameObject> DumpGameObjects(){
+            var ret = (
+                from deck in _objectSideEffects
+                from entry in deck
+                select entry.Item1
+                ).ToList();
+            return ret;
+        }
+
         #endregion
 
         #region Nested type: OccupationGridPos
