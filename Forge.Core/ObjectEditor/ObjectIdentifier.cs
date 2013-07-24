@@ -12,7 +12,7 @@ namespace Forge.Core.ObjectEditor{
     /// </summary>
     public class ObjectIdentifier : IEquatable<ObjectIdentifier>{
         public readonly int Deck;
-        public readonly Point Origin;
+        public readonly XZPoint Origin;
 
         /// <summary>
         /// Initialize the identifier using the deck and scaled origin.
@@ -21,14 +21,14 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         /// <param name="origin"></param>
         /// <param name="deck"></param>
-        public ObjectIdentifier(Point origin, int deck){
+        public ObjectIdentifier(XZPoint origin, int deck){
             Origin = origin;
             Deck = deck;
         }
 
         public ObjectIdentifier(Vector3 origin, int deck){
             //deck plate step is 0.5f
-            var scaled = new Point((int) (origin.X*2), (int) (origin.Y*2));
+            var scaled = new XZPoint((int) (origin.X*2), (int) (origin.Z*2));
             Origin = scaled;
             Deck = deck;
         }
