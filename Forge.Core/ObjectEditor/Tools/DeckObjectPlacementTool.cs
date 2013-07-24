@@ -94,10 +94,9 @@ namespace Forge.Core.ObjectEditor.Tools{
                 PlacementSideEffect,
                 _objectUid,
                 _objectType,
-                _objectModelName,
                 _rotation
                 );
-            _gameObjectEnvironment.AddObject(gameObj);
+            _gameObjectEnvironment.AddObject(gameObj, _objectModelName);
 
             //This used to be used to regenerate grid to remove grid lines obfuscated/covered by objects.
             //For now, the deckobjectenvironment doesn't mess with the deck's bounding boxes because it
