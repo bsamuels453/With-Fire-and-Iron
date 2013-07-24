@@ -14,14 +14,12 @@ namespace Forge.Core.ObjectEditor{
         public readonly long ObjectUid;
         public readonly XZPoint Position;
         public readonly float Rotation;
-        public readonly GameObjectEnvironment.SideEffect SideEffect;
         public readonly GameObjectType Type;
 
         public GameObject(
             Vector3 modelspacePosition,
             int deck,
             XZPoint gridDimensions,
-            GameObjectEnvironment.SideEffect sideEffect,
             long objectUid,
             GameObjectType type,
             float rotation
@@ -29,7 +27,6 @@ namespace Forge.Core.ObjectEditor{
             Identifier = new ObjectIdentifier(modelspacePosition, deck);
             GridDimensions = gridDimensions;
             Position = Identifier.Origin;
-            SideEffect = sideEffect;
             ObjectUid = objectUid;
             Deck = deck;
             Type = type;

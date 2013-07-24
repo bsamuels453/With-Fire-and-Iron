@@ -62,7 +62,7 @@ namespace Forge.Core.ObjectEditor{
         /// <summary>
         /// used to keep track of side effects such as removing deck plates or removing hull sections
         /// </summary>
-        readonly List<GameObject>[] _objectSideEffects;
+        readonly List<Tuple<GameObject, SideEffect>>[] _objectSideEffects;
 
         /// <summary>
         /// Tables of booleans that represent whether the "area" the table maps to is occupied
@@ -75,13 +75,13 @@ namespace Forge.Core.ObjectEditor{
         public GameObjectEnvironment(HullEnvironment hullEnv){
             _hullEnvironment = hullEnv;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
-            _objectSideEffects = new List<GameObject>[hullEnv.NumDecks];
+            _objectSideEffects = new List<Tuple<GameObject, SideEffect>>[hullEnv.NumDecks];
             _objectAddedEvent = new List<OnObjectAddRemove>();
             _objectRemovedEvent = new List<OnObjectAddRemove>();
             _objectPlacementTestDelegs = new List<ObjectPlacementTest>();
 
             for (int i = 0; i < hullEnv.NumDecks; i++){
-                _objectSideEffects[i] = new List<GameObject>();
+                _objectSideEffects[i] = new List<Tuple<GameObject, SideEffect>>();
             }
             _occupationGrids = new bool[hullEnv.NumDecks][,];
 
@@ -232,19 +232,19 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void ApplyObjectSideEffect(GameObject sideEffect){
-            if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
-                int deck = sideEffect.Identifier.Deck;
+        void ApplyObjectSideEffect(GameObject gameObj, SideEffect sideEffect){
+            if (sideEffect == SideEffect.CutsIntoCeiling){
+                int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
-                    var gridPos = ConvertToGridspace(sideEffect.Position);
-                    SetOccupationGridState(gridPos, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(gridPos, sideEffect.GridDimensions, deck - 1, false);
+                    var gridPos = ConvertToGridspace(gameObj.Position);
+                    SetOccupationGridState(gridPos, gameObj.GridDimensions, gameObj.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(gridPos, gameObj.GridDimensions, deck - 1, false);
                 }
             }
-            if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
+            if (sideEffect == SideEffect.CutsIntoPortHull){
                 //throw new NotImplementedException();
             }
-            if (sideEffect.SideEffect == SideEffect.CutsIntoStarboardHull){
+            if (sideEffect == SideEffect.CutsIntoStarboardHull){
                 throw new NotImplementedException();
             }
         }
@@ -340,7 +340,7 @@ namespace Forge.Core.ObjectEditor{
         /// 
         /// </summary>
         /// <returns></returns>
-        public ObjectIdentifier AddObject(GameObject obj, string modelName){
+        public ObjectIdentifier AddObject(GameObject obj, string modelName, SideEffect sideEffect){
             Matrix posTransform = Matrix.CreateTranslation(obj.ModelspacePosition);
             var model = Resource.LoadContent<Model>(modelName);
             var rotTransform = Matrix.CreateFromYawPitchRoll(obj.Rotation, 0, 0);
@@ -351,8 +351,8 @@ namespace Forge.Core.ObjectEditor{
             var occPos = ConvertToGridspace(obj.ModelspacePosition);
             SetOccupationGridState(occPos, obj.GridDimensions, obj.Deck, true);
 
-            _objectSideEffects[obj.Deck].Add(obj);
-            ApplyObjectSideEffect(obj);
+            _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
+            ApplyObjectSideEffect(obj, sideEffect);
             ObjectFootprints[obj.Deck].Add(obj.Identifier, obj.GridDimensions);
 
             foreach (var deleg in _objectAddedEvent){
