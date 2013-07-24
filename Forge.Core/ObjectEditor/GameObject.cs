@@ -39,7 +39,7 @@ namespace Forge.Core.ObjectEditor{
         #region IEquatable<ObjectIdentifier> Members
 
         public bool Equals(ObjectIdentifier other){
-            return Identifier == other;
+            return Identifier.Equals(other);
         }
 
         #endregion
