@@ -304,14 +304,34 @@ namespace Forge.Framework.Draw{
                 }
             }
             else{
+                objectData = new ObjectData.ChildSerialized[_objectData.Count];
+                for (int i = 0; i < _objectData.Count; i++){
+                    if (_objectData[i].Enabled){
+                        objectData[i] = _objectData[i].ExtractSerializationStruct();
+                    }
+                    else{
+                        var fillerInds = new int[IndiciesPerObject];
+                        var fillerData = new ObjectData
+                            (
+                            _objectData[i].Identifier,
+                            _objectData[i].ObjectOffset,
+                            fillerInds,
+                            _objectData[i].Verticies
+                            );
+                        objectData[i] = fillerData.ExtractSerializationStruct();
+                    }
+                }
+                //unfinished less mem intensive method in case this needs to be optimized
+                /*
                 var enabledObjects = (
                     from o in _objectData
                     where o.Enabled
                     select o
                     ).ToArray();
 
-                //undo the offsets for each object and reapply them
+
                 var transformed = new List<ObjectData>(enabledObjects.Length);
+                //undo the offsets for each object and reapply them
                 int newOffset = 0;
                 foreach (var obj in enabledObjects){
                     int idxOffset = obj.ObjectOffset*IndiciesPerObject;
@@ -327,11 +347,11 @@ namespace Forge.Framework.Draw{
 
                     newOffset++;
                 }
-
                 objectData = new ObjectData.ChildSerialized[transformed.Count];
                 for (int i = 0; i < transformed.Count; i++){
                     objectData[i] = transformed[i].ExtractSerializationStruct();
                 }
+                 */
             }
 
             var ret = new Serialized
