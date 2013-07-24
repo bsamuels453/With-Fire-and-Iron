@@ -125,7 +125,16 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
-            return _gameObjectEnvironment.IsObjectPlacementValid(newCursorPos + CursorOffset, _objectGridDims, _hullData.CurDeck, PlacementSideEffect);
+            return _gameObjectEnvironment.IsObjectPlacementValid
+                (
+                    newCursorPos + CursorOffset,
+                    _objectGridDims,
+                    _hullData.CurDeck,
+                    _rotation,
+                    _objectType,
+                    _objectUid,
+                    PlacementSideEffect
+                );
         }
     }
 }
