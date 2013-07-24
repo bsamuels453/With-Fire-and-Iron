@@ -54,7 +54,10 @@ namespace Forge.Core.ObjectEditor{
 
         readonly HullEnvironment _hullEnvironment;
 
+        readonly List<OnObjectAddRemove> _objectAddedEvent;
         readonly ObjectModelBuffer<ObjectIdentifier>[] _objectModelBuffer;
+        readonly List<ObjectPlacementTest> _objectPlacementTestDelegs;
+        readonly List<OnObjectAddRemove> _objectRemovedEvent;
 
         /// <summary>
         /// used to keep track of side effects such as removing deck plates or removing hull sections
@@ -73,6 +76,10 @@ namespace Forge.Core.ObjectEditor{
             _hullEnvironment = hullEnv;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
             _objectSideEffects = new List<GameObject>[hullEnv.NumDecks];
+            _objectAddedEvent = new List<OnObjectAddRemove>();
+            _objectRemovedEvent = new List<OnObjectAddRemove>();
+            _objectPlacementTestDelegs = new List<ObjectPlacementTest>();
+
             for (int i = 0; i < hullEnv.NumDecks; i++){
                 _objectSideEffects[i] = new List<GameObject>();
             }
@@ -257,6 +264,13 @@ namespace Forge.Core.ObjectEditor{
 
         #region public interfaces
 
+        #region Delegates
+
+        public delegate bool ObjectPlacementTest(GameObject obj);
+
+        public delegate void OnObjectAddRemove(GameObject obj);
+
+        #endregion
         /// <summary>
         /// 
         /// </summary>
@@ -320,6 +334,18 @@ namespace Forge.Core.ObjectEditor{
 
         public void RemoveObject(ObjectIdentifier obj){
             throw new NotImplementedException();
+        }
+
+        public void AddOnObjectPlacement(OnObjectAddRemove deleg){
+            _objectAddedEvent.Add(deleg);
+        }
+
+        public void AddOnObjectRemove(OnObjectAddRemove deleg){
+            _objectRemovedEvent.Add(deleg);
+        }
+
+        public void AddObjectPlacementTest(ObjectPlacementTest deleg){
+            _objectPlacementTestDelegs.Add(deleg);
         }
 
         #endregion
