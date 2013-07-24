@@ -85,9 +85,18 @@ namespace Forge.Core.ObjectEditor{
             }
             _occupationGrids = new bool[hullEnv.NumDecks][,];
 
-            var vertexes = hullEnv.DeckSectionContainer.DeckVertexesByDeck;
+            //we have to manually yank vertexes
+            var vertexes = (
+                from deck in hullEnv.DeckSectionContainer.DeckBufferByDeck
+                select
+                    (
+                        from DeckPlateIdentifier id in deck
+                        where id.Origin.X > int.MinValue
+                        select new XZPoint(id.Origin.X, id.Origin.Y)
+                        ).ToList()
+                ).ToArray();
 
-            _gridOffset = SetupObjectOccupationGrids(vertexes);
+            _gridOffset = SetupObjectOccupationGrids(hullEnv.DeckSectionContainer.DeckVertexesByDeck);
             CalculateGridLimits(vertexes, out _gridLimitMax, out _gridLimitMin);
 
             _hullEnvironment.OnCurDeckChange += OnVisibleDeckChange;
@@ -150,11 +159,11 @@ namespace Forge.Core.ObjectEditor{
                 _occupationGrids[i] = grid;
             }
 
-            var ret = new XZPoint(-(int) (minX*2) + 1, (int) (maxZ*2));
+            var ret = new XZPoint(-(int) (minX*2), (int) (maxZ*2));
             return ret;
         }
 
-        void CalculateGridLimits(List<Vector3>[] vertexes, out int[][] gridLimitMax, out int[][] gridLimitMin){
+        void CalculateGridLimits(List<XZPoint>[] vertexes, out int[][] gridLimitMax, out int[][] gridLimitMin){
             gridLimitMax = new int[vertexes.Length][];
             gridLimitMin = new int[vertexes.Length][];
 
@@ -174,8 +183,8 @@ namespace Forge.Core.ObjectEditor{
                     select pairing
                     ).ToList();
 
-                int southPadding = (int) ((sortedVertsByRow[0].Key - minX)*2);
-                int northPadding = (int) ((maxX - sortedVertsByRow.Last().Key)*2);
+                int southPadding = (int) ((sortedVertsByRow[0].Key - minX));
+                int northPadding = (int) ((maxX - sortedVertsByRow.Last().Key));
                 int length = southPadding + northPadding + sortedVertsByRow.Count;
 
                 var layerLimitMin = new int[length];
@@ -193,10 +202,10 @@ namespace Forge.Core.ObjectEditor{
                 }
 
                 for (int row = southPadding; row < southPadding + sortedVertsByRow.Count; row++){
-                    float max = sortedVertsByRow[row - southPadding].Max(v => v.Z);
-                    var converted = ConvertToGridspace(new Vector3(0, 0, -max)).Z;
-                    layerLimitMin[row] = converted;
-                    layerLimitMax[row] = rowArrayMax - converted;
+                    int max = sortedVertsByRow[row - southPadding].Max(v => v.Z);
+                    var converted = ConvertToGridspace(new XZPoint(0, -max)).Z;
+                    layerLimitMin[row] = converted - 1;
+                    layerLimitMax[row] = rowArrayMax - converted + 1;
                 }
                 gridLimitMax[deck] = layerLimitMax;
                 gridLimitMin[deck] = layerLimitMin;
@@ -217,7 +226,7 @@ namespace Forge.Core.ObjectEditor{
             //convert origin point so z axis bisects the ship instead of being left justified to it
             origin.Z -= _gridOffset.Z;
 
-            for (int x = origin.X; x < origin.X + dims.X; x++){
+            for (int x = origin.X + 1; x < origin.X + dims.X + 1; x++){
                 for (int z = origin.Z; z < origin.Z + dims.Z; z++){
                     var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
                     bool b;
