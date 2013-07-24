@@ -60,7 +60,7 @@ namespace Forge.Core.ObjectEditor{
                 bool segmentValid = true;
                 foreach (var footprint in footprints){
                     var origin = footprint.Key.Origin;
-                    var bbox = new Rectangle(origin.X + 1, origin.Y, footprint.Value.X - 1, footprint.Value.Z - 1);
+                    var bbox = new Rectangle(origin.X + 1, origin.Z, footprint.Value.X - 1, footprint.Value.Z - 1);
                     if (bbox.Contains(ref1) || bbox.Contains(ref2)){
                         segmentValid = false;
                         break;
