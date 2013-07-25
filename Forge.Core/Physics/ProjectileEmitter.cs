@@ -12,8 +12,8 @@ namespace Forge.Core.Physics{
         readonly float _firingForce;
         readonly ProjectilePhysics _projectileEngine;
 
-        public ProjectileEmitter(string projectileType, float firingForce, int factionId, ProjectilePhysics projectileEngine){
-            var jobj = Resource.LoadConfig(projectileType);
+        public ProjectileEmitter(long projectileUid, float firingForce, int factionId, ProjectilePhysics projectileEngine){
+            var jobj = Resource.GameObjectLoader.LoadGameObject("Projectiles", projectileUid);
             _attributes = new ProjectileAttributes(jobj);
             _firingForce = firingForce;
             _projectileEngine = projectileEngine;
