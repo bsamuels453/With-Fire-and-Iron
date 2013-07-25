@@ -22,14 +22,14 @@ namespace Forge.Framework.Draw{
         readonly Effect _shader;
         public bool Enabled;
         bool _disposed;
-        Matrix _globalTransform;
+        public Matrix GlobalTransform;
 
         public ObjectModelBuffer(int maxObjects, string shader){
             Resource.LoadShader(shader, out _shader);
             _objectData = new List<ObjectData>();
             _maxObjects = maxObjects;
             _isSlotOccupied = new bool[maxObjects];
-            _globalTransform = Matrix.Identity;
+            GlobalTransform = Matrix.Identity;
             Enabled = true;
             RenderTarget.Buffers.Add(this);
         }
@@ -52,7 +52,7 @@ namespace Forge.Framework.Draw{
                     }
                     foreach (var effect in mesh.Effects){
                         effect.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
-                        effect.Parameters["mtx_World"].SetValue(obj.Transform);
+                        effect.Parameters["mtx_World"].SetValue(obj.Transform * GlobalTransform);
                         effect.Parameters["mtx_View"].SetValue(viewMatrix);
                     }
                     mesh.Draw();
@@ -125,7 +125,7 @@ namespace Forge.Framework.Draw{
         }
 
         public void TransformAll(Vector3 transform){
-            _globalTransform = Matrix.CreateTranslation(transform);
+            GlobalTransform = Matrix.CreateTranslation(transform);
         }
 
         /// <summary>
