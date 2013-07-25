@@ -143,6 +143,7 @@ namespace Forge.Core.Physics{
             var forceI = (IndexedVector3) aimDir*firingForce;
             body.ApplyCentralForce(ref forceI);
             _worldDynamics.AddRigidBody(body);
+            var scaleMtx = Matrix.CreateScale(projectileVariant.Radius*2);
 
             var projectile = new Projectile
                 (
@@ -157,7 +158,8 @@ namespace Forge.Core.Physics{
                                    collisionObjectCollection.BlacklistedProjectiles.Remove(proj);
                                }
                            },
-                creationTime: creationTime
+                creationTime: creationTime,
+                scale: scaleMtx
                 );
 
             _activeProjectiles.Add(projectile);
@@ -167,7 +169,9 @@ namespace Forge.Core.Physics{
             }
 
             var translation = Matrix.CreateTranslation(position);
-            _buffer.AddObject(projectile, Resource.LoadContent<Model>(projectileVariant.Model), translation);
+            var model = Resource.LoadContent<Model>(projectileVariant.Model);
+
+            _buffer.AddObject(projectile, model, scaleMtx*translation);
         }
 
         public
@@ -375,7 +379,7 @@ namespace Forge.Core.Physics{
         void UpdateProjectilePositions(){
             foreach (var projectile in _activeProjectiles){
                 var translation = Matrix.CreateTranslation(projectile.GetPosition());
-                _buffer.SetObjectTransform(projectile, translation);
+                _buffer.SetObjectTransform(projectile, projectile.Scale*translation);
             }
         }
 
