@@ -20,14 +20,14 @@ namespace Forge.Core.ObjectEditor.UI{
         readonly UIElementCollection _uiElementCollection;
         bool _disposed;
 
-        public ObjectEditorUI(HullEnvironment hullEnv, DeckObjectEnvironment deckObjEnv, InternalWallEnvironment wallEnv, RenderTarget target){
+        public ObjectEditorUI(HullEnvironment hullEnv, GameObjectEnvironment gameObjEnv, InternalWallEnvironment wallEnv, RenderTarget target){
             _hullEnv = hullEnv;
 
             _uiElementCollection = new UIElementCollection(GameStateManager.MouseManager);
             _uiElementCollection.Bind();
 
             _navBar = new NavBar(hullEnv, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 50));
-            _editorToolbar = new EditorToolbar(hullEnv, deckObjEnv, wallEnv, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
+            _editorToolbar = new EditorToolbar(hullEnv, gameObjEnv, wallEnv, _uiElementCollection, FrameStrata.Level.Medium, new Point(50, 150));
         }
 
         #region IDisposable Members

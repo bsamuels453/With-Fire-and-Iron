@@ -16,10 +16,10 @@ namespace Forge.Core.ObjectEditor{
         readonly List<WallSegmentIdentifier>[] _wallIdentifiers;
         int _curDeck;
 
-        public InternalWallEnvironment(HullEnvironment hullEnv, DeckObjectEnvironment deckEnv){
+        public InternalWallEnvironment(HullEnvironment hullEnv, GameObjectEnvironment gameEnv){
             var deckSecContainer = hullEnv.DeckSectionContainer;
             _numDecks = hullEnv.NumDecks;
-            _objectFootprints = deckEnv.ObjectFootprints;
+            _objectFootprints = gameEnv.ObjectFootprints;
 
             _wallBuffers = new ObjectBuffer<WallSegmentIdentifier>[_numDecks];
             for (int i = 0; i < _wallBuffers.Count(); i++){
@@ -60,7 +60,7 @@ namespace Forge.Core.ObjectEditor{
                 bool segmentValid = true;
                 foreach (var footprint in footprints){
                     var origin = footprint.Key.Origin;
-                    var bbox = new Rectangle(origin.X + 1, origin.Y, footprint.Value.X - 1, footprint.Value.Z - 1);
+                    var bbox = new Rectangle(origin.X + 1, origin.Z, footprint.Value.X - 1, footprint.Value.Z - 1);
                     if (bbox.Contains(ref1) || bbox.Contains(ref2)){
                         segmentValid = false;
                         break;

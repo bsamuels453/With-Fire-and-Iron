@@ -52,7 +52,7 @@ namespace Forge.Framework.Draw{
                     }
                     foreach (var effect in mesh.Effects){
                         effect.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
-                        effect.Parameters["mtx_World"].SetValue(obj.Transform*_globalTransform);
+                        effect.Parameters["mtx_World"].SetValue(obj.Transform);
                         effect.Parameters["mtx_View"].SetValue(viewMatrix);
                     }
                     mesh.Draw();
@@ -147,8 +147,10 @@ namespace Forge.Framework.Draw{
 
         public void SetObjectTransform(IEquatable<T> identifier, Matrix transform){
             var objLi = from t in _objectData
-                where t.Identifier == identifier
+                where t.Identifier.Equals(identifier)
                 select t;
+
+            Debug.Assert(objLi.Count() > 0);
 
             foreach (var obj in objLi){
                 obj.Transform = transform;

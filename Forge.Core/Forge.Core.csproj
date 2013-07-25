@@ -180,10 +180,16 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
-    <Compile Include="ObjectEditor\DeckObjectEnvironment.cs" />
+    <Compile Include="ObjectEditor\GameObject.cs" />
+    <Compile Include="ObjectEditor\GameObjectEnvironment.cs" />
     <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
+    <Compile Include="ObjectEditor\GameObjectType.cs" />
     <Compile Include="ObjectEditor\InternalWallEnvironment.cs" />
     <Compile Include="ObjectEditor\ObjectIdentifier.cs" />
+    <Compile Include="ObjectEditor\Subsystems\AeronaticsTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\InternalNavTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\PowerTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\WeaponTrackingModule.cs" />
     <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
     <Compile Include="ObjectEditor\UI\EditorToolbar.cs" />
     <Compile Include="ObjectEditor\UI\NavBar.cs" />

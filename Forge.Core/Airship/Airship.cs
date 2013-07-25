@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Forge.Core.Airship.Controllers;
 using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
+using Forge.Core.ObjectEditor;
 using Forge.Core.Physics;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -33,6 +34,7 @@ namespace Forge.Core.Airship{
             DeckSectionContainer deckSectionContainer,
             HullSectionContainer hullSectionContainer,
             AirshipStateData stateData,
+            List<GameObject> containedObjects,
             Battlefield battlefield
             ){
             var sw = new Stopwatch();

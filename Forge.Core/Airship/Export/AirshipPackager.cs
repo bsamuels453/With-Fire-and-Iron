@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
+using Forge.Core.ObjectEditor;
 using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Resources;
@@ -54,7 +55,7 @@ namespace Forge.Core.Airship.Export{
             var deckSections = new DeckSectionContainer(airship.DeckSections);
             var modelAttribs = airship.ModelAttributes;
 
-            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, battlefield);
+            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, airship.GameObjects, battlefield);
             DebugConsole.WriteLine(statePath.Path + " loading completed");
             return ret;
         }
@@ -86,8 +87,13 @@ namespace Forge.Core.Airship.Export{
         /// <param name="hullSectionContainer"> </param>
         /// <param name="deckSectionContainer"> </param>
         /// <param name="attributes"> </param>
-        public static void ExportToProtocolFile(SerializedPath path, HullSectionContainer hullSectionContainer, DeckSectionContainer deckSectionContainer,
-            ModelAttributes attributes){
+        /// <param name="gameObjects"> </param>
+        public static void ExportToProtocolFile(
+            SerializedPath path,
+            HullSectionContainer hullSectionContainer,
+            DeckSectionContainer deckSectionContainer,
+            ModelAttributes attributes,
+            List<GameObject> gameObjects){
             var sw = new Stopwatch();
             sw.Start();
             var fs = new FileStream(path.Path, FileMode.Create);
@@ -97,6 +103,7 @@ namespace Forge.Core.Airship.Export{
             aship.DeckSections = decks;
             aship.HullSections = sections;
             aship.ModelAttributes = attributes;
+            aship.GameObjects = gameObjects;
             Serializer.Serialize(fs, aship);
             fs.Close();
             sw.Stop();
@@ -172,7 +179,7 @@ namespace Forge.Core.Airship.Export{
         static Airship InstantiateAirshipFromSerialized(AirshipSerializationStruct model, AirshipStateData stateData, Battlefield battlefield){
             var hullSections = new HullSectionContainer(model.HullSections);
             var deckSections = new DeckSectionContainer(model.DeckSections);
-            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, battlefield);
+            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, model.GameObjects, battlefield);
         }
 
         /// <summary>
@@ -260,6 +267,7 @@ namespace Forge.Core.Airship.Export{
             airship.DeckSections = hullData.DeckSectionContainer.ExtractSerializationStruct();
             airship.HullSections = hullData.HullSections.ExtractSerializationStruct();
             airship.ModelAttributes = hullData.ModelAttributes;
+            airship.GameObjects = new List<GameObject>();
 
             var fs = new FileStream(serialized.Path, FileMode.Create);
             Serializer.Serialize(fs, airship);
@@ -293,14 +301,9 @@ namespace Forge.Core.Airship.Export{
         [ProtoContract]
         public struct AirshipSerializationStruct{
             [ProtoMember(2)] public DeckSectionContainer.Serialized DeckSections;
+            [ProtoMember(4)] public List<GameObject> GameObjects;
             [ProtoMember(1)] public HullSectionContainer.Serialized HullSections;
             [ProtoMember(3)] public ModelAttributes ModelAttributes;
-            //balloon ctor
-            //hardpoints
-            //objects
-            //walls
-            //portholes
-            //navmesh
         }
 
         #endregion

@@ -2,20 +2,23 @@
 
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
+using Forge.Core.Airship.Generation;
 using Forge.Core.Camera;
 using Forge.Core.ObjectEditor;
 using Forge.Core.ObjectEditor.UI;
+using Forge.Framework.Control;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 #endregion
 
 namespace Forge.Core.GameState{
     public class ObjectEditorState : IGameState{
         readonly BodyCenteredCamera _cameraController;
-        readonly DeckObjectEnvironment _deckObjectEnvironment;
         readonly ObjectEditorUI _doodadUI;
+        readonly GameObjectEnvironment _gameObjectEnvironment;
         readonly HullEnvironment _hullEnvironment;
         readonly Battlefield _placeboBattlefield;
         readonly RenderTarget _renderTarget;
@@ -34,19 +37,23 @@ namespace Forge.Core.GameState{
 
             _hullEnvironment = new HullEnvironment(serial);
 
-            _deckObjectEnvironment = new DeckObjectEnvironment(_hullEnvironment);
-            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _deckObjectEnvironment);
-            _deckObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
+            _gameObjectEnvironment = new GameObjectEnvironment(_hullEnvironment);
+            _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _gameObjectEnvironment);
+            _gameObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
 
             _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
-            _doodadUI = new ObjectEditorUI(_hullEnvironment, _deckObjectEnvironment, _wallEnvironment, _renderTarget);
+            _doodadUI = new ObjectEditorUI(_hullEnvironment, _gameObjectEnvironment, _wallEnvironment, _renderTarget);
+
+            var controller = new KeyboardController();
+            controller.CreateNewBind(Keys.S, 0, SaveShip, BindCondition.OnKeyDown, Keys.LeftControl);
+            KeyboardManager.SetActiveController(controller);
         }
 
         #region IGameState Members
 
         public void Dispose(){
             _hullEnvironment.Dispose();
-            _deckObjectEnvironment.Dispose();
+            _gameObjectEnvironment.Dispose();
             _wallEnvironment.Dispose();
             _placeboBattlefield.Dispose();
             _doodadUI.Dispose();
@@ -63,5 +70,18 @@ namespace Forge.Core.GameState{
         }
 
         #endregion
+
+        void SaveShip(object o, int i, ForgeKeyState state){
+            var attribs = HullAttributeGenerator.Generate(4);
+
+            AirshipPackager.ExportToProtocolFile
+                (
+                    new SerializedPath("ExportedAirship"),
+                    _hullEnvironment.HullSectionContainer,
+                    _hullEnvironment.DeckSectionContainer,
+                    attribs,
+                    _gameObjectEnvironment.DumpGameObjects()
+                );
+        }
     }
 }

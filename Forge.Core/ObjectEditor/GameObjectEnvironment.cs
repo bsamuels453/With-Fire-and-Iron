@@ -16,7 +16,7 @@ namespace Forge.Core.ObjectEditor{
     /// <summary>
     /// provides an interface through which objects can be added and removed from the airship.
     /// </summary>
-    public class DeckObjectEnvironment : IDisposable{
+    public class GameObjectEnvironment : IDisposable{
         #region SideEffect enum
 
         public enum SideEffect{
@@ -54,12 +54,15 @@ namespace Forge.Core.ObjectEditor{
 
         readonly HullEnvironment _hullEnvironment;
 
+        readonly List<OnObjectAddRemove> _objectAddedEvent;
         readonly ObjectModelBuffer<ObjectIdentifier>[] _objectModelBuffer;
+        readonly List<ObjectPlacementTest> _objectPlacementTestDelegs;
+        readonly List<OnObjectAddRemove> _objectRemovedEvent;
 
         /// <summary>
         /// used to keep track of side effects such as removing deck plates or removing hull sections
         /// </summary>
-        readonly List<ObjectSideEffect>[] _objectSideEffects;
+        readonly List<Tuple<GameObject, SideEffect>>[] _objectSideEffects;
 
         /// <summary>
         /// Tables of booleans that represent whether the "area" the table maps to is occupied
@@ -69,18 +72,31 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly bool[][,] _occupationGrids;
 
-        public DeckObjectEnvironment(HullEnvironment hullEnv){
+        public GameObjectEnvironment(HullEnvironment hullEnv){
             _hullEnvironment = hullEnv;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
-            _objectSideEffects = new List<ObjectSideEffect>[hullEnv.NumDecks];
+            _objectSideEffects = new List<Tuple<GameObject, SideEffect>>[hullEnv.NumDecks];
+            _objectAddedEvent = new List<OnObjectAddRemove>();
+            _objectRemovedEvent = new List<OnObjectAddRemove>();
+            _objectPlacementTestDelegs = new List<ObjectPlacementTest>();
+
             for (int i = 0; i < hullEnv.NumDecks; i++){
-                _objectSideEffects[i] = new List<ObjectSideEffect>();
+                _objectSideEffects[i] = new List<Tuple<GameObject, SideEffect>>();
             }
             _occupationGrids = new bool[hullEnv.NumDecks][,];
 
-            var vertexes = hullEnv.DeckSectionContainer.DeckVertexesByDeck;
+            //we have to manually yank vertexes
+            var vertexes = (
+                from deck in hullEnv.DeckSectionContainer.DeckBufferByDeck
+                select
+                    (
+                        from DeckPlateIdentifier id in deck
+                        where id.Origin.X > int.MinValue
+                        select new XZPoint(id.Origin.X, id.Origin.Y)
+                        ).ToList()
+                ).ToArray();
 
-            _gridOffset = SetupObjectOccupationGrids(vertexes);
+            _gridOffset = SetupObjectOccupationGrids(hullEnv.DeckSectionContainer.DeckVertexesByDeck);
             CalculateGridLimits(vertexes, out _gridLimitMax, out _gridLimitMin);
 
             _hullEnvironment.OnCurDeckChange += OnVisibleDeckChange;
@@ -107,10 +123,16 @@ namespace Forge.Core.ObjectEditor{
 
         #endregion
 
-        OccupationGridPos ConvertToGridspace(Vector3 modelSpacePos, int deck){
+        OccupationGridPos ConvertToGridspace(Vector3 modelSpacePos){
             modelSpacePos *= 2;
             int gridX = (int) (_gridOffset.X + modelSpacePos.X);
             int gridZ = (int) (_gridOffset.Z + modelSpacePos.Z);
+            return new OccupationGridPos(gridX, gridZ);
+        }
+
+        OccupationGridPos ConvertToGridspace(XZPoint gridPos){
+            int gridX = (_gridOffset.X + gridPos.X);
+            int gridZ = (_gridOffset.Z + gridPos.Z);
             return new OccupationGridPos(gridX, gridZ);
         }
 
@@ -137,11 +159,11 @@ namespace Forge.Core.ObjectEditor{
                 _occupationGrids[i] = grid;
             }
 
-            var ret = new XZPoint(-(int) (minX*2) + 1, (int) (maxZ*2));
+            var ret = new XZPoint(-(int) (minX*2), (int) (maxZ*2));
             return ret;
         }
 
-        void CalculateGridLimits(List<Vector3>[] vertexes, out int[][] gridLimitMax, out int[][] gridLimitMin){
+        void CalculateGridLimits(List<XZPoint>[] vertexes, out int[][] gridLimitMax, out int[][] gridLimitMin){
             gridLimitMax = new int[vertexes.Length][];
             gridLimitMin = new int[vertexes.Length][];
 
@@ -161,8 +183,8 @@ namespace Forge.Core.ObjectEditor{
                     select pairing
                     ).ToList();
 
-                int southPadding = (int) ((sortedVertsByRow[0].Key - minX)*2);
-                int northPadding = (int) ((maxX - sortedVertsByRow.Last().Key)*2);
+                int southPadding = (int) ((sortedVertsByRow[0].Key - minX));
+                int northPadding = (int) ((maxX - sortedVertsByRow.Last().Key));
                 int length = southPadding + northPadding + sortedVertsByRow.Count;
 
                 var layerLimitMin = new int[length];
@@ -180,10 +202,10 @@ namespace Forge.Core.ObjectEditor{
                 }
 
                 for (int row = southPadding; row < southPadding + sortedVertsByRow.Count; row++){
-                    float max = sortedVertsByRow[row - southPadding].Max(v => v.Z);
-                    var converted = ConvertToGridspace(new Vector3(0, 0, -max), deck).Z;
-                    layerLimitMin[row] = converted;
-                    layerLimitMax[row] = rowArrayMax - converted;
+                    int max = sortedVertsByRow[row - southPadding].Max(v => v.Z);
+                    var converted = ConvertToGridspace(new XZPoint(0, -max)).Z;
+                    layerLimitMin[row] = converted - 1;
+                    layerLimitMax[row] = rowArrayMax - converted + 1;
                 }
                 gridLimitMax[deck] = layerLimitMax;
                 gridLimitMin[deck] = layerLimitMin;
@@ -204,7 +226,7 @@ namespace Forge.Core.ObjectEditor{
             //convert origin point so z axis bisects the ship instead of being left justified to it
             origin.Z -= _gridOffset.Z;
 
-            for (int x = origin.X; x < origin.X + dims.X; x++){
+            for (int x = origin.X + 1; x < origin.X + dims.X + 1; x++){
                 for (int z = origin.Z; z < origin.Z + dims.Z; z++){
                     var identifier = new DeckPlateIdentifier(new Point(x, z), deck);
                     bool b;
@@ -219,18 +241,19 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void ApplyObjectSideEffect(ObjectSideEffect sideEffect){
-            if (sideEffect.SideEffect == SideEffect.CutsIntoCeiling){
-                int deck = sideEffect.Identifier.Deck;
+        void ApplyObjectSideEffect(GameObject gameObj, SideEffect sideEffect){
+            if (sideEffect == SideEffect.CutsIntoCeiling){
+                int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
-                    SetOccupationGridState(sideEffect.GridPosition, sideEffect.GridDimensions, sideEffect.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(sideEffect.GridPosition, sideEffect.GridDimensions, deck - 1, false);
+                    var gridPos = ConvertToGridspace(gameObj.Position);
+                    SetOccupationGridState(gridPos, gameObj.GridDimensions, gameObj.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(gridPos, gameObj.GridDimensions, deck - 1, false);
                 }
             }
-            if (sideEffect.SideEffect == SideEffect.CutsIntoPortHull){
-                throw new NotImplementedException();
+            if (sideEffect == SideEffect.CutsIntoPortHull){
+                //throw new NotImplementedException();
             }
-            if (sideEffect.SideEffect == SideEffect.CutsIntoStarboardHull){
+            if (sideEffect == SideEffect.CutsIntoStarboardHull){
                 throw new NotImplementedException();
             }
         }
@@ -250,15 +273,40 @@ namespace Forge.Core.ObjectEditor{
 
         #region public interfaces
 
+        #region Delegates
+
+        public delegate bool ObjectPlacementTest(
+            Vector3 mPosition,
+            XZPoint gridDims,
+            int deck,
+            float rotation,
+            GameObjectType type,
+            long uid,
+            SideEffect pSideEffects);
+
+        public delegate void OnObjectAddRemove(GameObject obj);
+
+        #endregion
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="position">The model space position of the object to be placed</param>
         /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
         /// <param name="deck"></param>
-        /// <param name="clearAboveObject">Whether or not the deck tiles above this object should be removed. This is used for multi-story object like ladders.</param>
-        public bool IsObjectPlacementValid(Vector3 position, XZPoint gridDimensions, int deck, bool clearAboveObject = false){
-            var gridPosition = ConvertToGridspace(position, deck);
+        /// <param name="uid"> </param>
+        /// <param name="pSideEffects"> </param>
+        /// <param name="rotation"> </param>
+        /// <param name="type"> </param>
+        public bool IsObjectPlacementValid(
+            Vector3 position,
+            XZPoint gridDimensions,
+            int deck,
+            float rotation,
+            GameObjectType type,
+            long uid,
+            SideEffect pSideEffects){
+            var gridPosition = ConvertToGridspace(position);
             var gridLimitMax = _gridLimitMax[deck];
             var gridLimitMin = _gridLimitMin[deck];
             var occupationGrid = _occupationGrids[deck];
@@ -276,9 +324,9 @@ namespace Forge.Core.ObjectEditor{
                     }
                 }
             }
-            if (clearAboveObject){
+            if (pSideEffects == SideEffect.CutsIntoCeiling){
                 if (deck != 0){
-                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1))
+                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, rotation, type, uid, SideEffect.None))
                         return false;
                 }
             }
@@ -286,74 +334,70 @@ namespace Forge.Core.ObjectEditor{
             if (!InternalWallEnvironment.IsObjectPlacementValid(position, gridDimensions, deck)){
                 return false;
             }
+
+            foreach (var deleg in _objectPlacementTestDelegs){
+                bool result = deleg.Invoke(position, gridDimensions, deck, rotation, type, uid, pSideEffects);
+                if (!result){
+                    return false;
+                }
+            }
+
             return true;
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="modelName"></param>
-        /// <param name="position">Model space position</param>
-        /// <param name="dimensions">Dimensions of the object in grid-space units </param>
-        /// <param name="deck"></param>
-        /// <param name="sideEffect"> </param>
         /// <returns></returns>
-        public ObjectIdentifier AddObject(
-            string modelName,
-            Vector3 position,
-            XZPoint dimensions,
-            int deck,
-            SideEffect sideEffect = SideEffect.None){
-            var identifier = new ObjectIdentifier(position, deck);
-
-            Matrix trans = Matrix.CreateTranslation(position);
+        public ObjectIdentifier AddObject(GameObject obj, string modelName, SideEffect sideEffect){
+            Matrix posTransform = Matrix.CreateTranslation(obj.ModelspacePosition);
             var model = Resource.LoadContent<Model>(modelName);
-            _objectModelBuffer[deck].AddObject(identifier, model, trans);
+            var rotTransform = Matrix.CreateFromYawPitchRoll(obj.Rotation, 0, 0);
+            posTransform = rotTransform*posTransform;
 
-            var gridPos = ConvertToGridspace(position, deck);
-            SetOccupationGridState(gridPos, dimensions, deck, true);
-            var objSideEffect = new ObjectSideEffect
-                (
-                identifier,
-                dimensions,
-                gridPos,
-                sideEffect
-                );
-            _objectSideEffects[deck].Add(objSideEffect);
-            ApplyObjectSideEffect(objSideEffect);
-            ObjectFootprints[deck].Add(identifier, dimensions);
+            _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
-            return identifier;
+            var occPos = ConvertToGridspace(obj.ModelspacePosition);
+            SetOccupationGridState(occPos, obj.GridDimensions, obj.Deck, true);
+
+            _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
+            ApplyObjectSideEffect(obj, sideEffect);
+            ObjectFootprints[obj.Deck].Add(obj.Identifier, obj.GridDimensions);
+
+            foreach (var deleg in _objectAddedEvent){
+                deleg.Invoke(obj);
+            }
+
+            return obj.Identifier;
         }
 
         public void RemoveObject(ObjectIdentifier obj){
             throw new NotImplementedException();
+
+            foreach (var deleg in _objectRemovedEvent){
+                //deleg.Invoke(obj);
+            }
         }
 
-        #endregion
+        public void AddOnObjectPlacement(OnObjectAddRemove deleg){
+            _objectAddedEvent.Add(deleg);
+        }
 
-        #region Nested type: ObjectSideEffect
+        public void AddOnObjectRemove(OnObjectAddRemove deleg){
+            _objectRemovedEvent.Add(deleg);
+        }
 
-        struct ObjectSideEffect : IEquatable<ObjectIdentifier>{
-            public readonly XZPoint GridDimensions;
-            public readonly OccupationGridPos GridPosition;
-            public readonly ObjectIdentifier Identifier;
-            public readonly SideEffect SideEffect;
+        public void AddObjectPlacementTest(ObjectPlacementTest deleg){
+            _objectPlacementTestDelegs.Add(deleg);
+        }
 
-            public ObjectSideEffect(ObjectIdentifier identifier, XZPoint gridDimensions, OccupationGridPos gridPosition, SideEffect sideEffect){
-                Identifier = identifier;
-                GridDimensions = gridDimensions;
-                GridPosition = gridPosition;
-                SideEffect = sideEffect;
-            }
-
-            #region IEquatable<ObjectIdentifier> Members
-
-            public bool Equals(ObjectIdentifier other){
-                return Identifier == other;
-            }
-
-            #endregion
+        public List<GameObject> DumpGameObjects(){
+            var ret = (
+                from deck in _objectSideEffects
+                from entry in deck
+                select entry.Item1
+                ).ToList();
+            return ret;
         }
 
         #endregion
