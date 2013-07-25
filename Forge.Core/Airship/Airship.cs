@@ -1,6 +1,4 @@
-﻿#define ENABLE_DAMAGEMESH
-
-#region
+﻿#region
 
 using System;
 using System.Collections.Generic;
@@ -11,20 +9,20 @@ using Forge.Core.Airship.Data;
 using Forge.Core.ObjectEditor;
 using Forge.Core.Physics;
 using Forge.Framework;
-using Forge.Framework.Draw;
 using MonoGameUtility;
 
 #endregion
 
 namespace Forge.Core.Airship{
     public class Airship : IDisposable{
+        public readonly AirshipController Controller;
         public readonly int FactionId;
         public readonly int Uid;
         readonly Battlefield _battlefield;
-        public readonly AirshipController Controller;
-        bool _playerairship;
         readonly List<Hardpoint> _hardPoints;
         readonly HullIntegrityMesh _hullIntegrityMesh;
+        readonly AirshipObjectContainer _objContainer;
+        readonly bool _playerairship;
         bool _disposed;
 
         public Airship(
@@ -40,12 +38,12 @@ namespace Forge.Core.Airship{
             ModelAttributes = airshipModel;
             HullSectionContainer = hullSectionContainer;
             DeckSectionContainer = deckSectionContainer;
-
             _battlefield = battlefield;
+            _objContainer = new AirshipObjectContainer(containedObjects);
 
             _hardPoints = new List<Hardpoint>();
             var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 12000, 0, _battlefield.ProjectileEngine);
-            _hardPoints.Add(new Hardpoint(new Vector3(25 , 0, 0), new Vector3(1, 0, 0), emitter));
+            _hardPoints.Add(new Hardpoint(new Vector3(25, 0, 0), new Vector3(1, 0, 0), emitter));
 
             FactionId = stateData.FactionId;
             Uid = stateData.AirshipId;
@@ -106,6 +104,7 @@ namespace Forge.Core.Airship{
 
             DeckSectionContainer.Dispose();
             HullSectionContainer.Dispose();
+            _objContainer.Dispose();
 
             foreach (var hardPoint in _hardPoints){
                 hardPoint.Dispose();
@@ -117,6 +116,7 @@ namespace Forge.Core.Airship{
 
         public void SetAutoPilot(AirshipAutoPilot autoPilot){
             Controller.SetAutoPilot(autoPilot);
+            _objContainer.Update();
         }
 
         public void Update(double timeDelta){
@@ -125,19 +125,25 @@ namespace Forge.Core.Airship{
         }
 
         public void AddVisibleLayer(int _){
-            HullSectionContainer.SetTopVisibleDeck(HullSectionContainer.TopExpIdx - 1);
-            DeckSectionContainer.SetTopVisibleDeck(DeckSectionContainer.TopExpIdx - 1);
+            int newDeck = HullSectionContainer.TopExpIdx - 1;
+            HullSectionContainer.SetTopVisibleDeck(newDeck);
+            DeckSectionContainer.SetTopVisibleDeck(newDeck);
+            _objContainer.SetTopVisibleDeck(newDeck);
         }
 
         public void RemoveVisibleLayer(int _){
-            HullSectionContainer.SetTopVisibleDeck(HullSectionContainer.TopExpIdx + 1);
-            DeckSectionContainer.SetTopVisibleDeck(DeckSectionContainer.TopExpIdx + 1);
+            int newDeck = HullSectionContainer.TopExpIdx + 1;
+            HullSectionContainer.SetTopVisibleDeck(newDeck);
+            DeckSectionContainer.SetTopVisibleDeck(newDeck);
+            _objContainer.SetTopVisibleDeck(newDeck);
         }
 
         void SetAirshipWMatrix(Matrix worldTransform){
             if (!_playerairship){
                 _hullIntegrityMesh.WorldTransform = worldTransform;
             }
+
+            _objContainer.WorldTransform = worldTransform;
 
             foreach (var hullLayer in HullSectionContainer.HullBuffersByDeck){
                 hullLayer.WorldTransform = worldTransform;
