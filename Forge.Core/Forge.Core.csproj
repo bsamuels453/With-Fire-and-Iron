@@ -150,6 +150,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Airship\AirshipObjectContainer.cs" />
     <Compile Include="Airship\Controllers\AIAirshipController.cs" />
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\Controllers\AirshipController.cs" />
