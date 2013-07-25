@@ -24,9 +24,7 @@ namespace Forge.Core.Airship{
         public readonly AirshipController Controller;
         bool _playerairship;
         readonly List<Hardpoint> _hardPoints;
-#if ENABLE_DAMAGEMESH
         readonly HullIntegrityMesh _hullIntegrityMesh;
-#endif
         bool _disposed;
 
         public Airship(
@@ -75,12 +73,9 @@ namespace Forge.Core.Airship{
                     break;
             }
 
-
-#if ENABLE_DAMAGEMESH
             if (!_playerairship){
                 _hullIntegrityMesh = new HullIntegrityMesh(HullSectionContainer, _battlefield.ProjectileEngine, Controller.Position, ModelAttributes.Length);
             }
-#endif
 
             sw.Stop();
 
@@ -105,11 +100,9 @@ namespace Forge.Core.Airship{
 
         public void Dispose(){
             Debug.Assert(!_disposed);
-#if ENABLE_DAMAGEMESH
             if (!_playerairship){
                 _hullIntegrityMesh.Dispose();
             }
-#endif
 
             DeckSectionContainer.Dispose();
             HullSectionContainer.Dispose();
@@ -142,11 +135,9 @@ namespace Forge.Core.Airship{
         }
 
         void SetAirshipWMatrix(Matrix worldTransform){
-#if ENABLE_DAMAGEMESH
             if (!_playerairship){
                 _hullIntegrityMesh.WorldTransform = worldTransform;
             }
-#endif
 
             foreach (var hullLayer in HullSectionContainer.HullBuffersByDeck){
                 hullLayer.WorldTransform = worldTransform;
