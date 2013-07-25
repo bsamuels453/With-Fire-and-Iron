@@ -170,6 +170,7 @@
     <Compile Include="Airship\Export\DefinitionPath.cs" />
     <Compile Include="Airship\Export\SerializedPath.cs" />
     <Compile Include="Airship\Generation\HullAttributeGenerator.cs" />
+    <Compile Include="Airship\WeaponSystems.cs" />
     <Compile Include="DebugDraw.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
