@@ -23,6 +23,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly string _objectModelName;
         readonly GameObjectType _objectType;
         readonly long _objectUid;
+        readonly string _objectParams;
         protected Vector3 CursorOffset;
         public GameObjectEnvironment.SideEffect PlacementSideEffect;
         float _rotation;
@@ -35,7 +36,8 @@ namespace Forge.Core.ObjectEditor.Tools{
             XZPoint objectGridDims,
             long objectUid,
             GameObjectType type,
-            GameObjectEnvironment.SideEffect placementSideEffects) :
+            GameObjectEnvironment.SideEffect placementSideEffects,
+            string objectParams) :
                 base(hullData){
             _objectGridDims = objectGridDims;
             _objectModelName = objectModel;
@@ -44,6 +46,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             PlacementSideEffect = placementSideEffects;
             _objectUid = objectUid;
             _objectType = type;
+            _objectParams = objectParams;
             CursorOffset = new Vector3(-objectGridDims.X/4f, 0, -objectGridDims.Z/4f);
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
@@ -93,7 +96,8 @@ namespace Forge.Core.ObjectEditor.Tools{
                 _objectGridDims,
                 _objectUid,
                 _objectType,
-                _rotation
+                _rotation,
+                _objectParams
                 );
             _gameObjectEnvironment.AddObject(gameObj, _objectModelName, PlacementSideEffect);
 

@@ -14,6 +14,12 @@ namespace Forge.Core.ObjectEditor{
         [ProtoMember(3)] public readonly ObjectIdentifier Identifier;
         [ProtoMember(4)] public readonly Vector3 ModelspacePosition;
         [ProtoMember(5)] public readonly long ObjectUid;
+
+        /// <summary>
+        /// Contextual parameters for the game object. Context is based on the GameObjectType.
+        /// </summary>
+        [ProtoMember(9)] public readonly string Parameters;
+
         [ProtoMember(6)] public readonly XZPoint Position;
         [ProtoMember(7)] public readonly float Rotation;
         [ProtoMember(8)] public readonly GameObjectType Type;
@@ -24,8 +30,7 @@ namespace Forge.Core.ObjectEditor{
             XZPoint gridDimensions,
             long objectUid,
             GameObjectType type,
-            float rotation
-            ){
+            float rotation, string parameters){
             Identifier = new ObjectIdentifier(modelspacePosition, deck);
             GridDimensions = gridDimensions;
             Position = Identifier.Origin;
@@ -33,6 +38,7 @@ namespace Forge.Core.ObjectEditor{
             Deck = deck;
             Type = type;
             Rotation = rotation;
+            Parameters = parameters;
             ModelspacePosition = modelspacePosition;
         }
 

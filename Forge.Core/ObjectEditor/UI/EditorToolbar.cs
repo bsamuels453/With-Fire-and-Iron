@@ -54,7 +54,8 @@ namespace Forge.Core.ObjectEditor.UI{
                 new XZPoint(2, 2),
                 0,
                 GameObjectType.Ladders,
-                GameObjectEnvironment.SideEffect.CutsIntoCeiling
+                GameObjectEnvironment.SideEffect.CutsIntoCeiling,
+                ""
                 );
             _tools[(int) Tools.BuildCannon] = new DeckObjectPlacementTool
                 (
@@ -64,7 +65,8 @@ namespace Forge.Core.ObjectEditor.UI{
                 new XZPoint(2, 5),
                 0,
                 GameObjectType.Cannons,
-                GameObjectEnvironment.SideEffect.CutsIntoPortHull
+                GameObjectEnvironment.SideEffect.CutsIntoPortHull,
+                "0"
                 );
 
             InitializeToolEvents();
