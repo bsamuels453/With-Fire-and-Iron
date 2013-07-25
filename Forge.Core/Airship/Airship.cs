@@ -7,7 +7,6 @@ using Forge.Core.Airship.Controllers;
 using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
 using Forge.Core.ObjectEditor;
-using Forge.Core.Physics;
 using Forge.Framework;
 using MonoGameUtility;
 
@@ -23,6 +22,7 @@ namespace Forge.Core.Airship{
         readonly HullIntegrityMesh _hullIntegrityMesh;
         readonly AirshipObjectContainer _objContainer;
         readonly bool _playerairship;
+        readonly WeaponSystems _weaponSystems;
         bool _disposed;
 
         public Airship(
@@ -39,11 +39,8 @@ namespace Forge.Core.Airship{
             HullSectionContainer = hullSectionContainer;
             DeckSectionContainer = deckSectionContainer;
             _battlefield = battlefield;
-            _objContainer = new AirshipObjectContainer(containedObjects);
-
-            _hardPoints = new List<Hardpoint>();
-            var emitter = new ProjectileEmitter("Config/Projectiles/TestShot.config", 12000, 0, _battlefield.ProjectileEngine);
-            _hardPoints.Add(new Hardpoint(new Vector3(25, 0, 0), new Vector3(1, 0, 0), emitter));
+            _weaponSystems = new WeaponSystems(_battlefield.ProjectileEngine, stateData.FactionId);
+            _objContainer = new AirshipObjectContainer(containedObjects, _weaponSystems);
 
             FactionId = stateData.FactionId;
             Uid = stateData.AirshipId;
@@ -54,7 +51,7 @@ namespace Forge.Core.Airship{
                         (
                         ModelAttributes,
                         stateData,
-                        _hardPoints,
+                        _weaponSystems,
                         _battlefield.ShipsOnField
                         );
                     break;
@@ -65,7 +62,7 @@ namespace Forge.Core.Airship{
                         (
                         ModelAttributes,
                         stateData,
-                        _hardPoints,
+                        _weaponSystems,
                         _battlefield.ShipsOnField
                         );
                     break;
@@ -105,10 +102,7 @@ namespace Forge.Core.Airship{
             DeckSectionContainer.Dispose();
             HullSectionContainer.Dispose();
             _objContainer.Dispose();
-
-            foreach (var hardPoint in _hardPoints){
-                hardPoint.Dispose();
-            }
+            _weaponSystems.Dispose();
             _disposed = true;
         }
 
@@ -153,9 +147,7 @@ namespace Forge.Core.Airship{
                 deckLayer.WorldTransform = worldTransform;
             }
 
-            foreach (var hardPoint in _hardPoints){
-                hardPoint.ShipTranslationMtx = worldTransform;
-            }
+            _weaponSystems.WorldTransform = worldTransform;
         }
 
         ~Airship(){
