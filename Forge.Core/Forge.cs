@@ -60,7 +60,7 @@ namespace Forge.Core{
 
             DebugConsole.WriteLine("Initializing game-state...");
 #if PLAYMODE
-            GameStateManager.AddGameState(new ObjectEditorState());
+            GameStateManager.AddGameState(new PrimaryGameMode());
 #else
             GamestateManager.AddGameState(new HullEditorState());
 #endif
