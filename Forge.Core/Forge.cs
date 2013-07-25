@@ -62,7 +62,7 @@ namespace Forge.Core{
 #if PLAYMODE
             GameStateManager.AddGameState(new PrimaryGameMode());
 #else
-            GamestateManager.AddGameState(new HullEditorState());
+            GameStateManager.AddGameState(new HullEditorState());
 #endif
 
             IsMouseVisible = true;
