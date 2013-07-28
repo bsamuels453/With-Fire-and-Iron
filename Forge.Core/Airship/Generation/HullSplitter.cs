@@ -147,8 +147,11 @@ namespace Forge.Core.Airship.Generation{
             return ret;
         }
 
-        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>> SliceZeroEnclosureTriangle(VertexPositionNormalTexture[] triangle,
-            float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier){
+
+        static List<Tuple<VertexPositionNormalTexture[], int[]>> SliceZeroEnclosureTriangle(
+            VertexPositionNormalTexture[] triangle,
+            float subBoxBegin,
+            float subBoxEnd){
             //first have to figure out the "anchor vertex"
             VertexPositionNormalTexture anchor;
             VertexPositionNormalTexture[] satellites;
@@ -212,14 +215,16 @@ namespace Forge.Core.Airship.Generation{
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
-            var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
-            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
-            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t2, t2I, identifier));
+            var ret = new List<Tuple<VertexPositionNormalTexture[], int[]>>(2);
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t1, t1I));
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t2, t2I));
             return ret;
         }
 
-        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
-            SliceSingleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier){
+        static List<Tuple<VertexPositionNormalTexture[], int[]>> SliceSingleEnclosureTriangle(
+            VertexPositionNormalTexture[] triangle,
+            float subBoxBegin,
+            float subBoxEnd){
             var leftSide = (from vert in triangle
                 where vert.Position.X > subBoxEnd
                 select vert).ToArray();
@@ -258,8 +263,8 @@ namespace Forge.Core.Airship.Generation{
 
                 var t1 = new[]{interpVert1, middle, interpVert2};
                 var t1I = GenerateIndiceList(t1);
-                var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
-                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
+                var ret = new List<Tuple<VertexPositionNormalTexture[], int[]>>(2);
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t1, t1I));
                 return ret;
             }
             else{
@@ -302,16 +307,18 @@ namespace Forge.Core.Airship.Generation{
                 var t2I = GenerateIndiceList(t2);
                 var t3I = GenerateIndiceList(t3);
 
-                var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
-                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
-                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t2, t2I, identifier));
-                ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t3, t3I, identifier));
+                var ret = new List<Tuple<VertexPositionNormalTexture[], int[]>>(2);
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t1, t1I));
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t2, t2I));
+                ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t3, t3I));
                 return ret;
             }
         }
 
-        static List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>
-            SliceDoubleEnclosureTriangle(VertexPositionNormalTexture[] triangle, float subBoxBegin, float subBoxEnd, HullSectionIdentifier identifier){
+        static List<Tuple<VertexPositionNormalTexture[], int[]>> SliceDoubleEnclosureTriangle(
+            VertexPositionNormalTexture[] triangle,
+            float subBoxBegin,
+            float subBoxEnd){
             var sideVert = (from vert in triangle
                 where vert.Position.X <= subBoxBegin || vert.Position.X >= subBoxEnd
                 select vert).Single();
@@ -339,9 +346,9 @@ namespace Forge.Core.Airship.Generation{
             var t1I = GenerateIndiceList(t1);
             var t2I = GenerateIndiceList(t2);
 
-            var ret = new List<Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>>(2);
-            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t1, t1I, identifier));
-            ret.Add(new Tuple<VertexPositionNormalTexture[], int[], HullSectionIdentifier>(t2, t2I, identifier));
+            var ret = new List<Tuple<VertexPositionNormalTexture[], int[]>>(2);
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t1, t1I));
+            ret.Add(new Tuple<VertexPositionNormalTexture[], int[]>(t2, t2I));
             return ret;
         }
 
