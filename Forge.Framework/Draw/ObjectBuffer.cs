@@ -236,20 +236,6 @@ namespace Forge.Framework.Draw{
         public ObjectData[] DumpObjectData(){
             return _objectData.ToArray();
         }
-        /*
-        public VertexPositionNormalTexture[] DumpVerticies(){
-            var data = new VertexPositionNormalTexture[base.BaseVertexBuffer.VertexCount];
-            BaseVertexBuffer.GetData(data);
-            return data;
-        }
-         */
-        /*
-        public int[] DumpIndicies(){
-            var data = new int[base.BaseIndexBuffer.IndexCount];
-            BaseIndexBuffer.GetData(data);
-            return data;
-        }
-         */
 
         #region serialization
 
@@ -287,7 +273,7 @@ namespace Forge.Framework.Draw{
             }
 
             //set index/vertex buffers
-            for (int i = 0; i < _objectData.Count; i ++){
+            for (int i = 0; i < _objectData.Count; i++){
                 for (int idx = 0; idx < IndiciesPerObject; idx++){
                     _indicies[i*IndiciesPerObject + idx] = _objectData[i].Indicies[idx];
                 }
@@ -308,15 +294,69 @@ namespace Forge.Framework.Draw{
             UpdateBufferManually = false;
         }
 
-        public Serialized ExtractSerializationStruct(){
-            var objectData = new ObjectData.ChildSerialized[_objectData.Count];
-            for (int i = 0; i < _objectData.Count; i++){
-                objectData[i] = _objectData[i].ExtractSerializationStruct();
+        public Serialized ExtractSerializationStruct(bool cullDisabled = false){
+            ObjectData.ChildSerialized[] objectData;
+
+            if (!cullDisabled){
+                objectData = new ObjectData.ChildSerialized[_objectData.Count];
+                for (int i = 0; i < _objectData.Count; i++){
+                    objectData[i] = _objectData[i].ExtractSerializationStruct();
+                }
+            }
+            else{
+                objectData = new ObjectData.ChildSerialized[_objectData.Count];
+                for (int i = 0; i < _objectData.Count; i++){
+                    if (_objectData[i].Enabled){
+                        objectData[i] = _objectData[i].ExtractSerializationStruct();
+                    }
+                    else{
+                        var fillerInds = new int[IndiciesPerObject];
+                        var fillerData = new ObjectData
+                            (
+                            _objectData[i].Identifier,
+                            _objectData[i].ObjectOffset,
+                            fillerInds,
+                            _objectData[i].Verticies
+                            );
+                        objectData[i] = fillerData.ExtractSerializationStruct();
+                    }
+                }
+                //unfinished less mem intensive method in case this needs to be optimized
+                /*
+                var enabledObjects = (
+                    from o in _objectData
+                    where o.Enabled
+                    select o
+                    ).ToArray();
+
+
+                var transformed = new List<ObjectData>(enabledObjects.Length);
+                //undo the offsets for each object and reapply them
+                int newOffset = 0;
+                foreach (var obj in enabledObjects){
+                    int idxOffset = obj.ObjectOffset*IndiciesPerObject;
+                    int newIdxOffset = newOffset*IndiciesPerObject;
+
+                    var newInds = (
+                        from i in obj.Indicies
+                        select i - idxOffset + newIdxOffset
+                        ).ToArray();
+
+                    var newObj = new ObjectData(obj.Identifier, newOffset, newInds, obj.Verticies);
+                    transformed.Add(newObj);
+
+                    newOffset++;
+                }
+                objectData = new ObjectData.ChildSerialized[transformed.Count];
+                for (int i = 0; i < transformed.Count; i++){
+                    objectData[i] = transformed[i].ExtractSerializationStruct();
+                }
+                 */
             }
 
             var ret = new Serialized
                 (
-                MaxObjects,
+                objectData.Length,
                 VerticiesPerObject,
                 IndiciesPerObject,
                 objectData,
@@ -343,6 +383,21 @@ namespace Forge.Framework.Draw{
         }
 
         #endregion
+
+        /*
+        public VertexPositionNormalTexture[] DumpVerticies(){
+            var data = new VertexPositionNormalTexture[base.BaseVertexBuffer.VertexCount];
+            BaseVertexBuffer.GetData(data);
+            return data;
+        }
+         */
+        /*
+        public int[] DumpIndicies(){
+            var data = new int[base.BaseIndexBuffer.IndexCount];
+            BaseIndexBuffer.GetData(data);
+            return data;
+        }
+         */
 
         #region Nested type: ObjectData
 

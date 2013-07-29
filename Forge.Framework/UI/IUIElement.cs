@@ -18,6 +18,7 @@ namespace Forge.Framework.UI{
         int Height { get; }
         float Alpha { get; set; }
         MouseController MouseController { get; }
+        bool IsTransparent { get; set; }
         bool HitTest(int x, int y);
         List<IUIElement> GetElementStackAtPoint(int x, int y);
         void Update(float timeDelta);

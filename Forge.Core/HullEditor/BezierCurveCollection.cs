@@ -73,12 +73,11 @@ namespace Forge.Core.HullEditor{
             }
 
             for (int i = 0; i < numControllers; i++){
-                throw new Exception();
-                //_curveList.Add(new BezierCurve(_target, 0, 0, curveInitData[i]));
+                _curveList.Add(new BezierCurve(_target, 0, 0, curveInitData[i]));
             }
             for (int i = 1; i < numControllers - 1; i++){
-                //_curveList[i].SetPrevCurve(_curveList[i - 1]);
-                //_curveList[i].SetNextCurve(_curveList[i + 1]);
+                _curveList[i].SetPrevCurve(_curveList[i - 1]);
+                _curveList[i].SetNextCurve(_curveList[i + 1]);
             }
 
             //set curve symmetry
@@ -170,8 +169,6 @@ namespace Forge.Core.HullEditor{
         }
 
         public void Update(){
-            throw new Exception();
-            /*
             foreach (var curve in _curveList){
                 curve.Update();
             }
@@ -195,11 +192,9 @@ namespace Forge.Core.HullEditor{
                     MaxYCurve = curve;
                 }
             }
-             */
         }
 
         public List<BezierInfo> GetControllerInfo(float scaleX = 1, float scaleY = 1){
-            /*
             var li = new List<BezierInfo>(_curveList.Count/2 + 1);
             for (int i = 0; i < _curveList.Count; i++){
                 li.Add
@@ -215,8 +210,6 @@ namespace Forge.Core.HullEditor{
                     );
             }
             return li;
-             */
-            throw new Exception();
         }
 
         #region ienumerable members + accessors

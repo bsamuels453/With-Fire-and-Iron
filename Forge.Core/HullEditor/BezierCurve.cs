@@ -6,9 +6,8 @@ using System.Linq;
 using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Draw;
-using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Vector2 = MonoGameUtility.Vector2;
+using MonoGameUtility;
 
 #endregion
 
@@ -17,16 +16,15 @@ namespace Forge.Core.HullEditor{
     ///   this class is a fucking mess, here's to hoping it never has to be used again
     /// </summary>
     public class BezierCurve{
-        /*
         #region private fields
 
         const int _linesPerSide = 50;
         public readonly CurveHandle Handle;
-        LineGenerator _lineTemplate;
+        //LineGenerator _lineTemplate;
         BezierCurve _nextCurve;
-        List<Line> _nextLines;
+        List<Line2D> _nextLines;
         BezierCurve _prevCurve;
-        List<Line> _prevLines;
+        List<Line2D> _prevLines;
 
         #endregion
 
@@ -37,9 +35,9 @@ namespace Forge.Core.HullEditor{
                 _prevCurve = value;
                 Handle.PrevHandle = value.Handle;
                 if (_prevLines == null){
-                    _prevLines = new List<Line>(_linesPerSide);
+                    _prevLines = new List<Line2D>(_linesPerSide);
                     for (int i = 0; i < _linesPerSide; i++){
-                        _prevLines.Add(_lineTemplate.GenerateLine());
+                        //_prevLines.Add(_lineTemplate.GenerateLine());
                     }
                 }
             }
@@ -50,9 +48,9 @@ namespace Forge.Core.HullEditor{
                 _nextCurve = value;
                 Handle.NextHandle = value.Handle;
                 if (_nextLines == null){
-                    _nextLines = new List<Line>(_linesPerSide);
+                    _nextLines = new List<Line2D>(_linesPerSide);
                     for (int i = 0; i < _linesPerSide; i++){
-                        _nextLines.Add(_lineTemplate.GenerateLine());
+                        //_nextLines.Add(_lineTemplate.GenerateLine());
                     }
                 }
             }
@@ -70,7 +68,7 @@ namespace Forge.Core.HullEditor{
             Vector2 pt2;
             Bezier.GetBezierValue(out pt1, _prevCurve.NextHandlePos, _prevCurve.NextHandlePos, PrevHandlePos, CenterHandlePos, t);
             Bezier.GetBezierValue(out pt2, _prevCurve.NextHandlePos, _prevCurve.NextHandlePos, PrevHandlePos, CenterHandlePos, t + 0.001f);
-                //limits are for fags
+            //limits are for fags
 
             //get tangent and set to angle
             Vector2 pt3 = pt1 - pt2;
@@ -80,29 +78,29 @@ namespace Forge.Core.HullEditor{
 
             Handle.Angle = angle;
             if (_prevLines == null){
-                _prevLines = new List<Line>(_linesPerSide);
+                _prevLines = new List<Line2D>(_linesPerSide);
 
                 for (int i = 0; i < _linesPerSide; i++){
-                    _prevLines.Add(_lineTemplate.GenerateLine());
+                    //_prevLines.Add(_lineTemplate.GenerateLine());
                 }
             }
             else{
                 for (int i = 0; i < _linesPerSide; i++){
                     _prevLines[i].Dispose();
-                    _prevLines[i] = _lineTemplate.GenerateLine();
+                    //_prevLines[i] = _lineTemplate.GenerateLine();
                 }
             }
 
             if (_nextLines == null){
-                _nextLines = new List<Line>(_linesPerSide);
+                _nextLines = new List<Line2D>(_linesPerSide);
                 for (int i = 0; i < _linesPerSide; i++){
-                    _nextLines.Add(_lineTemplate.GenerateLine());
+                    //_nextLines.Add(_lineTemplate.GenerateLine());
                 }
             }
             else{
                 for (int i = 0; i < _linesPerSide; i++){
                     _nextLines[i].Dispose();
-                    _nextLines[i] = _lineTemplate.GenerateLine();
+                    //_nextLines[i] = _lineTemplate.GenerateLine();
                 }
             }
 
@@ -114,16 +112,16 @@ namespace Forge.Core.HullEditor{
             _prevCurve.NextCurveReference = this;
             Handle.PrevHandle = val.Handle;
             if (_prevLines == null){
-                _prevLines = new List<Line>(_linesPerSide);
+                _prevLines = new List<Line2D>(_linesPerSide);
 
                 for (int i = 0; i < _linesPerSide; i++){
-                    _prevLines.Add(_lineTemplate.GenerateLine());
+                    //_prevLines.Add(_lineTemplate.GenerateLine());
                 }
             }
             else{
                 for (int i = 0; i < _linesPerSide; i++){
                     _prevLines[i].Dispose();
-                    _prevLines[i] = _lineTemplate.GenerateLine();
+                    //_prevLines[i] = _lineTemplate.GenerateLine();
                 }
             }
             Update();
@@ -134,15 +132,15 @@ namespace Forge.Core.HullEditor{
             _nextCurve.PrevCurveReference = this;
             Handle.NextHandle = val.Handle;
             if (_nextLines == null){
-                _nextLines = new List<Line>(_linesPerSide);
+                _nextLines = new List<Line2D>(_linesPerSide);
                 for (int i = 0; i < _linesPerSide; i++){
-                    _nextLines.Add(_lineTemplate.GenerateLine());
+                    //_nextLines.Add(_lineTemplate.GenerateLine());
                 }
             }
             else{
                 for (int i = 0; i < _linesPerSide; i++){
                     _nextLines[i].Dispose();
-                    _nextLines[i] = _lineTemplate.GenerateLine();
+                    //_nextLines[i] = _lineTemplate.GenerateLine();
                 }
             }
             Update();
@@ -235,43 +233,44 @@ namespace Forge.Core.HullEditor{
             _nextCurve = null;
             _prevCurve = null;
             _prevLines = null;
-
+            /*
             _lineTemplate = new LineGenerator();
             _lineTemplate.V1 = Vector2.Zero;
             _lineTemplate.V2 = Vector2.Zero;
             _lineTemplate.Color = Color.White;
-            _lineTemplate.Depth = FrameStrata.Low;
+            _lineTemplate.Depth = FrameStrata.Level.Low;
             _lineTemplate.Target = target;
+             */
 
             Vector2 component1 = Common.GetComponentFromAngle(initData.Angle, initData.Length1);
             Vector2 component2 = Common.GetComponentFromAngle((float) (initData.Angle - Math.PI), initData.Length2); // minus math.pi to reverse direction
 
             #region stuff for generating ui elements
 
-            var buttonTemplate = new ButtonGenerator("HullEditorHandle.json");
+            //var buttonTemplate = new ButtonGenerator("HullEditorHandle.json");
 
-            var lineTemplate = new LineGenerator("HullEditorLine.json");
-            lineTemplate.Target = target;
-            Handle = new CurveHandle(buttonTemplate, lineTemplate, new Vector2(initX, initY), component1, component2);
+            //var lineTemplate = new LineGenerator("HullEditorLine.json");
+            //lineTemplate.Target = target;
+            Handle = new CurveHandle(new Vector2(initX, initY), component1, component2);
 
             #endregion
         }
 
         public void Dispose(){
             Handle.Dispose();
-            _lineTemplate = null;
+            //_lineTemplate = null;
             _nextCurve = null;
             _prevCurve = null;
-            /*foreach (var line in _nextLines){
+            foreach (var line in _nextLines){
                 line.Dispose();
             }
-            foreach (var line in _prevLines) {
+            foreach (var line in _prevLines){
                 line.Dispose();
             }
             _nextCurve.Dispose();
-            _prevCurve.Dispose();*/
+            _prevCurve.Dispose();
         }
-    /*
+
         #endregion
 
         public void Update(){
@@ -359,7 +358,5 @@ namespace Forge.Core.HullEditor{
             return list[lowestIndex];
         }
         */
-    /*
     }
-     * */
 }

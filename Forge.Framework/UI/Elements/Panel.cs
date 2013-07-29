@@ -17,7 +17,7 @@ namespace Forge.Framework.UI.Elements{
     /// defined by either Panel.json or whatever template you may have passed.
     /// </summary>
     public class Panel : DraggableCollection{
-        protected readonly int Padding;
+        protected readonly int BorderPadding;
         readonly int _backgroundInset = 1;
         readonly string _bgMaterial = "Materials/TextBoxBG";
         readonly string _borderMaterial = "Materials/TextBoxBorder";
@@ -39,7 +39,7 @@ namespace Forge.Framework.UI.Elements{
             _backgroundInset = jobj["BackgroundInset"].ToObject<int>();
             _borderThickness = jobj["BorderThickness"].ToObject<int>();
             _cornerSize = jobj["CornerSize"].ToObject<int>();
-            Padding = jobj["Padding"].ToObject<int>();
+            BorderPadding = jobj["Padding"].ToObject<int>();
 
             #endregion
         }
@@ -290,7 +290,7 @@ namespace Forge.Framework.UI.Elements{
         /// </summary>
         /// <returns></returns>
         public PanelCell GeneratePanelCell(){
-            var temp = new PanelCell(0, 0, this.Width, this.Height, Padding);
+            var temp = new PanelCell(0, 0, this.Width, this.Height, BorderPadding);
             return temp.CreateChild(0, 0, 1, 1, PanelCell.Border.Top | PanelCell.Border.Left | PanelCell.Border.Right | PanelCell.Border.Bottom);
         }
 

@@ -142,6 +142,7 @@
     <Compile Include="Draw\DebugText.cs" />
     <Compile Include="Draw\GeometryBuffer.cs" />
     <Compile Include="Draw\IDrawableSprite.cs" />
+    <Compile Include="Draw\Line2D.cs" />
     <Compile Include="Draw\MaskingSprite.cs" />
     <Compile Include="Draw\ObjectBuffer.cs" />
     <Compile Include="Draw\ObjectModelBuffer.cs" />
@@ -152,6 +153,7 @@
     <Compile Include="ProtoBuffWrappers.cs" />
     <Compile Include="Resources\ConfigLoader.cs" />
     <Compile Include="Resources\HLSLShaderLoader.cs" />
+    <Compile Include="Resources\GameObjectLoader.cs" />
     <Compile Include="Resources\OpenCLScriptLoader.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="InputState.cs" />
@@ -164,6 +166,7 @@
     <Compile Include="UI\Elements\DraggableSprite.cs" />
     <Compile Include="UI\Elements\DraggableCollection.cs" />
     <Compile Include="UI\Elements\DropdownMenu.cs" />
+    <Compile Include="UI\Elements\ElementGrid.cs" />
     <Compile Include="UI\Elements\InputBox.cs" />
     <Compile Include="UI\Elements\MouseoverMask.cs" />
     <Compile Include="UI\Elements\Panel.cs" />

@@ -40,7 +40,7 @@ namespace Forge.Framework.UI.Elements{
 
             var titletext = new TextBox
                 (
-                new Point(this.X + Padding, this.Y + Padding),
+                new Point(this.X + BorderPadding, this.Y + BorderPadding),
                 this,
                 FrameStrata.Level.High,
                 Color.White,
@@ -52,7 +52,7 @@ namespace Forge.Framework.UI.Elements{
 
             var contentText = new TextBox
                 (
-                new Point(this.X + Padding, titletext.Y + titletext.Height + tcSepDist),
+                new Point(this.X + BorderPadding, titletext.Y + titletext.Height + tcSepDist),
                 this,
                 FrameStrata.Level.High,
                 Color.White,
@@ -67,13 +67,13 @@ namespace Forge.Framework.UI.Elements{
                 FrameStrata.Level.Medium,
                 new Point
                     (
-                    this.X + Padding,
+                    this.X + BorderPadding,
                     0
                     ),
                 "Ok"
                 );
             button.X = this.X + this.Width / 2 - button.Width / 2;
-            button.Y = this.Y + this.Height - Padding - button.Height;
+            button.Y = this.Y + this.Height - BorderPadding - button.Height;
 
             this.AddElement(titletext);
             this.AddElement(contentText);

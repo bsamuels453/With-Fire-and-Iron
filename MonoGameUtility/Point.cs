@@ -26,8 +26,10 @@ SOFTWARE.
 #endregion License
 
 using System;
+using ProtoBuf;
 
 namespace MonoGameUtility {
+    [ProtoContract]
     public struct Point : IEquatable<Point> {
         #region Private Fields
 
@@ -37,9 +39,9 @@ namespace MonoGameUtility {
 
 
         #region Public Fields
-
+        [ProtoMember(1)]
         public int X;
-
+        [ProtoMember(2)]
         public int Y;
 
         #endregion Public Fields
@@ -98,6 +100,12 @@ namespace MonoGameUtility {
         public static Point operator +(Point value1, Point value2) {
             value1.X += value2.X;
             value1.Y += value2.Y;
+            return value1;
+        }
+
+        public static Point operator -(Point value1, Point value2) {
+            value1.X -= value2.X;
+            value1.Y -= value2.Y;
             return value1;
         }
 

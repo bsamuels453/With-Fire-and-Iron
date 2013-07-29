@@ -17,15 +17,15 @@ namespace Forge.Core.Airship.Controllers{
     /// </summary>
     public abstract class AirshipController{
         readonly AirshipIndexer _airships;
-        readonly List<Hardpoint> _hardPoints;
+        readonly WeaponSystems _weaponSystems;
         protected bool AutoPilotActive;
         ModelAttributes _airshipModelData;
         AirshipAutoPilot _autoPilot;
         float _velocityTarget;
 
-        protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, AirshipIndexer airships, List<Hardpoint> hardPoints){
+        protected AirshipController(ModelAttributes modelData, AirshipStateData stateData, AirshipIndexer airships, WeaponSystems weaponSystems){
             _airshipModelData = modelData;
-            _hardPoints = hardPoints;
+            _weaponSystems = weaponSystems;
             _airships = airships;
             StateData = stateData;
 
@@ -242,9 +242,7 @@ namespace Forge.Core.Airship.Controllers{
         }
 
         protected void Fire(){
-            foreach (var hardPoint in _hardPoints){
-                hardPoint.Fire();
-            }
+            _weaponSystems.Fire();
         }
 
         public ModelAttributes GetBuffedAttributes(){

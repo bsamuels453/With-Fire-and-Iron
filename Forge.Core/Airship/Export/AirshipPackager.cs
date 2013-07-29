@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
+using Forge.Core.ObjectEditor;
 using Forge.Core.Util;
 using Forge.Framework;
 using Forge.Framework.Resources;
@@ -39,40 +40,40 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Loads an airship's model/state and instantiates it.
         /// </summary>
-        /// <param name="stateName"> The filename of the airship's state. </param>
+        /// <param name="statePath"> The path container that points to the state's path. </param>
         /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship LoadAirship(string stateName, Battlefield battlefield){
-            DebugConsole.WriteLine("Loading airship as defined by: " + stateName + ".json");
-            var stateReader = new StreamReader(Directory.GetCurrentDirectory() + "/Data/" + stateName + ".json");
+        public static Airship LoadAirship(AirshipStatePath statePath, Battlefield battlefield){
+            DebugConsole.WriteLine("Loading airship as defined by: " + statePath.Path);
+            var stateReader = new StreamReader(statePath.Path);
             var stateData = DeserializeStateFromReader(stateReader);
             stateReader.Close();
 
-            var airship = LoadAirshipModel(stateData.Model);
+            var airship = LoadAirshipSerialization(new SerializedPath(stateData.Model));
 
             var hullSections = new HullSectionContainer(airship.HullSections);
             var deckSections = new DeckSectionContainer(airship.DeckSections);
             var modelAttribs = airship.ModelAttributes;
 
-            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, battlefield);
-            DebugConsole.WriteLine(stateName + " loading completed");
+            var ret = new Airship(modelAttribs, deckSections, hullSections, stateData, airship.GameObjects, battlefield);
+            DebugConsole.WriteLine(statePath.Path + " loading completed");
             return ret;
         }
 
         /// <summary>
         ///   Generates an airship using provided model and statedata.
         /// </summary>
-        /// <param name="stateDataName"> </param>
+        /// <param name="statePath"> </param>
         /// <param name="stateData"> The state data that will be used to initalize the airship. If you specify an Id in this structure, it will be ignored. </param>
         /// <param name="battlefield"> Class that contains data pertaining to the state of the battlefield. </param>
         /// <returns> </returns>
-        public static Airship GenerateNewAirship(string stateDataName, AirshipStateData stateData, Battlefield battlefield){
+        public static Airship GenerateNewAirship(AirshipStatePath statePath, AirshipStateData stateData, Battlefield battlefield){
             stateData.AirshipId = _uidGenerator.NextUid();
             DebugConsole.WriteLine("New airship being generated with uid " + stateData.AirshipId);
 
-            var model = LoadAirshipModel(stateData.Model);
+            var model = LoadAirshipSerialization(new SerializedPath(stateData.Model));
 
-            var writer = new StreamWriter(Directory.GetCurrentDirectory() + "/Data/" + stateDataName + ".json");
+            var writer = new StreamWriter(statePath.Path);
 
             SerializeStateToWriter(stateData, writer);
 
@@ -82,21 +83,27 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Converts an airship to protocol format based on its hullSection/deckSection/modelAttributes
         /// </summary>
-        /// <param name="fileName"> The name of the output file, no extension. Base directory is /Data/AirshipSchematics/ </param>
+        /// <param name="path"> Output file </param>
         /// <param name="hullSectionContainer"> </param>
         /// <param name="deckSectionContainer"> </param>
         /// <param name="attributes"> </param>
-        public static void ExportToProtocolFile(string fileName, HullSectionContainer hullSectionContainer, DeckSectionContainer deckSectionContainer,
-            ModelAttributes attributes){
+        /// <param name="gameObjects"> </param>
+        public static void ExportToProtocolFile(
+            SerializedPath path,
+            HullSectionContainer hullSectionContainer,
+            DeckSectionContainer deckSectionContainer,
+            ModelAttributes attributes,
+            List<GameObject> gameObjects){
             var sw = new Stopwatch();
             sw.Start();
-            var fs = new FileStream(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".protocol", FileMode.Create);
+            var fs = new FileStream(path.Path, FileMode.Create);
             var sections = hullSectionContainer.ExtractSerializationStruct();
             var decks = deckSectionContainer.ExtractSerializationStruct();
             var aship = new AirshipSerializationStruct();
             aship.DeckSections = decks;
             aship.HullSections = sections;
             aship.ModelAttributes = attributes;
+            aship.GameObjects = gameObjects;
             Serializer.Serialize(fs, aship);
             fs.Close();
             sw.Stop();
@@ -106,11 +113,11 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Exports an airship from bezier to definition format.
         /// </summary>
-        /// <param name="fileName"> The name of the output file, no extension. Base directory is /Data/AirshipSchematics/ </param>
+        /// <param name="path"> </param>
         /// <param name="backCurveInfo"> </param>
         /// <param name="sideCurveInfo"> </param>
         /// <param name="topCurveInfo"> </param>
-        public static void ExportAirshipDefinitionToFile(string fileName, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo){
+        public static void ExportAirshipDefinitionToFile(DefinitionPath path, BezierInfo[] backCurveInfo, BezierInfo[] sideCurveInfo, BezierInfo[] topCurveInfo){
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             JObject jObj = new JObject();
@@ -118,7 +125,7 @@ namespace Forge.Core.Airship.Export{
             jObj["SideBezierSurf"] = JToken.FromObject(sideCurveInfo);
             jObj["TopBezierSurf"] = JToken.FromObject(topCurveInfo);
 
-            var sw = new StreamWriter(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".def");
+            var sw = new StreamWriter(path.Path);
             sw.Write(JsonConvert.SerializeObject(jObj, Formatting.Indented));
             sw.Close();
             stopwatch.Stop();
@@ -128,12 +135,12 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Loads an airship's model from disc, or cache if avaliable.
         /// </summary>
-        /// <param name="modelName"> The name of the model's file, without extension. </param>
+        /// <param name="model"> </param>
         /// <returns> </returns>
-        static AirshipSerializationStruct LoadAirshipModel(string modelName){
+        public static AirshipSerializationStruct LoadAirshipSerialization(SerializedPath model){
             AirshipSerializationStruct airship;
-            if (_modelCache.ContainsKey(modelName)){
-                airship = _modelCache[modelName];
+            if (_modelCache.ContainsKey(model.Path)){
+                airship = _modelCache[model.Path];
                 DebugConsole.WriteLine("Airship serialization structure loaded from cache");
             }
             else{
@@ -141,12 +148,23 @@ namespace Forge.Core.Airship.Export{
                 ConvertDefToProtocolFile(modelName);
 #endif
                 DebugConsole.WriteLine("Airship serialization structure not in cache, importing protocol...");
+                AirshipSerializationStruct serializationStruct;
+                {
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    var fs = new FileStream(model.Path, FileMode.Open);
+                    serializationStruct = Serializer.Deserialize<AirshipSerializationStruct>(fs);
+                    fs.Close();
+                    sw.Stop();
+                    DebugConsole.WriteLine("Airship protocol deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
+                }
+
                 _modelCache.Add
                     (
-                        modelName,
-                        ImportFromProtocolFromFile(modelName)
+                        model.Path,
+                        serializationStruct
                     );
-                airship = _modelCache[modelName];
+                airship = _modelCache[model.Path];
             }
             return airship;
         }
@@ -161,7 +179,7 @@ namespace Forge.Core.Airship.Export{
         static Airship InstantiateAirshipFromSerialized(AirshipSerializationStruct model, AirshipStateData stateData, Battlefield battlefield){
             var hullSections = new HullSectionContainer(model.HullSections);
             var deckSections = new DeckSectionContainer(model.DeckSections);
-            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, battlefield);
+            return new Airship(model.ModelAttributes, deckSections, hullSections, stateData, model.GameObjects, battlefield);
         }
 
         /// <summary>
@@ -228,12 +246,11 @@ namespace Forge.Core.Airship.Export{
         /// <summary>
         ///   Converts the airship stored in the specified .def file to .protocol format. Base directory is /Data/AirshipSchematics/
         /// </summary>
-        /// <param name="fileName"> The filename of the .def file, without extension </param>
-        public static void ConvertDefToProtocolFile(string fileName){
+        public static void ConvertDefToProtocol(DefinitionPath definition, SerializedPath serialized){
             var sw = new Stopwatch();
             sw.Start();
 
-            var jObj = Resource.LoadJObject(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".def");
+            var jObj = Resource.LoadJObject(definition.Path);
 
             var backInfo = jObj["FrontBezierSurf"].ToObject<List<BezierInfo>>();
             var sideInfo = jObj["SideBezierSurf"].ToObject<List<BezierInfo>>();
@@ -250,8 +267,9 @@ namespace Forge.Core.Airship.Export{
             airship.DeckSections = hullData.DeckSectionContainer.ExtractSerializationStruct();
             airship.HullSections = hullData.HullSections.ExtractSerializationStruct();
             airship.ModelAttributes = hullData.ModelAttributes;
+            airship.GameObjects = new List<GameObject>();
 
-            var fs = new FileStream(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".protocol", FileMode.Create);
+            var fs = new FileStream(serialized.Path, FileMode.Create);
             Serializer.Serialize(fs, airship);
             fs.Close();
 
@@ -261,25 +279,6 @@ namespace Forge.Core.Airship.Export{
             hullData.HullSections.Dispose();
 
             DebugConsole.WriteLine("Airship converted from definition  to protocol in " + sw.ElapsedMilliseconds + " ms");
-        }
-
-        /// <summary>
-        ///   Imports and airship's model from protocol format.
-        /// </summary>
-        /// <param name="fileName"> The filename of the ship's model, no extension. Base directory is /Data/AirshipSchematics/ </param>
-        /// <returns> </returns>
-        static AirshipSerializationStruct ImportFromProtocolFromFile(string fileName){
-            var sw = new Stopwatch();
-            sw.Start();
-            var fs = new FileStream(Directory.GetCurrentDirectory() + "/Data/AirshipSchematics/" + fileName + ".protocol", FileMode.Open);
-            var serializedStruct = Serializer.Deserialize<AirshipSerializationStruct>(fs);
-            fs.Close();
-
-            sw.Stop();
-
-            DebugConsole.WriteLine("Airship protocol deserialized from protocol in " + sw.ElapsedMilliseconds + " ms");
-
-            return serializedStruct;
         }
 
         static Vector3 CalculateCenter(VertexPositionNormalTexture[][] airshipVertexes){
@@ -300,8 +299,9 @@ namespace Forge.Core.Airship.Export{
         #region Nested type: AirshipSerializationStruct
 
         [ProtoContract]
-        struct AirshipSerializationStruct{
+        public struct AirshipSerializationStruct{
             [ProtoMember(2)] public DeckSectionContainer.Serialized DeckSections;
+            [ProtoMember(4)] public List<GameObject> GameObjects;
             [ProtoMember(1)] public HullSectionContainer.Serialized HullSections;
             [ProtoMember(3)] public ModelAttributes ModelAttributes;
         }

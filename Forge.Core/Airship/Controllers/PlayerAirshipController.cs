@@ -1,6 +1,5 @@
 ﻿#region
 
-using System.Collections.Generic;
 using Forge.Core.Airship.Data;
 using Forge.Framework.Control;
 using Forge.Framework.Resources;
@@ -26,8 +25,8 @@ namespace Forge.Core.Airship.Controllers{
         TurnState _curTurnState;
         int _engineSpeed;
 
-        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, List<Hardpoint> hardPoints, AirshipIndexer airships) :
-            base(modelData, stateData, airships, hardPoints){
+        public PlayerAirshipController(ModelAttributes modelData, AirshipStateData stateData, WeaponSystems weaponSystems, AirshipIndexer airships) :
+            base(modelData, stateData, airships, weaponSystems){
         }
 
         public int EngineSpeed{

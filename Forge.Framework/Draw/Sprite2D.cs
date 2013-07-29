@@ -14,13 +14,13 @@ using Vector2 = MonoGameUtility.Vector2;
 namespace Forge.Framework.Draw{
     public class Sprite2D : IDrawableSprite, IUIElement{
         readonly FloatingRectangle _srcRect;
-        readonly bool _transparent;
 
         public bool Enabled;
 
         Rectangle _destRect;
         bool _isDisposed;
         Texture2D _texture;
+        bool _transparent;
 
         #region ctors
 
@@ -241,6 +241,11 @@ namespace Forge.Framework.Draw{
         public float Alpha { get; set; }
 
         public MouseController MouseController { get; private set; }
+
+        public bool IsTransparent{
+            get { return _transparent; }
+            set { _transparent = value; }
+        }
 
         public bool HitTest(int x, int y){
             if (!_transparent){

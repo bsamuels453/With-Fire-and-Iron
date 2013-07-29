@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using Forge.Framework.Control;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Input;
@@ -9,7 +10,7 @@ using MonoGameUtility;
 #endregion
 
 namespace Forge.Framework.UI.Elements{
-    internal class MouseoverMask : IUIElement{
+    public class MouseoverMask : IUIElement{
         const float _fadedInAlpha = 0.1f;
         readonly MaskingSprite _mask;
         float _alpha;
@@ -70,6 +71,11 @@ namespace Forge.Framework.UI.Elements{
         }
 
         public MouseController MouseController { get; private set; }
+
+        public bool IsTransparent{
+            get { return true; }
+            set { Debug.Assert(value); }
+        }
 
         public bool HitTest(int x, int y){
             return false;

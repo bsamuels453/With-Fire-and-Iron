@@ -150,6 +150,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Airship\AirshipObjectContainer.cs" />
     <Compile Include="Airship\Controllers\AIAirshipController.cs" />
     <Compile Include="Airship\Airship.cs" />
     <Compile Include="Airship\Controllers\AirshipController.cs" />
@@ -165,7 +166,11 @@
     <Compile Include="Airship\DecalBlitter.cs" />
     <Compile Include="Airship\Export\AirshipPackager.cs" />
     <Compile Include="Airship\AirshipIndexer.cs" />
+    <Compile Include="Airship\Export\AirshipStatePath.cs" />
+    <Compile Include="Airship\Export\DefinitionPath.cs" />
+    <Compile Include="Airship\Export\SerializedPath.cs" />
     <Compile Include="Airship\Generation\HullAttributeGenerator.cs" />
+    <Compile Include="Airship\WeaponSystems.cs" />
     <Compile Include="DebugDraw.cs" />
     <Compile Include="GameState\PrimaryGameMode.cs" />
     <Compile Include="Airship\Hardpoint.cs" />
@@ -176,6 +181,23 @@
     <Compile Include="Airship\Data\ModelAttributes.cs" />
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
+    <Compile Include="HullEditor\HandleButton.cs" />
+    <Compile Include="ObjectEditor\GameObject.cs" />
+    <Compile Include="ObjectEditor\GameObjectEnvironment.cs" />
+    <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
+    <Compile Include="ObjectEditor\GameObjectType.cs" />
+    <Compile Include="ObjectEditor\InternalWallEnvironment.cs" />
+    <Compile Include="ObjectEditor\ObjectIdentifier.cs" />
+    <Compile Include="ObjectEditor\Subsystems\AeronaticsTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\InternalNavTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\PowerTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\WeaponTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
+    <Compile Include="ObjectEditor\UI\EditorToolbar.cs" />
+    <Compile Include="ObjectEditor\UI\NavBar.cs" />
+    <Compile Include="ObjectEditor\UI\ToolbarButton.cs" />
+    <Compile Include="ObjectEditor\Tools\IToolbarTool.cs" />
+    <Compile Include="ObjectEditor\WallSegmentIdentifier.cs" />
     <Compile Include="Physics\CollisionObject.cs" />
     <Compile Include="Physics\CollisionObjectCollection.cs" />
     <Compile Include="Physics\CollisionObjectHandle.cs" />
@@ -183,7 +205,6 @@
     <Compile Include="Physics\ProjectileAttributes.cs" />
     <Compile Include="Physics\ProjectileEmitter.cs" />
     <Compile Include="Physics\ProjectilePhysics.cs" />
-    <Compile Include="ObjectEditor\Tools\WallMenuTool.cs" />
     <Compile Include="HullEditor\BezierCurve.cs" />
     <Compile Include="HullEditor\BezierCurveCollection.cs" />
     <Compile Include="HullEditor\CurveHandle.cs" />
@@ -192,16 +213,14 @@
     <Compile Include="HullEditor\PreviewRenderer.cs" />
     <Compile Include="Airship\Generation\HullSplitter.cs" />
     <Compile Include="ObjectEditor\Tools\DeckPlacementBase.cs" />
-    <Compile Include="ObjectEditor\Tools\LadderBuildTool.cs" />
     <Compile Include="ObjectEditor\Tools\WallBuildTool.cs" />
     <Compile Include="ObjectEditor\Tools\WallDeleteTool.cs" />
-    <Compile Include="ObjectEditor\HullDataManager.cs" />
+    <Compile Include="ObjectEditor\HullEnvironment.cs" />
     <Compile Include="Airship\Generation\HullGeometryGenerator.cs" />
     <Compile Include="GameState\ObjectEditorState.cs" />
-    <Compile Include="ObjectEditor\ObjectEditorUI.cs" />
+    <Compile Include="ObjectEditor\UI\ObjectEditorUI.cs" />
     <Compile Include="Camera\BodyCenteredCamera.cs" />
     <Compile Include="Camera\ICamera.cs" />
-    <Compile Include="ObjectEditor\AirshipObjectIdentifier.cs" />
     <Compile Include="Camera\SubmarineCamera.cs" />
     <None Include="Scrap.cs" />
     <Compile Include="Util\Bezier.cs" />
