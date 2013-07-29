@@ -18,6 +18,10 @@ namespace Forge.Core.Airship{
         readonly WeaponSystems _weaponSystems;
 
         public AirshipObjectContainer(List<GameObject> gameObjects, WeaponSystems weaponSystems){
+            if (gameObjects == null){
+                gameObjects = new List<GameObject>();
+            }
+
             var objectsByDeck = (
                 from obj in gameObjects
                 group obj by obj.Deck
