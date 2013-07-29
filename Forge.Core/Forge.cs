@@ -1,4 +1,4 @@
-#define PLAYMODE
+//#define PLAYMODE
 
 #region
 
@@ -62,7 +62,7 @@ namespace Forge.Core{
 #if PLAYMODE
             GameStateManager.AddGameState(new PrimaryGameMode());
 #else
-            GamestateManager.AddGameState(new HullEditorState());
+            GameStateManager.AddGameState(new ObjectEditorState());
 #endif
 
             IsMouseVisible = true;
