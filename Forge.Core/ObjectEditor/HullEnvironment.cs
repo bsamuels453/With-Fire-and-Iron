@@ -4,6 +4,8 @@ using System;
 using System.Diagnostics;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Export;
+using Forge.Core.Airship.Generation;
+using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
 #endregion
@@ -21,6 +23,7 @@ namespace Forge.Core.ObjectEditor{
         public readonly DeckSectionContainer DeckSectionContainer;
         public readonly HullSectionContainer HullSectionContainer;
         public readonly int NumDecks;
+        readonly HullSplitter _hullSplitter;
 
         int _curDeck;
         bool _disposed;
@@ -32,6 +35,7 @@ namespace Forge.Core.ObjectEditor{
             DeckHeight = data.ModelAttributes.DeckHeight;
             CenterPoint = data.ModelAttributes.Centroid;
             HullSectionContainer = new HullSectionContainer(data.HullSections);
+            _hullSplitter = new HullSplitter(HullSectionContainer.HullBuffersByDeck);
 
             CurDeck = 0;
         }
