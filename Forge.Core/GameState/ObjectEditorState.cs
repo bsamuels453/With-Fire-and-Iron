@@ -32,7 +32,7 @@ namespace Forge.Core.GameState{
             GameStateManager.CameraController = _cameraController;
 
             _placeboBattlefield = new Battlefield();
-            AirshipPackager.ConvertDefToProtocol(new DefinitionPath("ExportedAirship"), new SerializedPath("ExportedAirship"));
+            //AirshipPackager.ConvertDefToProtocol(new DefinitionPath("ExportedAirship"), new SerializedPath("ExportedAirship"));
             var serial = AirshipPackager.LoadAirshipSerialization(new SerializedPath("ExportedAirship"));
 
             _hullEnvironment = new HullEnvironment(serial);
