@@ -469,7 +469,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\XNA Game Studio\$(XnaFrameworkVersion)\Microsoft.Xna.GameStudio.ContentPipeline.targets" />
   <PropertyGroup>
-    <PreBuildEvent>$(SolutionDir)\Tools\ContentHelper\Bin\ContentHelper.exe $(ProjectDir)</PreBuildEvent>
+    <PreBuildEvent>xcopy /s /y $(SolutionDir)\Forge.Content D:\Projects\ForgeContentBackup</PreBuildEvent>
   </PropertyGroup>
   <!--  To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
