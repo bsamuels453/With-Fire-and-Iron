@@ -120,8 +120,9 @@ namespace Forge.Core.ObjectEditor.Tools{
             _prevIdentifiers.Clear();
         }
 
-        protected override void DisposeChild(){
+        public override void Dispose(){
             _tempWallBuffer.Dispose();
+            base.Dispose();
         }
     }
 }

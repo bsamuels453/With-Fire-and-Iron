@@ -82,13 +82,12 @@ namespace Forge.Core.ObjectEditor.Tools{
             }
         }
 
-        public void Dispose(){
+        public virtual void Dispose(){
             Debug.Assert(!_disposed);
             _cursorBuff.Dispose();
             foreach (var buffer in GuideGridBuffers){
                 buffer.Dispose();
             }
-            DisposeChild();
             _disposed = true;
         }
 
@@ -364,8 +363,6 @@ namespace Forge.Core.ObjectEditor.Tools{
         ///   Called when the child needs to be disabled.
         /// </summary>
         protected abstract void OnDisable();
-
-        protected abstract void DisposeChild();
 
         ~DeckPlacementBase(){
             Debug.Assert(_disposed);

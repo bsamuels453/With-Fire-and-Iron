@@ -122,8 +122,10 @@ namespace Forge.Core.ObjectEditor.Tools{
             _ghostedObjectModel.Enabled = false;
         }
 
-        protected override void DisposeChild(){
+        public override void Dispose(){
             _ghostedObjectModel.Dispose();
+            _dimensionFootprint.Dispose();
+            base.Dispose();
         }
 
         protected override bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){
