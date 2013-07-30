@@ -55,7 +55,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
             _ghostedObjectModel.Enabled = false;
 
-            _dimensionFootprint = new GeometryBuffer<VertexPositionNormalTexture>(30, 20, 10, "Config/Shaders/TintedGeometry.config");
+            _dimensionFootprint = new GeometryBuffer<VertexPositionNormalTexture>(30, 20, 10, "Config/Shaders/ObjectPlacementFootprint.config");
             VertexPositionNormalTexture[] dimensionVerts;
             int[] dimensionInds;
             MeshHelper.GenerateCube(out dimensionVerts, out dimensionInds, Vector3.Zero, _objectGridDims.X/2f, 0.01f, _objectGridDims.Z/2f);
