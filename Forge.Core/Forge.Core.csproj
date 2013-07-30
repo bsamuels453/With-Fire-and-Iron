@@ -190,6 +190,7 @@
     <Compile Include="ObjectEditor\ObjectIdentifier.cs" />
     <Compile Include="ObjectEditor\Subsystems\AeronaticsTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\InternalNavTrackingModule.cs" />
+    <Compile Include="ObjectEditor\Subsystems\ObjectFootprintVisualizer.cs" />
     <Compile Include="ObjectEditor\Subsystems\PowerTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\WeaponTrackingModule.cs" />
     <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
