@@ -42,7 +42,7 @@ namespace Forge.Framework.Draw{
             _universalDepthStencil = new DepthStencilState();
             _universalDepthStencil.DepthBufferEnable = true;
             _universalDepthStencil.DepthBufferWriteEnable = true;
-            Resource.Device.BlendState = BlendState.Opaque;
+            Resource.Device.BlendState = BlendState.AlphaBlend;
             Resource.Device.SamplerStates[0] = SamplerState.LinearWrap;
 
             _bufferUpdateTasks = new List<Task>();
@@ -166,7 +166,7 @@ namespace Forge.Framework.Draw{
                 Resource.Device.SetRenderTarget(_targetCanvas);
                 Resource.Device.Clear(fillColor);
                 Resource.Device.DepthStencilState = _universalDepthStencil;
-                Resource.Device.BlendState = BlendState.Opaque;
+                Resource.Device.BlendState = BlendState.AlphaBlend;
                 Resource.Device.SamplerStates[0] = SamplerState.LinearWrap;
                 foreach (var buffer in _buffers){
                     buffer.Draw(viewMatrix);
