@@ -116,7 +116,7 @@ namespace Forge.Framework.Resources{
             JToken token;
             shaderConfigs.TryGetValue("Rasterizer", out token);
             if (token == null){
-                return new RasterizerState();
+                return new RasterizerState{CullMode = CullMode.None};
             }
             return token.ToObject<RasterizerState>();
         }
