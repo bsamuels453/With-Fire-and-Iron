@@ -47,7 +47,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             _objectUid = objectUid;
             _objectType = type;
             _objectParams = objectParams;
-            CursorOffset = new Vector3(-objectGridDims.X/4f, 0, -objectGridDims.Z/4f);
+            CursorOffset = CalculateCursorOffset(objectGridDims);
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
@@ -62,6 +62,14 @@ namespace Forge.Core.ObjectEditor.Tools{
                 _rotation = value;
                 _transform = Matrix.CreateFromYawPitchRoll(_rotation, 0, 0);
             }
+        }
+
+        Vector3 CalculateCursorOffset(XZPoint dimensions){
+            int x = (int) (-dimensions.X/2f);
+            int z = (int) (-dimensions.Z/2f);
+
+            var ret = new Vector3(x/2f, 0, z/2f);
+            return ret;
         }
 
         protected override void EnableCursorGhost(){
