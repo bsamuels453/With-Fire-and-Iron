@@ -120,6 +120,21 @@ namespace Forge.Core.ObjectEditor.Tools{
         }
 
         protected override void HandleCursorRelease(){
+            bool isPlacementValid = _gameObjectEnvironment.IsObjectPlacementValid
+                (
+                    CursorPosition + CursorOffset,
+                    _objectGridDims,
+                    _hullData.CurDeck,
+                    _rotation,
+                    _objectType,
+                    _objectUid,
+                    PlacementSideEffect
+                );
+
+            if (!isPlacementValid){
+                return;
+            }
+
             var gameObj = new GameObject
                 (
                 CursorPosition + CursorOffset,
