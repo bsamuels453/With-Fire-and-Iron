@@ -17,6 +17,7 @@ namespace Forge.Framework.Draw{
         readonly int _numPrimitives;
         readonly PrimitiveType _primitiveType;
         protected Matrix BaseWorldTransform;
+        protected DepthStencilState DepthStencil;
 
         public bool Enabled;
         protected RasterizerState Rasterizer;
@@ -24,15 +25,12 @@ namespace Forge.Framework.Draw{
         bool _disposed;
 
 
-        protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType,
-            CullMode cullMode = CullMode.None){
+        protected BaseGeometryBuffer(int numIndicies, int numVerticies, int numPrimitives, string shader, PrimitiveType primitiveType){
             Enabled = true;
             _numPrimitives = numPrimitives;
             _numIndicies = numIndicies;
             _primitiveType = primitiveType;
             BaseWorldTransform = Matrix.Identity;
-
-            Rasterizer = new RasterizerState{CullMode = cullMode};
 
             lock (Resource.Device){
                 _baseIndexBuffer = new IndexBuffer
@@ -52,7 +50,8 @@ namespace Forge.Framework.Draw{
                     );
             }
             ShaderName = shader;
-            Resource.LoadShader(shader, out Shader);
+
+            Resource.LoadShader(shader, out Shader, out Rasterizer, out DepthStencil);
             Shader.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
             Shader.Parameters["mtx_World"].SetValue(Matrix.Identity);
 
@@ -83,7 +82,7 @@ namespace Forge.Framework.Draw{
                 Shader.Parameters["mtx_View"].SetValue(viewMatrix);
                 Shader.Parameters["mtx_World"].SetValue(BaseWorldTransform);
                 Resource.Device.RasterizerState = Rasterizer;
-
+                Resource.Device.DepthStencilState = DepthStencil;
                 foreach (EffectPass pass in Shader.CurrentTechnique.Passes){
                     pass.Apply();
                     Resource.Device.Indices = _baseIndexBuffer;
