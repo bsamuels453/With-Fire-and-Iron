@@ -8,7 +8,7 @@ using ProtoBuf;
 
 namespace Forge.Core.ObjectEditor{
     [ProtoContract]
-    public struct GameObject : IEquatable<ObjectIdentifier>{
+    public struct GameObject : IEquatable<ObjectIdentifier>, IEquatable<GameObject>{
         [ProtoMember(1)] public readonly int Deck;
         [ProtoMember(2)] public readonly XZPoint GridDimensions;
         [ProtoMember(3)] public readonly ObjectIdentifier Identifier;
@@ -41,6 +41,14 @@ namespace Forge.Core.ObjectEditor{
             Parameters = parameters;
             ModelspacePosition = modelspacePosition;
         }
+
+        #region IEquatable<GameObject> Members
+
+        public bool Equals(GameObject other){
+            return Identifier.Equals(other.Identifier);
+        }
+
+        #endregion
 
         #region IEquatable<ObjectIdentifier> Members
 
