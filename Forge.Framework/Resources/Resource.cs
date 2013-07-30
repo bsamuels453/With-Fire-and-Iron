@@ -122,8 +122,8 @@ namespace Forge.Framework.Resources{
         /// </summary>
         /// <param name="configLocation"> The location of the shader's configuration file. </param>
         /// <param name="effect"> The loaded effect. New effects are cloned to prevent dupe issues. </param>
-        public static void LoadShader(string configLocation, out Effect effect){
-            _shaderLoader.LoadShader(configLocation, out effect);
+        public static void LoadShader(string configLocation, out Effect effect, out RasterizerState rasterizer, out DepthStencilState depthStencil){
+            _shaderLoader.LoadShader(configLocation, out effect, out depthStencil, out rasterizer);
         }
 
         public static void Dispose(){

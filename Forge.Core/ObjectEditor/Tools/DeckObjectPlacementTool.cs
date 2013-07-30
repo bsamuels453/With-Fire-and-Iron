@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.Generic;
+using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework;
@@ -16,14 +17,15 @@ namespace Forge.Core.ObjectEditor.Tools{
     /// Tool for placing generic objects on the airship's deck.
     /// </summary>
     internal class DeckObjectPlacementTool : DeckPlacementBase{
+        readonly GeometryBuffer<VertexPositionNormalTexture> _dimensionFootprint;
         readonly GameObjectEnvironment _gameObjectEnvironment;
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullEnvironment _hullData;
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
+        readonly string _objectParams;
         readonly GameObjectType _objectType;
         readonly long _objectUid;
-        readonly string _objectParams;
         protected Vector3 CursorOffset;
         public GameObjectEnvironment.SideEffect PlacementSideEffect;
         float _rotation;
@@ -47,12 +49,20 @@ namespace Forge.Core.ObjectEditor.Tools{
             _objectUid = objectUid;
             _objectType = type;
             _objectParams = objectParams;
-            CursorOffset = new Vector3(-objectGridDims.X/4f, 0, -objectGridDims.Z/4f);
+            CursorOffset = CalculateCursorOffset(objectGridDims);
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
             _ghostedObjectModel.Enabled = false;
 
+            _dimensionFootprint = new GeometryBuffer<VertexPositionNormalTexture>(30, 20, 10, "Config/Shaders/ObjectPlacementFootprint.config");
+            VertexPositionNormalTexture[] dimensionVerts;
+            int[] dimensionInds;
+            MeshHelper.GenerateCube(out dimensionVerts, out dimensionInds, Vector3.Zero, _objectGridDims.X/2f, 0.01f, _objectGridDims.Z/2f);
+            _dimensionFootprint.SetIndexBufferData(dimensionInds);
+            _dimensionFootprint.SetVertexBufferData(dimensionVerts);
+            _dimensionFootprint.Enabled = false;
+            _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
             _transform = Matrix.Identity;
         }
 
@@ -64,18 +74,30 @@ namespace Forge.Core.ObjectEditor.Tools{
             }
         }
 
+        Vector3 CalculateCursorOffset(XZPoint dimensions){
+            int x = (int) (-dimensions.X/2f);
+            int z = (int) (-dimensions.Z/2f);
+
+            var ret = new Vector3(x/2f, 0, z/2f);
+            return ret;
+        }
+
         protected override void EnableCursorGhost(){
             _ghostedObjectModel.Enabled = true;
+            _dimensionFootprint.Enabled = true;
             _ghostedObjectModel.ShaderParams["f4_TintColor"].SetValue(Color.Green.ToVector4());
+            _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.Green.ToVector4());
         }
 
         protected override void DisableCursorGhost(DisableReason reason){
             switch (reason){
                 case DisableReason.CursorNotValid:
                     _ghostedObjectModel.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
+                    _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
                     break;
                 case DisableReason.NoBoundingBoxInterception:
                     _ghostedObjectModel.Enabled = false;
+                    _dimensionFootprint.Enabled = false;
                     break;
             }
         }
@@ -83,6 +105,15 @@ namespace Forge.Core.ObjectEditor.Tools{
         protected override void UpdateCursorGhost(){
             var translation = Matrix.CreateTranslation(base.CursorPosition + CursorOffset);
             _ghostedObjectModel.SetObjectTransform(0, _transform*translation);
+            var t = (_transform*translation).Translation;
+            _dimensionFootprint.Position = (_transform*translation).Translation;
+            /*
+            _dimensionFootprint.ApplyTransform(v => {
+                var vec = Common.MultMatrix(_transform * translation, v.Position);
+                v.Position = vec;
+                return v;
+            }
+             */
         }
 
         protected override void HandleCursorChange(bool isDrawing){
@@ -116,14 +147,18 @@ namespace Forge.Core.ObjectEditor.Tools{
 
         protected override void OnEnable(){
             _ghostedObjectModel.Enabled = true;
+            _dimensionFootprint.Enabled = true;
         }
 
         protected override void OnDisable(){
             _ghostedObjectModel.Enabled = false;
+            _dimensionFootprint.Enabled = false;
         }
 
-        protected override void DisposeChild(){
+        public override void Dispose(){
             _ghostedObjectModel.Dispose();
+            _dimensionFootprint.Dispose();
+            base.Dispose();
         }
 
         protected override bool IsCursorValid(Vector3 newCursorPos, Vector3 prevCursorPosition, List<Vector3> deckFloorVertexes, float distToPt){

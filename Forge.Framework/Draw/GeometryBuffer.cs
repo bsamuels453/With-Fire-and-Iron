@@ -20,13 +20,13 @@ namespace Forge.Framework.Draw{
             int numVerticies,
             int numPrimitives,
             string settingsFileName,
-            PrimitiveType primitiveType = PrimitiveType.TriangleList,
-            CullMode cullMode = CullMode.None
+            PrimitiveType primitiveType = PrimitiveType.TriangleList
             )
-            : base(numIndicies, numVerticies, numPrimitives, settingsFileName, primitiveType, cullMode){
+            : base(numIndicies, numVerticies, numPrimitives, settingsFileName, primitiveType){
             Rotation = new Vector3();
             Position = new Vector3();
         }
+
 
         public Vector3 Rotation{
             get { return _rotation; }
@@ -50,7 +50,23 @@ namespace Forge.Framework.Draw{
         }
 
         public CullMode CullMode{
-            set { Rasterizer = new RasterizerState{CullMode = value}; }
+            set{
+                var oldRast = Rasterizer;
+                Rasterizer = new RasterizerState{CullMode = value, FillMode = oldRast.FillMode};
+            }
+        }
+
+        public DepthStencilState DepthStencilState{
+            get { return base.DepthStencil; }
+            set { base.DepthStencil = value; }
+        }
+
+        public FillMode FillMode{
+            get { return base.Rasterizer.FillMode; }
+            set{
+                var oldRast = Rasterizer;
+                Rasterizer = new RasterizerState{CullMode = oldRast.CullMode, FillMode = value};
+            }
         }
 
         public void ApplyTransform(Func<T, T> transform, bool updateSynchronously = true){

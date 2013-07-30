@@ -57,8 +57,9 @@ namespace Forge.Core.ObjectEditor.Tools{
             _tempWallBuffer.Enabled = false;
         }
 
-        protected override void DisposeChild(){
+        public override void Dispose(){
             _tempWallBuffer.Dispose();
+            base.Dispose();
         }
 
         void GenerateWallsFromStroke(){

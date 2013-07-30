@@ -16,16 +16,18 @@ namespace Forge.Framework.Draw{
     /// </summary>
     /// <typeparam name="T"> </typeparam>
     public class ObjectModelBuffer<T> : IDrawableBuffer where T : IEquatable<T>{
+        readonly DepthStencilState _depthStencil;
         readonly bool[] _isSlotOccupied;
         readonly int _maxObjects;
         readonly List<ObjectData> _objectData;
+        readonly RasterizerState _rasterizer;
         readonly Effect _shader;
         public bool Enabled;
-        bool _disposed;
         public Matrix GlobalTransform;
+        bool _disposed;
 
         public ObjectModelBuffer(int maxObjects, string shader){
-            Resource.LoadShader(shader, out _shader);
+            Resource.LoadShader(shader, out _shader, out _rasterizer, out _depthStencil);
             _objectData = new List<ObjectData>();
             _maxObjects = maxObjects;
             _isSlotOccupied = new bool[maxObjects];
@@ -43,6 +45,9 @@ namespace Forge.Framework.Draw{
         public void Draw(Matrix viewMatrix){
             if (!Enabled)
                 return;
+            Resource.Device.RasterizerState = _rasterizer;
+            Resource.Device.DepthStencilState = _depthStencil;
+
             foreach (var obj in _objectData){
                 if (!obj.Enabled)
                     continue;
@@ -52,7 +57,7 @@ namespace Forge.Framework.Draw{
                     }
                     foreach (var effect in mesh.Effects){
                         effect.Parameters["mtx_Projection"].SetValue(Resource.ProjectionMatrix);
-                        effect.Parameters["mtx_World"].SetValue(obj.Transform * GlobalTransform);
+                        effect.Parameters["mtx_World"].SetValue(obj.Transform*GlobalTransform);
                         effect.Parameters["mtx_View"].SetValue(viewMatrix);
                     }
                     mesh.Draw();

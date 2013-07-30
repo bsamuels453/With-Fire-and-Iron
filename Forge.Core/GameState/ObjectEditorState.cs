@@ -5,6 +5,7 @@ using Forge.Core.Airship.Export;
 using Forge.Core.Airship.Generation;
 using Forge.Core.Camera;
 using Forge.Core.ObjectEditor;
+using Forge.Core.ObjectEditor.Subsystems;
 using Forge.Core.ObjectEditor.UI;
 using Forge.Framework.Control;
 using Forge.Framework.Draw;
@@ -20,6 +21,7 @@ namespace Forge.Core.GameState{
         readonly ObjectEditorUI _doodadUI;
         readonly GameObjectEnvironment _gameObjectEnvironment;
         readonly HullEnvironment _hullEnvironment;
+        readonly ObjectFootprintVisualizer _objFootprintVisualizer;
         readonly Battlefield _placeboBattlefield;
         readonly RenderTarget _renderTarget;
         readonly InternalWallEnvironment _wallEnvironment;
@@ -40,6 +42,7 @@ namespace Forge.Core.GameState{
             _gameObjectEnvironment = new GameObjectEnvironment(_hullEnvironment);
             _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _gameObjectEnvironment);
             _gameObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
+            _objFootprintVisualizer = new ObjectFootprintVisualizer(_gameObjectEnvironment, _hullEnvironment);
 
             _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
             _doodadUI = new ObjectEditorUI(_hullEnvironment, _gameObjectEnvironment, _wallEnvironment, _renderTarget);
@@ -54,6 +57,7 @@ namespace Forge.Core.GameState{
         public void Dispose(){
             _hullEnvironment.Dispose();
             _gameObjectEnvironment.Dispose();
+            _objFootprintVisualizer.Dispose();
             _wallEnvironment.Dispose();
             _placeboBattlefield.Dispose();
             _doodadUI.Dispose();
