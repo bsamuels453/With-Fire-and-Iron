@@ -1,8 +1,9 @@
 float4x4 mtx_World;
 float4x4 mtx_View;
 float4x4 mtx_Projection;
-float3 f3_Color = (1,1,1);
-float f_Alpha = 1;
+
+float f_Alpha;
+float4 f4_TintColor;
 
 ////////////////////////////////////////////
 /////////////////VERTEX SHADER//////////////
@@ -20,7 +21,6 @@ struct VertexShaderOutput
 VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 {
     VertexShaderOutput output;
-	float4x4 mtx_WorldInverseTranspose = transpose(mtx_World);
     float4 worldPosition = mul(input.Position, mtx_World);
     float4 viewPosition = mul(worldPosition, mtx_View);
     output.Position = mul(viewPosition, mtx_Projection);
@@ -32,15 +32,9 @@ VertexShaderOutput VertexShaderFunction(VertexShaderInput input)
 ////////////////////////////////////////////
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-	/////////////
-	//COLORING///
-	/////////////
-	float4 pixelColor;
-	pixelColor.r = f3_Color.r;
-	pixelColor.g = f3_Color.g;
-	pixelColor.b = f3_Color.b;
-	pixelColor.a = f_Alpha;
-	return pixelColor;
+	float4 color = f4_TintColor;
+	color.a = f_Alpha;
+	return color;
 }
 
 technique Standard
