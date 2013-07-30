@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
+using Newtonsoft.Json.Linq;
 
 #endregion
 
@@ -18,7 +19,7 @@ namespace Forge.Framework.Resources{
             _configLoader = configLoader;
         }
 
-        public void LoadShader(string configLocation, out Effect effect){
+        public void LoadShader(string configLocation, out Effect effect, out DepthStencilState depthStencil, out RasterizerState rasterizer){
             effect = null;
             var configs = _configLoader.LoadConfig(configLocation);
 
@@ -43,6 +44,10 @@ namespace Forge.Framework.Resources{
             //figure out its datatype
             foreach (var config in configs){
                 string name = config.Key;
+
+                if (name == "Rasterizer" || name == "DepthStencil")
+                    continue;
+
                 string configVal = config.Value.ToObject<string>();
 
                 if (configVal.Contains(",")){
@@ -94,8 +99,27 @@ namespace Forge.Framework.Resources{
                 //assume its an integer
                 effect.Parameters[name].SetValue(int.Parse(configVal));
             }
+            depthStencil = ExtractDepthStencil(configs);
+            rasterizer = ExtractRasterizer(configs);
         }
 
+        DepthStencilState ExtractDepthStencil(JObject shaderConfigs){
+            JToken token;
+            shaderConfigs.TryGetValue("DepthStencil", out token);
+            if (token == null){
+                return new DepthStencilState();
+            }
+            return token.ToObject<DepthStencilState>();
+        }
+
+        RasterizerState ExtractRasterizer(JObject shaderConfigs){
+            JToken token;
+            shaderConfigs.TryGetValue("Rasterizer", out token);
+            if (token == null){
+                return new RasterizerState{CullMode = CullMode.None};
+            }
+            return token.ToObject<RasterizerState>();
+        }
 
         public override void Dispose(){
         }
