@@ -19,7 +19,6 @@ namespace Forge.Framework.Draw{
     /// This class is used to organize multiple rendertargets, and is used to dispatch draw calls to all buffers and sprites.
     /// </summary>
     public class RenderTarget : IDisposable{
-        static readonly DepthStencilState _universalDepthStencil;
         static readonly SpriteBatch _cumulativeSpriteBatch;
         static readonly List<RenderTarget> _renderTargets;
         public static RenderTarget CurTarg;
@@ -38,11 +37,7 @@ namespace Forge.Framework.Draw{
         static RenderTarget(){
             _cumulativeSpriteBatch = new SpriteBatch(Resource.Device);
             _renderTargets = new List<RenderTarget>();
-
-            _universalDepthStencil = new DepthStencilState();
-            _universalDepthStencil.DepthBufferEnable = true;
-            _universalDepthStencil.DepthBufferWriteEnable = true;
-            Resource.Device.BlendState = BlendState.AlphaBlend;
+            Resource.Device.BlendState = BlendState.NonPremultiplied;
             Resource.Device.SamplerStates[0] = SamplerState.LinearWrap;
 
             _bufferUpdateTasks = new List<Task>();
@@ -165,8 +160,7 @@ namespace Forge.Framework.Draw{
                 CurTarg = this;
                 Resource.Device.SetRenderTarget(_targetCanvas);
                 Resource.Device.Clear(fillColor);
-                Resource.Device.DepthStencilState = _universalDepthStencil;
-                Resource.Device.BlendState = BlendState.AlphaBlend;
+                Resource.Device.BlendState = BlendState.NonPremultiplied;
                 Resource.Device.SamplerStates[0] = SamplerState.LinearWrap;
                 foreach (var buffer in _buffers){
                     buffer.Draw(viewMatrix);
