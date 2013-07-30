@@ -62,7 +62,7 @@ namespace Forge.Core.ObjectEditor.UI{
                 hullEnv,
                 gameObjEnv,
                 "Models/Cannon",
-                new XZPoint(2, 5),
+                new XZPoint(2, 6),
                 0,
                 GameObjectType.Cannons,
                 GameObjectEnvironment.SideEffect.CutsIntoPortHull,
