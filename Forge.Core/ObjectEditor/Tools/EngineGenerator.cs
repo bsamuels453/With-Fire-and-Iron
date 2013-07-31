@@ -26,9 +26,9 @@ namespace Forge.Core.ObjectEditor.Tools {
             //throw new NotImplementedException();
         }
 
-        public List<GameObject> ExtractGeneratedObjects(){
+        public List<ExtendedGameObj> ExtractGeneratedObjects(){
             //throw new NotImplementedException();
-            return null;
+            return new List<ExtendedGameObj>();
         }
 
         public void FillZone(int deck, Vector3 modelspacePos, XZPoint dimensions){
