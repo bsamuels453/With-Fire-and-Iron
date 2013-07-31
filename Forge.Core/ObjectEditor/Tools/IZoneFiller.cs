@@ -13,7 +13,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         Color TintColor { set; }
         bool Enabled { get; set; }
         void Reset();
-        List<GameObject> ExtractGeneratedObjects();
+        List<ExtendedGameObj> ExtractGeneratedObjects();
         void FillZone(int deck, Vector3 modelspacePos, XZPoint dimensions);
     }
 }
