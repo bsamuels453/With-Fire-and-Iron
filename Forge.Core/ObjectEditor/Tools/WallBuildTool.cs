@@ -46,7 +46,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         protected override void HandleCursorDown(){
         }
 
-        protected override void OnCurDeckChange(){
+        protected override void OnCurDeckChange(int newDeck){
         }
 
         protected override void OnEnable(){

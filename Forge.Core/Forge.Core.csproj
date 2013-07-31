@@ -182,6 +182,7 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
+    <Compile Include="ObjectEditor\ExtendedGameObject.cs" />
     <Compile Include="ObjectEditor\GameObject.cs" />
     <Compile Include="ObjectEditor\GameObjectEnvironment.cs" />
     <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
@@ -194,6 +195,9 @@
     <Compile Include="ObjectEditor\Subsystems\PowerTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\WeaponTrackingModule.cs" />
     <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
+    <Compile Include="ObjectEditor\Tools\EngineGenerator.cs" />
+    <Compile Include="ObjectEditor\Tools\IZoneFiller.cs" />
+    <Compile Include="ObjectEditor\Tools\ZoningTool.cs" />
     <Compile Include="ObjectEditor\UI\EditorToolbar.cs" />
     <Compile Include="ObjectEditor\UI\NavBar.cs" />
     <Compile Include="ObjectEditor\UI\ToolbarButton.cs" />
@@ -228,8 +232,6 @@
     <Compile Include="Util\Interpolate.cs" />
     <Compile Include="Util\MeshHelper.cs" />
     <Compile Include="Util\RenderHelper.cs" />
-    <Compile Include="Util\Vec3Ref.cs" />
-    <Compile Include="Util\XZPair.cs" />
     <Compile Include="GameState\PlayerState.cs" />
     <Compile Include="Terrain\TerrainUpdater.cs" />
     <Compile Include="Terrain\TerrainChunk.cs" />

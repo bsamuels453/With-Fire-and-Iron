@@ -16,7 +16,8 @@ namespace Forge.Core.ObjectEditor{
         [ProtoMember(5)] public readonly long ObjectUid;
 
         /// <summary>
-        /// Contextual parameters for the game object. Context is based on the GameObjectType.
+        /// Contextual parameters for the game object. Context is based on the GameObjectType. This is used to store
+        /// information such as cannon ammo type.
         /// </summary>
         [ProtoMember(9)] public readonly string Parameters;
 
@@ -30,8 +31,35 @@ namespace Forge.Core.ObjectEditor{
             XZPoint gridDimensions,
             long objectUid,
             GameObjectType type,
-            float rotation, string parameters){
+            float rotation,
+            string parameters){
             Identifier = new ObjectIdentifier(modelspacePosition, deck);
+            GridDimensions = gridDimensions;
+            Position = Identifier.Origin;
+            ObjectUid = objectUid;
+            Deck = deck;
+            Type = type;
+            Rotation = rotation;
+            Parameters = parameters;
+            ModelspacePosition = modelspacePosition;
+        }
+
+        /// <summary>
+        /// Alternative constructor that allows specific definition of the object's identifier. This is used to define groups
+        /// of objects to be the same object from the objectenvironment's point of view. This is necessary to faciliate
+        /// dynamically generated objects (such as engines) that may be made up of multiple object models. Since a gameObject
+        /// cant accomidate objects that have more than one model, multiple gameobjects are used that all share the same identifier. 
+        /// </summary>
+        public GameObject(
+            ObjectIdentifier identifier,
+            Vector3 modelspacePosition,
+            int deck,
+            XZPoint gridDimensions,
+            long objectUid,
+            GameObjectType type,
+            float rotation,
+            string parameters){
+            Identifier = identifier;
             GridDimensions = gridDimensions;
             Position = Identifier.Origin;
             ObjectUid = objectUid;

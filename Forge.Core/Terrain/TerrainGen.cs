@@ -173,7 +173,7 @@ namespace Forge.Core.Terrain{
 
         #endregion
 
-        public TerrainChunk GenerateChunk(XZPair id){
+        public TerrainChunk GenerateChunk(XZPoint id) {
             int offsetX = id.X*_blockWidth*(_chunkWidthInBlocks);
             int offsetZ = id.Z*_blockWidth*(_chunkWidthInBlocks);
 

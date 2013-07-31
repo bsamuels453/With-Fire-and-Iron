@@ -1,6 +1,6 @@
 {
 	"NumHorizontalItems": 1,
-	"NumVerticalItems": 4,
+	"NumVerticalItems": 5,
 	"HorizontalPadding": 3,
 	"VerticalPadding": 3,
 	"ItemWidth": 32,
@@ -11,5 +11,6 @@
 	"BuildWallTex": "Icons/WallBuildIcon",
 	"DeleteWallTex": "Icons/WallDeleteIcon",
 	"BuildLadderTex": "Icons/LadderIcon",
-	"BuildCannonTex": "Icons/CannonIcon"
+	"BuildCannonTex": "Icons/CannonIcon",
+	"BuildEngineTex": "Icons/GearIcon"
 }
