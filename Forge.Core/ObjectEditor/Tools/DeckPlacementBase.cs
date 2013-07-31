@@ -196,9 +196,9 @@ namespace Forge.Core.ObjectEditor.Tools{
 
             if (_isDrawing && state.LeftButtonState == ButtonState.Released){
                 _isDrawing = false;
+                HandleCursorRelease();
                 StrokeOrigin = new Vector3();
                 StrokeEnd = new Vector3();
-                HandleCursorRelease();
             }
         }
 
