@@ -330,7 +330,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 }
 
                 GuideGridBuffers[HullData.CurDeck].Enabled = true;
-                OnCurDeckChange();
+                OnCurDeckChange(newVal);
             }
         }
 
@@ -352,7 +352,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         /// <summary>
         ///   Called when the CurDeck changes.
         /// </summary>
-        protected abstract void OnCurDeckChange();
+        protected abstract void OnCurDeckChange(int newDeck);
 
         /// <summary>
         ///   Called when the child needs to be enabled.
