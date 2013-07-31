@@ -2,6 +2,7 @@
     public enum GameObjectType{
         Ladders,
         Cannons,
-        Projectiles
+        Projectiles,
+        Engine
     }
 }
