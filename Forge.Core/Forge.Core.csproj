@@ -194,6 +194,8 @@
     <Compile Include="ObjectEditor\Subsystems\PowerTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\WeaponTrackingModule.cs" />
     <Compile Include="ObjectEditor\Tools\DeckObjectPlacementTool.cs" />
+    <Compile Include="ObjectEditor\Tools\EngineGenerator.cs" />
+    <Compile Include="ObjectEditor\Tools\IZoneFiller.cs" />
     <Compile Include="ObjectEditor\UI\EditorToolbar.cs" />
     <Compile Include="ObjectEditor\UI\NavBar.cs" />
     <Compile Include="ObjectEditor\UI\ToolbarButton.cs" />
