@@ -12,6 +12,7 @@ namespace Forge.Core.ObjectEditor.UI{
     internal class EditorToolbar : ElementGrid{
         const string _template = "UiTemplates/Specialized/ObjectEditorToolbar.json";
         readonly ToolbarButton _buildCannonBut;
+        readonly ToolbarButton _buildEngineBut;
 
         readonly ToolbarButton _buildLadderBut;
         readonly ToolbarButton _buildWallBut;
@@ -31,18 +32,21 @@ namespace Forge.Core.ObjectEditor.UI{
             var wallDeleteTex = jobj["DeleteWallTex"].ToObject<string>();
             var ladderTex = jobj["BuildLadderTex"].ToObject<string>();
             var cannonTex = jobj["BuildCannonTex"].ToObject<string>();
+            var buildEngineTex = jobj["BuildEngineTex"].ToObject<string>();
 
             _buildWallBut = new ToolbarButton(this, FrameStrata.Level.Medium, new Point(), wallBuildTex);
             _deleteWallBut = new ToolbarButton(this, FrameStrata.Level.Medium, new Point(), wallDeleteTex);
             _buildLadderBut = new ToolbarButton(this, FrameStrata.Level.Medium, new Point(), ladderTex);
             _buildCannonBut = new ToolbarButton(this, FrameStrata.Level.Medium, new Point(), cannonTex);
+            _buildEngineBut = new ToolbarButton(this, FrameStrata.Level.Medium, new Point(), buildEngineTex);
 
             base.AddGridElement(_buildWallBut, 0, 0);
             base.AddGridElement(_deleteWallBut, 0, 1);
             base.AddGridElement(_buildLadderBut, 0, 2);
             base.AddGridElement(_buildCannonBut, 0, 3);
+            base.AddGridElement(_buildEngineBut, 0, 4);
 
-            _tools = new IToolbarTool[4];
+            _tools = new IToolbarTool[5];
 
             _tools[(int) Tools.BuildWall] = new WallBuildTool(hullEnv, wallEnv);
             _tools[(int) Tools.DeleteWall] = new WallDeleteTool(hullEnv, wallEnv);
@@ -68,6 +72,7 @@ namespace Forge.Core.ObjectEditor.UI{
                 GameObjectEnvironment.SideEffect.CutsIntoPortHull,
                 "0"
                 );
+            _tools[(int) Tools.BuildEngine] = new ZoningTool(hullEnv, gameObjEnv, new EngineGenerator());
 
             InitializeToolEvents();
         }
@@ -110,6 +115,15 @@ namespace Forge.Core.ObjectEditor.UI{
                         _tools[(int) Tools.BuildCannon].Enabled = true;
                     }
                 };
+            _buildEngineBut.OnLeftClick +=
+                (state, f, arg3) =>{
+                    if (arg3.ContainsMouse){
+                        foreach (var tool in _tools){
+                            tool.Enabled = false;
+                        }
+                        _tools[(int) Tools.BuildEngine].Enabled = true;
+                    }
+                };
         }
 
         public override void Dispose(){
@@ -125,7 +139,8 @@ namespace Forge.Core.ObjectEditor.UI{
             BuildWall,
             DeleteWall,
             BuildLadder,
-            BuildCannon
+            BuildCannon,
+            BuildEngine
         }
 
         #endregion
