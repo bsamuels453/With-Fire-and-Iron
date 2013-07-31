@@ -8,12 +8,13 @@ using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
+using MonoGameUtility;
 
 #endregion
 
 namespace Forge.Core.Terrain{
     public class TerrainChunk : IDisposable{
-        public XZPair Identifier;
+        public XZPoint Identifier;
 
         readonly GeometryBuffer<VertexPositionTexture> _buffer;
 #if WIREFRAME_OVERLAY
@@ -25,7 +26,7 @@ namespace Forge.Core.Terrain{
         readonly Texture2D _binormals;
         readonly Texture2D _tangents;
 
-        public TerrainChunk(XZPair identifier, VertexPositionTexture[] verticies, int[] indicies, Texture2D normals, Texture2D binormals, Texture2D tangents){
+        public TerrainChunk(XZPoint identifier, VertexPositionTexture[] verticies, int[] indicies, Texture2D normals, Texture2D binormals, Texture2D tangents) {
             Identifier = identifier;
             _verticies = verticies;
             _indicies = indicies;

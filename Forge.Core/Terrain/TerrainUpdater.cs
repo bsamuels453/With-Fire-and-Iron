@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Forge.Core.Util;
 using Forge.Framework;
+using MonoGameUtility;
 
 #endregion
 
@@ -30,7 +31,7 @@ namespace Forge.Core.Terrain{
                                  TerrainChunk ret;
                                  lock (_generator){
                                      //NESTED LOCK WARNING: child locks Resource.Device
-                                     ret = _generator.GenerateChunk(new XZPair(x1, z1));
+                                     ret = _generator.GenerateChunk(new XZPoint(x1, z1));
                                  }
                                  lock (_loadedChunks){
                                      _loadedChunks.Add(ret);
