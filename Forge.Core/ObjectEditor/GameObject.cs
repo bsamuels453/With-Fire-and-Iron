@@ -16,7 +16,8 @@ namespace Forge.Core.ObjectEditor{
         [ProtoMember(5)] public readonly long ObjectUid;
 
         /// <summary>
-        /// Contextual parameters for the game object. Context is based on the GameObjectType.
+        /// Contextual parameters for the game object. Context is based on the GameObjectType. This is used to store
+        /// information such as cannon ammo type.
         /// </summary>
         [ProtoMember(9)] public readonly string Parameters;
 
