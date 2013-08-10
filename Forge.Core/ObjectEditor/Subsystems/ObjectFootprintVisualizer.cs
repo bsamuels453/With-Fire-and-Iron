@@ -37,7 +37,7 @@ namespace Forge.Core.ObjectEditor.Subsystems{
         #endregion
 
         void OnObjectAdded(GameObject obj){
-            var dims = ObjectStatisticProvider.GetObjectDims(obj);
+            var dims = ObjectStatisticProvider.GetObjectDims(obj.Family, obj.ObjectUid);
             float length = dims.X/2f;
             float width = dims.Z/2f;
             VertexPositionNormalTexture[] verts;

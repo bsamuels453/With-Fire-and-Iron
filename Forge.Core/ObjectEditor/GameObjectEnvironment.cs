@@ -248,7 +248,7 @@ namespace Forge.Core.ObjectEditor{
                 int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
                     var gridPos = ConvertToGridspace(gameObj.Position);
-                    var dims = ObjectStatisticProvider.GetObjectDims(gameObj);
+                    var dims = ObjectStatisticProvider.GetObjectDims(gameObj.Family, gameObj.ObjectUid);
                     SetOccupationGridState(gridPos, dims, gameObj.Identifier.Deck - 1, true);
                     ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
@@ -361,7 +361,7 @@ namespace Forge.Core.ObjectEditor{
             _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
             var occPos = ConvertToGridspace(obj.ModelspacePosition);
-            var dims = ObjectStatisticProvider.GetObjectDims(obj);
+            var dims = ObjectStatisticProvider.GetObjectDims(obj.Family, obj.ObjectUid);
             SetOccupationGridState(occPos, dims, obj.Deck, true);
 
             _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
