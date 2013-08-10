@@ -24,6 +24,7 @@ namespace Forge.Core.GameState{
         readonly ObjectFootprintVisualizer _objFootprintVisualizer;
         readonly Battlefield _placeboBattlefield;
         readonly RenderTarget _renderTarget;
+        readonly StatisticProvider _statisticProvider;
         readonly InternalWallEnvironment _wallEnvironment;
 
         public ObjectEditorState(){
@@ -37,12 +38,13 @@ namespace Forge.Core.GameState{
             //AirshipPackager.ConvertDefToProtocol(new DefinitionPath("ExportedAirship"), new SerializedPath("ExportedAirship"));
             var serial = AirshipPackager.LoadAirshipSerialization(new SerializedPath("ExportedAirship"));
 
+            _statisticProvider = new StatisticProvider();
             _hullEnvironment = new HullEnvironment(serial);
 
-            _gameObjectEnvironment = new GameObjectEnvironment(_hullEnvironment);
+            _gameObjectEnvironment = new GameObjectEnvironment(_hullEnvironment, _statisticProvider);
             _wallEnvironment = new InternalWallEnvironment(_hullEnvironment, _gameObjectEnvironment);
             _gameObjectEnvironment.InternalWallEnvironment = _wallEnvironment;
-            _objFootprintVisualizer = new ObjectFootprintVisualizer(_gameObjectEnvironment, _hullEnvironment);
+            _objFootprintVisualizer = new ObjectFootprintVisualizer(_gameObjectEnvironment, _hullEnvironment, _statisticProvider);
 
             _cameraController.SetCameraTarget(_hullEnvironment.CenterPoint);
             _doodadUI = new ObjectEditorUI(_hullEnvironment, _gameObjectEnvironment, _wallEnvironment, _renderTarget);

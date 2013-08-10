@@ -35,13 +35,12 @@ namespace Forge.Core.ObjectEditor.Tools{
             HullEnvironment hullData,
             GameObjectEnvironment gameObjectEnvironment,
             string objectModel,
-            XZPoint objectGridDims,
             long objectUid,
             GameObjectType type,
             GameObjectEnvironment.SideEffect placementSideEffects,
             string objectParams) :
                 base(hullData){
-            _objectGridDims = objectGridDims;
+            _objectGridDims = gameObjectEnvironment.StatisticProvider.GetObjectDims(type, objectUid);
             _objectModelName = objectModel;
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
@@ -49,7 +48,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             _objectUid = objectUid;
             _objectType = type;
             _objectParams = objectParams;
-            CursorOffset = CalculateCursorOffset(objectGridDims);
+            CursorOffset = CalculateCursorOffset(_objectGridDims);
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
@@ -139,7 +138,6 @@ namespace Forge.Core.ObjectEditor.Tools{
                 (
                 CursorPosition + CursorOffset,
                 _hullData.CurDeck,
-                _objectGridDims,
                 _objectUid,
                 _objectType,
                 _rotation,

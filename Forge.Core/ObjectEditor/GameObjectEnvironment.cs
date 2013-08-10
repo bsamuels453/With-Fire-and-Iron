@@ -36,6 +36,8 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         public readonly Dictionary<ObjectIdentifier, XZPoint>[] ObjectFootprints;
 
+        public readonly StatisticProvider StatisticProvider;
+
         readonly DeckSectionContainer _deckSectionContainer;
 
         /// <summary>
@@ -72,8 +74,9 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly bool[][,] _occupationGrids;
 
-        public GameObjectEnvironment(HullEnvironment hullEnv){
+        public GameObjectEnvironment(HullEnvironment hullEnv, StatisticProvider statisticProvider){
             _hullEnvironment = hullEnv;
+            StatisticProvider = statisticProvider;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
             _objectSideEffects = new List<Tuple<GameObject, SideEffect>>[hullEnv.NumDecks];
             _objectAddedEvent = new List<OnObjectAddRemove>();
@@ -246,8 +249,9 @@ namespace Forge.Core.ObjectEditor{
                 int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
                     var gridPos = ConvertToGridspace(gameObj.Position);
-                    SetOccupationGridState(gridPos, gameObj.GridDimensions, gameObj.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(gridPos, gameObj.GridDimensions, deck - 1, false);
+                    var dims = StatisticProvider.GetObjectDims(gameObj);
+                    SetOccupationGridState(gridPos, dims, gameObj.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
             }
             if (sideEffect == SideEffect.CutsIntoPortHull){
@@ -358,11 +362,12 @@ namespace Forge.Core.ObjectEditor{
             _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
             var occPos = ConvertToGridspace(obj.ModelspacePosition);
-            SetOccupationGridState(occPos, obj.GridDimensions, obj.Deck, true);
+            var dims = StatisticProvider.GetObjectDims(obj);
+            SetOccupationGridState(occPos, dims, obj.Deck, true);
 
             _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
             ApplyObjectSideEffect(obj, sideEffect);
-            ObjectFootprints[obj.Deck].Add(obj.Identifier, obj.GridDimensions);
+            ObjectFootprints[obj.Deck].Add(obj.Identifier, dims);
 
             foreach (var deleg in _objectAddedEvent){
                 deleg.Invoke(obj);
