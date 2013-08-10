@@ -29,24 +29,22 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly string _objectParams;
         readonly long _objectUid;
         protected Vector3 CursorOffset;
-        public GameObjectEnvironment.SideEffect PlacementSideEffect;
+        protected GameObjectEnvironment.SideEffect PlacementSideEffect;
         float _rotation;
         Matrix _transform;
 
         public DeckObjectPlacementTool(
             HullEnvironment hullData,
             GameObjectEnvironment gameObjectEnvironment,
-            string objectModel,
             long objectUid,
             GameObjectFamily family,
-            GameObjectEnvironment.SideEffect placementSideEffects,
             string objectParams) :
                 base(hullData){
             _objectGridDims = ObjectStatisticProvider.GetObjectDims(family, objectUid);
-            _objectModelName = objectModel;
+            _objectModelName = ObjectStatisticProvider.GetModelString(family, objectUid);
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
-            PlacementSideEffect = placementSideEffects;
+            PlacementSideEffect = ObjectStatisticProvider.GetSideEffects(family, objectUid);
             _objectUid = objectUid;
             _objectFamily = family;
             _objectParams = objectParams;

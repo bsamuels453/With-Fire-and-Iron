@@ -46,16 +46,16 @@ namespace Forge.Core.GameObjects.Statistics{
             return models;
         }
 
-        public static string GetModelString(GameObjectFamily family, long uid) {
+        public static string GetModelString(GameObjectFamily family, long uid){
             var obj = GetObject(family, uid);
             var modelStrs = obj["Model"].ToObject<string>();
             return modelStrs;
         }
 
-        public static GameObjectEnvironment.SideEffect[] GetSideEffects(GameObjectFamily family, long uid){
+        public static GameObjectEnvironment.SideEffect GetSideEffects(GameObjectFamily family, long uid){
             var obj = GetObject(family, uid);
-            var sideEffects = obj["SideEffects"].ToObject<GameObjectEnvironment.SideEffect[]>();
-            return sideEffects;
+            var sideEffect = obj["SideEffect"].ToObject<GameObjectEnvironment.SideEffect>();
+            return sideEffect;
         }
 
         public static Texture2D GetIcon(GameObjectFamily family, long uid){
