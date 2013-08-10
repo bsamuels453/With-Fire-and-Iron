@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
 using Forge.Core.GameObjects;
+using Forge.Core.GameObjects.Statistics;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
@@ -23,8 +24,7 @@ namespace Forge.Core.ObjectEditor{
         public enum SideEffect{
             None,
             CutsIntoCeiling,
-            CutsIntoStarboardHull,
-            CutsIntoPortHull
+            CutsIntoNearestHull
         }
 
         #endregion
@@ -36,8 +36,6 @@ namespace Forge.Core.ObjectEditor{
         /// used by the wall-construction component to make sure none of the constructed walls bisect placed objects
         /// </summary>
         public readonly Dictionary<ObjectIdentifier, XZPoint>[] ObjectFootprints;
-
-        public readonly StatisticProvider StatisticProvider;
 
         readonly DeckSectionContainer _deckSectionContainer;
 
@@ -75,9 +73,8 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly bool[][,] _occupationGrids;
 
-        public GameObjectEnvironment(HullEnvironment hullEnv, StatisticProvider statisticProvider){
+        public GameObjectEnvironment(HullEnvironment hullEnv){
             _hullEnvironment = hullEnv;
-            StatisticProvider = statisticProvider;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
             _objectSideEffects = new List<Tuple<GameObject, SideEffect>>[hullEnv.NumDecks];
             _objectAddedEvent = new List<OnObjectAddRemove>();
@@ -250,17 +247,19 @@ namespace Forge.Core.ObjectEditor{
                 int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
                     var gridPos = ConvertToGridspace(gameObj.Position);
-                    var dims = StatisticProvider.GetObjectDims(gameObj);
+                    var dims = ObjectStatisticProvider.GetObjectDims(gameObj.Family, gameObj.ObjectUid);
                     SetOccupationGridState(gridPos, dims, gameObj.Identifier.Deck - 1, true);
                     ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
             }
+            /*
             if (sideEffect == SideEffect.CutsIntoPortHull){
                 //throw new NotImplementedException();
             }
             if (sideEffect == SideEffect.CutsIntoStarboardHull){
                 throw new NotImplementedException();
             }
+             */
         }
 
         void RemoveObjectSideEffect(){
@@ -363,7 +362,7 @@ namespace Forge.Core.ObjectEditor{
             _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
             var occPos = ConvertToGridspace(obj.ModelspacePosition);
-            var dims = StatisticProvider.GetObjectDims(obj);
+            var dims = ObjectStatisticProvider.GetObjectDims(obj.Family, obj.ObjectUid);
             SetOccupationGridState(occPos, dims, obj.Deck, true);
 
             _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
