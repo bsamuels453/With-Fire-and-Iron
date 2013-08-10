@@ -1,7 +1,8 @@
 ﻿#region
 
 using System;
-using Newtonsoft.Json.Linq;
+using Forge.Core.GameObjects;
+using Forge.Core.GameObjects.Statistics;
 
 #endregion
 
@@ -20,10 +21,10 @@ namespace Forge.Core.Physics{
             Mass = mass;
         }
 
-        public ProjectileAttributes(JObject jobj){
-            Model = jobj["Model"].ToObject<string>();
-            Radius = jobj["Radius"].ToObject<float>();
-            Mass = jobj["Mass"].ToObject<float>();
+        public ProjectileAttributes(GameObjectFamily family, long uid){
+            Model = ObjectStatisticProvider.GetModelString(family, uid);
+            Radius = ObjectStatisticProvider.GetRadius(family, uid);
+            Mass = ObjectStatisticProvider.GetMass(family, uid);
         }
 
         #region IEquatable<ProjectileAttributes> Members
