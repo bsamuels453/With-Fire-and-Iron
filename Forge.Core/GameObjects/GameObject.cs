@@ -1,12 +1,13 @@
 ﻿#region
 
 using System;
+using Forge.Core.ObjectEditor;
 using MonoGameUtility;
 using ProtoBuf;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.GameObjects{
     [ProtoContract]
     public struct GameObject : IEquatable<ObjectIdentifier>, IEquatable<GameObject>{
         [ProtoMember(1)] public readonly int Deck;

@@ -6,7 +6,7 @@ using ProtoBuf;
 
 #endregion
 
-namespace Forge.Core.ObjectEditor{
+namespace Forge.Core.GameObjects{
     /// <summary>
     ///this is a pretty shitty hack for a identifier class, but for the purposes of the object editor, it is fine.
     ///the object editor uses this to identify objects to be added/removed from the environment
