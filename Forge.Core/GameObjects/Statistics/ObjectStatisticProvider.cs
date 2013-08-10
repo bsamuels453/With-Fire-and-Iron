@@ -40,11 +40,16 @@ namespace Forge.Core.GameObjects.Statistics{
             return obj["Dimensions"].ToObject<XZPoint>();
         }
 
-        public static Model[] GetModels(GameObjectFamily family, long uid){
-            var obj = GetObject(family, uid);
-            var modelStrs = obj["Model"].ToObject<string[]>();
-            var models = modelStrs.Select(Resource.LoadContent<Model>).ToArray();
+        public static Model GetModel(GameObjectFamily family, long uid){
+            var modelStr = GetModelString(family, uid);
+            var models = Resource.LoadContent<Model>(modelStr);
             return models;
+        }
+
+        public static string GetModelString(GameObjectFamily family, long uid) {
+            var obj = GetObject(family, uid);
+            var modelStrs = obj["Model"].ToObject<string>();
+            return modelStrs;
         }
 
         public static GameObjectEnvironment.SideEffect[] GetSideEffects(GameObjectFamily family, long uid){
