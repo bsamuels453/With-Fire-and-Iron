@@ -1,8 +1,11 @@
-﻿using System;
-using Forge.Framework.Resources;
+#region
+
+using System;
 using MonoGameUtility;
 
-namespace Forge.Core.ObjectEditor{
+#endregion
+
+namespace Forge.Core.GameObjects{
     /// <summary>
     /// Used to load statistics about gameobjects. Essentially, GameObject class only contains identifying
     /// information for what the object is, in addition to any data specific to that object such as rotation and position.
@@ -10,18 +13,12 @@ namespace Forge.Core.ObjectEditor{
     /// without changing the data struct. This class will provide information such as dimensions, access points, and any
     /// other information that will be identical across objects of the same uid/family.
     /// </summary>
-    public class StatisticProvider{
-
-
-        public StatisticProvider(){
-            //Resource.GameObjectLoader.
-        }
-
-        public XZPoint GetObjectDims(GameObject obj){
+    public static class StatisticProvider{
+        public static XZPoint GetObjectDims(GameObject obj){
             throw new NotImplementedException();
         }
 
-        public XZPoint GetObjectDims(GameObjectType type, long uid) {
+        public static XZPoint GetObjectDims(GameObjectFamily type, long uid){
             throw new NotImplementedException();
         }
     }
