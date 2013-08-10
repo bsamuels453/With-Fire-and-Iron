@@ -8,6 +8,18 @@ using Newtonsoft.Json.Linq;
 #endregion
 
 namespace Forge.Framework.Resources{
+    public struct GenericObjectDef{
+        public readonly int Family;
+        public readonly JObject JObject;
+        public readonly long Uid;
+
+        public GenericObjectDef(JObject jObject, long uid, int family){
+            JObject = jObject;
+            Uid = uid;
+            Family = family;
+        }
+    }
+
     public class GameObjectLoader : ResourceLoader{
         readonly Dictionary<int, GameObjectTag[]> _gameObjectFamilies;
 
@@ -92,13 +104,25 @@ namespace Forge.Framework.Resources{
             return gameObjectConfigs;
         }
 
-        public Dictionary<int, JObject[]> LoadAllGameObjects(){
-            var ret = new Dictionary<int, JObject[]>();
+        public GenericObjectDef[] LoadAllGameObjects(){
+            var ret = new List<GenericObjectDef>();
             foreach (var family in _gameObjectFamilies){
-                var familyObjects = LoadGameObjectFamily(family.Key);
-                ret.Add(family.Key, familyObjects.ToArray());
+                var familyTags = family.Value;
+                int familyId = family.Key;
+
+                foreach (var tag in familyTags){
+                    var jobj = Resource.LoadConfig(tag.Path);
+                    ret.Add
+                        (new GenericObjectDef
+                            (
+                            jobj,
+                            tag.Uid,
+                            familyId
+                            )
+                        );
+                }
             }
-            return ret;
+            return ret.ToArray();
         }
 
         public override void Dispose(){
