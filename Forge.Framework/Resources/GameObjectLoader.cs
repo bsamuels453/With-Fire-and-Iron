@@ -92,6 +92,14 @@ namespace Forge.Framework.Resources{
             return gameObjectConfigs;
         }
 
+        public Dictionary<int, JObject[]> LoadAllGameObjects(){
+            var ret = new Dictionary<int, JObject[]>();
+            foreach (var family in _gameObjectFamilies){
+                var familyObjects = LoadGameObjectFamily(family.Key);
+                ret.Add(family.Key, familyObjects.ToArray());
+            }
+            return ret;
+        }
 
         public override void Dispose(){
             _gameObjectFamilies.Clear();
