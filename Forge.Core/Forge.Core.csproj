@@ -189,7 +189,7 @@
     <Compile Include="GameObjects\GameObjectFamily.cs" />
     <Compile Include="ObjectEditor\InternalWallEnvironment.cs" />
     <Compile Include="GameObjects\ObjectIdentifier.cs" />
-    <Compile Include="GameObjects\ObjectStatisticProvider.cs" />
+    <Compile Include="GameObjects\Statistics\ObjectStatisticProvider.cs" />
     <Compile Include="ObjectEditor\Subsystems\AeronaticsTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\InternalNavTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\ObjectFootprintVisualizer.cs" />

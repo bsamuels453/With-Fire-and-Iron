@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Forge.Core.GameObjects;
+using Forge.Core.GameObjects.Statistics;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;

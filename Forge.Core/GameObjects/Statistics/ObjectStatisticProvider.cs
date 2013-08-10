@@ -8,7 +8,7 @@ using MonoGameUtility;
 
 #endregion
 
-namespace Forge.Core.GameObjects{
+namespace Forge.Core.GameObjects.Statistics{
     /// <summary>
     /// Used to load statistics about gameobjects. Essentially, GameObject class only contains identifying
     /// information for what the object is, in addition to any data specific to that object such as rotation and position.

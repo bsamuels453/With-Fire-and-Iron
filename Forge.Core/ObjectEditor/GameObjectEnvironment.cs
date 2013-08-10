@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
 using Forge.Core.GameObjects;
+using Forge.Core.GameObjects.Statistics;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
