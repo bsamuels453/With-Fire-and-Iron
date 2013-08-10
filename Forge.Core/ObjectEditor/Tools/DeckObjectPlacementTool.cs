@@ -41,7 +41,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             GameObjectEnvironment.SideEffect placementSideEffects,
             string objectParams) :
                 base(hullData){
-            _objectGridDims = StatisticProvider.GetObjectDims(family, objectUid);
+            _objectGridDims = ObjectStatisticProvider.GetObjectDims(family, objectUid);
             _objectModelName = objectModel;
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
