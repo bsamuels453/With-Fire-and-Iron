@@ -37,8 +37,6 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         public readonly Dictionary<ObjectIdentifier, XZPoint>[] ObjectFootprints;
 
-        public readonly StatisticProvider StatisticProvider;
-
         readonly DeckSectionContainer _deckSectionContainer;
 
         /// <summary>
@@ -75,9 +73,8 @@ namespace Forge.Core.ObjectEditor{
         /// </summary>
         readonly bool[][,] _occupationGrids;
 
-        public GameObjectEnvironment(HullEnvironment hullEnv, StatisticProvider statisticProvider){
+        public GameObjectEnvironment(HullEnvironment hullEnv){
             _hullEnvironment = hullEnv;
-            StatisticProvider = statisticProvider;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
             _objectSideEffects = new List<Tuple<GameObject, SideEffect>>[hullEnv.NumDecks];
             _objectAddedEvent = new List<OnObjectAddRemove>();

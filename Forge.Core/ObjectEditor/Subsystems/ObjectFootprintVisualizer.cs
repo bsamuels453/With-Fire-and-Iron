@@ -12,12 +12,10 @@ namespace Forge.Core.ObjectEditor.Subsystems{
     public class ObjectFootprintVisualizer : IDisposable{
         readonly ObjectBuffer<GameObject>[] _footprintBuffers;
         readonly int _numDecks;
-        readonly StatisticProvider _statisticProvider;
 
-        public ObjectFootprintVisualizer(GameObjectEnvironment gameObjEnv, HullEnvironment hullEnv, StatisticProvider statisticProvider){
+        public ObjectFootprintVisualizer(GameObjectEnvironment gameObjEnv, HullEnvironment hullEnv){
             _footprintBuffers = new ObjectBuffer<GameObject>[hullEnv.NumDecks];
             _numDecks = hullEnv.NumDecks;
-            _statisticProvider = statisticProvider;
             for (int i = 0; i < hullEnv.NumDecks; i++){
                 _footprintBuffers[i] = new ObjectBuffer<GameObject>(300, 10, 20, 30, "Config/Shaders/ObjectPostPlacementFootprint.config");
             }
@@ -38,7 +36,7 @@ namespace Forge.Core.ObjectEditor.Subsystems{
         #endregion
 
         void OnObjectAdded(GameObject obj){
-            var dims = _statisticProvider.GetObjectDims(obj);
+            var dims = StatisticProvider.GetObjectDims(obj);
             float length = dims.X/2f;
             float width = dims.Z/2f;
             VertexPositionNormalTexture[] verts;

@@ -22,10 +22,10 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly GameObjectEnvironment _gameObjectEnvironment;
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullEnvironment _hullData;
+        readonly GameObjectFamily _objectFamily;
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
         readonly string _objectParams;
-        readonly GameObjectFamily _objectFamily;
         readonly long _objectUid;
         protected Vector3 CursorOffset;
         public GameObjectEnvironment.SideEffect PlacementSideEffect;
@@ -41,7 +41,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             GameObjectEnvironment.SideEffect placementSideEffects,
             string objectParams) :
                 base(hullData){
-            _objectGridDims = gameObjectEnvironment.StatisticProvider.GetObjectDims(family, objectUid);
+            _objectGridDims = StatisticProvider.GetObjectDims(family, objectUid);
             _objectModelName = objectModel;
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
