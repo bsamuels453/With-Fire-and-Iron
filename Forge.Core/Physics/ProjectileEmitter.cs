@@ -1,5 +1,6 @@
 ﻿#region
 
+using Forge.Core.ObjectEditor;
 using Forge.Framework.Resources;
 using MonoGameUtility;
 
@@ -13,7 +14,7 @@ namespace Forge.Core.Physics{
         readonly ProjectilePhysics _projectileEngine;
 
         public ProjectileEmitter(long projectileUid, float firingForce, int factionId, ProjectilePhysics projectileEngine){
-            var jobj = Resource.GameObjectLoader.LoadGameObject("Projectiles", projectileUid);
+            var jobj = Resource.GameObjectLoader.LoadGameObject((int) GameObjectType.Projectiles, projectileUid);
             _attributes = new ProjectileAttributes(jobj);
             _firingForce = firingForce;
             _projectileEngine = projectileEngine;

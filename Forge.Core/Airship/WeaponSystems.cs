@@ -41,7 +41,7 @@ namespace Forge.Core.Airship{
 
         public void AddWeapons(IEnumerable<GameObject> weapons){
             foreach (var weapon in weapons){
-                var jobj = Resource.GameObjectLoader.LoadGameObject("Cannons", weapon.ObjectUid);
+                var jobj = Resource.GameObjectLoader.LoadGameObject((int) GameObjectType.Cannons, weapon.ObjectUid);
 
                 long projectileUid = long.Parse(weapon.Parameters);
                 float firingForce = jobj["FiringForce"].ToObject<float>();
