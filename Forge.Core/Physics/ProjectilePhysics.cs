@@ -89,7 +89,7 @@ namespace Forge.Core.Physics{
         Dictionary<string, ProjectileAttributes> LoadProjectileVariants(){
             var projectileVariants = new Dictionary<string, ProjectileAttributes>(0);
 
-            var projectileDefList = Resource.GameObjectLoader.LoadGameObjectFamily((int) GameObjectType.Projectiles);
+            var projectileDefList = Resource.GameObjectLoader.LoadGameObjectFamily((int) GameObjectFamily.Projectiles);
             foreach (var projectile in projectileDefList){
                 var attributes = new ProjectileAttributes(projectile);
 

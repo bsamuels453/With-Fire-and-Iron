@@ -24,7 +24,7 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
         readonly string _objectParams;
-        readonly GameObjectType _objectType;
+        readonly GameObjectFamily _objectFamily;
         readonly long _objectUid;
         protected Vector3 CursorOffset;
         public GameObjectEnvironment.SideEffect PlacementSideEffect;
@@ -36,17 +36,17 @@ namespace Forge.Core.ObjectEditor.Tools{
             GameObjectEnvironment gameObjectEnvironment,
             string objectModel,
             long objectUid,
-            GameObjectType type,
+            GameObjectFamily family,
             GameObjectEnvironment.SideEffect placementSideEffects,
             string objectParams) :
                 base(hullData){
-            _objectGridDims = gameObjectEnvironment.StatisticProvider.GetObjectDims(type, objectUid);
+            _objectGridDims = gameObjectEnvironment.StatisticProvider.GetObjectDims(family, objectUid);
             _objectModelName = objectModel;
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
             PlacementSideEffect = placementSideEffects;
             _objectUid = objectUid;
-            _objectType = type;
+            _objectFamily = family;
             _objectParams = objectParams;
             CursorOffset = CalculateCursorOffset(_objectGridDims);
 
@@ -125,7 +125,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     _objectGridDims,
                     _hullData.CurDeck,
                     _rotation,
-                    _objectType,
+                    _objectFamily,
                     _objectUid,
                     PlacementSideEffect
                 );
@@ -139,7 +139,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 CursorPosition + CursorOffset,
                 _hullData.CurDeck,
                 _objectUid,
-                _objectType,
+                _objectFamily,
                 _rotation,
                 _objectParams
                 );
@@ -181,7 +181,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     _objectGridDims,
                     _hullData.CurDeck,
                     _rotation,
-                    _objectType,
+                    _objectFamily,
                     _objectUid,
                     PlacementSideEffect
                 );

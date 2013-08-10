@@ -284,7 +284,7 @@ namespace Forge.Core.ObjectEditor{
             XZPoint gridDims,
             int deck,
             float rotation,
-            GameObjectType type,
+            GameObjectFamily family,
             long uid,
             SideEffect pSideEffects);
 
@@ -301,13 +301,13 @@ namespace Forge.Core.ObjectEditor{
         /// <param name="uid"> </param>
         /// <param name="pSideEffects"> </param>
         /// <param name="rotation"> </param>
-        /// <param name="type"> </param>
+        /// <param name="family"> </param>
         public bool IsObjectPlacementValid(
             Vector3 position,
             XZPoint gridDimensions,
             int deck,
             float rotation,
-            GameObjectType type,
+            GameObjectFamily family,
             long uid,
             SideEffect pSideEffects){
             var gridPosition = ConvertToGridspace(position);
@@ -330,7 +330,7 @@ namespace Forge.Core.ObjectEditor{
             }
             if (pSideEffects == SideEffect.CutsIntoCeiling){
                 if (deck != 0){
-                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, rotation, type, uid, SideEffect.None))
+                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, rotation, family, uid, SideEffect.None))
                         return false;
                 }
             }
@@ -340,7 +340,7 @@ namespace Forge.Core.ObjectEditor{
             }
 
             foreach (var deleg in _objectPlacementTestDelegs){
-                bool result = deleg.Invoke(position, gridDimensions, deck, rotation, type, uid, pSideEffects);
+                bool result = deleg.Invoke(position, gridDimensions, deck, rotation, family, uid, pSideEffects);
                 if (!result){
                     return false;
                 }
@@ -407,10 +407,10 @@ namespace Forge.Core.ObjectEditor{
 
         #endregion
 
-        #region Nested type: OccupationGridPos
+        #region Nested family: OccupationGridPos
 
         /// <summary>
-        /// Point pseudo-class used for type richness to prevent errors with the conversions common to this class.
+        /// Point pseudo-class used for family richness to prevent errors with the conversions common to this class.
         /// </summary>
         struct OccupationGridPos{
             public readonly int X;

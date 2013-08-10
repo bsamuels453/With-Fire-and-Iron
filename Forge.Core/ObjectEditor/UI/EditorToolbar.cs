@@ -56,7 +56,7 @@ namespace Forge.Core.ObjectEditor.UI{
                 gameObjEnv,
                 "Models/Ladder",
                 0,
-                GameObjectType.Ladders,
+                GameObjectFamily.Ladders,
                 GameObjectEnvironment.SideEffect.CutsIntoCeiling,
                 ""
                 );
@@ -66,7 +66,7 @@ namespace Forge.Core.ObjectEditor.UI{
                 gameObjEnv,
                 "Models/Cannon",
                 0,
-                GameObjectType.Cannons,
+                GameObjectFamily.Cannons,
                 GameObjectEnvironment.SideEffect.CutsIntoPortHull,
                 "0"
                 );

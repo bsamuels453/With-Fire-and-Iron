@@ -15,27 +15,27 @@ namespace Forge.Core.ObjectEditor{
         [ProtoMember(4)] public readonly long ObjectUid;
 
         /// <summary>
-        /// Contextual parameters for the game object. Context is based on the GameObjectType. This is used to store
-        /// information such as cannon ammo type.
+        /// Contextual parameters for the game object. Context is based on the GameObjectFamily. This is used to store
+        /// information such as cannon ammo family.
         /// </summary>
         [ProtoMember(5)] public readonly string Parameters;
 
         [ProtoMember(6)] public readonly XZPoint Position;
         [ProtoMember(7)] public readonly float Rotation;
-        [ProtoMember(8)] public readonly GameObjectType Type;
+        [ProtoMember(8)] public readonly GameObjectFamily Family;
 
         public GameObject(
             Vector3 modelspacePosition,
             int deck,
             long objectUid,
-            GameObjectType type,
+            GameObjectFamily family,
             float rotation,
             string parameters){
             Identifier = new ObjectIdentifier(modelspacePosition, deck);
             Position = Identifier.Origin;
             ObjectUid = objectUid;
             Deck = deck;
-            Type = type;
+            Family = family;
             Rotation = rotation;
             Parameters = parameters;
             ModelspacePosition = modelspacePosition;
@@ -52,14 +52,14 @@ namespace Forge.Core.ObjectEditor{
             Vector3 modelspacePosition,
             int deck,
             long objectUid,
-            GameObjectType type,
+            GameObjectFamily family,
             float rotation,
             string parameters){
             Identifier = identifier;
             Position = Identifier.Origin;
             ObjectUid = objectUid;
             Deck = deck;
-            Type = type;
+            Family = family;
             Rotation = rotation;
             Parameters = parameters;
             ModelspacePosition = modelspacePosition;

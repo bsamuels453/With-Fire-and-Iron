@@ -1,5 +1,5 @@
 ﻿namespace Forge.Core.ObjectEditor{
-    public enum GameObjectType{
+    public enum GameObjectFamily{
         Ladders = 0x01,
         Cannons = 0x02,
         Projectiles = 0x03,

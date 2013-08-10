@@ -235,7 +235,7 @@ namespace Forge.Core.Airship.Controllers{
                         MaxVelocityMod = statModifier;
                         break;
                     default:
-                        DebugConsole.WriteLine("WARNING: Unhandled buff type detected: " + buffType);
+                        DebugConsole.WriteLine("WARNING: Unhandled buff family detected: " + buffType);
                         break;
                 }
             }

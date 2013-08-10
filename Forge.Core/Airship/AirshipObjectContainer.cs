@@ -34,7 +34,7 @@ namespace Forge.Core.Airship{
 
             //set up buffer
             foreach (var obj in gameObjects){
-                var jobj = Resource.GameObjectLoader.LoadGameObject((int) obj.Type, obj.ObjectUid);
+                var jobj = Resource.GameObjectLoader.LoadGameObject((int) obj.Family, obj.ObjectUid);
                 var model = Resource.LoadContent<Model>(jobj["Model"].ToObject<string>());
 
                 var rotation = Matrix.CreateFromYawPitchRoll(obj.Rotation, 0, 0);
@@ -45,7 +45,7 @@ namespace Forge.Core.Airship{
 
             var weapons = (
                 from obj in gameObjects
-                where obj.Type == GameObjectType.Cannons
+                where obj.Family == GameObjectFamily.Cannons
                 select obj
                 ).ToList();
 
