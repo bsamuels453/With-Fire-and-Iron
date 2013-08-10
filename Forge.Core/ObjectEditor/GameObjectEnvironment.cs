@@ -24,8 +24,7 @@ namespace Forge.Core.ObjectEditor{
         public enum SideEffect{
             None,
             CutsIntoCeiling,
-            CutsIntoStarboardHull,
-            CutsIntoPortHull
+            CutsIntoNearestHull
         }
 
         #endregion
@@ -253,12 +252,14 @@ namespace Forge.Core.ObjectEditor{
                     ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
             }
+            /*
             if (sideEffect == SideEffect.CutsIntoPortHull){
                 //throw new NotImplementedException();
             }
             if (sideEffect == SideEffect.CutsIntoStarboardHull){
                 throw new NotImplementedException();
             }
+             */
         }
 
         void RemoveObjectSideEffect(){

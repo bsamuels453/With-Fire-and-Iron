@@ -68,7 +68,7 @@ namespace Forge.Core.ObjectEditor.UI{
                 "Models/Cannon",
                 0,
                 GameObjectFamily.Cannons,
-                GameObjectEnvironment.SideEffect.CutsIntoPortHull,
+                GameObjectEnvironment.SideEffect.CutsIntoNearestHull,
                 "0"
                 );
             _tools[(int) Tools.BuildEngine] = new ZoningTool(hullEnv, gameObjEnv, new EngineGenerator());
