@@ -66,21 +66,8 @@ namespace Forge.Framework.Resources{
             return Resource.LoadConfig(objectTag.Path);
         }
 
-        /// <summary>
-        /// Loads the configuration files for an entire family of game objects.
-        /// </summary>
-        /// <param name="familyId"></param>
-        public IEnumerable<JObject> LoadGameObjectFamily(int familyId){
-            var familyTags = _gameObjectFamilies[familyId];
-
-            var gameObjectConfigs = new List<JObject>(familyTags.Count());
-            gameObjectConfigs.AddRange
-                (
-                    from tag in familyTags
-                    select Resource.LoadConfig(tag.Path)
-                );
-
-            return gameObjectConfigs;
+        public IEnumerable<long> GetFamilyUids(int familyId){
+            return _gameObjectFamilies[familyId].Select(tag => tag.Uid);
         }
 
         /// <summary>
