@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using Forge.Core.Airship.Data;
 using Forge.Core.Airship.Generation;
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor;
 using Forge.Core.Util;
 using Forge.Framework;

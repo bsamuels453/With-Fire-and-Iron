@@ -1,5 +1,6 @@
 #region
 
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Resources;
 using Forge.Framework.UI;

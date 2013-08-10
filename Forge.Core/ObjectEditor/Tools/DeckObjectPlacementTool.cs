@@ -1,6 +1,7 @@
 ﻿#region
 
 using System.Collections.Generic;
+using Forge.Core.GameObjects;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;

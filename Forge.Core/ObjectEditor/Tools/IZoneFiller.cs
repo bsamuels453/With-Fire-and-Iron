@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Forge.Core.GameObjects;
 using Microsoft.Xna.Framework;
 using MonoGameUtility;
 using Vector3 = Microsoft.Xna.Framework.Vector3;

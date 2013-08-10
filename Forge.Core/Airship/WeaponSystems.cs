@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor;
 using Forge.Core.Physics;
 using Forge.Framework.Resources;

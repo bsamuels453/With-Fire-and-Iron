@@ -1,5 +1,6 @@
 ﻿#region
 
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor;
 using Forge.Framework.Resources;
 using MonoGameUtility;

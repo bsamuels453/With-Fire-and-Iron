@@ -1,6 +1,7 @@
 ﻿#region
 
 using System;
+using Forge.Core.GameObjects;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;

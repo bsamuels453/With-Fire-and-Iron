@@ -182,13 +182,13 @@
     <Compile Include="Airship\Controllers\PlayerAirshipController.cs" />
     <Compile Include="Airship\Data\Quadrant.cs" />
     <Compile Include="HullEditor\HandleButton.cs" />
-    <Compile Include="ObjectEditor\ExtendedGameObject.cs" />
-    <Compile Include="ObjectEditor\GameObject.cs" />
+    <Compile Include="GameObjects\ExtendedGameObject.cs" />
+    <Compile Include="GameObjects\GameObject.cs" />
     <Compile Include="ObjectEditor\GameObjectEnvironment.cs" />
     <Compile Include="ObjectEditor\DeckPlateIdentifier.cs" />
-    <Compile Include="ObjectEditor\GameObjectFamily.cs" />
+    <Compile Include="GameObjects\GameObjectFamily.cs" />
     <Compile Include="ObjectEditor\InternalWallEnvironment.cs" />
-    <Compile Include="ObjectEditor\ObjectIdentifier.cs" />
+    <Compile Include="GameObjects\ObjectIdentifier.cs" />
     <Compile Include="ObjectEditor\StatisticProvider.cs" />
     <Compile Include="ObjectEditor\Subsystems\AeronaticsTrackingModule.cs" />
     <Compile Include="ObjectEditor\Subsystems\InternalNavTrackingModule.cs" />

@@ -8,6 +8,7 @@ using BulletXNA;
 using BulletXNA.BulletCollision;
 using BulletXNA.BulletDynamics;
 using BulletXNA.LinearMath;
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor;
 using Forge.Framework;
 using Forge.Framework.Draw;
