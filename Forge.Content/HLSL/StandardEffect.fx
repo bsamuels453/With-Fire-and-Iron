@@ -5,6 +5,7 @@ float4x4 mtx_WorldInverseTranspose;
 
 float f_AmbientIntensity = 1;
 float f_DiffuseIntensity;
+float f_Alpha;
 
 float3 f3_DiffuseLightDirection;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
@@ -79,7 +80,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 
 	float4 textureColor = tex2D(samp_Material, input.TextureCoordinate);
     float4 tex = saturate(textureColor * input.Color);
-	tex.a = 1;
+	tex.a = 1 * f_Alpha;
 	return tex;
 }
 
