@@ -274,5 +274,31 @@ namespace Forge.Core.Util{
             verticies[14].Normal = Vector3.Up;
             verticies[15].Normal = Vector3.Up;
         }
+
+        public static void GenerateFlatQuad(out VertexPositionNormalTexture[] verticies, out int[] indicies, Vector3 origin, float xSize, float zSize){
+            //boy do i love hardcoding
+            verticies = new VertexPositionNormalTexture[4];
+            indicies = new[] { 0, 1, 2, 2, 3, 0};
+
+            for (int indexOffset = 0; indexOffset < 4; indexOffset += 4) {
+                var faceVertexes = CreateTexcoordedVertexList(1);
+
+                faceVertexes.CopyTo(verticies, indexOffset);
+            }
+
+            Vector3 xSizeV = new Vector3(xSize, 0, 0);
+            Vector3 zSizeV = new Vector3(0, 0, zSize);
+
+            verticies[0].Position = origin;
+            verticies[1].Position = origin + xSizeV;
+            verticies[2].Position = origin + xSizeV + zSizeV;
+            verticies[3].Position = origin + zSizeV;
+
+
+            verticies[0].Normal = Vector3.Up;
+            verticies[1].Normal = Vector3.Up;
+            verticies[2].Normal = Vector3.Up;
+            verticies[3].Normal = Vector3.Up;
+        }
     }
 }
