@@ -1,12 +1,14 @@
 ﻿#region
 
 using System;
+using Forge.Core.Airship.Data;
 using Forge.Core.GameObjects;
 using Forge.Core.GameObjects.Statistics;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
+using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 #endregion
 
@@ -59,6 +61,31 @@ namespace Forge.Core.ObjectEditor.Subsystems{
             var accessAreaOffset = new Vector3(accessArea.X/2f, 0, accessArea.Z/2f) + obj.ModelspacePosition;
             vertOffset = new Vector3(0, 0.02f, 0);
             MeshHelper.GenerateFlatQuad(out verts, out inds, accessAreaOffset + vertOffset, accessArea.Width/2f, accessArea.Length/2f);
+            var orientation = ObjectStatisticProvider.GetAccessAreaOrientation(obj.Family, obj.ObjectUid);
+            //cringe, but necessary unless want a big ugly algo here
+            switch (orientation){
+                case Quadrant.Direction.Starboard:
+                    verts[0].TextureCoordinate = new Vector2(0, 1);
+                    verts[1].TextureCoordinate = new Vector2(1, 1);
+                    verts[2].TextureCoordinate = new Vector2(1, 0);
+                    verts[3].TextureCoordinate = new Vector2(0, 0);
+                    break;
+                case Quadrant.Direction.Port:
+                    verts[0].TextureCoordinate = new Vector2(1, 0);
+                    verts[1].TextureCoordinate = new Vector2(0, 0);
+                    verts[2].TextureCoordinate = new Vector2(0, 1);
+                    verts[3].TextureCoordinate = new Vector2(1, 1);
+                    break;
+                case Quadrant.Direction.Bow:
+                    verts[0].TextureCoordinate = new Vector2(1, 1);
+                    verts[1].TextureCoordinate = new Vector2(1, 0);
+                    verts[2].TextureCoordinate = new Vector2(0, 0);
+                    verts[3].TextureCoordinate = new Vector2(0, 1);
+                    break;
+                case Quadrant.Direction.Stern:
+                    break;
+            }
+
             _accessBuffers[obj.Deck].AddObject(obj, inds, verts);
         }
 
