@@ -1,6 +1,7 @@
 #region
 
 using System.Linq;
+using Forge.Core.Airship.Data;
 using Forge.Core.ObjectEditor;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
@@ -92,6 +93,24 @@ namespace Forge.Core.GameObjects.Statistics{
             var obj = GetObject(family, uid);
             var radius = obj["Radius"].ToObject<float>();
             return radius;
+        }
+
+        public static XZRectangle GetAccessArea(GameObjectFamily family, long uid){
+            var obj = GetObject(family, uid);
+            var accessArea = obj["InteractionArea"].ToObject<XZRectangle>();
+            return accessArea;
+        }
+
+        public static Quadrant.Direction GetAccessAreaOrientation(GameObjectFamily family, long uid){
+            var obj = GetObject(family, uid);
+            var orientation = obj["InteractionOrientation"].ToObject<Quadrant.Direction>();
+            return orientation;
+        }
+
+        public static XZRectangle GetCeilingCutArea(GameObjectFamily family, long uid){
+            var obj = GetObject(family, uid);
+            var cutArea = obj["CeilingCutArea"].ToObject<XZRectangle>();
+            return cutArea;
         }
     }
 }
