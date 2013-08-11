@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace MonoGameUtility {
-    struct XZRectangle : IEquatable<XZRectangle>{
+    public struct XZRectangle : IEquatable<XZRectangle>{
         #region Private Fields
 
         private static XZRectangle emptyRectangle = new XZRectangle();
