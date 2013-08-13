@@ -38,7 +38,7 @@ namespace Forge.Framework.Resources{
                         (new GameObjectTag
                             (
                             path: familyObj.Value.ToObject<string>(),
-                            uid: long.Parse(familyObj.Key)
+                            uid: int.Parse(familyObj.Key)
                             )
                         );
                 }
@@ -66,7 +66,7 @@ namespace Forge.Framework.Resources{
             return Resource.LoadConfig(objectTag.Path);
         }
 
-        public IEnumerable<long> GetFamilyUids(int familyId){
+        public IEnumerable<int> GetFamilyUids(int familyId){
             return _gameObjectFamilies[familyId].Select(tag => tag.Uid);
         }
 
@@ -120,9 +120,9 @@ namespace Forge.Framework.Resources{
 
         struct GameObjectTag{
             public readonly string Path;
-            public readonly long Uid;
+            public readonly int Uid;
 
-            public GameObjectTag(string path, long uid) : this(){
+            public GameObjectTag(string path, int uid) : this(){
                 Path = path;
                 Uid = uid;
             }
