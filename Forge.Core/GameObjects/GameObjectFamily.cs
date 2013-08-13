@@ -1,8 +1,8 @@
 ﻿namespace Forge.Core.GameObjects{
     public enum GameObjectFamily{
-        Ladders = 0x01,
-        Cannons = 0x02,
-        Projectiles = 0x03,
-        Engine = 0x04
+        Ladders = 0x00,
+        Cannons = 0x01,
+        Projectiles = 0x02,
+        Engine = 0x03
     }
 }
