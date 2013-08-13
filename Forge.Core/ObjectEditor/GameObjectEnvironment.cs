@@ -213,11 +213,13 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void SetOccupationGridState(OccupationGridPos origin, XZPoint dims, int deck, bool value){
+        void SetOccupationGridState(OccupationGridPos origin, List<XZRectangle> areas, int deck, bool value){
             var occupationGrid = _occupationGrids[deck];
-            for (int x = origin.X; x < origin.X + dims.X; x++){
-                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
-                    occupationGrid[x, z] = value;
+            foreach (var area in areas){
+                for (int x = origin.X + area.X; x < origin.X + area.Width + area.X; x++){
+                    for (int z = origin.Z + area.Z; z < origin.Z + area.Length + area.Z; z++){
+                        occupationGrid[x, z] = value;
+                    }
                 }
             }
         }
@@ -248,7 +250,9 @@ namespace Forge.Core.ObjectEditor{
                 if (deck != 0){
                     var gridPos = ConvertToGridspace(gameObj.Position);
                     var dims = ObjectStatisticProvider.GetObjectDims(gameObj.Family, gameObj.ObjectUid);
-                    SetOccupationGridState(gridPos, dims, gameObj.Identifier.Deck - 1, true);
+                    var areas = new List<XZRectangle>();
+                    areas.Add(ObjectStatisticProvider.GetCeilingCutArea(gameObj.Family, gameObj.ObjectUid));
+                    SetOccupationGridState(gridPos, areas, gameObj.Identifier.Deck - 1, true);
                     ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
             }
@@ -362,8 +366,16 @@ namespace Forge.Core.ObjectEditor{
             _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
             var occPos = ConvertToGridspace(obj.ModelspacePosition);
+
+            //apply rotations here when it comes time to implement          
+            var occupationAreas = new List<XZRectangle>();
+
             var dims = ObjectStatisticProvider.GetObjectDims(obj.Family, obj.ObjectUid);
-            SetOccupationGridState(occPos, dims, obj.Deck, true);
+            occupationAreas.Add(new XZRectangle(0, 0, dims.X, dims.Z));
+            var accessArea = ObjectStatisticProvider.GetAccessArea(obj.Family, obj.ObjectUid);
+            occupationAreas.Add(accessArea);
+
+            SetOccupationGridState(occPos, occupationAreas, obj.Deck, true);
 
             _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
             ApplyObjectSideEffect(obj, sideEffect);
