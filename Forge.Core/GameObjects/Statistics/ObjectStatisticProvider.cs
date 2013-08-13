@@ -112,5 +112,23 @@ namespace Forge.Core.GameObjects.Statistics{
             var cutArea = obj["CeilingCutArea"].ToObject<XZRectangle>();
             return cutArea;
         }
+
+        public static bool IsInteractable(GameObjectFamily family, long uid){
+            var obj = GetObject(family, uid);
+            var interactable = obj["Interactable"].ToObject<bool>();
+            return interactable;
+        }
+
+        public static bool IsMultifloorAABB(GameObjectFamily family, long uid){
+            var obj = GetObject(family, uid);
+            var multifloorAABB = obj["MultifloorAABB"].ToObject<bool>();
+            return multifloorAABB;
+        }
+
+        public static bool IsMultifloorAccess(GameObjectFamily family, long uid){
+            var obj = GetObject(family, uid);
+            var multifloorInteractive = obj["MultifloorAccess"].ToObject<bool>();
+            return multifloorInteractive;
+        }
     }
 }
