@@ -1,7 +1,6 @@
 ﻿#region
 
 using System;
-using Forge.Core.ObjectEditor;
 using MonoGameUtility;
 using ProtoBuf;
 
@@ -13,7 +12,6 @@ namespace Forge.Core.GameObjects{
         [ProtoMember(1)] public readonly int Deck;
         [ProtoMember(2)] public readonly ObjectIdentifier Identifier;
         [ProtoMember(3)] public readonly Vector3 ModelspacePosition;
-        [ProtoMember(4)] public readonly long ObjectUid;
 
         /// <summary>
         /// Contextual parameters for the game object. Context is based on the GameObjectFamily. This is used to store
@@ -23,23 +21,21 @@ namespace Forge.Core.GameObjects{
 
         [ProtoMember(6)] public readonly XZPoint Position;
         [ProtoMember(7)] public readonly float Rotation;
-        [ProtoMember(8)] public readonly GameObjectFamily Family;
+        [ProtoMember(4)] public readonly GameObjectType Type;
 
         public GameObject(
             Vector3 modelspacePosition,
             int deck,
-            long objectUid,
-            GameObjectFamily family,
+            GameObjectType type,
             float rotation,
             string parameters){
             Identifier = new ObjectIdentifier(modelspacePosition, deck);
             Position = Identifier.Origin;
-            ObjectUid = objectUid;
             Deck = deck;
-            Family = family;
             Rotation = rotation;
             Parameters = parameters;
             ModelspacePosition = modelspacePosition;
+            Type = type;
         }
 
         /// <summary>
@@ -52,18 +48,16 @@ namespace Forge.Core.GameObjects{
             ObjectIdentifier identifier,
             Vector3 modelspacePosition,
             int deck,
-            long objectUid,
-            GameObjectFamily family,
+            GameObjectType type,
             float rotation,
             string parameters){
             Identifier = identifier;
             Position = Identifier.Origin;
-            ObjectUid = objectUid;
             Deck = deck;
-            Family = family;
             Rotation = rotation;
             Parameters = parameters;
             ModelspacePosition = modelspacePosition;
+            Type = type;
         }
 
         #region IEquatable<GameObject> Members

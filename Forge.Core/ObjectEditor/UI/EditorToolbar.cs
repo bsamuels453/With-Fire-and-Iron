@@ -55,16 +55,14 @@ namespace Forge.Core.ObjectEditor.UI{
                 (
                 hullEnv,
                 gameObjEnv,
-                0,
-                GameObjectFamily.Ladders,
+                new GameObjectType(GameObjectFamily.Ladders, 0),
                 ""
                 );
             _tools[(int) Tools.BuildCannon] = new DeckObjectPlacementTool
                 (
                 hullEnv,
                 gameObjEnv,
-                0,
-                GameObjectFamily.Cannons,
+                new GameObjectType(GameObjectFamily.Cannons, 0),
                 "0"
                 );
             _tools[(int) Tools.BuildEngine] = new ZoningTool(hullEnv, gameObjEnv, new EngineGenerator());

@@ -126,7 +126,8 @@ namespace Forge.Core.ObjectEditor.Tools{
             CalculateStrokeArea(out strokeOrigin, out strokeX, out strokeZ);
             var gridDims = new XZPoint((int) (strokeX*2), (int) (strokeZ*2));
 
-            return _gameObjectEnv.IsObjectPlacementValid(strokeOrigin, gridDims, _curDeck, 0, GameObjectFamily.Engine, 0, GameObjectEnvironment.SideEffect.None);
+            return _gameObjectEnv.IsObjectPlacementValid
+                (strokeOrigin, gridDims, _curDeck, 0, new GameObjectType(GameObjectFamily.Engine, 0), GameObjectEnvironment.SideEffect.None);
         }
     }
 }

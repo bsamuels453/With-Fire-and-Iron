@@ -1,8 +1,8 @@
 ﻿#region
 
 using System.Collections.Generic;
+using Forge.Core.Airship.Data;
 using Forge.Core.GameObjects;
-using Forge.Core.GameObjects.Statistics;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
@@ -22,13 +22,12 @@ namespace Forge.Core.ObjectEditor.Tools{
         readonly GeometryBuffer<VertexPositionNormalTexture> _dimensionAccessFootprint;
         readonly GeometryBuffer<VertexPositionNormalTexture> _dimensionFootprint;
         readonly GameObjectEnvironment _gameObjectEnvironment;
+        readonly GameObjectType _gameObjectType;
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullEnvironment _hullData;
-        readonly GameObjectFamily _objectFamily;
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
         readonly string _objectParams;
-        readonly long _objectUid;
         protected Vector3 CursorOffset;
         protected GameObjectEnvironment.SideEffect PlacementSideEffect;
         float _rotation;
@@ -37,17 +36,15 @@ namespace Forge.Core.ObjectEditor.Tools{
         public DeckObjectPlacementTool(
             HullEnvironment hullData,
             GameObjectEnvironment gameObjectEnvironment,
-            long objectUid,
-            GameObjectFamily family,
+            GameObjectType objectType,
             string objectParams) :
                 base(hullData){
-            _objectGridDims = ObjectStatisticProvider.GetObjectDims(family, objectUid);
-            _objectModelName = ObjectStatisticProvider.GetModelString(family, objectUid);
+            _gameObjectType = objectType;
+            _objectGridDims = objectType.Attribute<XZPoint>(GameObjectAttr.Dimensions);
+            _objectModelName = objectType.Attribute<string>(GameObjectAttr.ModelName);
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
-            PlacementSideEffect = ObjectStatisticProvider.GetSideEffects(family, objectUid);
-            _objectUid = objectUid;
-            _objectFamily = family;
+            PlacementSideEffect = objectType.Attribute<GameObjectEnvironment.SideEffect>(GameObjectAttr.SideEffect);
             _objectParams = objectParams;
             CursorOffset = CalculateCursorOffset(_objectGridDims);
 
@@ -67,12 +64,12 @@ namespace Forge.Core.ObjectEditor.Tools{
             _dimensionFootprint.Enabled = false;
             _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
 
-            var accessArea = ObjectStatisticProvider.GetAccessArea(_objectFamily, _objectUid);
-            var accessAreaOffset = new Vector3(accessArea.X/2f, 0, accessArea.Z/2f);
-            var orientation = ObjectStatisticProvider.GetAccessAreaOrientation(_objectFamily, _objectUid);
+            var interactionArea = _gameObjectType.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
+            var interactionAreaOffst = new Vector3(interactionArea.X/2f, 0, interactionArea.Z/2f);
+            var orientation = _gameObjectType.Attribute<Quadrant.Direction>(GameObjectAttr.InteractionOrientation);
 
             MeshHelper.GenerateFlatQuad
-                (out dimensionVerts, out dimensionInds, accessAreaOffset + new Vector3(0, 0.025f, 0), accessArea.Width/2f, accessArea.Length/2f);
+                (out dimensionVerts, out dimensionInds, interactionAreaOffst + new Vector3(0, 0.025f, 0), interactionArea.Width/2f, interactionArea.Length/2f);
             MeshHelper.GenerateRotatedQuadTexcoords(orientation, dimensionVerts);
             _dimensionAccessFootprint.SetIndexBufferData(dimensionInds);
             _dimensionAccessFootprint.SetVertexBufferData(dimensionVerts);
@@ -147,8 +144,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     _objectGridDims,
                     _hullData.CurDeck,
                     _rotation,
-                    _objectFamily,
-                    _objectUid,
+                    _gameObjectType,
                     PlacementSideEffect
                 );
 
@@ -160,8 +156,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 (
                 CursorPosition + CursorOffset,
                 _hullData.CurDeck,
-                _objectUid,
-                _objectFamily,
+                _gameObjectType,
                 _rotation,
                 _objectParams
                 );
@@ -206,8 +201,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     _objectGridDims,
                     _hullData.CurDeck,
                     _rotation,
-                    _objectFamily,
-                    _objectUid,
+                    _gameObjectType,
                     PlacementSideEffect
                 );
         }

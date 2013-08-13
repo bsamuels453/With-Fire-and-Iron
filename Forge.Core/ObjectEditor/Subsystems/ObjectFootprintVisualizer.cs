@@ -1,8 +1,8 @@
 ﻿#region
 
 using System;
+using Forge.Core.Airship.Data;
 using Forge.Core.GameObjects;
-using Forge.Core.GameObjects.Statistics;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Microsoft.Xna.Framework.Graphics;
@@ -45,7 +45,7 @@ namespace Forge.Core.ObjectEditor.Subsystems{
         #endregion
 
         void OnObjectAdded(GameObject obj){
-            var dims = ObjectStatisticProvider.GetObjectDims(obj.Family, obj.ObjectUid);
+            var dims = obj.Type.Attribute<XZPoint>(GameObjectAttr.Dimensions);
             float length = dims.X/2f;
             float width = dims.Z/2f;
             VertexPositionNormalTexture[] verts;
@@ -55,11 +55,11 @@ namespace Forge.Core.ObjectEditor.Subsystems{
             MeshHelper.GenerateFlatQuad(out verts, out inds, obj.ModelspacePosition + vertOffset, length, width);
             _footprintBuffers[obj.Deck].AddObject(obj, inds, verts);
 
-            var accessArea = ObjectStatisticProvider.GetAccessArea(obj.Family, obj.ObjectUid);
+            var accessArea = obj.Type.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
             var accessAreaOffset = new Vector3(accessArea.X/2f, 0, accessArea.Z/2f) + obj.ModelspacePosition;
             vertOffset = new Vector3(0, 0.02f, 0);
             MeshHelper.GenerateFlatQuad(out verts, out inds, accessAreaOffset + vertOffset, accessArea.Width/2f, accessArea.Length/2f);
-            var orientation = ObjectStatisticProvider.GetAccessAreaOrientation(obj.Family, obj.ObjectUid);
+            var orientation = obj.Type.Attribute<Quadrant.Direction>(GameObjectAttr.InteractionOrientation);
 
             MeshHelper.GenerateRotatedQuadTexcoords(orientation, verts);
 

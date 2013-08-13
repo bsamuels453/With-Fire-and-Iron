@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Forge.Core.GameObjects;
-using Forge.Core.ObjectEditor;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
@@ -35,8 +34,7 @@ namespace Forge.Core.Airship{
 
             //set up buffer
             foreach (var obj in gameObjects){
-                var jobj = Resource.GameObjectLoader.LoadGameObject((int) obj.Family, obj.ObjectUid);
-                var model = Resource.LoadContent<Model>(jobj["Model"].ToObject<string>());
+                var model = Resource.LoadContent<Model>(obj.Type.Attribute<string>(GameObjectAttr.ModelName));
 
                 var rotation = Matrix.CreateFromYawPitchRoll(obj.Rotation, 0, 0);
                 var translation = Matrix.CreateTranslation(obj.ModelspacePosition);
@@ -46,7 +44,7 @@ namespace Forge.Core.Airship{
 
             var weapons = (
                 from obj in gameObjects
-                where obj.Family == GameObjectFamily.Cannons
+                where obj.Type.Family == GameObjectFamily.Cannons
                 select obj
                 ).ToList();
 
