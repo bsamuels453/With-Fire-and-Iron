@@ -10,6 +10,7 @@ float f_Alpha;
 float3 f3_DiffuseLightDirection;
 float4 f4_DiffuseColor = float4(1, 1, 1, 1);
 float4 f4_AmbientColor;
+float4 f4_TintColor = float4(1,1,1,1);
 
 texture tex_Material;
 
@@ -80,6 +81,7 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 
 	float4 textureColor = tex2D(samp_Material, input.TextureCoordinate);
     float4 tex = saturate(textureColor * input.Color);
+	tex = tex * f4_TintColor;
 	tex.a = 1 * f_Alpha;
 	return tex;
 }
