@@ -249,9 +249,12 @@ namespace Forge.Core.ObjectEditor{
                 int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
                     var gridPos = ConvertToGridspace(gameObj.Position);
-                    var dims = ObjectStatisticProvider.GetObjectDims(gameObj.Family, gameObj.ObjectUid);
                     var areas = new List<XZRectangle>();
+                    var dims = ObjectStatisticProvider.GetObjectDims(gameObj.Family, gameObj.ObjectUid);
+                    var accessArea = ObjectStatisticProvider.GetAccessArea(gameObj.Family, gameObj.ObjectUid);
                     areas.Add(ObjectStatisticProvider.GetCeilingCutArea(gameObj.Family, gameObj.ObjectUid));
+                    areas.Add(accessArea);
+
                     SetOccupationGridState(gridPos, areas, gameObj.Identifier.Deck - 1, true);
                     ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
@@ -296,6 +299,29 @@ namespace Forge.Core.ObjectEditor{
 
         #endregion
 
+        bool IsRectangleFootprintValid(XZRectangle rectangle, int deck){
+            var gridLimitMax = _gridLimitMax[deck];
+            var gridLimitMin = _gridLimitMin[deck];
+            var occupationGrid = _occupationGrids[deck];
+
+            for (int x = rectangle.X; x < rectangle.X + rectangle.Width; x++){
+                if (x < 0 || x >= gridLimitMax.Length){
+                    return false;
+                }
+                for (int z = rectangle.Z; z < rectangle.Z + rectangle.Length; z++){
+                    if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
+                        return false;
+                    }
+                    //confirms there is no object in the section of grid
+                    if (occupationGrid[x, z]){
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+
         /// <summary>
         /// 
         /// </summary>
@@ -315,27 +341,38 @@ namespace Forge.Core.ObjectEditor{
             long uid,
             SideEffect pSideEffects){
             var gridPosition = ConvertToGridspace(position);
-            var gridLimitMax = _gridLimitMax[deck];
-            var gridLimitMin = _gridLimitMin[deck];
-            var occupationGrid = _occupationGrids[deck];
-            for (int x = gridPosition.X; x < gridDimensions.X + gridPosition.X; x++){
-                if (x < 0 || x >= gridLimitMax.Length){
+
+            var rect = new XZRectangle(gridPosition.X, gridPosition.Z, gridDimensions.X, gridDimensions.Z);
+
+            if (!IsRectangleFootprintValid(rect, deck)){
+                return false;
+            }
+
+            bool isInteractable = ObjectStatisticProvider.IsInteractable(family, uid);
+            if (isInteractable){
+                var interactionArea = ObjectStatisticProvider.GetAccessArea(family, uid);
+                interactionArea.X += gridPosition.X;
+                interactionArea.Z += gridPosition.Z;
+                if (!IsRectangleFootprintValid(interactionArea, deck)){
                     return false;
                 }
-                for (int z = gridPosition.Z; z < gridDimensions.Z + gridPosition.Z; z++){
-                    if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
-                        return false;
-                    }
-                    //confirms there is no object in the section of grid
-                    if (occupationGrid[x, z]){
-                        return false;
-                    }
-                }
             }
+
             if (pSideEffects == SideEffect.CutsIntoCeiling){
                 if (deck != 0){
-                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, rotation, family, uid, SideEffect.None))
+                    if (!IsRectangleFootprintValid(rect, deck - 1)){
                         return false;
+                    }
+
+                    bool multifloorAccess = ObjectStatisticProvider.IsMultifloorAccess(family, uid);
+                    if (isInteractable && multifloorAccess){
+                        var interactionArea = ObjectStatisticProvider.GetAccessArea(family, uid);
+                        interactionArea.X += gridPosition.X;
+                        interactionArea.Z += gridPosition.Z;
+                        if (!IsRectangleFootprintValid(interactionArea, deck - 1)){
+                            return false;
+                        }
+                    }
                 }
             }
 
