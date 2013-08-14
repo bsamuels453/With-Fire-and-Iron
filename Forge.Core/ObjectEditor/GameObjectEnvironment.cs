@@ -73,7 +73,6 @@ namespace Forge.Core.ObjectEditor{
         readonly bool[][,] _occupationGrids;
 
         public GameObjectEnvironment(HullEnvironment hullEnv){
-            GameObjectType.Initialize();
             _hullEnvironment = hullEnv;
             _deckSectionContainer = hullEnv.DeckSectionContainer;
             _objectSideEffects = new List<Tuple<GameObject, SideEffect>>[hullEnv.NumDecks];

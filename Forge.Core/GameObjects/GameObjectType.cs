@@ -55,10 +55,6 @@ namespace Forge.Core.GameObjects{
         //family list -> uid list -> attribute list
         static JToken[][][] _objectData;
 
-        static GameObjectType(){
-            Initialize();
-        }
-
         public static void Initialize(){
             var gameObjects = Resource.GameObjectLoader.LoadAllGameObjects();
             var sortedByFamily = gameObjects.GroupBy(x => x.Family).ToArray();
