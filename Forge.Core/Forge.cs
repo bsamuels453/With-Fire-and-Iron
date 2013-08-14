@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using Forge.Core.GameObjects;
 using Forge.Core.GameState;
 using Forge.Framework;
 using Forge.Framework.Draw;
@@ -56,6 +57,7 @@ namespace Forge.Core{
                     farPlaneDistance: 13000f
                 );
 
+            GameObjectType.Initialize();
             DebugConsole.WriteLine("Resource initialization complete");
 
             DebugConsole.WriteLine("Initializing game-state...");

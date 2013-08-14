@@ -6,6 +6,7 @@ using System.Diagnostics;
 using Forge.Core.Airship.Controllers;
 using Forge.Core.Airship.Controllers.AutoPilot;
 using Forge.Core.Airship.Data;
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor;
 using Forge.Framework;
 using MonoGameUtility;

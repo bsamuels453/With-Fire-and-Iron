@@ -1,5 +1,6 @@
 #region
 
+using Forge.Core.GameObjects;
 using Forge.Core.ObjectEditor.Tools;
 using Forge.Framework.Resources;
 using Forge.Framework.UI;
@@ -54,22 +55,14 @@ namespace Forge.Core.ObjectEditor.UI{
                 (
                 hullEnv,
                 gameObjEnv,
-                "Models/Ladder",
-                new XZPoint(2, 2),
-                0,
-                GameObjectType.Ladders,
-                GameObjectEnvironment.SideEffect.CutsIntoCeiling,
+                new GameObjectType(GameObjectFamily.Ladders, 0),
                 ""
                 );
             _tools[(int) Tools.BuildCannon] = new DeckObjectPlacementTool
                 (
                 hullEnv,
                 gameObjEnv,
-                "Models/Cannon",
-                new XZPoint(2, 6),
-                0,
-                GameObjectType.Cannons,
-                GameObjectEnvironment.SideEffect.CutsIntoPortHull,
+                new GameObjectType(GameObjectFamily.Cannons, 0),
                 "0"
                 );
             _tools[(int) Tools.BuildEngine] = new ZoningTool(hullEnv, gameObjEnv, new EngineGenerator());

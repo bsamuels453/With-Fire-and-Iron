@@ -1,7 +1,9 @@
 ﻿#region
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Forge.Core.Airship.Data;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGameUtility;
 
@@ -273,6 +275,62 @@ namespace Forge.Core.Util{
             verticies[13].Normal = Vector3.Up;
             verticies[14].Normal = Vector3.Up;
             verticies[15].Normal = Vector3.Up;
+        }
+
+        public static void GenerateFlatQuad(out VertexPositionNormalTexture[] verticies, out int[] indicies, Vector3 origin, float xSize, float zSize){
+            //boy do i love hardcoding
+            verticies = new VertexPositionNormalTexture[4];
+            indicies = new[]{0, 1, 2, 2, 3, 0};
+
+            for (int indexOffset = 0; indexOffset < 4; indexOffset += 4){
+                var faceVertexes = CreateTexcoordedVertexList(1);
+
+                faceVertexes.CopyTo(verticies, indexOffset);
+            }
+
+            Vector3 xSizeV = new Vector3(xSize, 0, 0);
+            Vector3 zSizeV = new Vector3(0, 0, zSize);
+
+            verticies[0].Position = origin;
+            verticies[1].Position = origin + xSizeV;
+            verticies[2].Position = origin + xSizeV + zSizeV;
+            verticies[3].Position = origin + zSizeV;
+
+
+            verticies[0].Normal = Vector3.Up;
+            verticies[1].Normal = Vector3.Up;
+            verticies[2].Normal = Vector3.Up;
+            verticies[3].Normal = Vector3.Up;
+        }
+
+        public static void GenerateRotatedQuadTexcoords(Quadrant.Direction orientation, VertexPositionNormalTexture[] verts){
+            Debug.Assert(verts.Length == 4);
+            switch (orientation){
+                case Quadrant.Direction.Starboard:
+                    verts[0].TextureCoordinate = new Vector2(0, 1);
+                    verts[1].TextureCoordinate = new Vector2(1, 1);
+                    verts[2].TextureCoordinate = new Vector2(1, 0);
+                    verts[3].TextureCoordinate = new Vector2(0, 0);
+                    break;
+                case Quadrant.Direction.Port:
+                    verts[0].TextureCoordinate = new Vector2(1, 0);
+                    verts[1].TextureCoordinate = new Vector2(0, 0);
+                    verts[2].TextureCoordinate = new Vector2(0, 1);
+                    verts[3].TextureCoordinate = new Vector2(1, 1);
+                    break;
+                case Quadrant.Direction.Bow:
+                    verts[0].TextureCoordinate = new Vector2(1, 1);
+                    verts[1].TextureCoordinate = new Vector2(1, 0);
+                    verts[2].TextureCoordinate = new Vector2(0, 0);
+                    verts[3].TextureCoordinate = new Vector2(0, 1);
+                    break;
+                case Quadrant.Direction.Stern:
+                    verts[0].TextureCoordinate = new Vector2(0, 0);
+                    verts[1].TextureCoordinate = new Vector2(0, 1);
+                    verts[2].TextureCoordinate = new Vector2(1, 1);
+                    verts[3].TextureCoordinate = new Vector2(1, 0);
+                    break;
+            }
         }
     }
 }

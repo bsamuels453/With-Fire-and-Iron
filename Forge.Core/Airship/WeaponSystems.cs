@@ -2,9 +2,8 @@
 
 using System;
 using System.Collections.Generic;
-using Forge.Core.ObjectEditor;
+using Forge.Core.GameObjects;
 using Forge.Core.Physics;
-using Forge.Framework.Resources;
 using MonoGameUtility;
 
 #endregion
@@ -41,11 +40,9 @@ namespace Forge.Core.Airship{
 
         public void AddWeapons(IEnumerable<GameObject> weapons){
             foreach (var weapon in weapons){
-                var jobj = Resource.GameObjectLoader.LoadGameObject("Cannons", weapon.ObjectUid);
-
-                long projectileUid = long.Parse(weapon.Parameters);
-                float firingForce = jobj["FiringForce"].ToObject<float>();
-                var projectileEmitterOffset = jobj["ProjectileEmitterOffset"].ToObject<Vector3>();
+                long projectileUid = int.Parse(weapon.Parameters);
+                float firingForce = weapon.Type.Attribute<float>(GameObjectAttr.FiringForce);
+                var projectileEmitterOffset = weapon.Type.Attribute<Vector3>(GameObjectAttr.ProjectileEmitterOffset);
                 var m = Matrix.CreateRotationY(weapon.Rotation);
 
                 var hardPoint = new Hardpoint
@@ -54,7 +51,7 @@ namespace Forge.Core.Airship{
                     m.Backward, //DONT ASK QUESTIONS ITS MATRIXES
                     new ProjectileEmitter
                         (
-                        projectileUid,
+                        weapon.Type.Uid,
                         firingForce,
                         _factionId,
                         _engine

@@ -1,6 +1,8 @@
 ﻿#region
 
 using System.Collections.Generic;
+using Forge.Core.Airship.Data;
+using Forge.Core.GameObjects;
 using Forge.Core.Util;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
@@ -17,52 +19,63 @@ namespace Forge.Core.ObjectEditor.Tools{
     /// Tool for placing generic objects on the airship's deck.
     /// </summary>
     internal class DeckObjectPlacementTool : DeckPlacementBase{
+        readonly GeometryBuffer<VertexPositionNormalTexture> _dimensionAccessFootprint;
         readonly GeometryBuffer<VertexPositionNormalTexture> _dimensionFootprint;
         readonly GameObjectEnvironment _gameObjectEnvironment;
+        readonly GameObjectType _gameObjectType;
         readonly ObjectModelBuffer<int> _ghostedObjectModel;
         readonly HullEnvironment _hullData;
         readonly XZPoint _objectGridDims;
         readonly string _objectModelName;
         readonly string _objectParams;
-        readonly GameObjectType _objectType;
-        readonly long _objectUid;
         protected Vector3 CursorOffset;
-        public GameObjectEnvironment.SideEffect PlacementSideEffect;
+        protected GameObjectEnvironment.SideEffect PlacementSideEffect;
         float _rotation;
         Matrix _transform;
 
         public DeckObjectPlacementTool(
             HullEnvironment hullData,
             GameObjectEnvironment gameObjectEnvironment,
-            string objectModel,
-            XZPoint objectGridDims,
-            long objectUid,
-            GameObjectType type,
-            GameObjectEnvironment.SideEffect placementSideEffects,
+            GameObjectType objectType,
             string objectParams) :
                 base(hullData){
-            _objectGridDims = objectGridDims;
-            _objectModelName = objectModel;
+            _gameObjectType = objectType;
+            _objectGridDims = objectType.Attribute<XZPoint>(GameObjectAttr.Dimensions);
+            _objectModelName = objectType.Attribute<string>(GameObjectAttr.ModelName);
             _hullData = hullData;
             _gameObjectEnvironment = gameObjectEnvironment;
-            PlacementSideEffect = placementSideEffects;
-            _objectUid = objectUid;
-            _objectType = type;
+            PlacementSideEffect = objectType.Attribute<GameObjectEnvironment.SideEffect>(GameObjectAttr.SideEffect);
             _objectParams = objectParams;
-            CursorOffset = CalculateCursorOffset(objectGridDims);
+            CursorOffset = CalculateCursorOffset(_objectGridDims);
 
             _ghostedObjectModel = new ObjectModelBuffer<int>(1, "Config/Shaders/TintedModel.config");
             _ghostedObjectModel.AddObject(0, Resource.LoadContent<Model>(_objectModelName), Matrix.Identity);
             _ghostedObjectModel.Enabled = false;
 
-            _dimensionFootprint = new GeometryBuffer<VertexPositionNormalTexture>(30, 20, 10, "Config/Shaders/ObjectPlacementFootprint.config");
+            _dimensionFootprint = new GeometryBuffer<VertexPositionNormalTexture>(6, 4, 2, "Config/Shaders/ObjectPlacementFootprint.config");
+            _dimensionAccessFootprint = new GeometryBuffer<VertexPositionNormalTexture>(6, 4, 2, "Config/Shaders/ObjectPlacementAccess.config");
+
+
             VertexPositionNormalTexture[] dimensionVerts;
             int[] dimensionInds;
-            MeshHelper.GenerateCube(out dimensionVerts, out dimensionInds, Vector3.Zero, _objectGridDims.X/2f, 0.01f, _objectGridDims.Z/2f);
+            MeshHelper.GenerateFlatQuad(out dimensionVerts, out dimensionInds, new Vector3(0, 0.025f, 0), _objectGridDims.X/2f, _objectGridDims.Z/2f);
             _dimensionFootprint.SetIndexBufferData(dimensionInds);
             _dimensionFootprint.SetVertexBufferData(dimensionVerts);
             _dimensionFootprint.Enabled = false;
             _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
+
+            var interactionArea = _gameObjectType.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
+            var interactionAreaOffst = new Vector3(interactionArea.X/2f, 0, interactionArea.Z/2f);
+            var orientation = _gameObjectType.Attribute<Quadrant.Direction>(GameObjectAttr.InteractionOrientation);
+
+            MeshHelper.GenerateFlatQuad
+                (out dimensionVerts, out dimensionInds, interactionAreaOffst + new Vector3(0, 0.025f, 0), interactionArea.Width/2f, interactionArea.Length/2f);
+            MeshHelper.GenerateRotatedQuadTexcoords(orientation, dimensionVerts);
+            _dimensionAccessFootprint.SetIndexBufferData(dimensionInds);
+            _dimensionAccessFootprint.SetVertexBufferData(dimensionVerts);
+            _dimensionAccessFootprint.Enabled = false;
+            _dimensionAccessFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
+
             _transform = Matrix.Identity;
         }
 
@@ -85,8 +98,10 @@ namespace Forge.Core.ObjectEditor.Tools{
         protected override void EnableCursorGhost(){
             _ghostedObjectModel.Enabled = true;
             _dimensionFootprint.Enabled = true;
+            _dimensionAccessFootprint.Enabled = true;
             _ghostedObjectModel.ShaderParams["f4_TintColor"].SetValue(Color.Green.ToVector4());
             _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.Green.ToVector4());
+            _dimensionAccessFootprint.ShaderParams["f4_TintColor"].SetValue(Color.LightGreen.ToVector4());
         }
 
         protected override void DisableCursorGhost(DisableReason reason){
@@ -94,10 +109,12 @@ namespace Forge.Core.ObjectEditor.Tools{
                 case DisableReason.CursorNotValid:
                     _ghostedObjectModel.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
                     _dimensionFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
+                    _dimensionAccessFootprint.ShaderParams["f4_TintColor"].SetValue(Color.DarkRed.ToVector4());
                     break;
                 case DisableReason.NoBoundingBoxInterception:
                     _ghostedObjectModel.Enabled = false;
                     _dimensionFootprint.Enabled = false;
+                    _dimensionAccessFootprint.Enabled = false;
                     break;
             }
         }
@@ -107,6 +124,7 @@ namespace Forge.Core.ObjectEditor.Tools{
             _ghostedObjectModel.SetObjectTransform(0, _transform*translation);
             var t = (_transform*translation).Translation;
             _dimensionFootprint.Position = (_transform*translation).Translation;
+            _dimensionAccessFootprint.Position = (_transform*translation).Translation;
             /*
             _dimensionFootprint.ApplyTransform(v => {
                 var vec = Common.MultMatrix(_transform * translation, v.Position);
@@ -126,8 +144,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     _objectGridDims,
                     _hullData.CurDeck,
                     _rotation,
-                    _objectType,
-                    _objectUid,
+                    _gameObjectType,
                     PlacementSideEffect
                 );
 
@@ -139,9 +156,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                 (
                 CursorPosition + CursorOffset,
                 _hullData.CurDeck,
-                _objectGridDims,
-                _objectUid,
-                _objectType,
+                _gameObjectType,
                 _rotation,
                 _objectParams
                 );
@@ -163,16 +178,19 @@ namespace Forge.Core.ObjectEditor.Tools{
         protected override void OnEnable(){
             _ghostedObjectModel.Enabled = true;
             _dimensionFootprint.Enabled = true;
+            _dimensionAccessFootprint.Enabled = true;
         }
 
         protected override void OnDisable(){
             _ghostedObjectModel.Enabled = false;
             _dimensionFootprint.Enabled = false;
+            _dimensionAccessFootprint.Enabled = false;
         }
 
         public override void Dispose(){
             _ghostedObjectModel.Dispose();
             _dimensionFootprint.Dispose();
+            _dimensionAccessFootprint.Dispose();
             base.Dispose();
         }
 
@@ -183,8 +201,7 @@ namespace Forge.Core.ObjectEditor.Tools{
                     _objectGridDims,
                     _hullData.CurDeck,
                     _rotation,
-                    _objectType,
-                    _objectUid,
+                    _gameObjectType,
                     PlacementSideEffect
                 );
         }

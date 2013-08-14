@@ -8,6 +8,7 @@ using BulletXNA;
 using BulletXNA.BulletCollision;
 using BulletXNA.BulletDynamics;
 using BulletXNA.LinearMath;
+using Forge.Core.GameObjects;
 using Forge.Framework;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
@@ -88,11 +89,14 @@ namespace Forge.Core.Physics{
         Dictionary<string, ProjectileAttributes> LoadProjectileVariants(){
             var projectileVariants = new Dictionary<string, ProjectileAttributes>(0);
 
-            var projectileDefList = Resource.GameObjectLoader.LoadGameObjectFamily("Projectiles");
-            foreach (var projectile in projectileDefList){
-                var attributes = new ProjectileAttributes(projectile);
+            var familyUids = Resource.GameObjectLoader.GetFamilyUids((int) GameObjectFamily.Projectiles);
+            foreach (var uid in familyUids){
+                var objType = new GameObjectType(GameObjectFamily.Projectiles, uid);
+                var attributes = new ProjectileAttributes(objType);
 
-                projectileVariants.Add(projectile["Name"].ToObject<string>(), attributes);
+                string projectileName = objType.Attribute<string>(GameObjectAttr.Name);
+
+                projectileVariants.Add(projectileName, attributes);
             }
             return projectileVariants;
         }

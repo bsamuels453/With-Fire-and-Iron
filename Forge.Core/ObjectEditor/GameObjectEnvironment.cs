@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Forge.Core.Airship.Data;
+using Forge.Core.GameObjects;
 using Forge.Framework.Draw;
 using Forge.Framework.Resources;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,8 +23,7 @@ namespace Forge.Core.ObjectEditor{
         public enum SideEffect{
             None,
             CutsIntoCeiling,
-            CutsIntoStarboardHull,
-            CutsIntoPortHull
+            CutsIntoNearestHull
         }
 
         #endregion
@@ -212,11 +212,13 @@ namespace Forge.Core.ObjectEditor{
             }
         }
 
-        void SetOccupationGridState(OccupationGridPos origin, XZPoint dims, int deck, bool value){
+        void SetOccupationGridState(OccupationGridPos origin, List<XZRectangle> areas, int deck, bool value){
             var occupationGrid = _occupationGrids[deck];
-            for (int x = origin.X; x < origin.X + dims.X; x++){
-                for (int z = origin.Z; z < origin.Z + dims.Z; z++){
-                    occupationGrid[x, z] = value;
+            foreach (var area in areas){
+                for (int x = origin.X + area.X; x < origin.X + area.Width + area.X; x++){
+                    for (int z = origin.Z + area.Z; z < origin.Z + area.Length + area.Z; z++){
+                        occupationGrid[x, z] = value;
+                    }
                 }
             }
         }
@@ -246,16 +248,24 @@ namespace Forge.Core.ObjectEditor{
                 int deck = gameObj.Identifier.Deck;
                 if (deck != 0){
                     var gridPos = ConvertToGridspace(gameObj.Position);
-                    SetOccupationGridState(gridPos, gameObj.GridDimensions, gameObj.Identifier.Deck - 1, true);
-                    ModifyDeckPlates(gridPos, gameObj.GridDimensions, deck - 1, false);
+                    var areas = new List<XZRectangle>();
+                    var dims = gameObj.Type.Attribute<XZPoint>(GameObjectAttr.Dimensions);
+                    var interactionArea = gameObj.Type.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
+                    areas.Add(gameObj.Type.Attribute<XZRectangle>(GameObjectAttr.CeilingCutArea));
+                    areas.Add(interactionArea);
+
+                    SetOccupationGridState(gridPos, areas, gameObj.Identifier.Deck - 1, true);
+                    ModifyDeckPlates(gridPos, dims, deck - 1, false);
                 }
             }
+            /*
             if (sideEffect == SideEffect.CutsIntoPortHull){
                 //throw new NotImplementedException();
             }
             if (sideEffect == SideEffect.CutsIntoStarboardHull){
                 throw new NotImplementedException();
             }
+             */
         }
 
         void RemoveObjectSideEffect(){
@@ -280,41 +290,23 @@ namespace Forge.Core.ObjectEditor{
             XZPoint gridDims,
             int deck,
             float rotation,
-            GameObjectType type,
-            long uid,
+            GameObjectType gameObject,
             SideEffect pSideEffects);
 
         public delegate void OnObjectAddRemove(GameObject obj);
 
         #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="position">The model space position of the object to be placed</param>
-        /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
-        /// <param name="deck"></param>
-        /// <param name="uid"> </param>
-        /// <param name="pSideEffects"> </param>
-        /// <param name="rotation"> </param>
-        /// <param name="type"> </param>
-        public bool IsObjectPlacementValid(
-            Vector3 position,
-            XZPoint gridDimensions,
-            int deck,
-            float rotation,
-            GameObjectType type,
-            long uid,
-            SideEffect pSideEffects){
-            var gridPosition = ConvertToGridspace(position);
+        bool IsRectangleFootprintValid(XZRectangle rectangle, int deck){
             var gridLimitMax = _gridLimitMax[deck];
             var gridLimitMin = _gridLimitMin[deck];
             var occupationGrid = _occupationGrids[deck];
-            for (int x = gridPosition.X; x < gridDimensions.X + gridPosition.X; x++){
+
+            for (int x = rectangle.X; x < rectangle.X + rectangle.Width; x++){
                 if (x < 0 || x >= gridLimitMax.Length){
                     return false;
                 }
-                for (int z = gridPosition.Z; z < gridDimensions.Z + gridPosition.Z; z++){
+                for (int z = rectangle.Z; z < rectangle.Z + rectangle.Length; z++){
                     if (z < gridLimitMin[x] || z >= gridLimitMax[x]){
                         return false;
                     }
@@ -324,10 +316,59 @@ namespace Forge.Core.ObjectEditor{
                     }
                 }
             }
+            return true;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="position">The model space position of the object to be placed</param>
+        /// <param name="gridDimensions">The unit-grid dimensions of the object. (1,1) cooresponds to a size of (0.5, 0.5) meters.</param>
+        /// <param name="deck"></param>
+        /// <param name="gameObject"> </param>
+        /// <param name="pSideEffects"> </param>
+        /// <param name="rotation"> </param>
+        public bool IsObjectPlacementValid(
+            Vector3 position,
+            XZPoint gridDimensions,
+            int deck,
+            float rotation,
+            GameObjectType gameObject,
+            SideEffect pSideEffects){
+            var gridPosition = ConvertToGridspace(position);
+
+            var rect = new XZRectangle(gridPosition.X, gridPosition.Z, gridDimensions.X, gridDimensions.Z);
+
+            if (!IsRectangleFootprintValid(rect, deck)){
+                return false;
+            }
+
+            bool isInteractable = gameObject.Attribute<bool>(GameObjectAttr.IsInteractable);
+            if (isInteractable){
+                var interactionArea = gameObject.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
+                interactionArea.X += gridPosition.X;
+                interactionArea.Z += gridPosition.Z;
+                if (!IsRectangleFootprintValid(interactionArea, deck)){
+                    return false;
+                }
+            }
+
             if (pSideEffects == SideEffect.CutsIntoCeiling){
                 if (deck != 0){
-                    if (!IsObjectPlacementValid(position, gridDimensions, deck - 1, rotation, type, uid, SideEffect.None))
+                    if (!IsRectangleFootprintValid(rect, deck - 1)){
                         return false;
+                    }
+
+                    bool multifloorAccess = gameObject.Attribute<bool>(GameObjectAttr.IsMultifloorInteractable);
+                    if (isInteractable && multifloorAccess){
+                        var interactionArea = gameObject.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
+                        interactionArea.X += gridPosition.X;
+                        interactionArea.Z += gridPosition.Z;
+                        if (!IsRectangleFootprintValid(interactionArea, deck - 1)){
+                            return false;
+                        }
+                    }
                 }
             }
 
@@ -336,7 +377,7 @@ namespace Forge.Core.ObjectEditor{
             }
 
             foreach (var deleg in _objectPlacementTestDelegs){
-                bool result = deleg.Invoke(position, gridDimensions, deck, rotation, type, uid, pSideEffects);
+                bool result = deleg.Invoke(position, gridDimensions, deck, rotation, gameObject, pSideEffects);
                 if (!result){
                     return false;
                 }
@@ -358,11 +399,20 @@ namespace Forge.Core.ObjectEditor{
             _objectModelBuffer[obj.Deck].AddObject(obj.Identifier, model, posTransform);
 
             var occPos = ConvertToGridspace(obj.ModelspacePosition);
-            SetOccupationGridState(occPos, obj.GridDimensions, obj.Deck, true);
+
+            //apply rotations here when it comes time to implement          
+            var occupationAreas = new List<XZRectangle>();
+
+            var dims = obj.Type.Attribute<XZPoint>(GameObjectAttr.Dimensions);
+            occupationAreas.Add(new XZRectangle(0, 0, dims.X, dims.Z));
+            var accessArea = obj.Type.Attribute<XZRectangle>(GameObjectAttr.InteractionArea);
+            occupationAreas.Add(accessArea);
+
+            SetOccupationGridState(occPos, occupationAreas, obj.Deck, true);
 
             _objectSideEffects[obj.Deck].Add(new Tuple<GameObject, SideEffect>(obj, sideEffect));
             ApplyObjectSideEffect(obj, sideEffect);
-            ObjectFootprints[obj.Deck].Add(obj.Identifier, obj.GridDimensions);
+            ObjectFootprints[obj.Deck].Add(obj.Identifier, dims);
 
             foreach (var deleg in _objectAddedEvent){
                 deleg.Invoke(obj);
@@ -402,10 +452,10 @@ namespace Forge.Core.ObjectEditor{
 
         #endregion
 
-        #region Nested type: OccupationGridPos
+        #region Nested family: OccupationGridPos
 
         /// <summary>
-        /// Point pseudo-class used for type richness to prevent errors with the conversions common to this class.
+        /// Point pseudo-class used for family richness to prevent errors with the conversions common to this class.
         /// </summary>
         struct OccupationGridPos{
             public readonly int X;
